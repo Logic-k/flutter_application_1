@@ -1,0 +1,65 @@
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.build/
+.buildlog/
+.history
+.svn/
+.swiftpm/
+migrate_working_dir/
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# The .vscode folder contains launch configuration and tasks you configure in
+# VS Code which you may wish to be included in version control, so this line
+# is commented out by default.
+#.vscode/
+
+# Flutter/Dart/Pub related
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+/build/
+/coverage/
+
+# Symbolication related
+app.*.symbols
+
+# Obfuscation related
+app.*.map.json
+
+# Android Studio will place build artifacts here
+/android/app/debug
+/android/app/profile
+/android/app/release
+
+# Claude AI 메모리 (개인 설정 파일)
+.claude/
+
+# 백엔드 시크릿 및 환경변수
+backend/.env
+backend/.env.*
+backend/**/*.key
+backend/**/*.pem
+backend/**/credentials.*
+
+# 빌드 로그 및 임시 파일
+build_log.txt
+build_out.txt
+bundle_error.txt
+upgrade.txt
+temp_agency/
+
+# 손상된 파일 폴더
+lib/features/training_corrupted/
