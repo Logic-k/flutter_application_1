@@ -86,24 +86,97 @@ flutter run
 
 ### 환경 설정
 
-Supabase 연결을 위해 프로젝트 루트에 환경 변수를 설정하세요.  
-자세한 내용은 [PROGRESS.md](PROGRESS.md)를 참조하세요.
+Supabase 연결을 위해 프로젝트 루트에 환경 변수를 설정하세요.
 
 ---
 
 ## 개발 현황
 
-전체 진행 상황은 [PROGRESS.md](PROGRESS.md)에서 확인할 수 있습니다.
+### 구현 완료 기능
 
-| 카테고리 | 상태 |
-|---------|------|
-| 인증 / 온보딩 | ✅ 완료 |
-| 인지 훈련 (7종 게임) | ✅ 완료 |
-| 보행 분석 | ✅ 완료 |
-| 음성 평가 (STT) | ⚠️ 부분 완료 |
-| 주간 리포트 | ✅ 완료 |
-| 소셜 봇 (회상 요법) | ❌ 미구현 |
-| 온디바이스 LLM 연결 | ❌ 미구현 |
+| 카테고리 | 주요 내용 | 상태 |
+|---------|----------|------|
+| 인증 | Supabase 로그인/회원가입, GoRouter 인증 가드 | ✅ |
+| 온보딩 | 건강 데이터 수집 동의 절차, 민감 정보 미수집 방침 | ✅ |
+| 초기 평가 | 인지 과제, 결과 화면 | ✅ |
+| 음성 평가 | STT 실시간 변환, 발화 분석 점수 UI | ⚠️ LLM 미연결 |
+| 인지 훈련 (7종) | 비교·구구단·순서기억·도형스도쿠·도형짝·단어분류·문장읽기 | ✅ |
+| 적응형 난이도 | DifficultyProvider, 카테고리별 레벨 SQLite 저장 | ✅ |
+| 보행 분석 | 가속도 기반 보행 변동성(CV), 백그라운드 Pedometer | ✅ |
+| 홈 / 일상 루틴 | 실시간 걸음 수, MIND 식단 추천, 메모리 정원 | ✅ |
+| 주간 리포트 | fl_chart 시계열 차트, 뇌 연령 추정, 임상 리포트 구조 | ✅ |
+| 프로필 / 보호자 연계 | 보호자 공유 링크, 텍스트 크기 설정 | ✅ |
+| CS 센터 | 공지사항, FAQ, 문의 제출/조회 | ✅ |
+| 관리자 포털 | 사용자 조회, CS 문의 답변, 공지·FAQ 편집 | ✅ |
+| 기관 연계 | 치매안심센터 전화/지도 연동 (url_launcher) | ✅ |
+| 이상 감지 모니터 | 활동 미감지 시 보호자 푸시 알림 구조 | ✅ |
+
+### 미완성 / 플레이스홀더 기능
+
+| 기능 | 현황 | 비고 |
+|------|------|------|
+| 온디바이스 LLM 음성 분석 | ⚠️ 시뮬레이션 | 실제 MediaPipe/TFLite 모델 미탑재 |
+| 음성 발화 지표 추출 (TTR, 발화속도) | ⚠️ 부분 구현 | STT는 동작, LLM 파이프라인 미연결 |
+| Health Connect / HealthKit 연동 | ⚠️ 자체 구현 | 플랫폼 공식 API 미연동 |
+| 이중 과제 보행 알고리즘 | ⚠️ 미구현 | 보행 중 인지 미션 부여 기능 |
+| FINGER 모델 — 혈압/혈당 입력 | ⚠️ 미구현 | 생활 습관 기록 입력 폼 |
+| 소셜 봇 (회상 요법 챗봇) | ❌ 미구현 | 감정 일기 기반 AI 대화 |
+| PDF 실제 생성 | ⚠️ 구조만 완성 | 파일 렌더링/공유 연결 필요 |
+| training_corrupted 정리 | ⚠️ 레거시 | 구 버전 파일, 정리 필요 |
+
+---
+
+## 라우팅 구조
+
+```
+/login                          → 로그인
+/register                       → 회원가입
+/ (MainNavScreen)               → 하단 탭 네비게이션
+  ├── 홈 (HomeScreen)
+  ├── 훈련 (TrainingHubScreen)
+  ├── 보행 (GaitScreen)
+  ├── 리포트 (ReportsScreen)
+  └── 기관 연계 (ReferralScreen)
+/onboarding                     → 온보딩
+/consent                        → 동의
+/assessment                     → 초기 평가
+/cognitive_tasks                → 인지 과제
+/assessment_result              → 평가 결과
+/game/comparison                → 비교 게임
+/game/sequence                  → 순서 기억
+/game/sudoku                    → 도형 스도쿠
+/game/multiplication            → 구구단
+/game/shape_match               → 도형 짝
+/game/categorization            → 단어 분류
+/game/reading                   → 문장 읽기
+/gait                           → 보행 분석
+/precise_gait_analysis          → 정밀 보행 분석
+/walking_dashboard              → 걷기 대시보드
+/memory_garden                  → 메모리 정원
+/training/recall                → 일일 회상
+/profile                        → 프로필
+/guardian_link                  → 보호자 연결
+/cs_center                      → CS 센터
+/cs/notices, /cs/faq            → 공지사항, FAQ
+/cs/inquiry_submit, ...         → 문의 관련
+/admin_login                    → 관리자 로그인
+/admin/dashboard                → 관리자 대시보드
+/admin/user_detail/:userId      → 사용자 상세
+/admin/cs_management            → CS 관리
+/admin/notice_edit, /admin/faq_edit, /admin/inquiry_detail/:id
+```
+
+---
+
+## 남은 과제 (우선순위 순)
+
+1. **온디바이스 LLM 연결** — `local_ai_service.dart`에 MediaPipe Gemma 2B 또는 Google AI Edge 연동
+2. **음성 발화 지표 파이프라인** — TTR(어휘 다양성), 발화 속도, 대명사 비율 계산 로직 구현
+3. **PDF 실제 생성** — `clinical_report_generator.dart`에 pdf 패키지 연결
+4. **FINGER 생활 습관 기록** — 수면, 혈압/혈당 입력 UI 추가
+5. **이중 과제 보행** — 보행 중 인지 미션 부여 UI 및 속도 저하율 측정
+6. **소셜 봇** — 감정 일기 기반 회상 요법 챗봇 화면
+7. **training_corrupted 정리** — 레거시 파일 제거 또는 병합
 
 ---
 
