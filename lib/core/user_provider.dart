@@ -5,8 +5,11 @@ import 'database_helper.dart';
 enum OnboardingGoal { prevention, concern, family }
 
 class UserProvider extends ChangeNotifier {
-  final DatabaseHelper _dbHelper = DatabaseHelper();
+  final DatabaseHelper _dbHelper;
   
+  UserProvider({DatabaseHelper? dbHelper})
+      : _dbHelper = dbHelper ?? DatabaseHelper();
+
   // Auth state
   Map<String, dynamic>? _currentUser;
   bool _isLoading = true;

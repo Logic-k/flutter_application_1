@@ -1,13 +1,22 @@
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper _instance = DatabaseHelper._internal();
   static Database? _database;
+  @visibleForTesting
+  static String? pathOverride;
 
   factory DatabaseHelper() => _instance;
 
   DatabaseHelper._internal();
+
+  @visibleForTesting
+  static void resetForTest() {
+    _database = null;
+    pathOverride = inMemoryDatabasePath;
+  }
 
   Future<Database> get database async {
     if (_database != null) return _database!;
@@ -16,12 +25,17 @@ class DatabaseHelper {
   }
 
   Future<Database> _initDatabase() async {
-    String path = join(await getDatabasesPath(), 'memorylink.db');
+    final String path =
+        pathOverride ?? join(await getDatabasesPath(), 'memorylink.db');
+    // 테스트에서 pathOverride가 설정된 경우 singleInstance를 끄면
+    // 각 테스트가 완전히 격리된 인메모리 DB를 사용한다.
+    final bool isTest = pathOverride != null;
     return await openDatabase(
       path,
       version: 4,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
+      singleInstance: !isTest,
     );
   }
 

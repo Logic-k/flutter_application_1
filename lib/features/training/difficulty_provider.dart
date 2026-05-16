@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/supabase_client.dart';
 
 enum GameCategory {
@@ -11,6 +12,7 @@ enum GameCategory {
 
 class DifficultyProvider extends ChangeNotifier {
   final String username;
+  late final SupabaseClient _supabase;
   
   // 게임 카테고리별 현재 난이도 (1 ~ 10)
   final Map<GameCategory, int> _levels = {
@@ -36,7 +38,9 @@ class DifficultyProvider extends ChangeNotifier {
     GameCategory.perception: [],
   };
 
-  DifficultyProvider({required this.username});
+  DifficultyProvider({required this.username, SupabaseClient? supabase}) {
+    _supabase = supabase ?? SupabaseManager.client;
+  }
 
   int getLevel(GameCategory category) => _levels[category] ?? 1;
 
@@ -50,7 +54,7 @@ class DifficultyProvider extends ChangeNotifier {
   /// Supabase에서 초기 난이도 데이터를 불러옵니다.
   Future<void> loadLevels() async {
     try {
-      final response = await SupabaseManager.client
+      final response = await _supabase
           .from('training_difficulty')
           .select()
           .eq('username', username)
@@ -112,7 +116,7 @@ class DifficultyProvider extends ChangeNotifier {
   /// Supabase에 현재 난이도 상태를 upsert 합니다.
   Future<void> _syncToSupabase() async {
     try {
-      await SupabaseManager.client.from('training_difficulty').upsert({
+      await _supabase.from('training_difficulty').upsert({
         'username': username,
         'calculation_level': _levels[GameCategory.calculation],
         'logic_level': _levels[GameCategory.logic],

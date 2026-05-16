@@ -11,6 +11,16 @@ class SentenceReadingGame extends StatefulWidget {
 
   @override
   State<SentenceReadingGame> createState() => _SentenceReadingGameState();
+
+  static double computeSpeechScore(String target, String recognized) {
+    String cleanTarget = target.replaceAll(' ', '');
+    String cleanInput = recognized.replaceAll(' ', '');
+    if (cleanInput.isEmpty) return 0.0;
+    if (cleanInput.contains(cleanTarget) || cleanTarget.contains(cleanInput)) {
+      return 100.0;
+    }
+    return (cleanInput.length / cleanTarget.length * 100).clamp(0, 100).toDouble();
+  }
 }
 
 class _SentenceReadingGameState extends State<SentenceReadingGame> {
@@ -66,17 +76,7 @@ class _SentenceReadingGameState extends State<SentenceReadingGame> {
   }
 
   void _checkResult() {
-    // 공백 무시하고 비교
-    String cleanTarget = _targetSentence.replaceAll(' ', '');
-    String cleanInput = _text.replaceAll(' ', '');
-    
-    // 간단항 포함 여부 및 길이 기반 정확도 계산 (데모 수준)
-    double score = 0;
-    if (cleanInput.contains(cleanTarget) || cleanTarget.contains(cleanInput)) {
-      score = 100;
-    } else {
-      score = (cleanInput.length / cleanTarget.length * 100).clamp(0, 100);
-    }
+    final double score = SentenceReadingGame.computeSpeechScore(_targetSentence, _text);
 
     if (score > 70) {
       context.read<DifficultyProvider>().updatePerformance(GameCategory.perception, true);

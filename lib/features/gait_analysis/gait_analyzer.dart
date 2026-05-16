@@ -31,10 +31,11 @@ class GaitAnalyzer {
 
   /// 새로운 가속도 데이터를 통한 걸음 감지
   /// [event]: 필터링된 가속도 이벤트
-  bool processEvent(UserAccelerometerEvent event) {
+  /// [clock]: 테스트에서 시간을 제어할 때 주입. 기본값은 DateTime.now
+  bool processEvent(UserAccelerometerEvent event, {DateTime Function()? clock}) {
     // 3축 가속도의 벡터 크기 (Magnitude) 계산
     final double magnitude = sqrt(pow(event.x, 2) + pow(event.y, 2) + pow(event.z, 2));
-    final DateTime now = DateTime.now();
+    final DateTime now = (clock ?? DateTime.now)();
 
     // 임계치 초과 및 최소 간격 경과 확인
     if (magnitude > _stepThreshold) {

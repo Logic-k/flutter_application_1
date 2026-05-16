@@ -7,8 +7,9 @@ class AnomalyMonitorService {
       : _dbHelper = dbHelper ?? DatabaseHelper();
 
   /// 최근 보행 데이터 급락 감지
+  /// [clock]: 테스트에서 시간을 제어할 때 주입. 기본값은 DateTime.now
   Future<Map<String, dynamic>> checkActivityAnomaly(
-      int userId, int currentSteps) async {
+      int userId, int currentSteps, {DateTime Function()? clock}) async {
     final recentData = await _dbHelper.getWeeklySteps(userId);
 
     if (recentData.length < 3) {
@@ -19,7 +20,7 @@ class AnomalyMonitorService {
         recentData.map((e) => (e['steps'] as num).toDouble()).toList();
     final avgSteps = stepsList.reduce((a, b) => a + b) / stepsList.length;
 
-    final now = DateTime.now();
+    final now = (clock ?? DateTime.now)();
     bool isAnomaly = false;
     String message = '';
 
