@@ -64,8 +64,5 @@ temp_agency/
 # 손상된 파일 폴더
 lib/features/training_corrupted/
 
-# API 키가 포함된 스크립트 (커밋 금지)
-upload_notion.py
-
 # AI 코딩 도구 설정
 .codex/
