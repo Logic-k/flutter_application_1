@@ -52,38 +52,34 @@ class HomeScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 1. 인사말 및 날짜
-            Text(todayStr, style: TextStyle(color: theme.colorScheme.onSurfaceVariant, fontSize: 16)),
-            const SizedBox(height: 8),
-            Text(
-              '안녕하세요, ${userProvider.currentUser?['username'] ?? '사용자'}님!\n오늘도 뇌 건강을 챙겨볼까요?',
-              style: theme.textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-                height: 1.3,
-              ),
-            ),
-            const SizedBox(height: 32),
-            
+            // 1. 그라디언트 헤더 카드 (인사 + 오늘 현황)
+            _buildHeaderCard(context, theme, userProvider, pedometer, todayStr),
+
+            const SizedBox(height: 24),
+
             // 신규: 오늘의 식단 추천
             const DietRecommendationCard(),
-            
-            const SizedBox(height: 32),
-            
+
+            const SizedBox(height: 24),
+
             // 2. 기억의 정원 (시각적 성장 시스템)
             _buildMemoryGardenCard(context, theme, userProvider, pedometer),
-            
-            const SizedBox(height: 32),
-            
+
+            const SizedBox(height: 24),
+
             // 3. 걷기 미니 대시보드
             InkWell(
               onTap: () => context.push('/walking_dashboard'),
               borderRadius: BorderRadius.circular(24),
               child: _buildWalkingMiniCard(context, pedometer, theme),
             ),
-            
-            const SizedBox(height: 32),
-            
-            // 3. 오늘의 추천 훈련
+
+            const SizedBox(height: 24),
+
+            // 동기부여 칩
+            _buildTrainingMotivationChip(theme),
+
+            // 4. 오늘의 추천 훈련
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -97,24 +93,183 @@ class HomeScreen extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             _buildRecommendedTraining(context, theme),
-            
-            const SizedBox(height: 32),
-            
-            // 4. 두뇌 건강 분석
-            Text(
-              '두뇌 건강 분석',
-              style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-            ),
+
+            const SizedBox(height: 24),
+
+            // 5. 두뇌 건강 분석 (진행 바 시각화)
+            _buildBrainHealthCard(userProvider, theme),
+
             const SizedBox(height: 16),
-            _buildReportSummaryCard(userProvider, theme),
           ],
         ),
       ),
     );
   }
 
+  // ─── 헤더 카드 ───────────────────────────────────────────────
+  Widget _buildHeaderCard(
+    BuildContext context,
+    ThemeData theme,
+    UserProvider userProvider,
+    PedometerManager pedometer,
+    String todayStr,
+  ) {
+    final stepProgress = (pedometer.todaySteps / 10000).clamp(0.0, 1.0);
+    final stepsFormatted = pedometer.todaySteps
+        .toString()
+        .replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]},');
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            theme.colorScheme.primary,
+            theme.colorScheme.primary.withValues(alpha: 0.75),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: theme.colorScheme.primary.withValues(alpha: 0.3),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            todayStr,
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.8),
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '안녕하세요,\n${userProvider.currentUser?['username'] ?? '사용자'}님!',
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              height: 1.3,
+            ),
+          ),
+          const SizedBox(height: 20),
+          Container(height: 1, color: Colors.white.withValues(alpha: 0.2)),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: _buildQuickStat(
+                  icon: Icons.directions_walk,
+                  label: '오늘 걸음',
+                  value: '$stepsFormatted보',
+                  progress: stepProgress,
+                ),
+              ),
+              Container(width: 1, height: 44, color: Colors.white.withValues(alpha: 0.2)),
+              Expanded(
+                child: _buildQuickStat(
+                  icon: Icons.psychology,
+                  label: '훈련 현황',
+                  value: '오늘 2개',
+                  progress: null,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuickStat({
+    required IconData icon,
+    required String label,
+    required String value,
+    double? progress,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, color: Colors.white.withValues(alpha: 0.9), size: 16),
+              const SizedBox(width: 6),
+              Text(
+                label,
+                style: TextStyle(color: Colors.white.withValues(alpha: 0.75), fontSize: 12),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          if (progress != null) ...[
+            const SizedBox(height: 6),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: LinearProgressIndicator(
+                value: progress,
+                backgroundColor: Colors.white.withValues(alpha: 0.25),
+                valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                minHeight: 4,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  // ─── 동기부여 칩 ──────────────────────────────────────────────
+  Widget _buildTrainingMotivationChip(ThemeData theme) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.orange.shade50,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.orange.shade200),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.flag_rounded, color: Colors.orange.shade700, size: 18),
+            const SizedBox(width: 6),
+            Text(
+              '오늘 2개 훈련이 준비되어 있어요!',
+              style: TextStyle(
+                color: Colors.orange.shade800,
+                fontWeight: FontWeight.w600,
+                fontSize: 14,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ─── 걷기 미니 카드 ───────────────────────────────────────────
   Widget _buildWalkingMiniCard(BuildContext context, PedometerManager pedometer, ThemeData theme) {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -155,6 +310,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
+  // ─── 추천 훈련 ────────────────────────────────────────────────
   Widget _buildRecommendedTraining(BuildContext context, ThemeData theme) {
     return Column(
       children: [
@@ -187,43 +343,64 @@ class HomeScreen extends StatelessWidget {
     required Color color,
     required VoidCallback onTap,
   }) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: theme.cardColor,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: theme.dividerColor),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: theme.cardColor,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: theme.dividerColor),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: color),
             ),
-            child: Icon(icon, color: color),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                Text(
-                  desc,
-                  style: TextStyle(color: theme.colorScheme.onSurfaceVariant, fontSize: 13),
-                ),
-              ],
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  Text(
+                    desc,
+                    style: TextStyle(color: theme.colorScheme.onSurfaceVariant, fontSize: 13),
+                  ),
+                ],
+              ),
             ),
-          ),
-          Icon(Icons.play_circle_fill, color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5), size: 28),
-        ],
+            FilledButton.tonal(
+              onPressed: onTap,
+              style: FilledButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                minimumSize: const Size(72, 44),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              child: const Text('시작', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildReportSummaryCard(UserProvider user, ThemeData theme) {
+  // ─── 두뇌 건강 분석 카드 (진행 바) ───────────────────────────
+  Widget _buildBrainHealthCard(UserProvider user, ThemeData theme) {
+    final isLight = theme.brightness == Brightness.light;
+    final scores = [
+      (label: '기억력', score: user.memoryScore, color: isLight ? Colors.orange.shade600 : Colors.orangeAccent),
+      (label: '집중력', score: user.attentionScore, color: isLight ? Colors.blue.shade600 : Colors.blueAccent),
+      (label: '계산력', score: user.calculationScore, color: isLight ? Colors.green.shade600 : Colors.greenAccent),
+      (label: '논리력', score: user.logicScore, color: isLight ? Colors.purple.shade600 : Colors.purpleAccent),
+    ];
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -231,37 +408,91 @@ class HomeScreen extends StatelessWidget {
         color: theme.cardColor,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: theme.dividerColor),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildMetric(theme, '기억력', user.memoryScore.toInt().toString(), theme.brightness == Brightness.light ? Colors.orange.shade700 : Colors.orangeAccent),
-              _buildMetric(theme, '집중력', user.attentionScore.toInt().toString(), theme.brightness == Brightness.light ? Colors.blue.shade700 : Colors.blueAccent),
-              _buildMetric(theme, '계산력', user.calculationScore.toInt().toString(), theme.brightness == Brightness.light ? Colors.green.shade700 : Colors.greenAccent),
+              Icon(Icons.monitor_heart_outlined, color: theme.colorScheme.primary, size: 22),
+              const SizedBox(width: 8),
+              Text(
+                '두뇌 건강 분석',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: theme.colorScheme.primary,
+                ),
+              ),
             ],
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
+          ...scores.map((s) => Padding(
+                padding: const EdgeInsets.only(bottom: 14),
+                child: _buildMetricBar(theme, s.label, s.score, s.color),
+              )),
+          const SizedBox(height: 4),
           Text(
-            user.memoryScore > 0 ? '꾸준한 훈련으로 뇌 건강이 유지되고 있습니다!' : '첫 고인지 훈련을 시작해보세요!',
-            style: TextStyle(fontSize: 14, color: theme.colorScheme.primary),
+            user.memoryScore > 0
+                ? '꾸준한 훈련으로 뇌 건강이 유지되고 있습니다!'
+                : '첫 인지 훈련을 시작해보세요!',
+            style: TextStyle(fontSize: 13, color: theme.colorScheme.primary),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildMetric(ThemeData theme, String label, String score, Color color) {
+  Widget _buildMetricBar(ThemeData theme, String label, double score, Color color) {
+    final double progress = (score / 100.0).clamp(0.0, 1.0);
+    final int displayScore = score.toInt();
+
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: TextStyle(fontSize: 13, color: theme.colorScheme.onSurfaceVariant)),
-        const SizedBox(height: 4),
-        Text(score, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: color)),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: theme.colorScheme.onSurface,
+              ),
+            ),
+            Text(
+              score > 0 ? '$displayScore점' : '미측정',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: score > 0 ? color : theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 6),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(6),
+          child: LinearProgressIndicator(
+            value: score > 0 ? progress : 0.0,
+            backgroundColor: color.withValues(alpha: 0.12),
+            valueColor: AlwaysStoppedAnimation<Color>(color),
+            minHeight: 10,
+          ),
+        ),
       ],
     );
   }
 
+  // ─── 기억의 정원 카드 ─────────────────────────────────────────
   Widget _buildMemoryGardenCard(BuildContext context, ThemeData theme, UserProvider user, PedometerManager pedometer) {
     double stepProgress = (pedometer.todaySteps / 10000).clamp(0.0, 1.0);
     double cognitiveProgress = ((user.calculationScore + user.logicScore + user.memoryScore + user.attentionScore) / 400.0).clamp(0.0, 1.0);

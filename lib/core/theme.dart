@@ -43,9 +43,9 @@ class AppTheme {
       ),
       cardTheme: CardThemeData(
         color: scheme.surface,
-        elevation: 2,
+        elevation: 3,
         margin: EdgeInsets.zero,
-        shadowColor: scheme.shadow.withValues(alpha: 0.1),
+        shadowColor: scheme.shadow.withValues(alpha: 0.15),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
       inputDecorationTheme: InputDecorationTheme(
@@ -59,6 +59,23 @@ class AppTheme {
           borderRadius: BorderRadius.circular(16),
           borderSide: BorderSide(color: scheme.outlineVariant),
         ),
+      ),
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: scheme.surface,
+        indicatorColor: scheme.primary.withValues(alpha: 0.12),
+        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+        iconTheme: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return IconThemeData(color: scheme.primary, size: 26);
+          }
+          return IconThemeData(color: scheme.onSurfaceVariant, size: 24);
+        }),
+        labelTextStyle: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return GoogleFonts.outfit(color: scheme.primary, fontWeight: FontWeight.bold, fontSize: 12);
+          }
+          return GoogleFonts.outfit(color: scheme.onSurfaceVariant, fontSize: 12);
+        }),
       ),
     );
   }
