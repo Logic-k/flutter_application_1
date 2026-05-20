@@ -1,7 +1,7 @@
 # MemoryLink
 
 **모바일 센서 기반 다중중재 치매 예방 플랫폼**  
-캡스톤 디자인 프로젝트 | Flutter (Android / iOS)
+캡스톤 디자인 프로젝트 | Flutter (Android / iOS / Web)
 
 ---
 
@@ -9,6 +9,8 @@
 
 초기 치매 및 경도인지장애(MCI) 환자를 위한 Flutter 기반 크로스 플랫폼 앱입니다.  
 스마트폰 내장 센서(가속도계, 자이로스코프)와 LLM 기반 음성 분석을 결합하여, 사용자가 일상 속에서 위험 신호를 조기 인지하고 다중중재 예방 루틴을 지속할 수 있도록 돕는 SaMD 수준의 플랫폼입니다.
+
+**지원 플랫폼:** Android · iOS · Web
 
 ---
 
@@ -20,13 +22,22 @@
 | 상태 관리 | Provider (`ChangeNotifierProvider`, `ProxyProvider`) |
 | 라우팅 | GoRouter |
 | 클라우드 DB | Supabase |
-| 로컬 DB | SQLite |
+| 로컬 DB | SQLite (sqflite) |
 | 차트 | fl_chart |
 | 음성 인식 | speech_to_text |
+| 음성 출력 (TTS) | flutter_tts |
+| 오디오 재생 | audioplayers |
 | 센서 | sensors_plus (가속도계/자이로스코프) |
 | 걸음 수 | 자체 PedometerManager + 백그라운드 서비스 |
+| 헬스 데이터 | health (Health Connect / HealthKit) |
+| PDF 생성 | pdf + printing |
+| QR 코드 | qr_flutter |
+| 애니메이션 | lottie |
+| 진동 | vibration |
 | 공유 | share_plus |
 | 국제화 | intl (한국어 날짜/시간) |
+| 테스트 | flutter_test · mocktail · integration_test · sqflite_common_ffi |
+| 아이콘 | flutter_launcher_icons |
 
 ---
 
@@ -36,7 +47,7 @@
 - **보행 분석** — 3축 가속도 기반 보행 변동성(CV) 측정, 치매 전조 지표 시각화
 - **음성 평가** — STT 기반 실시간 음성 텍스트 변환 및 발화 분석
 - **주간 리포트** — 인지 훈련 점수 시계열 차트, 뇌 연령 추정, 임상 리포트 생성
-- **보호자 연계** — 보호자 공유 링크, 이상 감지 시 푸시 알림
+- **보호자 연계** — QR 코드 기반 공유 링크, 이상 감지 시 푸시 알림
 - **기관 연계** — 치매안심센터 전화/지도 연동
 - **관리자 포털** — 사용자 데이터 조회, CS 문의 답변
 
@@ -48,6 +59,9 @@
 lib/
 ├── core/
 │   ├── services/          # 백그라운드 서비스, 이상 감지, AI 서비스
+│   ├── database_helper.dart
+│   ├── router.dart
+│   ├── theme.dart
 │   └── ...
 ├── features/
 │   ├── auth/              # 로그인, 회원가입
@@ -62,7 +76,11 @@ lib/
 │   ├── cs/                # CS 센터
 │   ├── admin/             # 관리자 포털
 │   └── referral/          # 기관 연계
-└── ...
+test/
+├── unit/                  # 단위 테스트 (7개)
+├── widget/                # 위젯 테스트 (3개)
+└── helpers/               # 테스트 헬퍼, Mock 정의
+integration_test/          # 통합 테스트 (2개)
 ```
 
 ---
@@ -82,6 +100,16 @@ git clone https://github.com/Logic-k/flutter_application_1.git
 cd flutter_application_1
 flutter pub get
 flutter run
+```
+
+### 테스트 실행
+
+```bash
+# 단위 + 위젯 테스트
+flutter test
+
+# 통합 테스트 (연결된 기기 필요)
+flutter test integration_test/
 ```
 
 ### 환경 설정
@@ -105,11 +133,14 @@ Supabase 연결을 위해 프로젝트 루트에 환경 변수를 설정하세�
 | 보행 분석 | 가속도 기반 보행 변동성(CV), 백그라운드 Pedometer | ✅ |
 | 홈 / 일상 루틴 | 실시간 걸음 수, MIND 식단 추천, 메모리 정원 | ✅ |
 | 주간 리포트 | fl_chart 시계열 차트, 뇌 연령 추정, 임상 리포트 구조 | ✅ |
-| 프로필 / 보호자 연계 | 보호자 공유 링크, 텍스트 크기 설정 | ✅ |
+| 프로필 / 보호자 연계 | QR 코드 공유 링크, 텍스트 크기 설정 | ✅ |
 | CS 센터 | 공지사항, FAQ, 문의 제출/조회 | ✅ |
 | 관리자 포털 | 사용자 조회, CS 문의 답변, 공지·FAQ 편집 | ✅ |
 | 기관 연계 | 치매안심센터 전화/지도 연동 (url_launcher) | ✅ |
 | 이상 감지 모니터 | 활동 미감지 시 보호자 푸시 알림 구조 | ✅ |
+| UI/UX 개선 | 리서치 기반 홈·훈련 화면 재설계 (카드형 레이아웃, 진행률 배너) | ✅ |
+| 다중 플랫폼 | Android · iOS · Web 빌드 지원, 앱 아이콘 전체 적용 | ✅ |
+| 테스트 커버리지 | 단위 7개 · 위젯 3개 · 통합 2개 | ✅ |
 
 ### 미완성 / 플레이스홀더 기능
 
@@ -117,11 +148,11 @@ Supabase 연결을 위해 프로젝트 루트에 환경 변수를 설정하세�
 |------|------|------|
 | 온디바이스 LLM 음성 분석 | ⚠️ 시뮬레이션 | 실제 MediaPipe/TFLite 모델 미탑재 |
 | 음성 발화 지표 추출 (TTR, 발화속도) | ⚠️ 부분 구현 | STT는 동작, LLM 파이프라인 미연결 |
-| Health Connect / HealthKit 연동 | ⚠️ 자체 구현 | 플랫폼 공식 API 미연동 |
+| Health Connect / HealthKit 연동 | ⚠️ 패키지 탑재 완료 | 실제 권한 획득 및 데이터 연동 미완 |
 | 이중 과제 보행 알고리즘 | ⚠️ 미구현 | 보행 중 인지 미션 부여 기능 |
 | FINGER 모델 — 혈압/혈당 입력 | ⚠️ 미구현 | 생활 습관 기록 입력 폼 |
 | 소셜 봇 (회상 요법 챗봇) | ❌ 미구현 | 감정 일기 기반 AI 대화 |
-| PDF 실제 생성 | ⚠️ 구조만 완성 | 파일 렌더링/공유 연결 필요 |
+| PDF 실제 생성 | ⚠️ 패키지 탑재 완료 | 렌더링/공유 연결 필요 |
 | training_corrupted 정리 | ⚠️ 레거시 | 구 버전 파일, 정리 필요 |
 
 ---
@@ -172,11 +203,13 @@ Supabase 연결을 위해 프로젝트 루트에 환경 변수를 설정하세�
 
 1. **온디바이스 LLM 연결** — `local_ai_service.dart`에 MediaPipe Gemma 2B 또는 Google AI Edge 연동
 2. **음성 발화 지표 파이프라인** — TTR(어휘 다양성), 발화 속도, 대명사 비율 계산 로직 구현
-3. **PDF 실제 생성** — `clinical_report_generator.dart`에 pdf 패키지 연결
-4. **FINGER 생활 습관 기록** — 수면, 혈압/혈당 입력 UI 추가
-5. **이중 과제 보행** — 보행 중 인지 미션 부여 UI 및 속도 저하율 측정
-6. **소셜 봇** — 감정 일기 기반 회상 요법 챗봇 화면
-7. **training_corrupted 정리** — 레거시 파일 제거 또는 병합
+3. **PDF 실제 생성** — `clinical_report_generator.dart`에 pdf/printing 패키지 연결
+4. **Health Connect / HealthKit 데이터 연동** — health 패키지로 걸음 수·수면 실데이터 수집
+5. **FINGER 생활 습관 기록** — 수면, 혈압/혈당 입력 UI 추가
+6. **이중 과제 보행** — 보행 중 인지 미션 부여 UI 및 속도 저하율 측정
+7. **소셜 봇** — 감정 일기 기반 회상 요법 챗봇 화면
+8. **training_corrupted 정리** — 레거시 파일 제거 또는 병합
+9. **테스트 커버리지 확대** — 보행 분석·음성 평가·보호자 연계 영역 추가
 
 ---
 
