@@ -1,7 +1,8 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/user_provider.dart';
 import '../../core/settings_provider.dart';
 import 'edit_profile_screen.dart';
@@ -92,31 +93,43 @@ class ProfileScreen extends StatelessWidget {
   }
 
   Widget _buildHeader(Map<String, dynamic> user, ThemeData theme) {
-    return Row(
-      children: [
-        CircleAvatar(
-          radius: 40,
-          backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.1),
-          child: Icon(Icons.person, size: 40, color: theme.colorScheme.primary),
-        ),
-        const SizedBox(width: 20),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                user['username'] ?? '사용자',
-                style: theme.textTheme.displayLarge?.copyWith(fontSize: 24),
+    return FutureBuilder<SharedPreferences>(
+      future: SharedPreferences.getInstance(),
+      builder: (context, snapshot) {
+        final imagePath = snapshot.data?.getString('profile_image_path');
+        final hasImage = imagePath != null && File(imagePath).existsSync();
+
+        return Row(
+          children: [
+            CircleAvatar(
+              radius: 40,
+              backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.1),
+              backgroundImage: hasImage ? FileImage(File(imagePath)) : null,
+              child: hasImage
+                  ? null
+                  : Icon(Icons.person, size: 40, color: theme.colorScheme.primary),
+            ),
+            const SizedBox(width: 20),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    user['username'] ?? '사용자',
+                    style: theme.textTheme.displayLarge?.copyWith(fontSize: 24),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'ID: ${user['id']}',
+                    style: theme.textTheme.bodyMedium
+                        ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                  ),
+                ],
               ),
-              const SizedBox(height: 4),
-              Text(
-                'ID: ${user['id']}',
-                style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-              ),
-            ],
-          ),
-        ),
-      ],
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -178,35 +191,6 @@ class ProfileScreen extends StatelessWidget {
             title: const Text('글자 크기 설정'),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => _showFontSizeDialog(context),
-          ),
-          const Divider(height: 1),
-          ListTile(
-            leading: const Icon(Icons.dark_mode_outlined),
-            title: const Text('테마 설정'),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('시스템 설정에서 테마를 변경할 수 있습니다.')),
-              );
-            },
-          ),
-          const Divider(height: 1),
-          ListTile(
-            leading: const Icon(Icons.notifications_none),
-            title: const Text('알림 설정'),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () async {
-              final uri = Uri.parse('app-settings:');
-              if (await canLaunchUrl(uri)) {
-                await launchUrl(uri);
-              } else {
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('설정 앱에서 알림 권한을 변경해주세요.')),
-                  );
-                }
-              }
-            },
           ),
           const Divider(height: 1),
           SwitchListTile(

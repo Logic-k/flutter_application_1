@@ -1,17 +1,16 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'app_secrets.dart';
 
 /// Supabase 클라이언트 관리 클래스
 ///
 /// [agency-backend-architect]: 다중 사용자 확장을 위해 기존 SQLite 로직을
 /// Supabase(PostgreSQL)로 전환하는 첫 번째 단계입니다.
 class SupabaseManager {
-  static const String supabaseUrl =
-      'https://edzexhlobvxvsxzmczlv.supabase.co'; // 여기에 프로젝트 URL 입력
-  static const String supabaseAnonKey =
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVkemV4aGxvYnZ4dnN4em1jemx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5ODMyODgsImV4cCI6MjA5MDU1OTI4OH0.9Uut-FWKQxnqhrT0Nl1aruQF5nA7AXqKZGSU2Ajcn-Y'; // 여기에 Anon 키 입력
-
   static Future<void> initialize() async {
-    await Supabase.initialize(url: supabaseUrl, anonKey: supabaseAnonKey);
+    await Supabase.initialize(
+      url: AppSecrets.supabaseUrl,
+      anonKey: AppSecrets.supabaseAnonKey,
+    );
   }
 
   static SupabaseClient get client => Supabase.instance.client;

@@ -54,6 +54,9 @@ backend/**/*.key
 backend/**/*.pem
 backend/**/credentials.*
 
+# 앱 시크릿 (Supabase 키 등 — 절대 커밋하지 마세요)
+lib/core/app_secrets.dart
+
 # 빌드 로그 및 임시 파일
 build_log.txt
 build_out.txt

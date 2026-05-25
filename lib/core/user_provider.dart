@@ -86,7 +86,16 @@ class UserProvider extends ChangeNotifier {
     return false;
   }
 
-  Future<bool> register(String username, String password, String goal, int age, double weight) async {
+  Future<bool> register(
+    String username,
+    String password,
+    String goal,
+    int age,
+    double weight, {
+    String? bloodType,
+    String? medications,
+    String? emergencyContact,
+  }) async {
     try {
       await _dbHelper.insertUser({
         'username': username,
@@ -96,6 +105,10 @@ class UserProvider extends ChangeNotifier {
         'weight': weight,
         'has_completed_onboarding': 0,
         'pedometer_enabled': 0,
+        if (bloodType != null && bloodType.isNotEmpty) 'blood_type': bloodType,
+        if (medications != null && medications.isNotEmpty) 'medications': medications,
+        if (emergencyContact != null && emergencyContact.isNotEmpty)
+          'emergency_contact': emergencyContact,
       });
       return await login(username, password);
     } catch (e) {

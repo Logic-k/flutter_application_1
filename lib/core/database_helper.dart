@@ -243,6 +243,18 @@ class DatabaseHelper {
       limit: 7,
     );
   }
+
+  Future<Map<String, dynamic>?> getTodaySteps(int userId) async {
+    Database db = await database;
+    final today = DateTime.now().toIso8601String().split('T')[0];
+    final rows = await db.query(
+      'daily_steps',
+      where: 'user_id = ? AND date = ?',
+      whereArgs: [userId, today],
+      limit: 1,
+    );
+    return rows.isNotEmpty ? rows.first : null;
+  }
   Future<int> insertScore(int userId, String category, double score) async {
     Database db = await database;
     return await db.insert('training_scores', {

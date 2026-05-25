@@ -1,5 +1,9 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/user_provider.dart';
 
 class EditProfileScreen extends StatefulWidget {
@@ -18,6 +22,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   late TextEditingController _medsController;
   late TextEditingController _emergencyController;
 
+  String? _imagePath;
+
   @override
   void initState() {
     super.initState();
@@ -28,6 +34,68 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _bloodTypeController = TextEditingController(text: user.bloodType);
     _medsController = TextEditingController(text: user.medications);
     _emergencyController = TextEditingController(text: user.emergencyContact);
+    _loadImagePath();
+  }
+
+  Future<void> _loadImagePath() async {
+    final prefs = await SharedPreferences.getInstance();
+    final path = prefs.getString('profile_image_path');
+    if (path != null && File(path).existsSync()) {
+      setState(() => _imagePath = path);
+    }
+  }
+
+  Future<void> _pickImage() async {
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: const Text('갤러리에서 선택'),
+              onTap: () => Navigator.pop(ctx, ImageSource.gallery),
+            ),
+            ListTile(
+              leading: const Icon(Icons.camera_alt),
+              title: const Text('카메라로 촬영'),
+              onTap: () => Navigator.pop(ctx, ImageSource.camera),
+            ),
+            if (_imagePath != null)
+              ListTile(
+                leading: const Icon(Icons.delete_outline, color: Colors.red),
+                title: const Text('사진 제거', style: TextStyle(color: Colors.red)),
+                onTap: () => Navigator.pop(ctx, null),
+              ),
+          ],
+        ),
+      ),
+    );
+
+    if (!mounted) return;
+
+    if (source == null && _imagePath != null) {
+      // 사진 제거
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('profile_image_path');
+      setState(() => _imagePath = null);
+      return;
+    }
+    if (source == null) return;
+
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(source: source, imageQuality: 80);
+    if (picked == null || !mounted) return;
+
+    // 앱 문서 디렉토리에 복사하여 영구 저장
+    final appDir = await getApplicationDocumentsDirectory();
+    final fileName = 'profile_${DateTime.now().millisecondsSinceEpoch}.jpg';
+    final saved = await File(picked.path).copy('${appDir.path}/$fileName');
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('profile_image_path', saved.path);
+    setState(() => _imagePath = saved.path);
   }
 
   @override
@@ -44,13 +112,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Future<void> _save() async {
     if (_formKey.currentState!.validate()) {
       final userProvider = context.read<UserProvider>();
-      
-      // Update username if changed
+
       if (_nameController.text != userProvider.currentUser?['username']) {
         await userProvider.updateUsername(_nameController.text);
       }
 
-      // Update other medical info
       await userProvider.updateMedicalInfo(
         age: int.tryParse(_ageController.text),
         weight: double.tryParse(_weightController.text),
@@ -87,11 +153,51 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         child: ListView(
           padding: const EdgeInsets.all(24.0),
           children: [
+            // 프로필 이미지
+            Center(
+              child: Stack(
+                children: [
+                  CircleAvatar(
+                    radius: 52,
+                    backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.1),
+                    backgroundImage:
+                        _imagePath != null ? FileImage(File(_imagePath!)) : null,
+                    child: _imagePath == null
+                        ? Icon(Icons.person, size: 52, color: theme.colorScheme.primary)
+                        : null,
+                  ),
+                  Positioned(
+                    bottom: 0,
+                    right: 0,
+                    child: GestureDetector(
+                      onTap: _pickImage,
+                      child: Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.primary,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.camera_alt, size: 18, color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
+            Center(
+              child: TextButton(
+                onPressed: _pickImage,
+                child: const Text('프로필 사진 변경'),
+              ),
+            ),
+            const SizedBox(height: 16),
+
             _buildSectionTitle(theme, '기본 계정 정보'),
             const SizedBox(height: 16),
             _buildTextField(
               controller: _nameController,
-              label: '사용자 이름',
+              label: '이름',
               icon: Icons.person_outline,
               validator: (value) => (value == null || value.isEmpty) ? '이름을 입력해주세요' : null,
             ),
@@ -142,7 +248,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               hint: '보호자 성함 및 연락처',
             ),
             const SizedBox(height: 40),
-            
+
             FilledButton(
               onPressed: _save,
               child: const Text('수정 완료'),

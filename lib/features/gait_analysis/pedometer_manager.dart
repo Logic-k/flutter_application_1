@@ -24,7 +24,36 @@ class PedometerManager with ChangeNotifier {
   bool get isTracking => _isTracking;
 
   PedometerManager(this._userProvider) {
+    _userProvider.addListener(_onUserChanged);
     _initOnStart();
+  }
+
+  void _onUserChanged() {
+    if (_userProvider.currentUser != null) {
+      _loadTodayStepsFromDB();
+    } else {
+      _todaySteps = 0;
+      _todayCalories = 0.0;
+      _todayDistance = 0.0;
+      notifyListeners();
+    }
+  }
+
+  Future<void> _loadTodayStepsFromDB() async {
+    if (_userProvider.currentUser == null) return;
+    final userId = _userProvider.currentUser!['id'] as int;
+    final todayData = await _dbHelper.getTodaySteps(userId);
+    if (todayData != null) {
+      _todaySteps = (todayData['steps'] as num).toInt();
+      _todayCalories = (todayData['calories'] as num).toDouble();
+      _todayDistance = (todayData['distance'] as num).toDouble();
+      notifyListeners();
+    } else {
+      _todaySteps = 0;
+      _todayCalories = 0.0;
+      _todayDistance = 0.0;
+      notifyListeners();
+    }
   }
 
   Future<void> _initOnStart() async {

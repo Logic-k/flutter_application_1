@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:printing/printing.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../core/user_provider.dart';
@@ -381,10 +382,51 @@ class _ReportsScreenState extends State<ReportsScreen> {
     };
   }
 
+  Future<void> _showPreview(BuildContext context, UserProvider user) async {
+    final params = await _buildReportParams(user);
+    if (!context.mounted) return;
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => Scaffold(
+          appBar: AppBar(title: const Text('리포트 미리보기')),
+          body: PdfPreview(
+            allowPrinting: true,
+            allowSharing: true,
+            build: (format) async {
+              final file = await ClinicalReportGenerator.generateStandardReport(
+                userName: params['userName'],
+                birthDate: params['birthDate'],
+                averageSteps: params['averageSteps'],
+                gaitStability: params['gaitStability'],
+                mmseScore: params['mmseScore'],
+                gdsLevel: params['gdsLevel'],
+                dailyRoutineData:
+                    List<Map<String, dynamic>>.from(params['dailyRoutineData']),
+              );
+              return file.readAsBytes();
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildActionButtons(BuildContext context, ThemeData theme, UserProvider user) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        ElevatedButton.icon(
+          onPressed: () => _showPreview(context, user),
+          icon: const Icon(Icons.preview_outlined),
+          label: const Text('리포트 미리보기'),
+          style: ElevatedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            backgroundColor: theme.colorScheme.secondaryContainer,
+            foregroundColor: theme.colorScheme.onSecondaryContainer,
+          ),
+        ),
+        const SizedBox(height: 12),
         OutlinedButton.icon(
           onPressed: () async {
             final params = await _buildReportParams(user);
