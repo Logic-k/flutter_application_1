@@ -1,0 +1,18 @@
+appId: com.example.flutter_application_1
+---
+- launchApp:
+    clearState: true
+- waitForAnimationToEnd:
+    timeout: 3000
+- extendedWaitUntil:
+    visible: "사용자 아이디"
+    timeout: 50000
+- tapOn: "사용자 아이디"
+- inputText: "kim_minjun"
+- tapOn: "비밀번호"
+- inputText: "demo1234"
+- hideKeyboard
+- tapOn: "로그인"
+- extendedWaitUntil:
+    visible: "오늘 걸음"
+    timeout: 10000

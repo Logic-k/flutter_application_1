@@ -49,6 +49,16 @@ class ProfileScreen extends StatelessWidget {
             _buildSectionTitle(theme, '건강 정보'),
             const SizedBox(height: 12),
             _buildMedicalCard(userProvider, theme),
+            const SizedBox(height: 8),
+            Card(
+              child: ListTile(
+                leading: Icon(Icons.mic_none_outlined, color: theme.colorScheme.primary),
+                title: const Text('음성 진단'),
+                subtitle: const Text('인지 건강 초기 진단 재실행'),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.push('/voice_assessment'),
+              ),
+            ),
             const SizedBox(height: 24),
 
             // Family & Link
@@ -314,14 +324,17 @@ class ProfileScreen extends StatelessWidget {
   }
 
   Widget _buildCsCard(BuildContext context, ThemeData theme) {
-    return Card(
-      child: ListTile(
-        leading: Icon(Icons.support_agent,
-            color: theme.colorScheme.primary),
-        title: const Text('고객센터'),
-        subtitle: const Text('공지사항, FAQ, 1:1 문의'),
-        trailing: const Icon(Icons.chevron_right),
-        onTap: () => context.push('/cs_center'),
+    return Semantics(
+      identifier: 'cs_center_card',
+      child: Card(
+        child: ListTile(
+          leading: Icon(Icons.support_agent,
+              color: theme.colorScheme.primary),
+          title: const Text('고객센터'),
+          subtitle: const Text('공지사항, FAQ, 1:1 문의'),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => context.push('/cs_center'),
+        ),
       ),
     );
   }

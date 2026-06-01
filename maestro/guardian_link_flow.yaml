@@ -1,0 +1,58 @@
+appId: com.example.flutter_application_1
+---
+# 보호자 안심 연결 화면 UI 테스트
+- runFlow: helpers/login_helper.yaml
+
+# 내정보 탭 진입
+- tapOn:
+    point: "90%,93%"
+- extendedWaitUntil:
+    visible: "내 정보"
+    timeout: 5000
+
+# 보호자 안심 연결 카드까지 스크롤 (ListTile merged text)
+- scrollUntilVisible:
+    element:
+      text: "가족 및 연결"
+    direction: DOWN
+- tapOn: "보호자 안심 연결\n보호자가 활동 상태를 확인할 수 있습니다."
+- extendedWaitUntil:
+    visible: "보호자 안심 연결"
+    timeout: 5000
+
+# 상단 안내 문구 확인
+- assertVisible: "보호자님께 안심을 선물하세요"
+
+# 동기화 버튼 확인
+- assertVisible: "지금 동기화"
+
+# QR 섹션 및 안내 항목 스크롤
+- scrollUntilVisible:
+    element:
+      text: "보호자 스마트폰으로 스캔"
+    direction: DOWN
+- assertVisible: "보호자 스마트폰으로 스캔"
+
+- scrollUntilVisible:
+    element:
+      text: "오늘 걸음 수 및 주간 활동 추이"
+    direction: DOWN
+- assertVisible: "오늘 걸음 수 및 주간 활동 추이"
+- assertVisible: "인지 훈련 카테고리별 최신 점수"
+- assertVisible: "활동량 이상 감지 시 경고 알림"
+
+# 하단 버튼 확인
+- scrollUntilVisible:
+    element:
+      text: "링크 공유하기 (카톡 등)"
+    direction: DOWN
+- assertVisible: "보호자 전화"
+- assertVisible: "문자 알림"
+- assertVisible: "링크 공유하기 (카톡 등)"
+
+# 뒤로가기 → 내정보 복귀
+- back
+- extendedWaitUntil:
+    visible: "내 정보"
+    timeout: 5000
+- assertVisible: "내 정보"

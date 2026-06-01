@@ -1,0 +1,51 @@
+appId: com.example.flutter_application_1
+---
+# 회원가입 플로우 테스트
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: "사용자 아이디"
+    timeout: 20000
+
+# 회원가입 화면으로 이동
+- tapOn: "처음이신가요? 회원가입"
+- extendedWaitUntil:
+    visible: "아이디"
+    timeout: 5000
+
+# 회원가입 화면 요소 확인
+- assertVisible: "회원가입"
+- assertVisible: "아이디"
+- assertVisible: "비밀번호"
+- assertVisible: "비밀번호 확인"
+
+# 필수 정보 입력
+- tapOn: "아이디"
+- inputText: "testuser"
+- tapOn: "비밀번호"
+- inputText: "test1234"
+- tapOn: "비밀번호 확인"
+- inputText: "test1234"
+
+# 나이 / 체중 입력 (스크롤 필요)
+- scrollUntilVisible:
+    element:
+      text: "나이 (세)"
+    direction: DOWN
+- tapOn: "나이 (세)"
+- inputText: "65"
+- tapOn: "체중 (kg)"
+- inputText: "65"
+
+# 가입 완료 버튼 탭
+- scrollUntilVisible:
+    element:
+      text: "가입 완료"
+    direction: DOWN
+- tapOn: "가입 완료"
+
+# 홈 화면 진입 확인
+- extendedWaitUntil:
+    visible: "오늘 걸음"
+    timeout: 10000
+- assertVisible: "오늘 걸음"

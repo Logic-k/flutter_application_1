@@ -1,0 +1,58 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Maestro: 전체 테스트 실행",
+      "type": "shell",
+      "command": "powershell",
+      "args": ["-ExecutionPolicy", "Bypass", "-File", "${workspaceFolder}\\run_maestro_tests.ps1"],
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "new",
+        "clear": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Maestro: 단일 flow 실행",
+      "type": "shell",
+      "command": "powershell",
+      "args": [
+        "-ExecutionPolicy", "Bypass",
+        "-File", "${workspaceFolder}\\run_maestro_tests.ps1",
+        "-Flow", "${input:flowName}"
+      ],
+      "group": "test",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new",
+        "clear": true
+      },
+      "problemMatcher": []
+    }
+  ],
+  "inputs": [
+    {
+      "id": "flowName",
+      "type": "pickString",
+      "description": "실행할 flow를 선택하세요",
+      "options": [
+        "login_flow",
+        "login_fail_flow",
+        "register_flow",
+        "navigation_flow",
+        "training_hub_flow",
+        "profile_flow",
+        "cs_center_flow",
+        "reports_flow",
+        "voice_assessment_flow",
+        "social_ranking_flow",
+        "guardian_link_flow"
+      ]
+    }
+  ]
+}

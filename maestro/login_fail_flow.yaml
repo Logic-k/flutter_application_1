@@ -1,0 +1,23 @@
+appId: com.example.flutter_application_1
+---
+# 로그인 실패 케이스 테스트
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: "사용자 아이디"
+    timeout: 40000
+
+# 잘못된 비밀번호 입력
+- tapOn: "사용자 아이디"
+- inputText: "kim_minjun"
+- tapOn: "비밀번호"
+- inputText: "wrongpassword"
+- hideKeyboard
+- tapOn: "로그인"
+
+# 에러 메시지 노출 확인
+- assertVisible: "아이디 또는 비밀번호가 올바르지 않습니다."
+
+# 로그인 버튼 탭 이후 키보드가 이미 닫혀 있으므로 바로 상태 확인
+- assertNotVisible: "오늘 걸음"
+- assertVisible: "로그인"

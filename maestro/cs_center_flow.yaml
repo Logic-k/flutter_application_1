@@ -1,0 +1,62 @@
+appId: com.example.flutter_application_1
+---
+# 고객센터 전체 메뉴 탐색 테스트
+- runFlow: helpers/login_helper.yaml
+
+# 내정보 탭 (90%, 93%)
+- tapOn:
+    point: "90%,93%"
+- extendedWaitUntil:
+    visible: "내 정보"
+    timeout: 5000
+
+# 고객센터 카드까지 스크롤 (merged text 직접 타깃)
+- scrollUntilVisible:
+    element:
+      text: "고객센터\n공지사항, FAQ, 1:1 문의"
+    direction: DOWN
+- tapOn: "고객센터\n공지사항, FAQ, 1:1 문의"
+- extendedWaitUntil:
+    visible: "공지사항\n서비스 업데이트 및 안내"
+    timeout: 5000
+
+# 공지사항 진입 (AppBar 제목은 단독 텍스트)
+- tapOn: "공지사항\n서비스 업데이트 및 안내"
+- extendedWaitUntil:
+    visible: "공지사항"
+    timeout: 5000
+- assertVisible: "공지사항"
+- back
+
+# 자주 묻는 질문 진입
+- extendedWaitUntil:
+    visible: "자주 묻는 질문\n이용 중 궁금한 점 확인"
+    timeout: 5000
+- tapOn: "자주 묻는 질문\n이용 중 궁금한 점 확인"
+- extendedWaitUntil:
+    visible: "자주 묻는 질문"
+    timeout: 5000
+- assertVisible: "자주 묻는 질문"
+- back
+
+# 1:1 문의하기 진입 (AppBar: "1:1 문의하기", 입력 필드: "제목", "문의 내용")
+- extendedWaitUntil:
+    visible: "1:1 문의하기\n직접 문의 접수"
+    timeout: 5000
+- tapOn: "1:1 문의하기\n직접 문의 접수"
+- extendedWaitUntil:
+    visible: "1:1 문의하기"
+    timeout: 5000
+- assertVisible: "1:1 문의하기"
+- back
+
+# 내 문의 내역 진입
+- extendedWaitUntil:
+    visible: "내 문의 내역\n접수한 문의 및 답변 확인"
+    timeout: 5000
+- tapOn: "내 문의 내역\n접수한 문의 및 답변 확인"
+- extendedWaitUntil:
+    visible: "내 문의 내역"
+    timeout: 5000
+- assertVisible: "내 문의 내역"
+- back

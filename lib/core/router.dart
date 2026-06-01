@@ -37,15 +37,19 @@ import '../features/admin/admin_cs_management_screen.dart';
 import '../features/admin/admin_notice_edit_screen.dart';
 import '../features/admin/admin_faq_edit_screen.dart';
 import '../features/admin/admin_inquiry_detail_screen.dart';
+import '../features/reports/clinical_report_options_screen.dart';
+import '../features/voice_assessment/voice_assessment_screen.dart';
+import '../features/ai_chat/ai_chat_screen.dart';
 import 'admin_provider.dart';
 import 'user_provider.dart';
 
 GoRouter createAppRouter(
-    UserProvider userProvider, AdminProvider adminProvider) {
+  UserProvider userProvider,
+  AdminProvider adminProvider,
+) {
   return GoRouter(
     initialLocation: '/login',
-    refreshListenable:
-        Listenable.merge([userProvider, adminProvider]),
+    refreshListenable: Listenable.merge([userProvider, adminProvider]),
     redirect: (context, state) {
       final isLoggedIn = userProvider.isLoggedIn;
       final loc = state.matchedLocation;
@@ -66,14 +70,8 @@ GoRouter createAppRouter(
     },
     routes: <RouteBase>[
       // --- 일반 앱 ---
-      GoRoute(
-        path: '/',
-        builder: (context, state) => const MainNavScreen(),
-      ),
-      GoRoute(
-        path: '/login',
-        builder: (context, state) => const LoginScreen(),
-      ),
+      GoRoute(path: '/', builder: (context, state) => const MainNavScreen()),
+      GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
       GoRoute(
         path: '/register',
         builder: (context, state) => const RegisterScreen(),
@@ -97,6 +95,10 @@ GoRouter createAppRouter(
       GoRoute(
         path: '/assessment_result',
         builder: (context, state) => const AssessmentResultScreen(),
+      ),
+      GoRoute(
+        path: '/report_options',
+        builder: (context, state) => const ClinicalReportOptionsScreen(),
       ),
       GoRoute(
         path: '/training_hub',
@@ -130,10 +132,7 @@ GoRouter createAppRouter(
         path: '/game/reading',
         builder: (context, state) => const SentenceReadingGame(),
       ),
-      GoRoute(
-        path: '/gait',
-        builder: (context, state) => const GaitScreen(),
-      ),
+      GoRoute(path: '/gait', builder: (context, state) => const GaitScreen()),
       GoRoute(
         path: '/precise_gait_analysis',
         builder: (context, state) => const PreciseGaitAnalysisScreen(),
@@ -145,6 +144,14 @@ GoRouter createAppRouter(
       GoRoute(
         path: '/guardian_link',
         builder: (context, state) => const GuardianLinkScreen(),
+      ),
+      GoRoute(
+        path: '/voice_assessment',
+        builder: (context, state) => const VoiceAssessmentScreen(),
+      ),
+      GoRoute(
+        path: '/ai_chat',
+        builder: (context, state) => const AiChatScreen(),
       ),
       GoRoute(
         path: '/walking_dashboard',
@@ -171,14 +178,11 @@ GoRouter createAppRouter(
       GoRoute(
         path: '/cs/notice_detail/:id',
         builder: (context, state) {
-          final id = int.tryParse(state.pathParameters['id'] ?? '') ?? 0;
+          final id = state.pathParameters['id'] ?? '';
           return NoticeDetailScreen(noticeId: id);
         },
       ),
-      GoRoute(
-        path: '/cs/faq',
-        builder: (context, state) => const FaqScreen(),
-      ),
+      GoRoute(path: '/cs/faq', builder: (context, state) => const FaqScreen()),
       GoRoute(
         path: '/cs/inquiry_submit',
         builder: (context, state) => const InquirySubmitScreen(),
@@ -190,7 +194,7 @@ GoRouter createAppRouter(
       GoRoute(
         path: '/cs/inquiry_detail/:id',
         builder: (context, state) {
-          final id = int.tryParse(state.pathParameters['id'] ?? '') ?? 0;
+          final id = state.pathParameters['id'] ?? '';
           return InquiryDetailScreen(inquiryId: id);
         },
       ),
@@ -207,8 +211,7 @@ GoRouter createAppRouter(
       GoRoute(
         path: '/admin/user_detail/:userId',
         builder: (context, state) {
-          final id =
-              int.tryParse(state.pathParameters['userId'] ?? '') ?? 0;
+          final id = int.tryParse(state.pathParameters['userId'] ?? '') ?? 0;
           return AdminUserDetailScreen(userId: id);
         },
       ),
@@ -222,7 +225,7 @@ GoRouter createAppRouter(
           final extra = state.extra as Map<String, dynamic>?;
           final id = extra?['id'];
           return AdminNoticeEditScreen(
-            id: id != null ? int.tryParse(id.toString()) : null,
+            id: id?.toString(),
             initialTitle: extra?['title'] as String?,
             initialBody: extra?['body'] as String?,
             initialPinned: extra?['is_pinned'] == true,
@@ -235,7 +238,7 @@ GoRouter createAppRouter(
           final extra = state.extra as Map<String, dynamic>?;
           final id = extra?['id'];
           return AdminFaqEditScreen(
-            id: id != null ? int.tryParse(id.toString()) : null,
+            id: id?.toString(),
             initialCategory: extra?['category'] as String?,
             initialQuestion: extra?['question'] as String?,
             initialAnswer: extra?['answer'] as String?,
@@ -245,7 +248,7 @@ GoRouter createAppRouter(
       GoRoute(
         path: '/admin/inquiry_detail/:id',
         builder: (context, state) {
-          final id = int.tryParse(state.pathParameters['id'] ?? '') ?? 0;
+          final id = state.pathParameters['id'] ?? '';
           return AdminInquiryDetailScreen(inquiryId: id);
         },
       ),

@@ -1,0 +1,35 @@
+appId: com.example.flutter_application_1
+---
+# 음성 진단 화면 UI 테스트
+- runFlow: helpers/login_helper.yaml
+
+# 내정보 탭 진입
+- tapOn:
+    point: "90%,93%"
+- extendedWaitUntil:
+    visible: "내 정보"
+    timeout: 5000
+
+# 건강 정보 섹션 아래 음성 진단 카드까지 스크롤
+- scrollUntilVisible:
+    element:
+      text: "음성 진단\n인지 건강 초기 진단 재실행"
+    direction: DOWN
+- tapOn: "음성 진단\n인지 건강 초기 진단 재실행"
+- extendedWaitUntil:
+    visible: "초기 음성 진단"
+    timeout: 5000
+
+# 화면 구성 요소 확인
+- assertVisible: "초기 음성 진단"
+- assertVisible: "녹음 시작하기"
+
+# STT 초기화 결과에 따른 힌트 문구 확인 (에뮬레이터 STT 활성화 시)
+- assertVisible: "아래 버튼을 눌러 시작하세요"
+
+# 뒤로가기 → 내정보 복귀
+- back
+- extendedWaitUntil:
+    visible: "내 정보"
+    timeout: 5000
+- assertVisible: "내 정보"

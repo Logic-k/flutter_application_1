@@ -105,7 +105,7 @@ class DatabaseHelper {
       )
     ''');
 
-    // Create default 'admin' account for testing
+    // admin 계정 (자동화 테스트용)
     await db.insert('users', {
       'username': 'admin',
       'password': 'admin',
@@ -115,6 +115,125 @@ class DatabaseHelper {
       'has_completed_onboarding': 1,
       'pedometer_enabled': 1,
     });
+
+    // 데모 계정 시드
+    await _seedDemoAccounts(db);
+  }
+
+  Future<void> _seedDemoAccounts(Database db) async {
+    final now = DateTime.now();
+
+    // ── 계정 1: 김민준 (건강한 사람 — 치매 예방 우수) ──────────────────
+    final int minjunId = await db.insert('users', {
+      'username': 'kim_minjun',
+      'password': 'demo1234',
+      'goal': 'prevention',
+      'age': 68,
+      'weight': 63.0,
+      'blood_type': 'A',
+      'medications': '없음',
+      'emergency_contact': '010-1234-5678',
+      'has_completed_onboarding': 1,
+      'pedometer_enabled': 1,
+    });
+
+    // 7일치 훈련 점수 — 전반적으로 높음 (80~92점)
+    const minjunScores = [
+      [82.0, 78.0, 81.0, 75.0],
+      [83.0, 79.0, 82.0, 76.0],
+      [87.0, 84.0, 86.0, 81.0],
+      [84.0, 81.0, 83.0, 78.0],
+      [90.0, 87.0, 89.0, 84.0],
+      [86.0, 83.0, 85.0, 80.0],
+      [88.0, 85.0, 87.0, 82.0],
+    ];
+    for (int i = 0; i < 7; i++) {
+      final date = now.subtract(Duration(days: 6 - i));
+      final dateStr = date.toIso8601String().replaceFirst(
+          RegExp(r'T.*'), 'T10:${(i * 7).toString().padLeft(2, '0')}:00.000');
+      final cats = ['memory', 'calculation', 'logic', 'attention'];
+      for (int c = 0; c < 4; c++) {
+        await db.insert('training_scores', {
+          'user_id': minjunId,
+          'category': cats[c],
+          'score': minjunScores[i][c],
+          'created_at': dateStr,
+        });
+      }
+    }
+
+    // 7일치 걷기 — 건강한 수준 (7000~9500보)
+    const minjunSteps = [6900, 8500, 7800, 9200, 7200, 8700, 9100];
+    for (int i = 0; i < 7; i++) {
+      final dateStr = now
+          .subtract(Duration(days: 6 - i))
+          .toIso8601String()
+          .split('T')[0];
+      final steps = minjunSteps[i];
+      await db.insert('daily_steps', {
+        'user_id': minjunId,
+        'steps': steps,
+        'calories': (steps * 0.04).roundToDouble(),
+        'distance': (steps * 0.0008).roundToDouble(),
+        'date': dateStr,
+      });
+    }
+
+    // ── 계정 2: 박순자 (위험한 사람 — 치매 위험 경고) ─────────────────
+    final int sonjaId = await db.insert('users', {
+      'username': 'park_sonja',
+      'password': 'demo1234',
+      'goal': 'concern',
+      'age': 76,
+      'weight': 56.0,
+      'blood_type': 'B',
+      'medications': '혈압약, 수면제',
+      'emergency_contact': '010-9876-5432',
+      'has_completed_onboarding': 1,
+      'pedometer_enabled': 1,
+    });
+
+    // 7일치 훈련 점수 — 전반적으로 매우 낮음 (18~35점)
+    const sonjaScores = [
+      [28.0, 33.0, 23.0, 26.0],
+      [20.0, 25.0, 15.0, 20.0],
+      [26.0, 31.0, 21.0, 25.0],
+      [23.0, 28.0, 18.0, 22.0],
+      [30.0, 34.0, 24.0, 29.0],
+      [25.0, 29.0, 19.0, 24.0],
+      [28.0, 32.0, 22.0, 27.0],
+    ];
+    for (int i = 0; i < 7; i++) {
+      final date = now.subtract(Duration(days: 6 - i));
+      final dateStr = date.toIso8601String().replaceFirst(
+          RegExp(r'T.*'), 'T14:${(i * 5).toString().padLeft(2, '0')}:00.000');
+      final cats = ['memory', 'calculation', 'logic', 'attention'];
+      for (int c = 0; c < 4; c++) {
+        await db.insert('training_scores', {
+          'user_id': sonjaId,
+          'category': cats[c],
+          'score': sonjaScores[i][c],
+          'created_at': dateStr,
+        });
+      }
+    }
+
+    // 7일치 걷기 — 매우 적음 (600~1500보)
+    const sonjaSteps = [950, 600, 1100, 800, 1500, 900, 1200];
+    for (int i = 0; i < 7; i++) {
+      final dateStr = now
+          .subtract(Duration(days: 6 - i))
+          .toIso8601String()
+          .split('T')[0];
+      final steps = sonjaSteps[i];
+      await db.insert('daily_steps', {
+        'user_id': sonjaId,
+        'steps': steps,
+        'calories': (steps * 0.04).roundToDouble(),
+        'distance': (steps * 0.0008).roundToDouble(),
+        'date': dateStr,
+      });
+    }
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
@@ -267,13 +386,14 @@ class DatabaseHelper {
 
   Future<List<Map<String, dynamic>>> getLatestScores(int userId) async {
     Database db = await database;
-    // Get the latest score for each category
     return await db.rawQuery('''
-      SELECT category, score 
-      FROM training_scores 
-      WHERE user_id = ? 
-      AND id IN (SELECT MAX(id) FROM training_scores GROUP BY category)
-    ''', [userId]);
+      SELECT category, score
+      FROM training_scores
+      WHERE user_id = ?
+      AND id IN (
+        SELECT MAX(id) FROM training_scores WHERE user_id = ? GROUP BY category
+      )
+    ''', [userId, userId]);
   }
 
   Future<List<Map<String, dynamic>>> getScoreHistory(int userId) async {
@@ -417,5 +537,35 @@ class DatabaseHelper {
 
   Future<List<Map<String, dynamic>>> getScoreHistoryForUser(int userId) async {
     return getScoreHistory(userId);
+  }
+
+  /// 날짜별로 묶인 세션 히스토리 반환 (임상 리포트 추이 차트용)
+  /// 반환 형식: [{dateString: {category: avgScore}}, ...]  (오름차순, 최대 8세션)
+  Future<List<Map<String, Map<String, double>>>> getScoreHistoryGroupedBySession(
+      int userId) async {
+    final db = await database;
+    final rows = await db.rawQuery('''
+      SELECT date(created_at) AS session_date, category, AVG(score) AS avg_score
+      FROM training_scores
+      WHERE user_id = ?
+      GROUP BY session_date, category
+      ORDER BY session_date ASC
+    ''', [userId]);
+
+    // group by session_date
+    final Map<String, Map<String, double>> grouped = {};
+    for (final row in rows) {
+      final date = row['session_date'] as String;
+      final category = row['category'] as String;
+      final score = (row['avg_score'] as num).toDouble();
+      grouped.putIfAbsent(date, () => {})[category] = score;
+    }
+
+    final sortedKeys = grouped.keys.toList()..sort();
+    final recent = sortedKeys.length > 8
+        ? sortedKeys.sublist(sortedKeys.length - 8)
+        : sortedKeys;
+
+    return recent.map((k) => {k: grouped[k]!}).toList();
   }
 }

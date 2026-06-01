@@ -1,0 +1,41 @@
+appId: com.example.flutter_application_1
+---
+# 인지훈련 허브 및 게임 진입 테스트
+- runFlow: helpers/login_helper.yaml
+
+# 인지훈련 탭 (30%, 93%)
+- tapOn:
+    point: "30%,93%"
+- extendedWaitUntil:
+    visible: "두뇌 트레이닝 센터"
+    timeout: 5000
+
+# 훈련 화면 및 카테고리 타이틀 확인
+- assertVisible: "두뇌 트레이닝 센터"
+- assertVisible: "계산 및 판단력"
+
+# 스크롤하며 나머지 카테고리 확인
+- scrollUntilVisible:
+    element:
+      text: "논리 및 추론"
+    direction: DOWN
+- assertVisible: "논리 및 추론"
+
+- scrollUntilVisible:
+    element:
+      text: "기억 및 지각"
+    direction: DOWN
+- assertVisible: "기억 및 지각"
+
+- scrollUntilVisible:
+    element:
+      text: "스마트 케어"
+    direction: DOWN
+- assertVisible: "스마트 케어"
+
+# 위로 스크롤 후 뒤로가기
+- scrollUntilVisible:
+    element:
+      text: "두뇌 트레이닝 센터"
+    direction: UP
+- assertVisible: "두뇌 트레이닝 센터"

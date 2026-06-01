@@ -1,0 +1,34 @@
+appId: com.example.flutter_application_1
+---
+# 1. 앱 실행 (상태 초기화)
+- launchApp:
+    clearState: true
+
+# 2. 앱 초기화 대기 (로그인 화면 TextField 등장까지)
+- extendedWaitUntil:
+    visible: "사용자 아이디"
+    timeout: 40000
+
+# 3. 로그인 화면 요소 확인
+- assertVisible: "사용자 아이디"
+- assertVisible: "비밀번호"
+- assertVisible: "로그인"
+
+# 3. 아이디 입력
+- tapOn: "사용자 아이디"
+- inputText: "kim_minjun"
+
+# 4. 비밀번호 입력
+- hideKeyboard
+- tapOn: "비밀번호"
+- inputText: "demo1234"
+
+# 5. 로그인 버튼 탭
+- hideKeyboard
+- tapOn: "로그인"
+
+# 6. 로그인 성공 확인 (홈 화면 진입 대기 후 확인)
+- extendedWaitUntil:
+    visible: "오늘 걸음"
+    timeout: 10000
+- assertVisible: "오늘 걸음"

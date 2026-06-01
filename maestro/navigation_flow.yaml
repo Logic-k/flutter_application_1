@@ -1,0 +1,48 @@
+appId: com.example.flutter_application_1
+---
+# 하단 네비게이션 탭 전환 테스트
+# 탭 좌표 (1080x2400 기준): 인지훈련=30%, 생활습관=50%, 리포트=70%, 내정보=90%, 홈=10% / y=93%
+- runFlow: helpers/login_helper.yaml
+
+# 홈 탭 확인 (기본)
+- assertVisible: "오늘 걸음"
+
+# 인지훈련 탭
+- tapOn:
+    point: "30%,93%"
+- extendedWaitUntil:
+    visible: "두뇌 트레이닝 센터"
+    timeout: 5000
+- assertVisible: "두뇌 트레이닝 센터"
+
+# 생활습관 탭
+- tapOn:
+    point: "50%,93%"
+- extendedWaitUntil:
+    visible: "생활습관"
+    timeout: 5000
+- assertVisible: "생활습관"
+
+# 리포트 탭
+- tapOn:
+    point: "70%,93%"
+- extendedWaitUntil:
+    visible: "주간 분석 리포트"
+    timeout: 8000
+- assertVisible: "주간 분석 리포트"
+
+# 내정보 탭
+- tapOn:
+    point: "90%,93%"
+- extendedWaitUntil:
+    visible: "내 정보"
+    timeout: 5000
+- assertVisible: "내 정보"
+
+# 홈 탭으로 복귀
+- tapOn:
+    point: "10%,93%"
+- extendedWaitUntil:
+    visible: "오늘 걸음"
+    timeout: 5000
+- assertVisible: "오늘 걸음"
