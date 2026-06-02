@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
+import '../../core/local_ai_service.dart';
 
 class VoiceAssessmentScreen extends StatefulWidget {
   const VoiceAssessmentScreen({super.key});
@@ -97,10 +98,10 @@ class _VoiceAssessmentScreenState extends State<VoiceAssessmentScreen>
     });
 
     await Future.delayed(const Duration(milliseconds: 800));
-    _analyzeText();
+    await _analyzeText();
   }
 
-  void _analyzeText() {
+  Future<void> _analyzeText() async {
     final text = _recognizedText.trim();
     final duration = _startTime != null
         ? DateTime.now().difference(_startTime!).inSeconds
@@ -118,25 +119,34 @@ class _VoiceAssessmentScreenState extends State<VoiceAssessmentScreen>
     final words = text.split(RegExp(r'\s+')).where((w) => w.isNotEmpty).toList();
     final totalWords = words.length;
     final uniqueWords = words.map((w) => w.toLowerCase()).toSet().length;
-
     final ttr = totalWords > 0 ? uniqueWords / totalWords : 0.0;
     final wordsPerMin = duration > 0 ? (totalWords / duration) * 60 : 0.0;
 
-    // 점수 산출 (0~100)
-    double ttrScore = (ttr * 100).clamp(0, 40).toDouble(); // 최대 40점
-    double speedScore = 0.0;
-    if (wordsPerMin >= 60 && wordsPerMin <= 180) {
-      speedScore = 30.0; // 적정 속도 (60~180 wpm)
-    } else if (wordsPerMin > 30 && wordsPerMin < 60) {
-      speedScore = 20.0;
-    } else if (wordsPerMin > 180) {
-      speedScore = 15.0;
-    } else {
-      speedScore = 10.0;
+    // LocalAIService를 통한 분석 (실패 시 규칙 기반 fallback)
+    Map<String, dynamic>? aiResult;
+    try {
+      aiResult = await LocalAIService().analyzeText(
+        text: text,
+        ttr: ttr,
+        wpm: wordsPerMin,
+        totalWords: totalWords,
+        durationSeconds: duration,
+      );
+    } catch (_) {
+      aiResult = null;
     }
-    double volumeScore = (totalWords >= 30 ? 30.0 : totalWords.toDouble()).clamp(0, 30);
 
-    _analysisScore = (ttrScore + speedScore + volumeScore).clamp(0, 100);
+    if (aiResult != null) {
+      _analysisScore = (aiResult['cognitive_score'] as double).clamp(0, 100);
+    } else {
+      // fallback: 기존 규칙 기반 계산
+      double ttrScore = (ttr * 100).clamp(0, 40).toDouble();
+      double speedScore = (wordsPerMin >= 60 && wordsPerMin <= 180)
+          ? 30.0
+          : (wordsPerMin > 30 ? 20.0 : 10.0);
+      double volumeScore = (totalWords >= 30 ? 30.0 : totalWords.toDouble()).clamp(0, 30);
+      _analysisScore = (ttrScore + speedScore + volumeScore).clamp(0, 100);
+    }
 
     String assessment;
     String detail;
@@ -151,14 +161,18 @@ class _VoiceAssessmentScreenState extends State<VoiceAssessmentScreen>
       detail = '좀 더 긴 문장으로 다양한 어휘를 사용해 보세요.';
     }
 
-    setState(() {
-      _isAnalyzing = false;
-      _result = '$assessment\n\n'
-          '• 총 발화 단어: $totalWords개\n'
-          '• 어휘 다양성(TTR): ${(ttr * 100).toStringAsFixed(1)}%\n'
-          '• 발화 속도: ${wordsPerMin.toStringAsFixed(0)} 단어/분\n\n'
-          '$detail';
-    });
+    final String analysisDetail = aiResult != null
+        ? (aiResult['analysis'] as String? ?? '')
+        : '• 어휘 다양성(TTR): ${(ttr * 100).toStringAsFixed(1)}%\n'
+          '• 발화 속도: ${wordsPerMin.toStringAsFixed(0)} 단어/분\n'
+          '• 총 발화 단어: $totalWords개';
+
+    if (mounted) {
+      setState(() {
+        _isAnalyzing = false;
+        _result = '$assessment\n\n$analysisDetail\n\n$detail';
+      });
+    }
   }
 
   void _finishOnboarding() async {

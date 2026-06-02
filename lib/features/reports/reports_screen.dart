@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:printing/printing.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:share_plus/share_plus.dart';
 import '../../core/user_provider.dart';
 import '../../core/database_helper.dart';
 import 'widgets/social_ranking_view.dart';
-import 'clinical_report_generator.dart';
 import 'report_analyzer.dart';
 import '../gait_analysis/pedometer_manager.dart';
 
@@ -331,83 +329,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
         children: [
           Icon(Icons.check_circle_outline, size: 16, color: theme.primaryColor),
           const SizedBox(width: 8),
-          Text(text, style: const TextStyle(fontSize: 14)),
+          Expanded(child: Text(text, style: const TextStyle(fontSize: 14))),
         ],
-      ),
-    );
-  }
-
-  /// 실제 DB 데이터를 기반으로 리포트 파라미터를 구성합니다.
-  Future<Map<String, dynamic>> _buildReportParams(UserProvider user) async {
-    final pedometer = context.read<PedometerManager>();
-    final weeklySteps = await _dbHelper.getWeeklySteps(
-        user.currentUser?['id'] ?? 0);
-
-    final avgSteps = weeklySteps.isNotEmpty
-        ? weeklySteps
-                .map((e) => (e['steps'] as num).toDouble())
-                .reduce((a, b) => a + b) /
-            weeklySteps.length
-        : pedometer.todaySteps.toDouble();
-
-    final age = user.age ?? 65;
-    final birthYear = DateTime.now().year - age;
-    final birthDate = '$birthYear-01-01';
-
-    final avgScore = (user.calculationScore + user.logicScore +
-            user.memoryScore + user.attentionScore) /
-        4.0;
-    final mmseScore = (avgScore / 100.0 * 30).clamp(0, 30).toInt();
-    final gdsLevel = avgScore >= 70 ? 0 : (avgScore >= 40 ? 1 : 2);
-
-    final dailyData = weeklySteps.map((e) {
-      final steps = (e['steps'] as num).toInt();
-      return {
-        'date': e['date'] ?? '',
-        'steps': steps,
-        'duration': (steps * 0.5 / 60).toInt(),
-        'training_score': avgScore.toInt(),
-        'achievement': (steps / 10000 * 100).clamp(0, 100).toInt(),
-      };
-    }).toList();
-
-    return {
-      'userName': user.currentUser?['username'] ?? '사용자',
-      'birthDate': birthDate,
-      'averageSteps': avgSteps.toInt(),
-      'gaitStability': (avgScore / 100.0).clamp(0.0, 1.0),
-      'mmseScore': mmseScore,
-      'gdsLevel': gdsLevel,
-      'dailyRoutineData': dailyData,
-    };
-  }
-
-  Future<void> _showPreview(BuildContext context, UserProvider user) async {
-    final params = await _buildReportParams(user);
-    if (!context.mounted) return;
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => Scaffold(
-          appBar: AppBar(title: const Text('리포트 미리보기')),
-          body: PdfPreview(
-            allowPrinting: true,
-            allowSharing: true,
-            build: (format) async {
-              final file = await ClinicalReportGenerator.generateStandardReport(
-                userName: params['userName'],
-                birthDate: params['birthDate'],
-                averageSteps: params['averageSteps'],
-                gaitStability: params['gaitStability'],
-                mmseScore: params['mmseScore'],
-                gdsLevel: params['gdsLevel'],
-                dailyRoutineData:
-                    List<Map<String, dynamic>>.from(params['dailyRoutineData']),
-              );
-              return file.readAsBytes();
-            },
-          ),
-        ),
       ),
     );
   }
@@ -416,66 +339,21 @@ class _ReportsScreenState extends State<ReportsScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        ElevatedButton.icon(
-          onPressed: () => _showPreview(context, user),
-          icon: const Icon(Icons.preview_outlined),
-          label: const Text('리포트 미리보기'),
-          style: ElevatedButton.styleFrom(
+        FilledButton.icon(
+          onPressed: () => context.push('/report_options'),
+          icon: const Icon(Icons.description_outlined),
+          label: const Text('임상 리포트 생성하기'),
+          style: FilledButton.styleFrom(
             padding: const EdgeInsets.symmetric(vertical: 16),
-            backgroundColor: theme.colorScheme.secondaryContainer,
-            foregroundColor: theme.colorScheme.onSecondaryContainer,
           ),
         ),
-        const SizedBox(height: 12),
-        OutlinedButton.icon(
-          onPressed: () async {
-            final params = await _buildReportParams(user);
-            final file = await ClinicalReportGenerator.generateStandardReport(
-              userName: params['userName'],
-              birthDate: params['birthDate'],
-              averageSteps: params['averageSteps'],
-              gaitStability: params['gaitStability'],
-              mmseScore: params['mmseScore'],
-              gdsLevel: params['gdsLevel'],
-              dailyRoutineData: List<Map<String, dynamic>>.from(
-                  params['dailyRoutineData']),
-            );
-
-            if (!context.mounted) return;
-            await Share.shareXFiles(
-              [XFile(file.path)],
-              text: 'MemoryLink AI 분석 리포트입니다.',
-            );
-          },
-          icon: const Icon(Icons.share),
-          label: const Text('보호자에게 리포트 공유하기'),
-          style: OutlinedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 16)),
-        ),
-        const SizedBox(height: 12),
-        ElevatedButton.icon(
-          onPressed: () async {
-            final params = await _buildReportParams(user);
-            await ClinicalReportGenerator.generateStandardReport(
-              userName: params['userName'],
-              birthDate: params['birthDate'],
-              averageSteps: params['averageSteps'],
-              gaitStability: params['gaitStability'],
-              mmseScore: params['mmseScore'],
-              gdsLevel: params['gdsLevel'],
-              dailyRoutineData: List<Map<String, dynamic>>.from(
-                  params['dailyRoutineData']),
-            );
-
-            if (!context.mounted) return;
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('표준 리포트 PDF 파일이 생성되었습니다.')),
-            );
-          },
-          icon: const Icon(Icons.picture_as_pdf),
-          label: const Text('상담용 표준 리포트(PDF) 저장'),
-          style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 16)),
+        const SizedBox(height: 8),
+        Text(
+          '의료진용 또는 보호자용 PDF 리포트를 생성하여 상담 시 활용하세요.',
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+          textAlign: TextAlign.center,
         ),
       ],
     );

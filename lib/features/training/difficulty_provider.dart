@@ -1,7 +1,7 @@
 import 'dart:math';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../core/supabase_client.dart';
+import '../../core/firebase_service.dart';
 
 enum GameCategory {
   calculation, // 계산 (누가 큰가요, 구구단)
@@ -12,8 +12,7 @@ enum GameCategory {
 
 class DifficultyProvider extends ChangeNotifier {
   final String username;
-  late final SupabaseClient _supabase;
-  
+
   // 게임 카테고리별 현재 난이도 (1 ~ 10)
   final Map<GameCategory, int> _levels = {
     GameCategory.calculation: 1,
@@ -21,7 +20,7 @@ class DifficultyProvider extends ChangeNotifier {
     GameCategory.memory: 1,
     GameCategory.perception: 1,
   };
-  
+
   // 최근 수행 데이터 (난이도 조절용)
   final Map<GameCategory, List<bool>> _recentResults = {
     GameCategory.calculation: [],
@@ -38,37 +37,35 @@ class DifficultyProvider extends ChangeNotifier {
     GameCategory.perception: [],
   };
 
-  DifficultyProvider({required this.username, SupabaseClient? supabase}) {
-    _supabase = supabase ?? SupabaseManager.client;
-  }
+  DifficultyProvider({required this.username});
 
   int getLevel(GameCategory category) => _levels[category] ?? 1;
 
   /// 권장 반응 시간 (초) - 레벨이 높을수록 짧아짐
   double getTargetTime(GameCategory category) {
     int level = getLevel(category);
-    // 베이스 5초에서 레벨당 0.3초씩 단축 (최소 2초)
     return max(2.0, 5.0 - (level * 0.3));
   }
 
-  /// Supabase에서 초기 난이도 데이터를 불러옵니다.
+  /// Firestore에서 초기 난이도 데이터를 불러옵니다.
   Future<void> loadLevels() async {
+    if (username.isEmpty) return;
     try {
-      final response = await _supabase
-          .from('training_difficulty')
-          .select()
-          .eq('username', username)
-          .maybeSingle();
+      final doc = await FirebaseService.db
+          .collection('training_difficulty')
+          .doc(username)
+          .get();
 
-      if (response != null) {
-        _levels[GameCategory.calculation] = response['calculation_level'] ?? 1;
-        _levels[GameCategory.logic] = response['logic_level'] ?? 1;
-        _levels[GameCategory.memory] = response['memory_level'] ?? 1;
-        _levels[GameCategory.perception] = response['perception_level'] ?? 1;
+      if (doc.exists) {
+        final data = doc.data()!;
+        _levels[GameCategory.calculation] = data['calculation_level'] as int? ?? 1;
+        _levels[GameCategory.logic] = data['logic_level'] as int? ?? 1;
+        _levels[GameCategory.memory] = data['memory_level'] as int? ?? 1;
+        _levels[GameCategory.perception] = data['perception_level'] as int? ?? 1;
         notifyListeners();
       }
     } catch (e) {
-      debugPrint('Error loading levels from Supabase: $e');
+      debugPrint('Error loading levels from Firestore: $e');
     }
   }
 
@@ -84,10 +81,7 @@ class DifficultyProvider extends ChangeNotifier {
     if (times.length > 5) times.removeAt(0);
 
     int currentLevel = _levels[category]!;
-    
-    // 난이도 상승 로직: 
-    // 1. 최근 3회 연속 정답 AND 
-    // 2. 평균 반응 시간이 권장 시간 이내일 때
+
     bool isConsecutiveCorrect = results.length >= 3 && results.sublist(results.length - 3).every((res) => res);
     double avgTime = times.isEmpty ? 0 : times.reduce((a, b) => a + b) / times.length;
     double targetTime = getTargetTime(category);
@@ -97,35 +91,36 @@ class DifficultyProvider extends ChangeNotifier {
         _levels[category] = currentLevel + 1;
         results.clear();
         times.clear();
-        await _syncToSupabase();
+        await _syncToFirestore();
       }
-    } 
-    // 난이도 하락 로직: 최근 2회 연속 오답 시 레벨 다운
-    else if (results.length >= 2 && results.sublist(results.length - 2).every((res) => !res)) {
+    } else if (results.length >= 2 && results.sublist(results.length - 2).every((res) => !res)) {
       if (currentLevel > 1) {
         _levels[category] = currentLevel - 1;
         results.clear();
         times.clear();
-        await _syncToSupabase();
+        await _syncToFirestore();
       }
     }
 
     notifyListeners();
   }
 
-  /// Supabase에 현재 난이도 상태를 upsert 합니다.
-  Future<void> _syncToSupabase() async {
+  /// Firestore에 현재 난이도 상태를 저장합니다.
+  Future<void> _syncToFirestore() async {
+    if (username.isEmpty) return;
     try {
-      await _supabase.from('training_difficulty').upsert({
-        'username': username,
+      await FirebaseService.db
+          .collection('training_difficulty')
+          .doc(username)
+          .set({
         'calculation_level': _levels[GameCategory.calculation],
         'logic_level': _levels[GameCategory.logic],
         'memory_level': _levels[GameCategory.memory],
         'perception_level': _levels[GameCategory.perception],
-        'updated_at': DateTime.now().toIso8601String(),
-      });
+        'updated_at': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
     } catch (e) {
-      debugPrint('Error syncing levels to Supabase: $e');
+      debugPrint('Error syncing levels to Firestore: $e');
     }
   }
 }

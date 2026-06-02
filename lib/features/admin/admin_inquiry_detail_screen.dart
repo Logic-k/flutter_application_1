@@ -3,7 +3,7 @@ import 'package:intl/intl.dart';
 import '../../core/cs_service.dart';
 
 class AdminInquiryDetailScreen extends StatefulWidget {
-  final int inquiryId;
+  final String inquiryId;
   const AdminInquiryDetailScreen({super.key, required this.inquiryId});
 
   @override

@@ -1,7 +1,8 @@
 import 'dart:math' as math;
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-class SocialRankingView extends StatelessWidget {
+class SocialRankingView extends StatefulWidget {
   final double userScore;
   final String categoryName;
 
@@ -12,20 +13,70 @@ class SocialRankingView extends StatelessWidget {
   });
 
   @override
+  State<SocialRankingView> createState() => _SocialRankingViewState();
+}
+
+class _SocialRankingViewState extends State<SocialRankingView> {
+  // 기본값: 학술 자료 기반 60~70대 추정값
+  double _avgScore = 65.0;
+  double _stdDev = 15.0;
+  bool _loaded = false;
+
+  static const _categoryKeyMap = {
+    '기억력': 'memory',
+    '계산력': 'calculation',
+    '논리력': 'logic',
+    '집중력': 'attention',
+  };
+
+  @override
+  void initState() {
+    super.initState();
+    _loadGlobalStats();
+  }
+
+  Future<void> _loadGlobalStats() async {
+    try {
+      final snap = await FirebaseFirestore.instance
+          .collection('global_stats')
+          .doc('score_stats')
+          .get();
+
+      if (!snap.exists || !mounted) return;
+
+      final data = snap.data()!;
+      final firestoreKey = _categoryKeyMap[widget.categoryName];
+      final catStats = data['category_stats'] as Map<String, dynamic>?;
+
+      double avg = (data['avg_score'] as num?)?.toDouble() ?? 65.0;
+      double std = (data['std_dev'] as num?)?.toDouble() ?? 15.0;
+
+      if (firestoreKey != null && catStats != null && catStats.containsKey(firestoreKey)) {
+        final cat = catStats[firestoreKey] as Map<String, dynamic>;
+        avg = (cat['avg'] as num?)?.toDouble() ?? avg;
+        std = (cat['std_dev'] as num?)?.toDouble() ?? std;
+      }
+
+      setState(() {
+        _avgScore = avg;
+        _stdDev = std.clamp(1.0, 30.0);
+        _loaded = true;
+      });
+    } catch (_) {
+      // 로드 실패 시 기본값(65.0 / 15.0) 유지
+      if (mounted) setState(() => _loaded = true);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    // 60~70대 평균 기준 (학술 자료 기반 추정값)
-    const double avgScore = 65.0;
-    const double stdDev = 15.0;
-
-    // 정규 분포 근사 백분위 계산
-    final double z = (userScore - avgScore) / stdDev;
-    int percentile = _zToPercentile(z).clamp(1, 99);
-
-    final bool aboveAverage = userScore >= avgScore;
-    final double barPosition = (userScore / 100.0).clamp(0.0, 1.0);
-    final double avgBarPosition = avgScore / 100.0;
+    final double z = (widget.userScore - _avgScore) / _stdDev;
+    final int percentile = _zToPercentile(z).clamp(1, 99);
+    final bool aboveAverage = widget.userScore >= _avgScore;
+    final double barPosition = (widget.userScore / 100.0).clamp(0.0, 1.0);
+    final double avgBarPosition = (_avgScore / 100.0).clamp(0.0, 1.0);
 
     return Container(
       padding: const EdgeInsets.all(24),
@@ -37,9 +88,21 @@ class SocialRankingView extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            '인구 통계학적 비교 ($categoryName)',
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  '인구 통계학적 비교 (${widget.categoryName})',
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+              ),
+              if (!_loaded)
+                const SizedBox(
+                  width: 14,
+                  height: 14,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+            ],
           ),
           const SizedBox(height: 8),
           Text(
@@ -49,7 +112,6 @@ class SocialRankingView extends StatelessWidget {
           ),
           const SizedBox(height: 32),
 
-          // LayoutBuilder로 실제 너비를 기반으로 마커 위치 계산
           LayoutBuilder(
             builder: (context, constraints) {
               final totalWidth = constraints.maxWidth;
@@ -102,7 +164,7 @@ class SocialRankingView extends StatelessWidget {
                             ],
                           ),
                           child: Text(
-                            '${userScore.toStringAsFixed(0)}점',
+                            '${widget.userScore.toStringAsFixed(0)}점',
                             style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 11,
@@ -110,11 +172,7 @@ class SocialRankingView extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 2),
-                        Container(
-                          width: 2,
-                          height: 8,
-                          color: Colors.black87,
-                        ),
+                        Container(width: 2, height: 8, color: Colors.black87),
                       ],
                     ),
                   ),
@@ -149,7 +207,7 @@ class SocialRankingView extends StatelessWidget {
                 ),
               ),
               Text(
-                '동연령대 평균 ${avgScore.toInt()}점',
+                '동연령대 평균 ${_avgScore.toInt()}점',
                 style: const TextStyle(fontSize: 12, color: Colors.grey),
               ),
             ],
@@ -168,9 +226,7 @@ class SocialRankingView extends StatelessWidget {
     );
   }
 
-  /// Z-점수를 백분위로 근사 변환 (정규 분포)
   int _zToPercentile(double z) {
-    // 누적 정규 분포 근사 (Horner's method)
     if (z < -3.5) return 1;
     if (z > 3.5) return 99;
     final double absZ = z.abs();

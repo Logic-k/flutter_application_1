@@ -4,11 +4,13 @@ import 'package:go_router/go_router.dart';
 import 'core/theme.dart';
 import 'core/router.dart';
 import 'core/user_provider.dart';
-import 'core/supabase_client.dart';
+import 'core/firebase_service.dart';
+import 'core/local_ai_service.dart';
+import 'core/ai/ai_chat_service.dart';
+import 'core/services/background_service.dart';
 import 'features/gait_analysis/gait_provider.dart';
 import 'features/gait_analysis/pedometer_manager.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'core/services/background_service.dart';
 
 import 'features/training/difficulty_provider.dart';
 import 'core/settings_provider.dart';
@@ -20,11 +22,20 @@ void main() async {
   // 한국어 날짜 형식 데이터 초기화
   await initializeDateFormatting('ko_KR', null);
   
-  // [agency-backend-architect]: 백그라운드 서비스 엔진 초기화
-  await PedometerBackgroundService.initializeService();
+  // 에뮬레이터 빌드 시 --dart-define=IS_EMULATOR=true 로 실행하면 건너뜀
+  const bool isEmulator = bool.fromEnvironment('IS_EMULATOR', defaultValue: false);
+  if (!isEmulator) {
+    await PedometerBackgroundService.initializeService();
+  }
   
-  // Supabase 초기화 (Cloud DB 연동)
-  await SupabaseManager.initialize();
+  // TFLite 모델 사전 로드 (없으면 규칙 기반으로 자동 fallback)
+  await LocalAIService.initialize();
+
+  // AI 대화 서비스 초기화 (GEMINI_API_KEY 없으면 LocalFallback 자동 사용)
+  await AiChatService.initialize();
+
+  // Firebase 초기화
+  await FirebaseService.initialize();
   
   final userProvider = UserProvider();
   await userProvider.checkLoginStatus();

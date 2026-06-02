@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:health/health.dart';
 import 'package:pedometer/pedometer.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 
@@ -57,6 +58,31 @@ class PedometerBackgroundService {
   static Future<bool> onIosBackground(ServiceInstance service) async {
     WidgetsFlutterBinding.ensureInitialized();
     DartPluginRegistrant.ensureInitialized();
+    try {
+      final health = Health();
+      final now = DateTime.now();
+      final start = now.subtract(const Duration(hours: 1));
+      final authorized = await health.hasPermissions(
+        [HealthDataType.STEPS],
+        permissions: [HealthDataAccess.READ],
+      );
+      if (authorized == true) {
+        final data = await health.getHealthDataFromTypes(
+          startTime: start,
+          endTime: now,
+          types: [HealthDataType.STEPS],
+        );
+        if (data.isNotEmpty) {
+          final totalSteps = data
+              .map((e) => (e.value as NumericHealthValue).numericValue.toInt())
+              .fold(0, (a, b) => a + b);
+          service.invoke('update_steps', {
+            'steps': totalSteps,
+            'timestamp': now.toIso8601String(),
+          });
+        }
+      }
+    } catch (_) {}
     return true;
   }
 

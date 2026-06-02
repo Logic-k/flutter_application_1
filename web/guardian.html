@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MemoryLink 보호자 안심뷰</title>
+  <style>
+    :root {
+      --bg: #0f1f24;
+      --surface: #1a2f36;
+      --surface2: #223840;
+      --primary: #4caf9a;
+      --primary-dim: #2e7a6a;
+      --text: #e8f0ee;
+      --text-muted: #8aacaa;
+      --danger: #ef5350;
+      --danger-bg: rgba(239,83,80,0.12);
+      --radius: 16px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, 'Apple SD Gothic Neo', '맑은 고딕', sans-serif;
+      min-height: 100vh;
+      padding: 0 0 40px;
+    }
+
+    /* ── 헤더 ── */
+    header {
+      background: var(--surface);
+      padding: 20px 24px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid var(--surface2);
+    }
+    header .logo { font-size: 26px; }
+    header h1 { font-size: 17px; font-weight: 700; }
+    header p  { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+
+    /* ── 공통 카드 ── */
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin: 16px 16px 0;
+    }
+    .card-title {
+      font-size: 13px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* ── 이상 감지 배너 ── */
+    .anomaly-card {
+      background: var(--danger-bg);
+      border: 1px solid var(--danger);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      margin: 16px 16px 0;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .anomaly-icon { font-size: 22px; flex-shrink: 0; margin-top: 1px; }
+    .anomaly-title { font-size: 15px; font-weight: 700; color: var(--danger); margin-bottom: 4px; }
+    .anomaly-msg   { font-size: 13px; color: #ffbcbc; line-height: 1.55; }
+
+    /* ── 걸음 수 카드 ── */
+    .steps-big {
+      font-size: 42px;
+      font-weight: 800;
+      color: var(--primary);
+      letter-spacing: -1px;
+    }
+    .steps-label { font-size: 14px; color: var(--text-muted); margin-top: 2px; }
+    .progress-wrap {
+      margin-top: 14px;
+      background: var(--surface2);
+      border-radius: 8px;
+      height: 10px;
+      overflow: hidden;
+    }
+    .progress-bar {
+      height: 100%;
+      border-radius: 8px;
+      background: linear-gradient(90deg, var(--primary-dim), var(--primary));
+      transition: width 0.8s ease;
+    }
+    .progress-label {
+      margin-top: 6px;
+      font-size: 12px;
+      color: var(--text-muted);
+      text-align: right;
+    }
+
+    /* ── 7일 차트 ── */
+    .chart-wrap {
+      display: flex;
+      align-items: flex-end;
+      gap: 6px;
+      height: 90px;
+      margin-top: 4px;
+    }
+    .chart-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 100%;
+      justify-content: flex-end;
+      gap: 4px;
+    }
+    .chart-bar {
+      width: 100%;
+      border-radius: 4px 4px 0 0;
+      background: var(--primary-dim);
+      min-height: 3px;
+      transition: height 0.6s ease;
+    }
+    .chart-bar.today { background: var(--primary); }
+    .chart-date { font-size: 10px; color: var(--text-muted); }
+
+    /* ── 훈련 점수 ── */
+    .score-list { display: flex; flex-direction: column; gap: 12px; }
+    .score-row  { display: flex; align-items: center; gap: 12px; }
+    .score-cat  { font-size: 14px; min-width: 72px; }
+    .score-bar-wrap {
+      flex: 1;
+      height: 8px;
+      background: var(--surface2);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .score-bar {
+      height: 100%;
+      border-radius: 4px;
+      background: linear-gradient(90deg, var(--primary-dim), var(--primary));
+    }
+    .score-val { font-size: 14px; font-weight: 700; min-width: 36px; text-align: right; }
+
+    /* ── 메타 ── */
+    .sync-info {
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 24px;
+      padding: 0 16px;
+    }
+
+    /* ── 응급 연락 ── */
+    .emergency-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: calc(100% - 32px);
+      margin: 16px 16px 0;
+      padding: 15px;
+      border-radius: var(--radius);
+      background: var(--primary-dim);
+      color: var(--text);
+      font-size: 16px;
+      font-weight: 700;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    /* ── 로딩 / 오류 ── */
+    .center {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 60vh;
+      gap: 16px;
+      color: var(--text-muted);
+      font-size: 15px;
+    }
+    .spinner {
+      width: 36px; height: 36px;
+      border: 3px solid var(--surface2);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<div id="loading" class="center">
+  <div class="spinner"></div>
+  <span>데이터를 불러오는 중…</span>
+</div>
+
+<div id="app" style="display:none;">
+  <header>
+    <div class="logo">🛡️</div>
+    <div>
+      <h1 id="headerName">보호자 안심뷰</h1>
+      <p id="headerSub">MemoryLink</p>
+    </div>
+  </header>
+
+  <!-- 이상 감지 (조건부) -->
+  <div id="anomalyCard" class="anomaly-card" style="display:none;">
+    <div class="anomaly-icon">⚠️</div>
+    <div>
+      <div class="anomaly-title">활동량 이상 감지</div>
+      <div class="anomaly-msg" id="anomalyMsg"></div>
+    </div>
+  </div>
+
+  <!-- 걸음 수 -->
+  <div class="card">
+    <div class="card-title">👣 오늘 걸음 수</div>
+    <div class="steps-big" id="todaySteps">—</div>
+    <div class="steps-label" id="stepsLabel">주간 평균 — 보</div>
+    <div class="progress-wrap">
+      <div class="progress-bar" id="progressBar" style="width:0%"></div>
+    </div>
+    <div class="progress-label" id="progressLabel"></div>
+  </div>
+
+  <!-- 7일 그래프 -->
+  <div class="card">
+    <div class="card-title">📊 7일 활동 추이</div>
+    <div class="chart-wrap" id="chartWrap"></div>
+  </div>
+
+  <!-- 인지 훈련 점수 -->
+  <div class="card">
+    <div class="card-title">🧠 인지 훈련 결과</div>
+    <div class="score-list" id="scoreList">
+      <span style="color:var(--text-muted);font-size:14px;">훈련 기록이 없습니다.</span>
+    </div>
+  </div>
+
+  <!-- 응급 연락 (보호자 연락처가 있을 때만) -->
+  <a id="emergencyBtn" class="emergency-btn" style="display:none;" href="#">
+    📞 응급 연락하기
+  </a>
+
+  <div class="sync-info" id="syncInfo"></div>
+</div>
+
+<div id="errorView" class="center" style="display:none;">
+  <div style="font-size:40px;">😕</div>
+  <div id="errorMsg" style="text-align:center;line-height:1.6;"></div>
+</div>
+
+<script>
+  const PROJECT_ID = 'memorylink-7af26';
+  const API_KEY    = 'AIzaSyAO0iFYxuGQjZsckAH0dM1AA6BnnSLEufQ';
+
+  const token = new URLSearchParams(location.search).get('token');
+
+  function show(id)  { document.getElementById(id).style.display = ''; }
+  function hide(id)  { document.getElementById(id).style.display = 'none'; }
+  function setText(id, v) { document.getElementById(id).textContent = v; }
+
+  // Firestore REST 응답에서 값 추출
+  function fVal(field) {
+    if (!field) return null;
+    const key = Object.keys(field)[0];
+    if (key === 'integerValue')  return parseInt(field[key]);
+    if (key === 'doubleValue')   return parseFloat(field[key]);
+    if (key === 'booleanValue')  return field[key];
+    if (key === 'stringValue')   return field[key];
+    if (key === 'timestampValue') return new Date(field[key]);
+    if (key === 'arrayValue') {
+      return (field[key].values || []).map(fVal);
+    }
+    if (key === 'mapValue') {
+      const result = {};
+      const fs = field[key].fields || {};
+      for (const k in fs) result[k] = fVal(fs[k]);
+      return result;
+    }
+    return null;
+  }
+
+  function fFields(fields) {
+    const out = {};
+    for (const k in fields) out[k] = fVal(fields[k]);
+    return out;
+  }
+
+  function fmtNum(n) {
+    return Number(n).toLocaleString('ko-KR');
+  }
+
+  function relativeTime(date) {
+    if (!date) return '';
+    const diff = Math.floor((Date.now() - date.getTime()) / 1000);
+    if (diff < 60)  return '방금 전';
+    if (diff < 3600) return `${Math.floor(diff/60)}분 전`;
+    return `${Math.floor(diff/3600)}시간 전`;
+  }
+
+  function renderSteps(today, avg) {
+    setText('todaySteps', fmtNum(today) + ' 보');
+    setText('stepsLabel', `주간 평균 ${fmtNum(avg)} 보`);
+    const pct = avg > 0 ? Math.min(Math.round(today / avg * 100), 100) : 0;
+    document.getElementById('progressBar').style.width = pct + '%';
+    setText('progressLabel', `목표 대비 ${pct}%`);
+  }
+
+  function renderChart(weeklyData, weeklyDates) {
+    const wrap = document.getElementById('chartWrap');
+    wrap.innerHTML = '';
+    if (!weeklyData || weeklyData.length === 0) {
+      wrap.innerHTML = '<span style="color:var(--text-muted);font-size:13px;">데이터 없음</span>';
+      return;
+    }
+    const maxVal = Math.max(...weeklyData, 1);
+    const today = new Date().toISOString().slice(0, 10);
+    weeklyData.forEach((steps, i) => {
+      const heightPct = Math.max((steps / maxVal) * 100, 3);
+      const dateStr = weeklyDates && weeklyDates[i]
+        ? weeklyDates[i].slice(5)   // MM-DD
+        : '';
+      const isToday = weeklyDates && weeklyDates[i] === today;
+
+      const col = document.createElement('div');
+      col.className = 'chart-col';
+
+      const bar = document.createElement('div');
+      bar.className = 'chart-bar' + (isToday ? ' today' : '');
+      bar.style.height = heightPct + '%';
+      bar.title = `${dateStr}: ${fmtNum(steps)}보`;
+
+      const label = document.createElement('div');
+      label.className = 'chart-date';
+      label.textContent = dateStr;
+
+      col.appendChild(bar);
+      col.appendChild(label);
+      wrap.appendChild(col);
+    });
+  }
+
+  function renderScores(scores) {
+    const list = document.getElementById('scoreList');
+    if (!scores || scores.length === 0) return;
+    list.innerHTML = '';
+    scores.forEach(s => {
+      const cat   = s.category || '';
+      const score = Math.round(s.score || 0);
+      const row = document.createElement('div');
+      row.className = 'score-row';
+      row.innerHTML = `
+        <span class="score-cat">${cat}</span>
+        <div class="score-bar-wrap">
+          <div class="score-bar" style="width:${score}%"></div>
+        </div>
+        <span class="score-val">${score}점</span>`;
+      list.appendChild(row);
+    });
+  }
+
+  async function loadData() {
+    if (!token) {
+      hide('loading');
+      show('errorView');
+      setText('errorMsg', '유효하지 않은 링크입니다.\n보호자 연결 QR을 다시 스캔해 주세요.');
+      return;
+    }
+
+    const url = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/guardian_views/${token}?key=${API_KEY}`;
+
+    try {
+      const res = await fetch(url);
+      if (res.status === 404) throw new Error('notfound');
+      if (!res.ok) throw new Error('fetch_error');
+      const json = await res.json();
+      const d = fFields(json.fields);
+
+      // 헤더
+      setText('headerName', (d.user_name || '어르신') + '님의 건강 현황');
+      setText('headerSub', 'MemoryLink 보호자 안심뷰');
+
+      // 이상 감지
+      if (d.is_anomaly) {
+        document.getElementById('anomalyCard').style.display = 'flex';
+        setText('anomalyMsg', d.anomaly_message || '활동량이 평소보다 낮습니다.');
+      }
+
+      // 걸음 수
+      renderSteps(d.today_steps || 0, d.weekly_avg_steps || 0);
+
+      // 7일 차트
+      renderChart(d.weekly_steps_data || [], d.weekly_dates || []);
+
+      // 훈련 점수
+      renderScores(d.recent_scores || []);
+
+      // 응급 연락
+      if (d.emergency_contact) {
+        const btn = document.getElementById('emergencyBtn');
+        btn.style.display = 'flex';
+        btn.href = `tel:${d.emergency_contact}`;
+      }
+
+      // 동기화 시간
+      const syncTime = d.last_sync instanceof Date ? relativeTime(d.last_sync) : '';
+      if (syncTime) setText('syncInfo', `마지막 업데이트: ${syncTime}`);
+
+      hide('loading');
+      show('app');
+    } catch (e) {
+      hide('loading');
+      show('errorView');
+      const msg = e.message === 'notfound'
+        ? '데이터를 찾을 수 없습니다.\n앱에서 "지금 동기화" 버튼을 눌러 주세요.'
+        : '데이터 로드에 실패했습니다.\n잠시 후 다시 시도해 주세요.';
+      setText('errorMsg', msg);
+    }
+  }
+
+  loadData();
+</script>
+</body>
+</html>

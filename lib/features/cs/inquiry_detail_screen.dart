@@ -3,7 +3,7 @@ import 'package:intl/intl.dart';
 import '../../core/cs_service.dart';
 
 class InquiryDetailScreen extends StatelessWidget {
-  final int inquiryId;
+  final String inquiryId;
 
   const InquiryDetailScreen({super.key, required this.inquiryId});
 

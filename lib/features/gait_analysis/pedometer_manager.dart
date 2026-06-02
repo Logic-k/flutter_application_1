@@ -1,9 +1,12 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../core/database_helper.dart';
 import '../../core/user_provider.dart';
+import '../../core/services/guardian_sync_service.dart';
 
 /// 만보기 매니저 (상태 관리)
 /// 
@@ -113,22 +116,87 @@ class PedometerManager with ChangeNotifier {
   bool _isAnomalyDetected = false;
   bool get isAnomalyDetected => _isAnomalyDetected;
 
+  static const _guardianChannelId = 'guardian_alert_channel';
+  static const _guardianNotificationId = 999;
+  final _localNotifications = FlutterLocalNotificationsPlugin();
+
   /// 최근 활동량 대비 급격한 감소 감지 (50% 이하 하락 시)
   Future<void> _checkStepAnomaly() async {
     final summary = await getWeeklySummary();
-    if (summary.length < 3) return; // 최소 3일 이상의 데이터가 필요
+    if (summary.length < 3) return;
 
-    double avgSteps = summary.map((e) => (e['steps'] as num).toDouble()).reduce((a, b) => a + b) / summary.length;
-    
-    // 평균 걸음 수가 1000보 이상인 활동적인 상태에서 50% 이하로 감소한 경우
+    final avgSteps = summary
+            .map((e) => (e['steps'] as num).toDouble())
+            .reduce((a, b) => a + b) /
+        summary.length;
+
     if (avgSteps > 1000 && _todaySteps < (avgSteps * 0.5)) {
       if (!_isAnomalyDetected) {
         _isAnomalyDetected = true;
         debugPrint('⚠️ 활동량 급감 감지: 평균 ${avgSteps.toInt()}보 -> 현재 $_todaySteps보');
-        // 추후 보호자 알림(Push) 연동 지점
+        await _triggerGuardianAlert(avgSteps.toInt());
       }
     } else {
       _isAnomalyDetected = false;
+    }
+  }
+
+  /// 이상 감지 시 Firestore 동기화 + 로컬 알림 표시
+  Future<void> _triggerGuardianAlert(int avgSteps) async {
+    final user = _userProvider.currentUser;
+    if (user == null) return;
+
+    final userId = user['id'] as int;
+    final userName = (user['username'] as String?) ?? '사용자';
+    final emergencyContact = _userProvider.emergencyContact;
+
+    // 1. Firestore에 이상 감지 상태 저장 (보호자 웹 대시보드에 경고 표시)
+    GuardianSyncService().syncAnomalyAlert(
+      userId: userId,
+      userName: userName,
+      todaySteps: _todaySteps,
+      weeklyAvg: avgSteps,
+      emergencyContact: emergencyContact,
+    );
+
+    // 2. 로컬 알림 채널 생성 및 알림 표시
+    await _localNotifications
+        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+        ?.createNotificationChannel(const AndroidNotificationChannel(
+          _guardianChannelId,
+          '보호자 이상 알림',
+          description: '활동량 급감 감지 시 보호자에게 알릴 수 있습니다.',
+          importance: Importance.high,
+        ));
+
+    final smsPayload = emergencyContact != null && emergencyContact.isNotEmpty
+        ? 'sms:$emergencyContact'
+        : '';
+
+    await _localNotifications.show(
+      id: _guardianNotificationId,
+      title: '활동량 이상 감지',
+      body: '평소보다 활동량이 크게 줄었습니다. 탭하여 보호자에게 문자를 보내세요.',
+      notificationDetails: NotificationDetails(
+        android: AndroidNotificationDetails(
+          _guardianChannelId,
+          '보호자 이상 알림',
+          icon: '@mipmap/ic_launcher',
+          importance: Importance.high,
+          priority: Priority.high,
+          autoCancel: true,
+        ),
+      ),
+      payload: smsPayload,
+    );
+  }
+
+  /// 알림 탭 시 SMS 앱 실행 (앱 진입점에서 호출 필요)
+  Future<void> handleNotificationTap(String? payload) async {
+    if (payload == null || payload.isEmpty) return;
+    final uri = Uri.tryParse(payload);
+    if (uri != null && await canLaunchUrl(uri)) {
+      await launchUrl(uri);
     }
   }
 

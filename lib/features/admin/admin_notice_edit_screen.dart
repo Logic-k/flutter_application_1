@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/cs_service.dart';
 
 class AdminNoticeEditScreen extends StatefulWidget {
-  final int? id;
+  final String? id;
   final String? initialTitle;
   final String? initialBody;
   final bool initialPinned;

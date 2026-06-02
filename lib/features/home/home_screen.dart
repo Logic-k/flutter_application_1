@@ -3,8 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
 import '../gait_analysis/pedometer_manager.dart';
+import '../../core/ai/ai_chat_service.dart';
 import '../../core/user_provider.dart';
-import 'widgets/diet_recommendation_card.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -57,8 +57,8 @@ class HomeScreen extends StatelessWidget {
 
             const SizedBox(height: 24),
 
-            // 신규: 오늘의 식단 추천
-            const DietRecommendationCard(),
+            // AI 도우미 바로가기
+            _buildAiAssistantCard(context, theme),
 
             const SizedBox(height: 24),
 
@@ -306,6 +306,82 @@ class HomeScreen extends StatelessWidget {
           ),
           Icon(Icons.arrow_forward_ios, color: theme.colorScheme.onPrimary, size: 16),
         ],
+      ),
+    );
+  }
+
+  // ─── AI 도우미 카드 ───────────────────────────────────────────
+  Widget _buildAiAssistantCard(BuildContext context, ThemeData theme) {
+    final isConnected = AiChatService.isUsingAI;
+    return InkWell(
+      onTap: () => context.push('/ai_chat'),
+      borderRadius: BorderRadius.circular(24),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: isConnected
+                ? [Colors.teal.shade400, Colors.teal.shade700]
+                : [Colors.blueGrey.shade400, Colors.blueGrey.shade700],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: (isConnected ? Colors.teal : Colors.blueGrey).withValues(alpha: 0.3),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Icon(
+                isConnected ? Icons.smart_toy : Icons.smart_toy_outlined,
+                color: Colors.white,
+                size: 32,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'AI 도우미',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    isConnected
+                        ? 'Gemini AI와 인지 대화를 시작해보세요'
+                        : 'AI와 대화로 인지 건강을 확인해보세요',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.85),
+                      fontSize: 13,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.arrow_forward_ios,
+              color: Colors.white.withValues(alpha: 0.7),
+              size: 16,
+            ),
+          ],
+        ),
       ),
     );
   }

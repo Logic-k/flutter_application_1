@@ -3,11 +3,17 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_application_1/core/database_helper.dart';
 import 'package:flutter_application_1/core/user_provider.dart';
 import 'package:flutter_application_1/core/settings_provider.dart';
+import 'package:flutter_application_1/features/gait_analysis/pedometer_manager.dart';
+import 'package:flutter_application_1/features/training/difficulty_provider.dart';
 
 // --- Core Mocks ---
 class MockDatabaseHelper extends Mock implements DatabaseHelper {}
 
 class MockUserProvider extends Mock implements UserProvider {}
+
+class MockPedometerManager extends Mock implements PedometerManager {}
+
+class MockDifficultyProvider extends Mock implements DifficultyProvider {}
 
 // --- Settings Fake (simpler than Mock for value-only providers) ---
 class FakeSettingsProvider extends SettingsProvider {

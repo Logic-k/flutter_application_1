@@ -1,35 +1,73 @@
-import 'supabase_client.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
+import 'firebase_service.dart';
 
 class CsService {
-  static final _client = SupabaseManager.client;
+  static FirebaseFirestore get _db => FirebaseService.db;
+
+  static Map<String, dynamic> _docToMap(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+    return {
+      'id': doc.id,
+      ...data.map((key, value) {
+        if (value is Timestamp) {
+          return MapEntry(key, value.toDate().toIso8601String());
+        }
+        return MapEntry(key, value);
+      }),
+    };
+  }
 
   // 공지사항
   static Future<List<Map<String, dynamic>>> fetchNotices() async {
-    final res = await _client
-        .from('notices')
-        .select()
-        .order('is_pinned', ascending: false)
-        .order('created_at', ascending: false);
-    return List<Map<String, dynamic>>.from(res);
+    try {
+      final snapshot = await _db
+          .collection('notices')
+          .orderBy('created_at', descending: true)
+          .get();
+      final docs = snapshot.docs.map(_docToMap).toList();
+      // 고정 공지 우선 정렬 (복합 인덱스 없이 메모리 정렬)
+      docs.sort((a, b) {
+        final aPinned = a['is_pinned'] == true ? 0 : 1;
+        final bPinned = b['is_pinned'] == true ? 0 : 1;
+        return aPinned.compareTo(bPinned);
+      });
+      return docs;
+    } catch (e) {
+      debugPrint('fetchNotices error: $e');
+      return [];
+    }
   }
 
-  static Future<Map<String, dynamic>?> fetchNoticeById(int id) async {
-    final res = await _client
-        .from('notices')
-        .select()
-        .eq('id', id)
-        .maybeSingle();
-    return res;
+  static Future<Map<String, dynamic>?> fetchNoticeById(String id) async {
+    try {
+      final doc = await _db.collection('notices').doc(id).get();
+      if (!doc.exists) return null;
+      return _docToMap(doc);
+    } catch (e) {
+      debugPrint('fetchNoticeById error: $e');
+      return null;
+    }
   }
 
   // FAQ
   static Future<List<Map<String, dynamic>>> fetchFaqs() async {
-    final res = await _client
-        .from('faqs')
-        .select()
-        .order('category')
-        .order('sort_order');
-    return List<Map<String, dynamic>>.from(res);
+    try {
+      final snapshot = await _db.collection('faqs').get();
+      final docs = snapshot.docs.map(_docToMap).toList();
+      // 카테고리 → sort_order 순 정렬 (복합 인덱스 없이 메모리 정렬)
+      docs.sort((a, b) {
+        final catCompare = (a['category'] as String? ?? '')
+            .compareTo(b['category'] as String? ?? '');
+        if (catCompare != 0) return catCompare;
+        return ((a['sort_order'] as int?) ?? 0)
+            .compareTo((b['sort_order'] as int?) ?? 0);
+      });
+      return docs;
+    } catch (e) {
+      debugPrint('fetchFaqs error: $e');
+      return [];
+    }
   }
 
   // 1:1 문의
@@ -38,42 +76,55 @@ class CsService {
     required String title,
     required String body,
   }) async {
-    await _client.from('inquiries').insert({
+    await _db.collection('inquiries').add({
       'username': username,
       'title': title,
       'body': body,
+      'status': 'pending',
+      'created_at': FieldValue.serverTimestamp(),
     });
   }
 
   static Future<List<Map<String, dynamic>>> fetchMyInquiries(
       String username) async {
-    final res = await _client
-        .from('inquiries')
-        .select()
-        .eq('username', username)
-        .order('created_at', ascending: false);
-    return List<Map<String, dynamic>>.from(res);
+    try {
+      final snapshot = await _db
+          .collection('inquiries')
+          .where('username', isEqualTo: username)
+          .get();
+      final docs = snapshot.docs.map(_docToMap).toList();
+      docs.sort((a, b) =>
+          (b['created_at'] as String? ?? '').compareTo(a['created_at'] as String? ?? ''));
+      return docs;
+    } catch (e) {
+      debugPrint('fetchMyInquiries error: $e');
+      return [];
+    }
   }
 
-  static Future<Map<String, dynamic>?> fetchInquiryDetail(int id) async {
-    final inquiry = await _client
-        .from('inquiries')
-        .select()
-        .eq('id', id)
-        .maybeSingle();
-    if (inquiry == null) return null;
+  static Future<Map<String, dynamic>?> fetchInquiryDetail(String id) async {
+    try {
+      final doc = await _db.collection('inquiries').doc(id).get();
+      if (!doc.exists) return null;
 
-    final replies = await _client
-        .from('inquiry_replies')
-        .select()
-        .eq('inquiry_id', id)
-        .order('created_at')
-        .limit(1);
+      final replies = await _db
+          .collection('inquiries')
+          .doc(id)
+          .collection('replies')
+          .orderBy('created_at')
+          .limit(1)
+          .get();
 
-    return {
-      ...inquiry,
-      'reply': replies.isNotEmpty ? replies.first : null,
-    };
+      return {
+        ..._docToMap(doc),
+        'reply': replies.docs.isNotEmpty
+            ? _docToMap(replies.docs.first)
+            : null,
+      };
+    } catch (e) {
+      debugPrint('fetchInquiryDetail error: $e');
+      return null;
+    }
   }
 
   // 관리자 전용 — CS 관리
@@ -82,29 +133,31 @@ class CsService {
     required String body,
     bool isPinned = false,
   }) async {
-    await _client.from('notices').insert({
+    await _db.collection('notices').add({
       'title': title,
       'body': body,
       'is_pinned': isPinned,
+      'created_at': FieldValue.serverTimestamp(),
+      'updated_at': FieldValue.serverTimestamp(),
     });
   }
 
   static Future<void> updateNotice(
-    int id, {
+    String id, {
     required String title,
     required String body,
     required bool isPinned,
   }) async {
-    await _client.from('notices').update({
+    await _db.collection('notices').doc(id).update({
       'title': title,
       'body': body,
       'is_pinned': isPinned,
-      'updated_at': DateTime.now().toIso8601String(),
-    }).eq('id', id);
+      'updated_at': FieldValue.serverTimestamp(),
+    });
   }
 
-  static Future<void> deleteNotice(int id) async {
-    await _client.from('notices').delete().eq('id', id);
+  static Future<void> deleteNotice(String id) async {
+    await _db.collection('notices').doc(id).delete();
   }
 
   static Future<void> createFaq({
@@ -113,7 +166,7 @@ class CsService {
     required String answer,
     int sortOrder = 0,
   }) async {
-    await _client.from('faqs').insert({
+    await _db.collection('faqs').add({
       'category': category,
       'question': question,
       'answer': answer,
@@ -122,40 +175,52 @@ class CsService {
   }
 
   static Future<void> updateFaq(
-    int id, {
+    String id, {
     required String category,
     required String question,
     required String answer,
   }) async {
-    await _client.from('faqs').update({
+    await _db.collection('faqs').doc(id).update({
       'category': category,
       'question': question,
       'answer': answer,
-    }).eq('id', id);
+    });
   }
 
-  static Future<void> deleteFaq(int id) async {
-    await _client.from('faqs').delete().eq('id', id);
+  static Future<void> deleteFaq(String id) async {
+    await _db.collection('faqs').doc(id).delete();
   }
 
   static Future<List<Map<String, dynamic>>> fetchAllInquiries() async {
-    final res = await _client
-        .from('inquiries')
-        .select()
-        .order('created_at', ascending: false);
-    return List<Map<String, dynamic>>.from(res);
+    try {
+      final snapshot = await _db
+          .collection('inquiries')
+          .orderBy('created_at', descending: true)
+          .get();
+      return snapshot.docs.map(_docToMap).toList();
+    } catch (e) {
+      debugPrint('fetchAllInquiries error: $e');
+      return [];
+    }
   }
 
   static Future<void> replyToInquiry({
-    required int inquiryId,
+    required String inquiryId,
     required String body,
   }) async {
-    await _client.from('inquiry_replies').insert({
-      'inquiry_id': inquiryId,
+    final batch = _db.batch();
+    final replyRef = _db
+        .collection('inquiries')
+        .doc(inquiryId)
+        .collection('replies')
+        .doc();
+    batch.set(replyRef, {
       'body': body,
+      'created_at': FieldValue.serverTimestamp(),
     });
-    await _client
-        .from('inquiries')
-        .update({'status': 'answered'}).eq('id', inquiryId);
+    batch.update(_db.collection('inquiries').doc(inquiryId), {
+      'status': 'answered',
+    });
+    await batch.commit();
   }
 }

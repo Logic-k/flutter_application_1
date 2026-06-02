@@ -3,7 +3,7 @@ import 'package:intl/intl.dart';
 import '../../core/cs_service.dart';
 
 class NoticeDetailScreen extends StatelessWidget {
-  final int noticeId;
+  final String noticeId;
 
   const NoticeDetailScreen({super.key, required this.noticeId});
 

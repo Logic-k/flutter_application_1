@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'gait_sensing_service.dart';
 import 'gait_analyzer.dart';
 
@@ -10,7 +9,6 @@ import 'gait_analyzer.dart';
 class GaitProvider with ChangeNotifier {
   final GaitSensingService _sensingService = GaitSensingService();
   final GaitAnalyzer _analyzer = GaitAnalyzer();
-  final _supabase = Supabase.instance.client;
   
   bool _isMeasuring = false;
   int _steps = 0;
@@ -60,26 +58,6 @@ class GaitProvider with ChangeNotifier {
     _sensingService.stopSensing();
     final summary = _analyzer.getSummary();
     
-    // [agency-backend-architect]: 지표만 추출하여 Supabase에 저장 (사용자 요청 반영)
-    if (userId != null) {
-      try {
-        await _supabase.from('cognitive_scores').insert([
-          {
-            'user_id': userId,
-            'domain_type': 'gait_steps',
-            'score': _steps.toDouble(),
-          },
-          {
-            'user_id': userId,
-            'domain_type': 'gait_variability',
-            'score': _variability,
-          }
-        ]);
-      } catch (e) {
-        debugPrint('Supabase 저장 오류: $e');
-      }
-    }
-
     notifyListeners();
     return summary;
   }

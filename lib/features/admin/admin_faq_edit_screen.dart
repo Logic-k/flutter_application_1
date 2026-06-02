@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/cs_service.dart';
 
 class AdminFaqEditScreen extends StatefulWidget {
-  final int? id;
+  final String? id;
   final String? initialCategory;
   final String? initialQuestion;
   final String? initialAnswer;

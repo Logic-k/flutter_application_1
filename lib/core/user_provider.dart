@@ -31,6 +31,7 @@ class UserProvider extends ChangeNotifier {
   double _logicScore = 0;
   double _memoryScore = 0;
   double _attentionScore = 0;
+  double _voiceScore = 0;
 
   bool get isLoggedIn => _currentUser != null;
   bool get isLoading => _isLoading;
@@ -49,6 +50,7 @@ class UserProvider extends ChangeNotifier {
   double get logicScore => _logicScore;
   double get memoryScore => _memoryScore;
   double get attentionScore => _attentionScore;
+  double get voiceScore => _voiceScore;
 
   // --- Auth Methods ---
   Future<void> checkLoginStatus() async {
@@ -228,6 +230,7 @@ class UserProvider extends ChangeNotifier {
       case 'logic': _logicScore = score; break;
       case 'memory': _memoryScore = score; break;
       case 'attention': _attentionScore = score; break;
+      case 'voice': _voiceScore = score; break;
     }
     
     if (persist && _currentUser != null) {

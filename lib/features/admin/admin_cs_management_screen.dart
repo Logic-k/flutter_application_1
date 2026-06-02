@@ -114,7 +114,7 @@ class _NoticeTab extends StatelessWidget {
                       onPressed: () async {
                         final confirm = await _confirmDelete(context);
                         if (confirm) {
-                          await CsService.deleteNotice(n['id'] as int);
+                          await CsService.deleteNotice(n['id'] as String);
                           onRefresh();
                         }
                       },
@@ -189,7 +189,7 @@ class _FaqTab extends StatelessWidget {
                       onPressed: () async {
                         final confirm = await _confirmDelete(context);
                         if (confirm) {
-                          await CsService.deleteFaq(f['id'] as int);
+                          await CsService.deleteFaq(f['id'] as String);
                           onRefresh();
                         }
                       },

@@ -1,0 +1,8 @@
+# lcov 커버리지 리포트 설정
+# 자동 생성 파일 및 테스트 무관 파일 제외
+exclude=**/*.g.dart
+exclude=**/*.freezed.dart
+exclude=**/generated/**
+exclude=lib/main.dart
+exclude=lib/core/router.dart
+exclude=lib/core/theme.dart
