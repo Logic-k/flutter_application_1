@@ -7,14 +7,14 @@ import '../../features/ai_chat/models/chat_message.dart';
 class GeminiProvider implements AiProviderInterface {
   static const _baseUrl = 'https://generativelanguage.googleapis.com';
 
-  static const _systemPrompt =
+  static const _systemPromptBase =
       '당신은 MemoryLink의 친근한 AI 대화 도우미입니다. '
       '사용자와 한국어로 자연스럽고 편안하게 대화합니다. '
       '궁금한 것, 일상 이야기, 고민 상담, 정보 요청 등 무엇이든 친절하게 답변합니다. '
       '판단하거나 가르치려 하지 않고 친구처럼 공감하고 도와줍니다. '
-      '답변은 3문장 이내로 간결하게 합니다. 영어 단어 사용을 자제합니다.';
+      '답변은 3문장 이내로 간결하게 합니다. 영어 단어 사용을 자제합니다. '
+      '오늘 날짜, 요일, 시간, 날씨 정보가 아래에 제공되면 이를 활용해 정확하게 답변합니다.';
 
-  // 선호 모델 순서 (자동 발견 모델에 적용)
   static const _preferredOrder = [
     'gemini-2.0-flash-lite',
     'gemini-2.0-flash-lite-001',
@@ -30,12 +30,65 @@ class GeminiProvider implements AiProviderInterface {
   String _workingEndpoint = '';
   String _activeModel = 'Gemini';
 
+  // 날씨 캐시 (10분 TTL)
+  String? _cachedWeather;
+  DateTime? _weatherFetchedAt;
+
   GeminiProvider(this._apiKey);
 
   @override
   String get providerName => _activeModel;
 
-  /// API 키로 사용 가능한 모델 목록을 조회합니다.
+  /// 현재 날짜·요일·시간 문자열 생성
+  static String _buildTimeContext() {
+    final now = DateTime.now();
+    const weekdays = ['월', '화', '수', '목', '금', '토', '일'];
+    final weekday = weekdays[now.weekday - 1];
+    final hour = now.hour.toString().padLeft(2, '0');
+    final minute = now.minute.toString().padLeft(2, '0');
+    return '[현재 정보] 오늘은 ${now.year}년 ${now.month}월 ${now.day}일 $weekday요일이며, 현재 시각은 $hour시 $minute분입니다.';
+  }
+
+  /// wttr.in에서 날씨 조회 (API 키 불필요)
+  static Future<String?> _fetchWeather() async {
+    try {
+      // format: 날씨상태, 체감온도, 습도
+      final url = Uri.parse('https://wttr.in/Seoul?format=%C,+%f,+습도+%h&lang=ko');
+      final response = await http.get(url).timeout(const Duration(seconds: 5));
+      if (response.statusCode == 200) {
+        final raw = response.body.trim();
+        if (raw.isNotEmpty && !raw.startsWith('<')) {
+          return '[서울 날씨] $raw';
+        }
+      }
+    } catch (e) {
+      debugPrint('[GeminiProvider] 날씨 조회 실패 (무시): $e');
+    }
+    return null;
+  }
+
+  /// 날씨 캐시 (10분 유효)
+  Future<String?> _getWeatherContext() async {
+    final now = DateTime.now();
+    if (_cachedWeather != null &&
+        _weatherFetchedAt != null &&
+        now.difference(_weatherFetchedAt!).inMinutes < 10) {
+      return _cachedWeather;
+    }
+    _cachedWeather = await _fetchWeather();
+    _weatherFetchedAt = now;
+    return _cachedWeather;
+  }
+
+  /// 시간 + 날씨가 포함된 동적 시스템 프롬프트 생성
+  Future<String> _buildSystemPrompt() async {
+    final timeCtx = _buildTimeContext();
+    final weatherCtx = await _getWeatherContext();
+    final parts = [_systemPromptBase, timeCtx];
+    if (weatherCtx != null) parts.add(weatherCtx);
+    return parts.join(' ');
+  }
+
   static Future<List<String>> listAvailableModels(String apiKey) async {
     final url = Uri.parse('$_baseUrl/v1beta/models?key=$apiKey');
     try {
@@ -51,7 +104,6 @@ class GeminiProvider implements AiProviderInterface {
       for (final m in models) {
         final name = (m['name'] as String? ?? '').replaceFirst('models/', '');
         final methods = (m['supportedGenerationMethods'] as List<dynamic>?)?.cast<String>() ?? [];
-        // thinking/preview 모델 제외 (사고 과정이 응답에 노출됨)
         final isThinking = name.contains('thinking') || name.contains('learnlm');
         if (methods.contains('generateContent') && !isThinking) {
           result.add(name);
@@ -67,7 +119,6 @@ class GeminiProvider implements AiProviderInterface {
 
   @override
   Future<String> sendMessage(String userMessage, List<ChatMessage> history) async {
-    // 캐시된 엔드포인트 우선 시도
     if (_workingEndpoint.isNotEmpty) {
       try {
         return await _callRest(_workingEndpoint, userMessage, history);
@@ -77,10 +128,8 @@ class GeminiProvider implements AiProviderInterface {
       }
     }
 
-    // ListModels로 실제 사용 가능한 모델 탐색
     final discovered = await listAvailableModels(_apiKey);
 
-    // 선호 순서로 정렬
     final ordered = <String>[];
     for (final pref in _preferredOrder) {
       if (discovered.contains(pref)) ordered.add(pref);
@@ -89,7 +138,6 @@ class GeminiProvider implements AiProviderInterface {
       if (!ordered.contains(m)) ordered.add(m);
     }
 
-    // 탐색 실패 시 하드코딩 fallback
     if (ordered.isEmpty) {
       debugPrint('[GeminiProvider] 모델 자동 탐색 실패, 기본 목록으로 시도');
       ordered.addAll(_preferredOrder);
@@ -117,12 +165,13 @@ class GeminiProvider implements AiProviderInterface {
     List<ChatMessage> history,
   ) async {
     final url = Uri.parse('$endpoint:generateContent?key=$_apiKey');
+    final systemPrompt = await _buildSystemPrompt();
 
     final contents = <Map<String, dynamic>>[
       {
         'role': 'user',
         'parts': [
-          {'text': _systemPrompt}
+          {'text': systemPrompt}
         ],
       },
       {
@@ -168,7 +217,6 @@ class GeminiProvider implements AiProviderInterface {
     final data = json.decode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
     final candidate = data['candidates']?[0] as Map<String, dynamic>?;
 
-    // thought == true 파트(사고 과정) 제거, 실제 응답 텍스트만 추출
     final parts = (candidate?['content']?['parts'] as List<dynamic>?)
             ?.whereType<Map<String, dynamic>>()
             .where((p) => p['thought'] != true)
@@ -182,7 +230,6 @@ class GeminiProvider implements AiProviderInterface {
       throw Exception('응답 내용이 비어 있습니다: ${response.body}');
     }
 
-    // MAX_TOKENS로 잘린 경우 마지막 완성 문장까지 반환
     final finishReason = candidate?['finishReason'] as String?;
     if (finishReason == 'MAX_TOKENS') {
       return _trimToLastSentence(parts);
@@ -191,13 +238,11 @@ class GeminiProvider implements AiProviderInterface {
     return parts;
   }
 
-  // 마지막 완성 문장(한국어 종결 패턴)까지 잘라 반환
   String _trimToLastSentence(String text) {
     final pattern = RegExp(r'[다요네죠][.!?]|[까나][요?]|[세요][?.]');
     final matches = pattern.allMatches(text);
     if (matches.isEmpty) return text;
-    final lastMatch = matches.last;
-    return text.substring(0, lastMatch.end).trim();
+    return text.substring(0, matches.last.end).trim();
   }
 
   @override
