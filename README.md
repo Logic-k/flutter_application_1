@@ -8,7 +8,7 @@
 ## 프로젝트 개요
 
 초기 치매 및 경도인지장애(MCI) 환자를 위한 Flutter 기반 크로스 플랫폼 앱입니다.  
-스마트폰 내장 센서(가속도계, 자이로스코프)와 LLM 기반 음성 분석을 결합하여, 사용자가 일상 속에서 위험 신호를 조기 인지하고 다중중재 예방 루틴을 지속할 수 있도록 돕는 SaMD 수준의 플랫폼입니다.
+스마트폰 내장 센서(가속도계, 자이로스코프)와 Gemini 기반 AI 분석을 결합하여, 사용자가 일상 속에서 위험 신호를 조기 인지하고 다중중재 예방 루틴을 지속할 수 있도록 돕는 SaMD 수준의 플랫폼입니다.
 
 **지원 플랫폼:** Android · iOS · Web
 
@@ -18,20 +18,25 @@
 
 | 영역 | 기술 |
 |------|------|
-| 프레임워크 | Flutter (Dart) |
+| 프레임워크 | Flutter (Dart 3.11.3+) |
 | 상태 관리 | Provider (`ChangeNotifierProvider`, `ProxyProvider`) |
 | 라우팅 | GoRouter |
-| 클라우드 DB | Supabase |
+| 클라우드 DB | Firebase (Firestore) |
 | 로컬 DB | SQLite (sqflite) |
+| AI / LLM | Google Gemini (`google_generative_ai`) |
 | 차트 | fl_chart |
+| 달력 | table_calendar |
 | 음성 인식 | speech_to_text |
 | 음성 출력 (TTS) | flutter_tts |
+| 오디오 녹음 | record |
 | 오디오 재생 | audioplayers |
 | 센서 | sensors_plus (가속도계/자이로스코프) |
 | 걸음 수 | 자체 PedometerManager + 백그라운드 서비스 |
 | 헬스 데이터 | health (Health Connect / HealthKit) |
 | PDF 생성 | pdf + printing |
 | QR 코드 | qr_flutter |
+| 이미지 선택 | image_picker |
+| SVG | flutter_svg |
 | 애니메이션 | lottie |
 | 진동 | vibration |
 | 공유 | share_plus |
@@ -41,11 +46,26 @@
 
 ---
 
+## 디자인 시스템
+
+**라벤더 캄 (Direction A)** — 노년층 시각 안정성 최우선 설계
+
+| 역할 | 색상 | 색상코드 |
+|------|------|---------|
+| 강조색 (Primary) | 라벤더 | `#6C5CE7` |
+| 배경 | 연보라 화이트 | `#F1F0FB` |
+| 카드 | 흰색 | `#FFFFFF` |
+| 텍스트 | 딥 퍼플 네이비 | `#241F3D` |
+
+---
+
 ## 주요 기능
 
-- **인지 훈련** — 7종 미니게임 (계산·기억력·언어·집중력), 적응형 난이도(Closed-loop)
+- **인지 훈련** — 7종 미니게임 (계산·기억력·언어·집중력), 폐루프 적응형 난이도
 - **보행 분석** — 3축 가속도 기반 보행 변동성(CV) 측정, 치매 전조 지표 시각화
 - **음성 평가** — STT 기반 실시간 음성 텍스트 변환 및 발화 분석
+- **감정 일기** — 달력 기반 감정 기록, 일기 작성 및 조회
+- **AI 챗봇** — Gemini 기반 회상 요법 대화, 날짜·시간·날씨 컨텍스트 주입
 - **주간 리포트** — 인지 훈련 점수 시계열 차트, 뇌 연령 추정, 임상 리포트 생성
 - **보호자 연계** — QR 코드 기반 공유 링크, 이상 감지 시 푸시 알림
 - **기관 연계** — 치매안심센터 전화/지도 연동
@@ -58,8 +78,10 @@
 ```
 lib/
 ├── core/
-│   ├── services/          # 백그라운드 서비스, 이상 감지, AI 서비스
+│   ├── services/          # 백그라운드 서비스, 이상 감지, AI, 보호자 동기화, 일기 알림
+│   ├── ai/                # Gemini, 로컬 폴백, AI 키 관리
 │   ├── database_helper.dart
+│   ├── firebase_service.dart
 │   ├── router.dart
 │   ├── theme.dart
 │   └── ...
@@ -70,8 +92,10 @@ lib/
 │   ├── voice_assessment/  # 음성 평가
 │   ├── training/          # 인지 훈련 허브, 7종 미니게임
 │   ├── gait_analysis/     # 보행 분석
-│   ├── home/              # 홈 화면, 메모리 정원
-│   ├── reports/           # 주간 리포트
+│   ├── home/              # 홈 화면
+│   ├── diary/             # 감정 일기 (작성/조회)
+│   ├── ai_chat/           # AI 챗봇 (Gemini)
+│   ├── reports/           # 주간 리포트, 임상 PDF
 │   ├── profile/           # 프로필, 보호자 연계
 │   ├── cs/                # CS 센터
 │   ├── admin/             # 관리자 포털
@@ -81,6 +105,7 @@ test/
 ├── widget/                # 위젯 테스트 (3개)
 └── helpers/               # 테스트 헬퍼, Mock 정의
 integration_test/          # 통합 테스트 (2개)
+maestro/                   # Maestro QA 자동화 (11개 flow)
 ```
 
 ---
@@ -89,7 +114,7 @@ integration_test/          # 통합 테스트 (2개)
 
 ### 사전 요구사항
 
-- Flutter SDK 3.x 이상
+- Flutter SDK 3.11.3 이상
 - Dart 3.x 이상
 - Android Studio / Xcode
 
@@ -110,11 +135,15 @@ flutter test
 
 # 통합 테스트 (연결된 기기 필요)
 flutter test integration_test/
+
+# Maestro QA 자동화
+maestro test maestro/
 ```
 
 ### 환경 설정
 
-Supabase 연결을 위해 프로젝트 루트에 환경 변수를 설정하세요.
+Firebase 연결을 위해 `google-services.json`(Android) 및 `GoogleService-Info.plist`(iOS)가 필요합니다.  
+Gemini AI 키는 앱 내 `ai_key_service.dart`를 통해 관리됩니다.
 
 ---
 
@@ -124,22 +153,25 @@ Supabase 연결을 위해 프로젝트 루트에 환경 변수를 설정하세�
 
 | 카테고리 | 주요 내용 | 상태 |
 |---------|----------|------|
-| 인증 | Supabase 로그인/회원가입, GoRouter 인증 가드 | ✅ |
+| 인증 | Firebase 기반 로그인/회원가입, GoRouter 인증 가드 | ✅ |
 | 온보딩 | 건강 데이터 수집 동의 절차, 민감 정보 미수집 방침 | ✅ |
 | 초기 평가 | 인지 과제, 결과 화면 | ✅ |
 | 음성 평가 | STT 실시간 변환, 발화 분석 점수 UI | ⚠️ LLM 미연결 |
 | 인지 훈련 (7종) | 비교·구구단·순서기억·도형스도쿠·도형짝·단어분류·문장읽기 | ✅ |
 | 적응형 난이도 | DifficultyProvider, 카테고리별 레벨 SQLite 저장 | ✅ |
 | 보행 분석 | 가속도 기반 보행 변동성(CV), 백그라운드 Pedometer | ✅ |
-| 홈 / 일상 루틴 | 실시간 걸음 수, MIND 식단 추천, 메모리 정원 | ✅ |
+| 홈 / 일상 루틴 | 실시간 걸음 수, MIND 식단 추천 | ✅ |
+| 감정 일기 | 달력 기반 작성·조회, 날짜별 감정 기록 | ✅ |
+| AI 챗봇 | Gemini 기반 회상 요법 대화, 실시간 컨텍스트 주입 | ✅ |
 | 주간 리포트 | fl_chart 시계열 차트, 뇌 연령 추정, 임상 리포트 구조 | ✅ |
 | 프로필 / 보호자 연계 | QR 코드 공유 링크, 텍스트 크기 설정 | ✅ |
 | CS 센터 | 공지사항, FAQ, 문의 제출/조회 | ✅ |
 | 관리자 포털 | 사용자 조회, CS 문의 답변, 공지·FAQ 편집 | ✅ |
 | 기관 연계 | 치매안심센터 전화/지도 연동 (url_launcher) | ✅ |
 | 이상 감지 모니터 | 활동 미감지 시 보호자 푸시 알림 구조 | ✅ |
-| UI/UX 개선 | 리서치 기반 홈·훈련 화면 재설계 (카드형 레이아웃, 진행률 배너) | ✅ |
+| UI/UX | 라벤더 캄 전면 리디자인, 카드형 레이아웃 | ✅ |
 | 다중 플랫폼 | Android · iOS · Web 빌드 지원, 앱 아이콘 전체 적용 | ✅ |
+| QA 자동화 | Maestro 11개 flow, 데모 계정 2개 | ✅ |
 | 테스트 커버리지 | 단위 7개 · 위젯 3개 · 통합 2개 | ✅ |
 
 ### 미완성 / 플레이스홀더 기능
@@ -147,11 +179,10 @@ Supabase 연결을 위해 프로젝트 루트에 환경 변수를 설정하세�
 | 기능 | 현황 | 비고 |
 |------|------|------|
 | 온디바이스 LLM 음성 분석 | ⚠️ 시뮬레이션 | 실제 MediaPipe/TFLite 모델 미탑재 |
-| 음성 발화 지표 추출 (TTR, 발화속도) | ⚠️ 부분 구현 | STT는 동작, LLM 파이프라인 미연결 |
+| 음성 발화 지표 추출 (TTR, 발화속도) | ⚠️ 부분 구현 | STT 동작, LLM 파이프라인 미연결 |
 | Health Connect / HealthKit 연동 | ⚠️ 패키지 탑재 완료 | 실제 권한 획득 및 데이터 연동 미완 |
 | 이중 과제 보행 알고리즘 | ⚠️ 미구현 | 보행 중 인지 미션 부여 기능 |
 | FINGER 모델 — 혈압/혈당 입력 | ⚠️ 미구현 | 생활 습관 기록 입력 폼 |
-| 소셜 봇 (회상 요법 챗봇) | ❌ 미구현 | 감정 일기 기반 AI 대화 |
 | PDF 실제 생성 | ⚠️ 패키지 탑재 완료 | 렌더링/공유 연결 필요 |
 | training_corrupted 정리 | ⚠️ 레거시 | 구 버전 파일, 정리 필요 |
 
@@ -160,40 +191,44 @@ Supabase 연결을 위해 프로젝트 루트에 환경 변수를 설정하세�
 ## 라우팅 구조
 
 ```
-/login                          → 로그인
-/register                       → 회원가입
-/ (MainNavScreen)               → 하단 탭 네비게이션
+/login                           → 로그인
+/register                        → 회원가입
+/ (MainNavScreen)                → 하단 탭 네비게이션
   ├── 홈 (HomeScreen)
   ├── 훈련 (TrainingHubScreen)
-  ├── 보행 (GaitScreen)
+  ├── 생활 (WalkingDashboardScreen)
   ├── 리포트 (ReportsScreen)
-  └── 기관 연계 (ReferralScreen)
-/onboarding                     → 온보딩
-/consent                        → 동의
-/assessment                     → 초기 평가
-/cognitive_tasks                → 인지 과제
-/assessment_result              → 평가 결과
-/game/comparison                → 비교 게임
-/game/sequence                  → 순서 기억
-/game/sudoku                    → 도형 스도쿠
-/game/multiplication            → 구구단
-/game/shape_match               → 도형 짝
-/game/categorization            → 단어 분류
-/game/reading                   → 문장 읽기
-/gait                           → 보행 분석
-/precise_gait_analysis          → 정밀 보행 분석
-/walking_dashboard              → 걷기 대시보드
-/memory_garden                  → 메모리 정원
-/training/recall                → 일일 회상
-/profile                        → 프로필
-/guardian_link                  → 보호자 연결
-/cs_center                      → CS 센터
-/cs/notices, /cs/faq            → 공지사항, FAQ
-/cs/inquiry_submit, ...         → 문의 관련
-/admin_login                    → 관리자 로그인
-/admin/dashboard                → 관리자 대시보드
-/admin/user_detail/:userId      → 사용자 상세
-/admin/cs_management            → CS 관리
+  └── 프로필 (ProfileScreen)
+/onboarding                      → 온보딩
+/consent                         → 동의
+/assessment                      → 초기 평가
+/cognitive_tasks                 → 인지 과제
+/assessment_result               → 평가 결과
+/voice_assessment                → 음성 평가
+/game/comparison                 → 비교 게임
+/game/sequence                   → 순서 기억
+/game/sudoku                     → 도형 스도쿠
+/game/multiplication             → 구구단
+/game/shape_match                → 도형 짝
+/game/categorization             → 단어 분류
+/game/reading                    → 문장 읽기
+/gait                            → 보행 분석
+/precise_gait_analysis           → 정밀 보행 분석
+/walking_dashboard               → 걷기 대시보드
+/memory_garden                   → 일기 작성 (DiaryScreen)
+/diary_book                      → 일기 조회 (DiaryBookScreen)
+/ai_chat                         → AI 챗봇 (Gemini)
+/training/recall                 → 일일 회상
+/report_options                  → 임상 리포트 옵션
+/profile                         → 프로필
+/guardian_link                   → 보호자 연결
+/cs_center                       → CS 센터
+/cs/notices, /cs/faq             → 공지사항, FAQ
+/cs/inquiry_submit, ...          → 문의 관련
+/admin_login                     → 관리자 로그인
+/admin/dashboard                 → 관리자 대시보드
+/admin/user_detail/:userId       → 사용자 상세
+/admin/cs_management             → CS 관리
 /admin/notice_edit, /admin/faq_edit, /admin/inquiry_detail/:id
 ```
 
@@ -207,9 +242,8 @@ Supabase 연결을 위해 프로젝트 루트에 환경 변수를 설정하세�
 4. **Health Connect / HealthKit 데이터 연동** — health 패키지로 걸음 수·수면 실데이터 수집
 5. **FINGER 생활 습관 기록** — 수면, 혈압/혈당 입력 UI 추가
 6. **이중 과제 보행** — 보행 중 인지 미션 부여 UI 및 속도 저하율 측정
-7. **소셜 봇** — 감정 일기 기반 회상 요법 챗봇 화면
-8. **training_corrupted 정리** — 레거시 파일 제거 또는 병합
-9. **테스트 커버리지 확대** — 보행 분석·음성 평가·보호자 연계 영역 추가
+7. **training_corrupted 정리** — 레거시 파일 제거 또는 병합
+8. **테스트 커버리지 확대** — 보행 분석·음성 평가·보호자 연계 영역 추가
 
 ---
 
