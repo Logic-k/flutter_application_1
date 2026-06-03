@@ -3,27 +3,30 @@ appId: com.example.flutter_application_1
 # 리포트 화면 테스트
 - runFlow: helpers/login_helper.yaml
 
-# 리포트 탭 (70%, 93%)
+# 리포트 탭 (64%, 93%)
 - tapOn:
-    point: "70%,93%"
+    point: "64%,93%"
 - extendedWaitUntil:
     visible: "주간 분석 리포트"
     timeout: 8000
 
-# 리포트 화면 콘텐츠 확인
+# 리포트 화면 콘텐츠 확인 (body async 로딩 대기)
 - assertVisible: "주간 분석 리포트"
+- extendedWaitUntil:
+    visible: "나의 인지 건강 일기"
+    timeout: 10000
 - assertVisible: "나의 인지 건강 일기"
 
-# 임상 리포트 버튼 확인 (FilledButton - Semantics에 노출됨)
+# 임상 리포트 버튼 확인
 - scrollUntilVisible:
     element:
       text: "임상 리포트 생성하기"
     direction: DOWN
 - assertVisible: "임상 리포트 생성하기"
 
-# 홈 탭으로 복귀 (10%, 93%)
+# 홈 탭으로 복귀 (30%, 93%)
 - tapOn:
-    point: "10%,93%"
+    point: "30%,93%"
 - extendedWaitUntil:
     visible: "오늘 걸음"
     timeout: 5000

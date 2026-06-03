@@ -1,0 +1,22 @@
+appId: com.example.flutter_application_1
+---
+- runFlow: helpers/login_helper.yaml
+
+# 생활습관 탭 → 보행 정밀 분석 카드 탭
+- tapOn:
+    point: "53%,93%"
+- extendedWaitUntil:
+    visible: "생활습관"
+    timeout: 8000
+- extendedWaitUntil:
+    visible: "/ 10,000 보"
+    timeout: 10000
+
+# CTA 카드 탭 (merged semantics)
+- tapOn: "보행 정밀 분석\n3분간의 걸음으로 당신의 뇌 건강 패턴을 분석합니다."
+- extendedWaitUntil:
+    visible: "정밀 보행 분석"
+    timeout: 10000
+
+# 정밀 보행 분석 화면 확인
+- assertVisible: "정밀 보행 분석"

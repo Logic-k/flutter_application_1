@@ -1,0 +1,13 @@
+appId: com.example.flutter_application_1
+---
+- runFlow: helpers/login_helper.yaml
+
+# 홈 → 기억의 정원 카드 탭 (merged semantics: title\nsubtitle)
+- tapOn: "나의 기억의 정원\n정성과 노력으로 정원을 가꾸어보세요"
+- extendedWaitUntil:
+    visible: "기억의 정원"
+    timeout: 10000
+
+# 기억의 정원 화면 진입 확인
+- assertVisible: "기억의 정원"
+- assertVisible: "현재 제철 꽃:"

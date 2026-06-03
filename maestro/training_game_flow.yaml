@@ -1,0 +1,20 @@
+appId: com.example.flutter_application_1
+---
+- runFlow: helpers/login_helper.yaml
+
+# 인지훈련 탭 → 누가 큰가요? 게임
+- tapOn:
+    point: "43%,93%"
+- extendedWaitUntil:
+    visible: "두뇌 트레이닝 센터"
+    timeout: 5000
+
+# 게임 카드 탭 (merged: "10, Lv.1\n제목\n설명\n10%")
+- tapOn: "10, Lv.1\n누가 큰가요?\n빠른 수식 비교\n10%"
+- extendedWaitUntil:
+    visible: "VS"
+    timeout: 5000
+
+# 게임 화면 진입 확인 (AppBar title + static text)
+- assertVisible: "누가 큰가요?"
+- assertVisible: "VS"

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../core/user_provider.dart';
@@ -40,16 +39,10 @@ class _LoginScreenState extends State<LoginScreen> {
             children: [
               const SizedBox(height: 60),
 
-              // 브레인버디 마스코트 히어로
-              Container(
-                width: 110, height: 110,
-                decoration: BoxDecoration(
-                  color: MLColors.primarySoft,
-                  borderRadius: BorderRadius.circular(AppTheme.rCard),
-                ),
-                child: Center(
-                  child: SvgPicture.asset('assets/illustrations/brain_buddy.svg', width: 72),
-                ),
+              // MemoryLink 로고 히어로
+              ClipRRect(
+                borderRadius: BorderRadius.circular(AppTheme.rCard),
+                child: Image.asset('assets/icon/app_icon.png', width: 110, height: 110),
               ),
 
               const SizedBox(height: 24),

@@ -1,11 +1,11 @@
-appId: com.example.flutter_application_1
+﻿appId: com.example.flutter_application_1
 ---
 # 소셜 랭킹 (인구 통계학적 비교) 위젯 테스트
 - runFlow: helpers/login_helper.yaml
 
 # 리포트 탭 진입
 - tapOn:
-    point: "70%,93%"
+    point: "64%,93%"
 - extendedWaitUntil:
     visible: "주간 분석 리포트"
     timeout: 8000

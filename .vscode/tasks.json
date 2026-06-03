@@ -18,6 +18,19 @@
       "problemMatcher": []
     },
     {
+      "label": "Maestro: 스크린샷 캡처",
+      "type": "shell",
+      "command": "powershell",
+      "args": ["-ExecutionPolicy", "Bypass", "-File", "${workspaceFolder}\\capture_screenshots.ps1"],
+      "group": "test",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new",
+        "clear": true
+      },
+      "problemMatcher": []
+    },
+    {
       "label": "Maestro: 단일 flow 실행",
       "type": "shell",
       "command": "powershell",
@@ -51,7 +64,16 @@
         "reports_flow",
         "voice_assessment_flow",
         "social_ranking_flow",
-        "guardian_link_flow"
+        "guardian_link_flow",
+        "home_detail_flow",
+        "ai_chat_flow",
+        "memory_garden_flow",
+        "walking_dashboard_flow",
+        "precise_gait_analysis_flow",
+        "training_game_flow",
+        "edit_profile_flow",
+        "clinical_report_flow",
+        "screenshot_tour_flow"
       ]
     }
   ]

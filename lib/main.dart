@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:timezone/data/latest_all.dart' as tz_data;
+import 'package:timezone/timezone.dart' as tz;
 import 'core/theme.dart';
 import 'core/router.dart';
 import 'core/user_provider.dart';
@@ -8,17 +11,40 @@ import 'core/firebase_service.dart';
 import 'core/local_ai_service.dart';
 import 'core/ai/ai_chat_service.dart';
 import 'core/services/background_service.dart';
+import 'core/services/diary_notification_service.dart';
 import 'features/gait_analysis/gait_provider.dart';
 import 'features/gait_analysis/pedometer_manager.dart';
+import 'features/diary/diary_provider.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 import 'features/training/difficulty_provider.dart';
 import 'core/settings_provider.dart';
 import 'core/admin_provider.dart';
 
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
+  // Timezone 초기화 (저녁 7시 KST 알림 스케줄링용)
+  tz_data.initializeTimeZones();
+  tz.setLocalLocation(tz.getLocation('Asia/Seoul'));
+
+  // 알림 플러그인 초기화
+  const AndroidInitializationSettings androidSettings =
+      AndroidInitializationSettings('@mipmap/ic_launcher');
+  const DarwinInitializationSettings iosSettings = DarwinInitializationSettings(
+    requestAlertPermission: true,
+    requestBadgePermission: true,
+    requestSoundPermission: true,
+  );
+  await flutterLocalNotificationsPlugin.initialize(
+    settings: const InitializationSettings(android: androidSettings, iOS: iosSettings),
+  );
+  await DiaryNotificationService.initialize(flutterLocalNotificationsPlugin);
+  await DiaryNotificationService.scheduleDailyReminder(flutterLocalNotificationsPlugin);
+
   // 한국어 날짜 형식 데이터 초기화
   await initializeDateFormatting('ko_KR', null);
   
@@ -51,6 +77,7 @@ void main() async {
         ),
         ChangeNotifierProvider(create: (_) => SettingsProvider()),
         ChangeNotifierProvider(create: (_) => AdminProvider()),
+        ChangeNotifierProvider(create: (_) => DiaryProvider()),
         ChangeNotifierProxyProvider<UserProvider, DifficultyProvider>(
           create: (context) => DifficultyProvider(username: ''),
           update: (context, user, previous) {

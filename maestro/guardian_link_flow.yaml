@@ -1,11 +1,11 @@
-appId: com.example.flutter_application_1
+﻿appId: com.example.flutter_application_1
 ---
 # 보호자 안심 연결 화면 UI 테스트
 - runFlow: helpers/login_helper.yaml
 
 # 내정보 탭 진입
 - tapOn:
-    point: "90%,93%"
+    point: "74%,93%"
 - extendedWaitUntil:
     visible: "내 정보"
     timeout: 5000

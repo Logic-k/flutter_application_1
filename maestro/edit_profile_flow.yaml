@@ -1,0 +1,18 @@
+﻿appId: com.example.flutter_application_1
+---
+- runFlow: helpers/login_helper.yaml
+
+# 내정보 탭 → 편집 버튼
+- tapOn:
+    point: "74%,93%"
+- extendedWaitUntil:
+    visible: "내 정보"
+    timeout: 5000
+- tapOn: "편집"
+- extendedWaitUntil:
+    visible: "정보 수정"
+    timeout: 5000
+
+# 프로필 편집 화면 확인
+- assertVisible: "정보 수정"
+- assertVisible: "저장"

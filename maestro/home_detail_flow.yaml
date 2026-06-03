@@ -1,0 +1,21 @@
+appId: com.example.flutter_application_1
+---
+- runFlow: helpers/login_helper.yaml
+
+# 홈 상단 고정 카드 (GestureDetector → merged semantics)
+- assertVisible: "AI 도우미\nAI와 대화로 인지 건강을 확인해보세요"
+- assertVisible: "나의 기억의 정원\n정성과 노력으로 정원을 가꾸어보세요"
+
+# 스크롤 후 걷기 미니 카드 (merged: title + "0 / 10,000 걸음")
+- scrollUntilVisible:
+    element:
+      text: "오늘의 걸음\n0 / 10,000 걸음"
+    direction: DOWN
+- assertVisible: "오늘의 걸음\n0 / 10,000 걸음"
+
+# 스크롤 후 두뇌 건강 분석 카드 (MLSectionTitle → standalone text)
+- scrollUntilVisible:
+    element:
+      text: "두뇌 건강 분석"
+    direction: DOWN
+- assertVisible: "두뇌 건강 분석"

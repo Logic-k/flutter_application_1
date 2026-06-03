@@ -1,0 +1,13 @@
+appId: com.example.flutter_application_1
+---
+- runFlow: helpers/login_helper.yaml
+
+# 홈 → AI 도우미 카드 탭 (merged semantics: title\nsubtitle)
+- tapOn: "AI 도우미\nAI와 대화로 인지 건강을 확인해보세요"
+- extendedWaitUntil:
+    visible: "AI 대화 도우미"
+    timeout: 10000
+
+# AI 채팅 화면 진입 확인
+- assertVisible: "AI 대화 도우미"
+- assertVisible: "대화 종료"

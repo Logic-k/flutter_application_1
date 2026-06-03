@@ -77,7 +77,15 @@ jobs:
               maestro/reports_flow.yaml \
               maestro/voice_assessment_flow.yaml \
               maestro/social_ranking_flow.yaml \
-              maestro/guardian_link_flow.yaml; do
+              maestro/guardian_link_flow.yaml \
+              maestro/home_detail_flow.yaml \
+              maestro/ai_chat_flow.yaml \
+              maestro/memory_garden_flow.yaml \
+              maestro/walking_dashboard_flow.yaml \
+              maestro/precise_gait_analysis_flow.yaml \
+              maestro/training_game_flow.yaml \
+              maestro/edit_profile_flow.yaml \
+              maestro/clinical_report_flow.yaml; do
               echo "::group::$flow"
               maestro test "$flow" && { passed=$((passed+1)); results="$results\nPASS: $flow"; } \
                                   || { failed=$((failed+1)); results="$results\nFAIL: $flow"; }
@@ -89,6 +97,29 @@ jobs:
             echo "결과: PASS $passed / FAIL $failed / TOTAL $((passed+failed))"
             printf "%b\n" "$results"
             [ $failed -eq 0 ]
+
+      # 스크린샷 투어 실행 (결과와 무관하게 항상)
+      - name: Capture screenshots
+        if: always()
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 33
+          arch: x86_64
+          profile: pixel_6
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+          disable-animations: true
+          script: |
+            adb install -r build/app/outputs/flutter-apk/app-debug.apk || true
+            maestro test maestro/screenshot_tour_flow.yaml || true
+
+      # 스크린샷 아티팩트 업로드
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots-${{ github.run_number }}
+          path: ~/.maestro/tests/
+          retention-days: 30
 
       # 실패 시 디버그 아티팩트 업로드
       - name: Upload Maestro artifacts

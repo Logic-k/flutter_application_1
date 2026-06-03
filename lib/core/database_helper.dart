@@ -32,7 +32,7 @@ class DatabaseHelper {
     final bool isTest = pathOverride != null;
     return await openDatabase(
       path,
-      version: 4,
+      version: 5,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
       singleInstance: !isTest,
@@ -100,6 +100,20 @@ class DatabaseHelper {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER NOT NULL,
         date TEXT NOT NULL,
+        UNIQUE(user_id, date),
+        FOREIGN KEY (user_id) REFERENCES users (id)
+      )
+    ''');
+
+    // Diary entries table
+    await db.execute('''
+      CREATE TABLE diary_entries (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        date TEXT NOT NULL,
+        content TEXT NOT NULL DEFAULT '',
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL,
         UNIQUE(user_id, date),
         FOREIGN KEY (user_id) REFERENCES users (id)
       )
@@ -265,6 +279,20 @@ class DatabaseHelper {
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           user_id INTEGER NOT NULL,
           date TEXT NOT NULL,
+          UNIQUE(user_id, date),
+          FOREIGN KEY (user_id) REFERENCES users (id)
+        )
+      ''');
+    }
+    if (oldVersion < 5) {
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS diary_entries (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          user_id INTEGER NOT NULL,
+          date TEXT NOT NULL,
+          content TEXT NOT NULL DEFAULT '',
+          created_at TEXT NOT NULL,
+          updated_at TEXT NOT NULL,
           UNIQUE(user_id, date),
           FOREIGN KEY (user_id) REFERENCES users (id)
         )
@@ -537,6 +565,63 @@ class DatabaseHelper {
 
   Future<List<Map<String, dynamic>>> getScoreHistoryForUser(int userId) async {
     return getScoreHistory(userId);
+  }
+
+  // --- Diary Operations ---
+
+  Future<void> upsertDiary(int userId, String date, String content) async {
+    final db = await database;
+    final now = DateTime.now().toIso8601String();
+    await db.rawInsert('''
+      INSERT INTO diary_entries (user_id, date, content, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?)
+      ON CONFLICT(user_id, date) DO UPDATE SET
+        content = excluded.content,
+        updated_at = excluded.updated_at
+    ''', [userId, date, content, now, now]);
+  }
+
+  Future<Map<String, dynamic>?> getDiary(int userId, String date) async {
+    final db = await database;
+    final rows = await db.query(
+      'diary_entries',
+      where: 'user_id = ? AND date = ?',
+      whereArgs: [userId, date],
+      limit: 1,
+    );
+    return rows.isNotEmpty ? rows.first : null;
+  }
+
+  Future<List<String>> getDiaryDatesForMonth(int userId, String yearMonth) async {
+    final db = await database;
+    final rows = await db.rawQuery(
+      "SELECT date FROM diary_entries WHERE user_id = ? AND date LIKE ? ORDER BY date ASC",
+      [userId, '$yearMonth%'],
+    );
+    return rows.map((r) => r['date'] as String).toList();
+  }
+
+  Future<List<Map<String, dynamic>>> getAllDiaries(int userId) async {
+    final db = await database;
+    return await db.query(
+      'diary_entries',
+      where: 'user_id = ?',
+      whereArgs: [userId],
+      orderBy: 'date DESC',
+    );
+  }
+
+  Future<void> deleteOldDiaries(int userId) async {
+    final db = await database;
+    final cutoff = DateTime.now()
+        .subtract(const Duration(days: 365))
+        .toIso8601String()
+        .split('T')[0];
+    await db.delete(
+      'diary_entries',
+      where: 'user_id = ? AND date < ?',
+      whereArgs: [userId, cutoff],
+    );
   }
 
   /// 날짜별로 묶인 세션 히스토리 반환 (임상 리포트 추이 차트용)

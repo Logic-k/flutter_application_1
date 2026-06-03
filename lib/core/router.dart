@@ -19,7 +19,8 @@ import '../features/auth/register_screen.dart';
 import '../features/profile/profile_screen.dart';
 import '../features/gait_analysis/gait_screen.dart';
 import '../features/gait_analysis/precise_analysis_screen.dart';
-import '../features/home/memory_garden_screen.dart';
+import '../features/diary/diary_screen.dart';
+import '../features/diary/diary_book_screen.dart';
 import '../features/profile/guardian_link_screen.dart';
 import '../features/gait_analysis/walking_dashboard_screen.dart';
 import '../features/training/daily_recall_page.dart';
@@ -139,7 +140,11 @@ GoRouter createAppRouter(
       ),
       GoRoute(
         path: '/memory_garden',
-        builder: (context, state) => const MemoryGardenScreen(),
+        builder: (context, state) => const DiaryScreen(),
+      ),
+      GoRoute(
+        path: '/diary_book',
+        builder: (context, state) => const DiaryBookScreen(),
       ),
       GoRoute(
         path: '/guardian_link',

@@ -34,7 +34,15 @@ $flows = @(
     "maestro/reports_flow.yaml",
     "maestro/voice_assessment_flow.yaml",
     "maestro/social_ranking_flow.yaml",
-    "maestro/guardian_link_flow.yaml"
+    "maestro/guardian_link_flow.yaml",
+    "maestro/home_detail_flow.yaml",
+    "maestro/ai_chat_flow.yaml",
+    "maestro/memory_garden_flow.yaml",
+    "maestro/walking_dashboard_flow.yaml",
+    "maestro/precise_gait_analysis_flow.yaml",
+    "maestro/training_game_flow.yaml",
+    "maestro/edit_profile_flow.yaml",
+    "maestro/clinical_report_flow.yaml"
 )
 
 if ($Flow -ne "") {
@@ -48,7 +56,7 @@ $failed = 0
 $results = @()
 
 Write-Host ""
-Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor DarkGray
+Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor DarkGray
 Write-Host "  MemoryLink Maestro Tests  (총 $($flows.Count)개)" -ForegroundColor White
 Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor DarkGray
 

@@ -3,13 +3,32 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
 import '../gait_analysis/pedometer_manager.dart';
+import '../diary/diary_provider.dart';
 import '../../core/ai/ai_chat_service.dart';
 import '../../core/user_provider.dart';
 import '../../core/ml_widgets.dart';
 import '../../core/theme.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _loadTodayDiary());
+  }
+
+  Future<void> _loadTodayDiary() async {
+    final userId =
+        context.read<UserProvider>().currentUser?['id'] as int?;
+    if (userId == null) return;
+    await context.read<DiaryProvider>().loadMonth(userId, DateTime.now());
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -183,27 +202,35 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  // ─── 기억의 정원 카드 ─────────────────────────────────────────
+  // ─── 오늘의 일기 카드 ─────────────────────────────────────────
   Widget _buildMemoryGardenCard(BuildContext context, UserProvider user, PedometerManager pedometer) {
-    final stepProgress = (pedometer.todaySteps / 10000).clamp(0.0, 1.0);
-    final cognitiveProgress = ((user.calculationScore + user.logicScore + user.memoryScore + user.attentionScore) / 400.0).clamp(0.0, 1.0);
-    final totalProgress = (stepProgress + cognitiveProgress) / 2.0;
+    final hasTodayEntry = context.watch<DiaryProvider>().hasEntry(DateTime.now());
 
     return MLCard(
       onTap: () => context.push('/memory_garden'),
       padding: const EdgeInsets.all(18),
       child: Row(
         children: [
-          MLRing(value: totalProgress, size: 60, stroke: 6, color: MLColors.mem, center: const Icon(Icons.local_florist_rounded, color: MLColors.mem, size: 22)),
+          MLRing(
+            value: hasTodayEntry ? 1.0 : 0.0,
+            size: 60,
+            stroke: 6,
+            color: MLColors.mem,
+            center: Icon(
+              hasTodayEntry ? Icons.check_rounded : Icons.edit_note_rounded,
+              color: MLColors.mem,
+              size: 22,
+            ),
+          ),
           const SizedBox(width: 18),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('나의 기억의 정원', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16)),
+                const Text('오늘의 일기', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16)),
                 const SizedBox(height: 4),
                 Text(
-                  totalProgress >= 0.8 ? '정원이 활기차게 피어났습니다!' : '정성과 노력으로 정원을 가꾸어보세요',
+                  hasTodayEntry ? '오늘 일기를 작성했어요 ✨' : '오늘 하루를 기록해보세요',
                   style: const TextStyle(color: MLColors.textSoft, fontSize: 13),
                 ),
               ],

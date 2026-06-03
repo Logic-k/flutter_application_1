@@ -1,0 +1,137 @@
+﻿appId: com.example.flutter_application_1
+---
+- runFlow: helpers/login_helper.yaml
+
+# ── 01 홈 화면 ─────────────────────────────────────────────────
+- assertVisible: "오늘 걸음"
+- takeScreenshot: 01_home
+
+# ── 02 AI 채팅 ─────────────────────────────────────────────────
+- tapOn: "AI 도우미\nAI와 대화로 인지 건강을 확인해보세요"
+- extendedWaitUntil:
+    visible: "AI 대화 도우미"
+    timeout: 10000
+- takeScreenshot: 02_ai_chat
+- pressKey: back
+
+# ── 03 기억의 정원 ─────────────────────────────────────────────
+- extendedWaitUntil:
+    visible: "나의 기억의 정원\n정성과 노력으로 정원을 가꾸어보세요"
+    timeout: 5000
+- tapOn: "나의 기억의 정원\n정성과 노력으로 정원을 가꾸어보세요"
+- extendedWaitUntil:
+    visible: "기억의 정원"
+    timeout: 10000
+- takeScreenshot: 03_memory_garden
+- pressKey: back
+
+# ── 04 인지훈련 허브 ────────────────────────────────────────────
+- tapOn:
+    point: "43%,93%"
+- extendedWaitUntil:
+    visible: "두뇌 트레이닝 센터"
+    timeout: 5000
+- takeScreenshot: 04_training_hub
+
+# ── 05 게임 화면 ────────────────────────────────────────────────
+- tapOn: "10, Lv.1\n누가 큰가요?\n빠른 수식 비교\n10%"
+- extendedWaitUntil:
+    visible: "VS"
+    timeout: 5000
+- takeScreenshot: 05_training_game
+- pressKey: back
+
+# ── 06 생활습관 (걷기 대시보드) ─────────────────────────────────
+- tapOn:
+    point: "53%,93%"
+- extendedWaitUntil:
+    visible: "/ 10,000 보"
+    timeout: 10000
+- takeScreenshot: 06_walking_dashboard
+
+# ── 07 리포트 ──────────────────────────────────────────────────
+- tapOn:
+    point: "64%,93%"
+- extendedWaitUntil:
+    visible: "주간 분석 리포트"
+    timeout: 8000
+- takeScreenshot: 07_reports
+
+# ── 08 소셜 랭킹 ───────────────────────────────────────────────
+- scrollUntilVisible:
+    element:
+      text: "동년배 중에서 평균보다 높은 수준의 인지 능력을 보여주고 계십니다. 훌륭합니다!"
+    direction: DOWN
+- takeScreenshot: 08_social_ranking
+
+# ── 09 임상 리포트 ─────────────────────────────────────────────
+- scrollUntilVisible:
+    element:
+      text: "임상 리포트 생성하기"
+    direction: DOWN
+- tapOn: "임상 리포트 생성하기"
+- extendedWaitUntil:
+    visible: "임상 리포트 생성"
+    timeout: 8000
+- takeScreenshot: 09_clinical_report
+- pressKey: back
+
+# ── 10 내정보 ──────────────────────────────────────────────────
+- tapOn:
+    point: "74%,93%"
+- extendedWaitUntil:
+    visible: "내 정보"
+    timeout: 5000
+- takeScreenshot: 10_profile
+
+# ── 11 프로필 편집 ─────────────────────────────────────────────
+- tapOn: "편집"
+- extendedWaitUntil:
+    visible: "정보 수정"
+    timeout: 5000
+- takeScreenshot: 11_edit_profile
+- pressKey: back
+
+# ── 12 보호자 안심 연결 ─────────────────────────────────────────
+- extendedWaitUntil:
+    visible: "내 정보"
+    timeout: 5000
+- scrollUntilVisible:
+    element:
+      text: "보호자 안심 연결\n보호자가 활동 상태를 확인할 수 있습니다."
+    direction: DOWN
+- tapOn: "보호자 안심 연결\n보호자가 활동 상태를 확인할 수 있습니다."
+- extendedWaitUntil:
+    visible: "보호자 안심 연결"
+    timeout: 5000
+- takeScreenshot: 12_guardian_link
+- pressKey: back
+
+# ── 13 음성 진단 ───────────────────────────────────────────────
+- extendedWaitUntil:
+    visible: "내 정보"
+    timeout: 5000
+- scrollUntilVisible:
+    element:
+      text: "음성 진단\n인지 건강 초기 진단 재실행"
+    direction: DOWN
+- tapOn: "음성 진단\n인지 건강 초기 진단 재실행"
+- extendedWaitUntil:
+    visible: "초기 음성 진단"
+    timeout: 5000
+- takeScreenshot: 13_voice_assessment
+- pressKey: back
+
+# ── 14 고객센터 ────────────────────────────────────────────────
+- extendedWaitUntil:
+    visible: "내 정보"
+    timeout: 5000
+- scrollUntilVisible:
+    element:
+      text: "고객센터\n공지사항, FAQ, 1:1 문의"
+    direction: DOWN
+- tapOn: "고객센터\n공지사항, FAQ, 1:1 문의"
+- extendedWaitUntil:
+    visible: "고객센터"
+    timeout: 5000
+- takeScreenshot: 14_cs_center

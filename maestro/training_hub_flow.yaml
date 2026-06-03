@@ -1,11 +1,11 @@
-appId: com.example.flutter_application_1
+﻿appId: com.example.flutter_application_1
 ---
 # 인지훈련 허브 및 게임 진입 테스트
 - runFlow: helpers/login_helper.yaml
 
 # 인지훈련 탭 (30%, 93%)
 - tapOn:
-    point: "30%,93%"
+    point: "43%,93%"
 - extendedWaitUntil:
     visible: "두뇌 트레이닝 센터"
     timeout: 5000
