@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../core/services/voice_service.dart';
 import '../../../core/settings_provider.dart';
+import '../../../core/theme.dart';
 import '../difficulty_provider.dart';
 
 class GameTemplate extends StatelessWidget {
@@ -27,44 +28,36 @@ class GameTemplate extends StatelessWidget {
   Widget build(BuildContext context) {
     final settings = context.read<SettingsProvider>();
     if (settings.voiceGuidanceEnabled) {
-      // 빌드 후 한 번만 음성 안내 실행
       WidgetsBinding.instance.addPostFrameCallback((_) {
         VoiceService().speakTrainingStart(title);
       });
     }
-    
-    final theme = Theme.of(context);
+
     final progress = currentStep / totalSteps;
 
     return Scaffold(
-      backgroundColor: theme.colorScheme.surface,
       appBar: AppBar(
-        title: Text(title, style: const TextStyle(fontSize: 18)),
+        title: Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
         leading: IconButton(
-          icon: const Icon(Icons.close),
+          icon: const Icon(Icons.close_rounded),
           onPressed: onExit ?? () => context.pop(),
         ),
         actions: [
           Consumer<DifficultyProvider>(
             builder: (context, difficulty, _) {
-              // 현재 상황에 맞는 목표 시간 표시 (지각 영역 예시, 카테고리는 확장 필요)
               final targetTime = difficulty.getTargetTime(GameCategory.perception);
               return Center(
                 child: Padding(
-                  padding: const EdgeInsets.only(right: 16.0),
+                  padding: const EdgeInsets.only(right: 8),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
                     decoration: BoxDecoration(
-                      color: theme.primaryColor.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(8),
+                      color: MLColors.primarySoft,
+                      borderRadius: BorderRadius.circular(AppTheme.rBtn),
                     ),
                     child: Text(
                       '목표: ${targetTime.toStringAsFixed(1)}초',
-                      style: TextStyle(
-                        color: theme.primaryColor,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
+                      style: const TextStyle(color: MLColors.primary, fontWeight: FontWeight.w800, fontSize: 13),
                     ),
                   ),
                 ),
@@ -73,42 +66,41 @@ class GameTemplate extends StatelessWidget {
           ),
           Center(
             child: Padding(
-              padding: const EdgeInsets.only(right: 24.0),
-              child: Text(
-                '$currentStep / $totalSteps',
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-              ),
+              padding: const EdgeInsets.only(right: 20),
+              child: Text('$currentStep / $totalSteps', style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15)),
             ),
           ),
         ],
       ),
       body: Column(
         children: [
+          // 라벤더 진행 바
           LinearProgressIndicator(
             value: progress,
-            backgroundColor: theme.primaryColor.withValues(alpha: 0.1),
-            valueColor: AlwaysStoppedAnimation<Color>(theme.primaryColor),
+            backgroundColor: MLColors.primary.withValues(alpha: 0.10),
+            valueColor: const AlwaysStoppedAnimation<Color>(MLColors.primary),
             minHeight: 6,
           ),
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
               child: Column(
                 children: [
+                  // 목표 카드 (primarySoft 배경)
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: theme.primaryColor.withValues(alpha: 0.05),
-                      borderRadius: BorderRadius.circular(16),
+                      color: MLColors.primarySoft,
+                      borderRadius: BorderRadius.circular(AppTheme.rTile),
                     ),
                     child: Text(
                       objective,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(fontSize: 16, height: 1.5, fontWeight: FontWeight.w500),
+                      style: const TextStyle(fontSize: 16, height: 1.5, fontWeight: FontWeight.w700, color: MLColors.primary),
                     ),
                   ),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 28),
                   Expanded(child: child),
                 ],
               ),

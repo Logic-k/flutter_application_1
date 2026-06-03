@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:go_router/go_router.dart';
 import 'pedometer_manager.dart';
+import '../../core/ml_widgets.dart';
+import '../../core/theme.dart';
 
 class WalkingDashboardScreen extends StatefulWidget {
   const WalkingDashboardScreen({super.key});
@@ -33,279 +35,158 @@ class _WalkingDashboardScreenState extends State<WalkingDashboardScreen> {
       }
     } catch (e) {
       debugPrint('대시보드 데이터 로드 오류: $e');
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final pedometer = context.watch<PedometerManager>();
-    
-    // 목표 달성률 계산 (예: 10,000보 기준)
-    final double progress = (pedometer.todaySteps / 10000).clamp(0.01, 1.0);
+    final progress = (pedometer.todaySteps / 10000).clamp(0.01, 1.0);
 
     return Scaffold(
-      backgroundColor: theme.colorScheme.surface,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        title: Text('생활습관', style: TextStyle(color: theme.colorScheme.onSurface, fontWeight: FontWeight.w800)),
-        centerTitle: false,
+        title: const Text('생활습관'),
         actions: [
           Container(
             margin: const EdgeInsets.only(right: 16),
             decoration: BoxDecoration(
-              color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5), 
-              shape: BoxShape.circle, 
-              border: Border.all(color: theme.dividerColor.withValues(alpha: 0.1))
+              color: MLColors.surfaceAlt,
+              shape: BoxShape.circle,
+              border: Border.all(color: MLColors.line),
             ),
             child: IconButton(
-              icon: Icon(Icons.history, color: theme.colorScheme.onSurfaceVariant), 
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('지난 보행 기록을 불러오는 중입니다...')));
-              }
+              icon: const Icon(Icons.history_rounded, color: MLColors.textSoft),
+              onPressed: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('지난 보행 기록을 불러오는 중입니다...'))),
             ),
           ),
         ],
       ),
-      body: _isLoading 
-        ? const Center(child: CircularProgressIndicator())
-        : SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator(color: MLColors.primary))
+          : SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(22, 6, 22, 110),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 12),
-                  
-                  // 1. 프리미엄 원형 게이지 섹션
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(32),
-                    decoration: BoxDecoration(
-                      color: theme.cardColor,
-                      borderRadius: BorderRadius.circular(32),
-                      boxShadow: [
-                        BoxShadow(color: theme.primaryColor.withValues(alpha: 0.08), blurRadius: 20, offset: const Offset(0, 10)),
+                  // 1. 원형 게이지
+                  MLCard(
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        MLRing(
+                          value: progress,
+                          size: 194,
+                          stroke: 17,
+                          color: MLColors.primary,
+                          center: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(pedometer.todaySteps.toString(), style: const TextStyle(fontSize: 38, fontWeight: FontWeight.w900)),
+                              const Text('/ 10,000 보', style: TextStyle(fontSize: 13, color: MLColors.textSoft, fontWeight: FontWeight.w600)),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        _buildStepStatus(progress),
                       ],
                     ),
-                    child: Column(
-                      children: [
-                        Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            SizedBox(
-                              width: 200,
-                              height: 200,
-                              child: CircularProgressIndicator(
-                                value: progress,
-                                strokeWidth: 16,
-                                backgroundColor: theme.primaryColor.withValues(alpha: 0.1),
-                                valueColor: AlwaysStoppedAnimation<Color>(theme.primaryColor),
-                                strokeCap: StrokeCap.round,
-                              ),
-                            ),
-                            Column(
-                              children: [
-                                Text(
-                                  pedometer.todaySteps.toString(),
-                                  style: TextStyle(fontSize: 42, fontWeight: FontWeight.w900, color: theme.colorScheme.onSurface),
-                                ),
-                                Text('/ 10,000 보', style: TextStyle(fontSize: 14, color: theme.colorScheme.onSurfaceVariant, fontWeight: FontWeight.w600)),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // 2. 정밀 분석 CTA
+                  GestureDetector(
+                    onTap: () => context.push('/precise_gait_analysis'),
+                    child: MLHeroCard(
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: const [
+                                Text('보행 정밀 분석', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w900)),
+                                SizedBox(height: 4),
+                                Text('3분간의 걸음으로 당신의 뇌 건강 패턴을 분석합니다.', style: TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w600)),
                               ],
                             ),
-                          ],
-                        ),
-                        const SizedBox(height: 24),
-                        _buildStepStatus(theme, progress),
-                      ],
+                          ),
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.15), shape: BoxShape.circle),
+                            child: const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white, size: 16),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
+                  const SizedBox(height: 20),
 
-                  const SizedBox(height: 24),
-
-                  // 2. 정밀 분석 CTA 카드
-                  _buildPreciseAnalysisCTA(context, theme),
-
-                  const SizedBox(height: 24),
-                  
-                  // 3. 거리, 시간, 칼로리 요약
-                  Row(
+                  // 3. 오늘의 성과 그리드 (MLMetricCard × 4)
+                  MLSectionTitle('오늘의 성과'),
+                  GridView.count(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 14,
+                    mainAxisSpacing: 14,
+                    childAspectRatio: 1.5,
                     children: [
-                      _buildStatCard(theme, '거리', '${pedometer.todayDistance.toStringAsFixed(1)}km', Icons.map_outlined, theme.colorScheme.primary),
-                      const SizedBox(width: 12),
-                      _buildStatCard(theme, '칼로리', '${pedometer.todayCalories.toInt()}kcal', Icons.local_fire_department_outlined, theme.colorScheme.error),
+                      MLMetricCard(icon: Icons.directions_walk_rounded, color: MLColors.read, label: '걸음 수', value: pedometer.todaySteps.toString(), unit: '걸음'),
+                      MLMetricCard(icon: Icons.map_rounded, color: MLColors.calc, label: '이동 거리', value: pedometer.todayDistance.toStringAsFixed(2), unit: 'km'),
+                      MLMetricCard(icon: Icons.local_fire_department_rounded, color: MLColors.bad, label: '소모 칼로리', value: pedometer.todayCalories.toInt().toString(), unit: 'kcal'),
+                      MLMetricCard(icon: Icons.timer_rounded, color: MLColors.good, label: '활동 시간', value: '0', unit: '분'),
                     ],
                   ),
+                  const SizedBox(height: 24),
 
-                  const SizedBox(height: 32),
-                  
-                  // 4. 오늘의 상세 지표
-                  Text('오늘의 성과', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: theme.colorScheme.onSurface)),
-                  const SizedBox(height: 16),
-                  _buildMetricsGrid(theme, pedometer),
-
-                  const SizedBox(height: 32),
-                  
-                  // 5. 주간 기록 그래프
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text('주간 활동 추이', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: theme.colorScheme.onSurface)),
-                      TextButton(onPressed: () {}, child: const Text('상세보기')),
-                    ],
+                  // 4. 주간 기록 차트
+                  MLSectionTitle(
+                    '주간 활동 추이',
+                    trailing: TextButton(onPressed: () {}, child: const Text('상세보기')),
                   ),
-                  const SizedBox(height: 16),
-                  _buildWeeklyChart(theme, pedometer),
-                  const SizedBox(height: 40),
-                ],
-              ),
-            ),
-          ),
-    );
-  }
-
-
-
-  Widget _buildMetricsGrid(ThemeData theme, PedometerManager pedometer) {
-    return GridView.count(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      crossAxisCount: 2,
-      crossAxisSpacing: 16,
-      mainAxisSpacing: 16,
-      childAspectRatio: 1.5,
-      children: [
-        _buildMetricCard(theme, '걸음 수', pedometer.todaySteps.toString(), '걸음', Colors.orange),
-        _buildMetricCard(theme, '이동 거리', pedometer.todayDistance.toStringAsFixed(2), 'Km', Colors.blue),
-        _buildMetricCard(theme, '소모 칼로리', pedometer.todayCalories.toInt().toString(), 'Kcal', Colors.red),
-        _buildMetricCard(theme, '활동 시간', '0', '분', Colors.green),
-      ],
-    );
-  }
-
-  Widget _buildMetricCard(ThemeData theme, String title, String value, String unit, Color color) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withValues(alpha: 0.1)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(title, style: TextStyle(color: color.withValues(alpha: 0.7), fontSize: 13, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 8),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(value, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: theme.colorScheme.onSurface)),
-              const SizedBox(width: 4),
-              Text(unit, style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurfaceVariant)),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStepStatus(ThemeData theme, double progress) {
-    String status = progress < 0.3 ? '조금 더 힘내볼까요? ⚡' : progress < 0.7 ? '잘하고 계십니다! 👍' : '목표 달성이 코앞이에요! 🎉';
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(color: theme.primaryColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
-      child: Text(status, style: TextStyle(color: theme.primaryColor, fontWeight: FontWeight.w700, fontSize: 13)),
-    );
-  }
-
-  Widget _buildPreciseAnalysisCTA(BuildContext context, ThemeData theme) {
-    return InkWell(
-      onTap: () => context.push('/precise_gait_analysis'),
-      child: Container(
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [theme.colorScheme.primary, theme.colorScheme.primary.withValues(alpha: 0.8)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(24),
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('보행 정밀 분석', style: TextStyle(color: theme.colorScheme.onPrimary, fontSize: 18, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 4),
-                  Text(
-                    '3분간의 걸음으로 당신의 뇌 건강 패턴을 분석합니다.',
-                    style: TextStyle(color: theme.colorScheme.onPrimary.withValues(alpha: 0.8), fontSize: 13),
+                  MLCard(
+                    padding: const EdgeInsets.all(16),
+                    child: SizedBox(
+                      height: 200,
+                      child: BarChart(_buildWeeklyBarChart()),
+                    ),
                   ),
                 ],
               ),
             ),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(color: theme.colorScheme.onPrimary.withValues(alpha: 0.1), shape: BoxShape.circle),
-              child: Icon(Icons.arrow_forward_ios, color: theme.colorScheme.onPrimary, size: 16),
-            ),
-          ],
-        ),
-      ),
     );
   }
 
-  Widget _buildStatCard(ThemeData theme, String label, String value, IconData icon, Color color) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(color: theme.cardColor, borderRadius: BorderRadius.circular(24)),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(icon, color: color, size: 28),
-            const SizedBox(height: 12),
-            Text(label, style: TextStyle(color: theme.colorScheme.onSurfaceVariant, fontSize: 13, fontWeight: FontWeight.w600)),
-            Text(value, style: TextStyle(color: theme.colorScheme.onSurface, fontSize: 20, fontWeight: FontWeight.w800)),
-          ],
-        ),
-      ),
-    );
+  Widget _buildStepStatus(double progress) {
+    final status = progress < 0.3 ? '조금 더 힘내볼까요!' : progress < 0.7 ? '잘하고 계십니다!' : '목표 달성이 코앞이에요!';
+    final color = progress < 0.3 ? MLColors.warn : progress < 0.7 ? MLColors.sky : MLColors.good;
+    return MLStatusPill(label: status, color: color);
   }
 
-  Widget _buildWeeklyChart(ThemeData theme, PedometerManager pedometer) {
-    return Container(
-      height: 220,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(24),
-      ),
-      child: BarChart(_buildWeeklyBarChart(theme, pedometer)),
-    );
-  }
-
-  BarChartData _buildWeeklyBarChart(ThemeData theme, PedometerManager pedometer) {
-    // 실데이터 매핑 및 누락일 0 채우기
-    Map<String, int> stepMap = {};
+  BarChartData _buildWeeklyBarChart() {
+    final stepMap = <String, int>{};
     for (var row in _weeklyData) {
-      stepMap[row['date']] = row['steps'] ?? 0;
+      stepMap[row['date'] as String] = (row['steps'] ?? 0) as int;
     }
 
-    List<BarChartGroupData> groups = [];
-    DateTime now = DateTime.now();
+    final groups = <BarChartGroupData>[];
+    final now = DateTime.now();
     for (int i = 6; i >= 0; i--) {
-      DateTime day = now.subtract(Duration(days: i));
-      String dayKey = day.toIso8601String().split('T')[0];
-      int steps = stepMap[dayKey] ?? 0;
-      groups.add(_makeGroupData(6 - i, steps.toDouble(), theme.primaryColor));
+      final day = now.subtract(Duration(days: i));
+      final dayKey = day.toIso8601String().split('T')[0];
+      final steps = (stepMap[dayKey] ?? 0).toDouble();
+      groups.add(BarChartGroupData(x: 6 - i, barRods: [
+        BarChartRodData(
+          toY: steps,
+          width: 16,
+          color: MLColors.primary,
+          borderRadius: BorderRadius.circular(8),
+          backDrawRodData: BackgroundBarChartRodData(show: true, toY: 12000, color: MLColors.primary.withValues(alpha: 0.10)),
+        ),
+      ]));
     }
 
     return BarChartData(
@@ -314,21 +195,18 @@ class _WalkingDashboardScreenState extends State<WalkingDashboardScreen> {
       barTouchData: BarTouchData(enabled: true),
       titlesData: FlTitlesData(
         show: true,
-        bottomTitles: AxisTitles(
-          sideTitles: SideTitles(
-            showTitles: true,
-            getTitlesWidget: (value, meta) {
-              const days = ['월', '화', '수', '목', '금', '토', '일'];
-              DateTime now = DateTime.now();
-              int index = (now.weekday - 1 - (6 - value.toInt())) % 7;
-              if (index < 0) index += 7;
-              return Padding(
-                padding: const EdgeInsets.only(top: 8.0),
-                child: Text(days[index], style: TextStyle(color: theme.colorScheme.onSurfaceVariant, fontSize: 12, fontWeight: FontWeight.w600)),
-              );
-            },
-          ),
-        ),
+        bottomTitles: AxisTitles(sideTitles: SideTitles(
+          showTitles: true,
+          getTitlesWidget: (value, meta) {
+            const days = ['월', '화', '수', '목', '금', '토', '일'];
+            int index = (now.weekday - 1 - (6 - value.toInt())) % 7;
+            if (index < 0) index += 7;
+            return Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Text(days[index], style: const TextStyle(color: MLColors.textFaint, fontSize: 12, fontWeight: FontWeight.w700)),
+            );
+          },
+        )),
         leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
         topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
         rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
@@ -336,21 +214,6 @@ class _WalkingDashboardScreenState extends State<WalkingDashboardScreen> {
       gridData: const FlGridData(show: false),
       borderData: FlBorderData(show: false),
       barGroups: groups,
-    );
-  }
-
-  BarChartGroupData _makeGroupData(int x, double y, Color color) {
-    return BarChartGroupData(
-      x: x,
-      barRods: [
-        BarChartRodData(
-          toY: y,
-          color: color,
-          width: 14,
-          borderRadius: BorderRadius.circular(4),
-          backDrawRodData: BackgroundBarChartRodData(show: true, toY: 12000, color: color.withValues(alpha: 0.1)),
-        ),
-      ],
     );
   }
 }
