@@ -69,3 +69,12 @@ lib/features/training_corrupted/
 
 # AI 코딩 도구 설정
 .codex/
+
+# Android 릴리즈 서명 (절대 커밋하지 마세요)
+*.jks
+*.keystore
+android/key.properties
+
+# 개발 중 캡처한 스크린샷 (임시)
+screen_*.png
+ui_dump.xml
