@@ -1,5 +1,4 @@
 import 'package:mocktail/mocktail.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_application_1/core/database_helper.dart';
 import 'package:flutter_application_1/core/user_provider.dart';
 import 'package:flutter_application_1/core/settings_provider.dart';
@@ -32,33 +31,4 @@ class FakeSettingsProvider extends SettingsProvider {
   Future<void> setVoiceGuidance(bool enabled) async {}
   @override
   Future<void> setHapticFeedback(bool enabled) async {}
-}
-
-// --- Supabase Fake ---
-// Returns null/empty for all calls so try/catch blocks in providers handle it gracefully.
-class FakeSupabaseClient extends Fake implements SupabaseClient {
-  @override
-  SupabaseQueryBuilder from(String table) => _FakeQueryBuilder();
-
-  @override
-  dynamic noSuchMethod(Invocation invocation) => null;
-}
-
-class _FakeQueryBuilder extends Fake implements SupabaseQueryBuilder {
-  @override
-  dynamic noSuchMethod(Invocation invocation) {
-    final name = invocation.memberName;
-    if (name == #maybeSingle) return Future<Map<String, dynamic>?>.value(null);
-    if (name == #upsert) return Future<dynamic>.value([]);
-    return _FakeFilterBuilder();
-  }
-}
-
-class _FakeFilterBuilder extends Fake {
-  @override
-  dynamic noSuchMethod(Invocation invocation) {
-    final name = invocation.memberName;
-    if (name == #maybeSingle) return Future<Map<String, dynamic>?>.value(null);
-    return this;
-  }
 }

@@ -3,7 +3,7 @@ import 'package:flutter_application_1/features/training/difficulty_provider.dart
 import '../../helpers/mock_definitions.dart';
 
 DifficultyProvider _provider() =>
-    DifficultyProvider(username: 'testuser', supabase: FakeSupabaseClient());
+    DifficultyProvider(username: 'testuser');
 
 void main() {
   group('DifficultyProvider - 초기 상태', () {

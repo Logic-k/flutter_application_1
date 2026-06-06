@@ -17,10 +17,7 @@ Future<void> pumpWithProviders(
 }) async {
   final user = userProvider ?? _buildFakeUserProvider();
   final difficulty = difficultyProvider ??
-      DifficultyProvider(
-        username: 'testuser',
-        supabase: FakeSupabaseClient(),
-      );
+      DifficultyProvider(username: 'testuser');
   final settings = settingsProvider ?? FakeSettingsProvider();
 
   await tester.pumpWidget(
