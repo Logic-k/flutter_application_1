@@ -387,6 +387,7 @@ flutter build apk
 
 ## 📄 관련 문서
 
+- [GAIT_ANALYSIS.md](GAIT_ANALYSIS.md) — 보행 분석 알고리즘 · 전체 수식 상세
 - [PROJECT_DOCS.md](PROJECT_DOCS.md) — 기능 및 아키텍처 상세
 - [capstone_project_plan_renewal.md](capstone_project_plan_renewal.md) — 캡스톤 설계 계획
 
