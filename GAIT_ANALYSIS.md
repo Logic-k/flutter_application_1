@@ -169,11 +169,11 @@ final int activityMinutes = (pedometer.todaySteps / 100).floor();
 
 **파일:** `lib/features/gait_analysis/walking_dashboard_screen.dart` · Line 45
 
-$$Progress = \operatorname{clamp}\!\left(\frac{N_{steps}}{10{,}000},\; 0.01,\; 1.0\right)$$
+$$Progress = \min\!\left(1.0,\; \max\!\left(0.01,\; \frac{N_{steps}}{10{,}000}\right)\right)$$
 
 WHO 권장 일일 **10,000걸음** 기준. 최솟값 0.01은 UI 원형 게이지 표시를 위한 하한선입니다.
 
-$$\operatorname{clamp}(x,\, a,\, b) = \begin{cases} a & x < a \\ x & a \le x \le b \\ b & x > b \end{cases}$$
+$$\text{clamp}(x, a, b) = \min(b,\ \max(a, x))$$
 
 ```dart
 final progress = (pedometer.todaySteps / 10000).clamp(0.01, 1.0);
