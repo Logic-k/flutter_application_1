@@ -31,12 +31,23 @@ class _ReportsScreenState extends State<ReportsScreen> {
   Future<void> _loadData() async {
     final user = context.read<UserProvider>();
     if (user.currentUser != null) {
-      final history = await _dbHelper.getScoreHistory(user.currentUser!['id']);
+      try {
+        final history = await _dbHelper.getScoreHistory(user.currentUser!['id']);
+        if (mounted) {
+          setState(() {
+            _scoreHistory = history;
+            _isLoading = false;
+          });
+        }
+      } catch (e) {
+        debugPrint('ReportsScreen._loadData error: $e');
+        if (mounted) {
+          setState(() => _isLoading = false);
+        }
+      }
+    } else {
       if (mounted) {
-        setState(() {
-          _scoreHistory = history;
-          _isLoading = false;
-        });
+        setState(() => _isLoading = false);
       }
     }
   }

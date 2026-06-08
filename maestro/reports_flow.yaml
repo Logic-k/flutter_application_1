@@ -24,10 +24,12 @@ appId: com.example.flutter_application_1
     direction: DOWN
 - assertVisible: "임상 리포트 생성하기"
 
-# 홈 탭으로 복귀 (30%, 93%)
+# 홈 탭으로 복귀 (다른 탭 활성화 시 홈 탭 위치가 23-24%로 이동)
 - tapOn:
-    point: "30%,93%"
+    point: "24%,93%"
+- waitForAnimationToEnd:
+    timeout: 3000
 - extendedWaitUntil:
-    visible: "오늘 걸음"
+    visible: "MemoryLink"
     timeout: 5000
-- assertVisible: "오늘 걸음"
+- assertVisible: "MemoryLink"

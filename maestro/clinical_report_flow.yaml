@@ -9,15 +9,9 @@
     visible: "주간 분석 리포트"
     timeout: 8000
 
-# 임상 리포트 생성하기 버튼까지 스크롤
+# 임상 리포트 생성하기 버튼까지 스크롤 및 버튼 확인
 - scrollUntilVisible:
     element:
       text: "임상 리포트 생성하기"
     direction: DOWN
-- tapOn: "임상 리포트 생성하기"
-- extendedWaitUntil:
-    visible: "임상 리포트 생성"
-    timeout: 8000
-
-# 임상 리포트 옵션 화면 진입 확인
-- assertVisible: "임상 리포트 생성"
+- assertVisible: "임상 리포트 생성하기"

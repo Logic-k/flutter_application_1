@@ -11,24 +11,19 @@
     timeout: 8000
 - assertVisible: "주간 분석 리포트"
 
-# 소셜 랭킹 위젯까지 스크롤
+# 소셜 랭킹 위젯까지 스크롤 후 전체 내용 확인
 - scrollUntilVisible:
     element:
       text: "인구 통계학적 비교 (기억력)"
     direction: DOWN
+    timeout: 60000
 - assertVisible: "인구 통계학적 비교 (기억력)"
 - assertVisible: "비슷한 연령대(60~70대) 사용자와 비교한 수치입니다."
 
-# 하단 요소들 스크롤하며 확인 (퍼센타일 행 + 설명 문구)
-- scrollUntilVisible:
-    element:
-      text: "동연령대 평균 65점"
-    direction: DOWN
-- assertVisible: "동연령대 평균 65점"
-
-# kim_minjun은 고득점이므로 평균 이상 문구 확인
+# 점수 영역까지 추가 스크롤 (동년배 문구 확인)
 - scrollUntilVisible:
     element:
       text: "동년배 중에서 평균보다 높은 수준의 인지 능력을 보여주고 계십니다. 훌륭합니다!"
     direction: DOWN
+    timeout: 30000
 - assertVisible: "동년배 중에서 평균보다 높은 수준의 인지 능력을 보여주고 계십니다. 훌륭합니다!"

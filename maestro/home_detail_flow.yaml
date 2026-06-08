@@ -4,7 +4,7 @@ appId: com.example.flutter_application_1
 
 # 홈 상단 고정 카드 (GestureDetector → merged semantics)
 - assertVisible: "AI 도우미\nAI와 대화로 인지 건강을 확인해보세요"
-- assertVisible: "나의 기억의 정원\n정성과 노력으로 정원을 가꾸어보세요"
+- assertVisible: "오늘의 일기\n오늘 하루를 기록해보세요"
 
 # 스크롤 후 걷기 미니 카드 (merged: title + "0 / 10,000 걸음")
 - scrollUntilVisible:

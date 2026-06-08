@@ -19,7 +19,7 @@ appId: com.example.flutter_application_1
 - assertVisible: "비밀번호"
 - assertVisible: "비밀번호 확인"
 
-# 필수 정보 입력
+# 필수 정보 입력 (clearState로 DB 초기화되므로 testuser 재사용 가능)
 - tapOn: "아이디"
 - inputText: "testuser"
 - tapOn: "비밀번호"

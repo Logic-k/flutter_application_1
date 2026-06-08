@@ -34,7 +34,10 @@ class _MainNavScreenState extends State<MainNavScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       extendBody: true,
-      body: _widgetOptions.elementAt(_selectedIndex),
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: _widgetOptions,
+      ),
       bottomNavigationBar: FloatingPillNav(
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,

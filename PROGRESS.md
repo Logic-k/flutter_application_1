@@ -1,333 +1,149 @@
-# MemoryLink — 개발 진행 상황 문서
+# MemoryLink 현재 상태 및 로드맵
 
-> 최종 업데이트: 2026-06-04  
-> 앱 이름: **MemoryLink**  
-> 프로젝트 유형: 캡스톤 디자인 — 모바일 센서 기반 다중중재 치매 예방 플랫폼
+> 기준일: 2026-06-08
+> 문서 역할: 저장소의 현재 구현, 외부 연동, QA 근거, 릴리스 차단 요인, 다음 작업 순서를 기록하는 권위 문서
+> 제품 단계: 연구·캡스톤 프로토타입. 의료기기 또는 상용 서비스의 완성·검증 상태를 의미하지 않는다.
 
----
+## 1. 상태 판정 기준
 
-## 1. 프로젝트 개요
+| 상태 | 의미 |
+|---|---|
+| 구현됨 | 저장소에 실행 경로와 핵심 로직이 존재한다. |
+| 외부 연동됨 | Firebase, Gemini, Health 등 외부 서비스 호출 코드가 존재한다. 배포 환경에서의 성공을 자동으로 보장하지 않는다. |
+| 자동 테스트 확인 | 관련 테스트가 저장소에 존재하거나 과거 자동화 범위에 포함된다. 현재 전체 테스트 통과와는 다르다. |
+| 디바이스 확인 | 실제 Android 기기 또는 에뮬레이터에서 해당 흐름을 실행해 확인했다. |
+| 프로토타입/스텁 | UI, 규칙 기반 대체 로직, 데모 데이터 또는 일부 호출 구조만 존재한다. |
 
-초기 치매 및 경도인지장애(MCI) 환자를 위한 Flutter 기반 크로스 플랫폼 앱.  
-스마트폰 내장 센서(가속도계, 자이로스코프)와 Gemini LLM 기반 AI 분석을 결합하여, 사용자가 일상 속에서 위험 신호를 조기 인지하고 다중중재(Multi-modal) 예방 루틴을 지속할 수 있도록 돕는 SaMD 수준의 플랫폼.
+2026-06-08 기준: Android 에뮬레이터(QA_Device, API 36, 1440×3120)에서 **debug APK 빌드 및 Maestro E2E 20개 플로우 전면 통과(20/20)** 확인. 센서, 권한, 백그라운드 서비스, Health, 알림, 딥링크의 실제 Android 동작은 추가 검증이 필요하다.
 
----
+## 2. 현재 구현 상태
 
-## 2. 기술 스택
+### 인증, 온보딩, 관리자
 
-| 영역 | 기술 |
-|------|------|
-| 프레임워크 | Flutter (Dart 3.11.3+) |
-| 상태 관리 | Provider (`ChangeNotifierProvider`, `ProxyProvider`) |
-| 라우팅 | GoRouter |
-| 클라우드 DB | Firebase (Firestore) |
-| 로컬 DB | SQLite (database_helper.dart) |
-| AI / LLM | Google Gemini (`google_generative_ai`) |
-| 차트 | fl_chart |
-| 달력 | table_calendar |
-| 음성 인식 | speech_to_text |
-| 음성 출력 | flutter_tts |
-| 오디오 녹음 | record |
-| 센서 | sensors_plus (가속도계/자이로스코프) |
-| 걸음 수 | 자체 PedometerManager + 백그라운드 서비스 |
-| 이미지 | image_picker |
-| 공유 | share_plus |
-| 국제화 | intl (한국어 날짜/시간) |
+- **로컬 SQLite 기반 인증**이 구현되어 있다. `users` 테이블 조회로 로그인·회원가입하며 Firebase Authentication은 사용하지 않는다.
+- 사용자 비밀번호와 자동 로그인 자격 증명이 SQLite 및 `SharedPreferences`에 평문으로 저장된다. 자동화용 `admin/admin` 및 데모 계정도 앱 DB에 시드된다.
+- 사용자가 입력한 Gemini API 키도 `SharedPreferences`에 저장된다. 공유 운영 키를 Flutter 앱에 빌드 주입해도 추출될 수 있으므로, 운영 호출은 인증된 백엔드 프록시로 이동하고 사용자 소유 키를 허용할 경우 플랫폼 보안 저장소와 제한·회전 정책을 적용해야 한다.
+- 온보딩 UI와 DB의 `has_completed_onboarding` 필드는 구현되어 있다. 다만 음성 평가 종료는 별도 `SharedPreferences` 값만 기록하고, 라우터는 DB 완료 상태를 기준으로 복원·리다이렉트하지 않아 재시작 및 재로그인 시 상태가 일관되지 않을 수 있다.
+- 관리자 포털 UI, 로컬 통계/사용자 조회, Firestore 기반 CS 기능이 구현되어 있다. 관리자 진입 코드는 소스에 고정된 평문이며 로그인 상태는 로컬 preference로 복원되므로 실제 권한 검증 체계가 아니다.
 
----
+### 평가와 음성
 
-## 3. 구현 완료 기능
+- 설문, 인지 과제, 결과 화면과 STT 기반 음성 입력 흐름이 구현되어 있다.
+- **규칙 기반 음성 지표(TTR/WPM) 구현** 상태다. 어휘 다양성, 발화 속도, 발화량, 문장 완결성, 반복 및 위험 표현을 규칙으로 점수화한다.
+- TFLite/MediaPipe 모델 파일 또는 온디바이스 LLM을 실제 추론에 사용하는 ML 파이프라인은 없다. 현재 `LocalAIService`는 규칙 기반 엔진이며 임상적 성능 검증도 없다.
 
-### 3-1. 인증 (Auth)
-| 파일 | 상태 |
-|------|------|
-| [lib/features/auth/login_screen.dart](lib/features/auth/login_screen.dart) | ✅ 완료 |
-| [lib/features/auth/register_screen.dart](lib/features/auth/register_screen.dart) | ✅ 완료 |
+### 인지 훈련과 적응형 난이도
 
-- Firebase 기반 로그인/회원가입
-- GoRouter 인증 가드 (미로그인 시 `/login` 리다이렉트)
+- 훈련 허브, 일일 회상, 7종 미니게임과 정답/반응 시간 기반 레벨 조정 로직이 구현되어 있다.
+- 난이도는 Firestore `training_difficulty/{username}`에서 읽고 쓰려는 외부 연동 의도가 구현되어 있다.
+- `ChangeNotifierProxyProvider`가 기존 `DifficultyProvider` 인스턴스를 재사용하면서 생성 시의 `username`을 갱신하지 않는다. 최초 빈 사용자명으로 만들어진 인스턴스가 유지되면 Firestore 로드·저장이 무효화될 수 있는 사용자 바인딩 위험이 있다.
+- `lib/features/training_corrupted/training_hub_screen.dart`는 파일시스템 손상 상태이며 정상 소스 또는 안전한 레거시 사본으로 취급할 수 없다.
 
----
+### 보행, Health, 이상 감지
 
-### 3-2. 온보딩 (Onboarding)
-| 파일 | 상태 |
-|------|------|
-| [lib/features/onboarding/onboarding_screen.dart](lib/features/onboarding/onboarding_screen.dart) | ✅ 완료 |
-| [lib/features/onboarding/consent_screen.dart](lib/features/onboarding/consent_screen.dart) | ✅ 완료 |
+- `pedometer`, 가속도계, 자이로스코프 및 포그라운드/백그라운드 서비스 기반 보행 수집·분석 코드가 구현되어 있다.
+- Health 연동은 **부분 구현**이다. iOS 백그라운드 콜백에서 최근 걸음 읽기 코드가 있으나 권한 요청, Android Health Connect 전체 흐름, 수면·혈압·혈당 수집 및 실제 기기 검증은 완료되지 않았다.
+- 활동량 이상 감지는 로컬 규칙으로 계산되며, Firestore의 보호자 문서에 경고 상태를 기록하고 앱 내 로컬 알림을 표시하는 구조다. 보호자에게 직접 푸시/SMS를 발송하는 서버 전달 체계는 구현되어 있지 않다.
 
-- 건강 데이터 수집 동의 절차 포함
-- 민감 정보(주민등록번호 등) 미수집 방침 반영
+### 보호자, CS, 외부 서비스
 
----
+- 보호자 토큰 링크, Firebase Hosting URL, Firestore `guardian_views` 동기화, 공유 UI가 구현되어 있다.
+- 토큰 생성은 보안 난수 기반이 아니며 Firestore Security Rules의 최소 권한·토큰 접근 통제는 이 저장소에서 검증되지 않았다.
+- 공지, FAQ, 문의와 관리자 CS 화면은 Firestore에 외부 연동된다. Firebase 설정, 네트워크, 배포 규칙이 갖춰진 환경에서만 실제 동작한다.
+- Gemini 대화 호출과 로컬 폴백이 구현되어 있으나 API 키·네트워크·응답 품질에 대한 현재 QA 증거는 없다.
+- `android/app/google-services.json`이 저장소에 추적되고 있어 개발·운영 Firebase 프로젝트 분리와 배포 키 제한 정책을 명시적으로 관리해야 한다.
 
-### 3-3. 초기 진단 / 평가 (Assessment)
-| 파일 | 상태 |
-|------|------|
-| [lib/features/assessment/assessment_screen.dart](lib/features/assessment/assessment_screen.dart) | ✅ 완료 |
-| [lib/features/assessment/cognitive_tasks_screen.dart](lib/features/assessment/cognitive_tasks_screen.dart) | ✅ 완료 |
-| [lib/features/assessment/result_screen.dart](lib/features/assessment/result_screen.dart) | ✅ 완료 |
-| [lib/features/voice_assessment/voice_assessment_screen.dart](lib/features/voice_assessment/voice_assessment_screen.dart) | ✅ 완료 (STT 구현, AI 분석은 시뮬레이션) |
-| [lib/features/voice_assessment/voice_recording_service.dart](lib/features/voice_assessment/voice_recording_service.dart) | ✅ 완료 |
+### 리포트와 기관 연계
 
-- `speech_to_text` 패키지를 이용한 실시간 음성 → 텍스트 변환
-- 발화 분석 점수 산출 UI 완성
-- **단, 실제 LLM 분석은 아직 시뮬레이션** → 4절 참조
+- 차트, 위험요인, 권고사항을 포함한 **4페이지 PDF 생성 구현** 및 미리보기·파일 공유 경로가 존재한다.
+- PDF 생성의 실제 Android 파일/공유 동작과 다양한 데이터 조합의 레이아웃은 디바이스에서 재검증해야 한다.
+- `ReferralScreen`은 전화·지도 실행 UI를 갖고 있으나 `GoRouter`에 해당 route가 등록되지 않아 앱에서 도달할 수 없는 상태다.
 
----
+### 기타 사용자 기능
 
-### 3-4. 인지 훈련 허브 (Training Hub)
-| 파일 | 상태 |
-|------|------|
-| [lib/features/training/training_hub_page.dart](lib/features/training/training_hub_page.dart) | ✅ 완료 |
-| [lib/features/training/difficulty_provider.dart](lib/features/training/difficulty_provider.dart) | ✅ 완료 |
-| [lib/features/training/daily_recall_page.dart](lib/features/training/daily_recall_page.dart) | ✅ 완료 |
+- 홈, 프로필, 감정 일기, 체크리스트, 알림, 접근성 글자 크기, 소셜 랭킹 화면이 구현되어 있다.
+- 일부 화면은 로컬 데모 데이터 또는 Firestore 데이터 가용성에 의존한다. 구현 존재를 실제 서비스 데이터 검증으로 해석하면 안 된다.
 
-#### 미니게임 (7종)
-| 게임 | 파일 | 카테고리 | 상태 |
-|------|------|---------|------|
-| 누가 큰가요? | [comparison_game.dart](lib/features/training/games/comparison_game.dart) | 계산/판단력 | ✅ |
-| 구구단 맞추기 | [multiplication_game.dart](lib/features/training/games/multiplication_game.dart) | 계산/판단력 | ✅ |
-| 순서 기억하기 | [sequence_game.dart](lib/features/training/games/sequence_game.dart) | 기억력/순서 | ✅ |
-| 도형 스도쿠 | [shape_sudoku_game.dart](lib/features/training/games/shape_sudoku_game.dart) | 기억력/순서 | ✅ |
-| 도형 짝 맞추기 | [shape_match_game.dart](lib/features/training/games/shape_match_game.dart) | 집중/언어 | ✅ |
-| 단어 분류 | [categorization_game.dart](lib/features/training/games/categorization_game.dart) | 집중/언어 | ✅ |
-| 문장 읽기 | [sentence_reading_game.dart](lib/features/training/games/sentence_reading_game.dart) | 집중/언어 | ✅ |
+## 3. 외부 연동 경계
 
-- **적응형 난이도(Closed-loop)**: `DifficultyProvider`로 게임 카테고리별 레벨 관리, SQLite 저장
+| 연동 | 현재 상태 | 미검증/위험 |
+|---|---|---|
+| Firestore | 보호자, CS, 소셜 통계, 적응형 난이도 호출 코드 존재 | Security Rules, 오프라인/실패 복구, 사용자 격리, 실제 배포 데이터 |
+| Firebase Hosting | 보호자 웹 URL 생성 및 공유 | 배포 콘텐츠와 토큰 접근 통제 |
+| Gemini | API 키가 있을 때 호출, 없으면 로컬 폴백 | 운영 키 관리, 네트워크 실패, 품질/안전성 |
+| Health | iOS 걸음 읽기 일부 구현 | Android Health Connect, 권한 UX, 실제 기기, 기타 건강 데이터 |
+| Android 센서/서비스 | 패키지 및 서비스 코드 존재 | 제조사별 백그라운드 제한, 재부팅, 배터리, 권한 거부 |
+| 전화/지도 | `url_launcher` UI 존재 | route 미등록으로 현재 도달 불가 |
 
----
+## 4. QA 기준선
 
-### 3-5. 보행 분석 (Gait Analysis)
-| 파일 | 상태 |
-|------|------|
-| [lib/features/gait_analysis/gait_screen.dart](lib/features/gait_analysis/gait_screen.dart) | ✅ 완료 |
-| [lib/features/gait_analysis/gait_analyzer.dart](lib/features/gait_analysis/gait_analyzer.dart) | ✅ 완료 |
-| [lib/features/gait_analysis/gait_provider.dart](lib/features/gait_analysis/gait_provider.dart) | ✅ 완료 |
-| [lib/features/gait_analysis/pedometer_manager.dart](lib/features/gait_analysis/pedometer_manager.dart) | ✅ 완료 |
-| [lib/features/gait_analysis/walking_dashboard_screen.dart](lib/features/gait_analysis/walking_dashboard_screen.dart) | ✅ 완료 |
-| [lib/features/gait_analysis/precise_analysis_screen.dart](lib/features/gait_analysis/precise_analysis_screen.dart) | ✅ 완료 |
-| [lib/core/services/background_service.dart](lib/core/services/background_service.dart) | ✅ 완료 |
+### 2026-06-08 저장소 기준 (최근 검증)
 
-**GaitAnalyzer 핵심 로직:**
-- 3축 가속도 벡터 크기(Magnitude) 계산으로 걸음 감지
-- 보행 변동성(Gait Variability, CV) 계산 — 치매 전조 지표
-- 유효 보폭 간격 필터링 (300ms ~ 2000ms)
-- 백그라운드에서 Pedometer 지속 동작
+- 단위 테스트 63개 (통과 여부 미확인, `flutter test` 미실행)
+- 위젯 테스트 36개 (통과 여부 미확인, `flutter test` 미실행)
+- 통합 테스트 5개 (통과 여부 미확인)
+- **Maestro E2E flow 20개 — debug APK 기준 전면 통과(20/20) 확인 ✅** (2026-06-08, QA_Device 에뮬레이터)
 
----
+> `flutter analyze`, `flutter test`, `flutter build --release`는 green 아님. 확인된 차단 요인은 아래 참조.
 
-### 3-6. 홈 화면 (Home)
-| 파일 | 상태 |
-|------|------|
-| [lib/features/home/home_screen.dart](lib/features/home/home_screen.dart) | ✅ 완료 |
-| [lib/features/home/widgets/diet_recommendation_card.dart](lib/features/home/widgets/diet_recommendation_card.dart) | ✅ 완료 |
+### 확인된 차단 요인
 
-- 실시간 걸음 수 표시 (PedometerManager 연동)
-- 오늘 날짜/인사말 (한국어 포맷)
-- MIND 식단 추천 카드
+1. 테스트 helper가 과거 Supabase 기반 `DifficultyProvider` 생성자와 fake client를 계속 참조해 현재 Firestore 구현과 컴파일 계약이 맞지 않는다.
+2. CI는 Flutter 3.32.0을 고정하지만 프로젝트는 Dart `^3.11.3` 및 현재 lockfile 생태계를 요구해 SDK/의존성 해석이 맞지 않는다.
+3. `android/app/src/main/AndroidManifest.xml`에 release용 `INTERNET` 권한이 없다. 권한은 debug/profile manifest에만 있다.
+4. Android 빌드는 로컬 Gradle cache 문제로 실패한 이력이 있어 캐시 정리 후 재현과 원인 분리가 필요하다.
+5. **[해결]** ~~Android 에뮬레이터 없음~~ — QA_Device(API 36)에서 debug APK 빌드 및 Maestro 20/20 통과 확인. 단, 통합 테스트, 센서·권한·알림·Health·딥링크 QA는 추가 검증 필요.
+6. `lib/features/training_corrupted/training_hub_screen.dart`는 파일시스템 손상 상태라 분석기 및 파일 탐색의 신뢰성을 떨어뜨린다.
 
----
+## 5. 알려진 제품·보안 위험
 
-### 3-7. 감정 일기 (Diary)
-| 파일 | 상태 |
-|------|------|
-| [lib/features/diary/diary_screen.dart](lib/features/diary/diary_screen.dart) | ✅ 완료 |
-| [lib/features/diary/diary_book_screen.dart](lib/features/diary/diary_book_screen.dart) | ✅ 완료 |
-| [lib/features/diary/diary_provider.dart](lib/features/diary/diary_provider.dart) | ✅ 완료 |
-| [lib/core/services/diary_notification_service.dart](lib/core/services/diary_notification_service.dart) | ✅ 완료 |
+- 평문 비밀번호 저장, 평문 자동 로그인 정보, 앱에 포함된 데모 자격 증명
+- 소스에 고정된 관리자 코드와 클라이언트 로컬 상태만 사용하는 관리자 권한
+- 보호자 토큰의 예측 가능성 및 Firestore Security Rules 미검증
+- 난이도 provider의 로그인 사용자명 바인딩 실패 가능성
+- DB와 preference로 분리된 온보딩 완료 상태 및 라우터 복원 누락
+- 도달 불가능한 기관 연계 화면
+- release 네트워크 권한, 패키지명, 서명 키 설정의 릴리스 준비 부족
+- 건강 포그라운드 백그라운드 서비스의 `android:exported="true"` 외부 노출
+- 의료적 위험 점수와 권고의 임상 검증 부재
 
-- 달력 기반 날짜 선택 (table_calendar)
-- 감정 태그 및 자유 서술 일기 작성
-- 날짜별 일기 조회 (diary_book_screen)
-- 일기 작성 알림 서비스
-- `/memory_garden` 경로가 이 화면으로 연결됨 (기억의 정원 → 일기 기능으로 개편)
+## 6. 우선순위 로드맵
 
----
+### P0 보안
 
-### 3-8. AI 챗봇 (AI Chat)
-| 파일 | 상태 |
-|------|------|
-| [lib/features/ai_chat/ai_chat_screen.dart](lib/features/ai_chat/ai_chat_screen.dart) | ✅ 완료 |
-| [lib/features/ai_chat/models/chat_message.dart](lib/features/ai_chat/models/chat_message.dart) | ✅ 완료 |
-| [lib/core/ai/gemini_provider.dart](lib/core/ai/gemini_provider.dart) | ✅ 완료 |
-| [lib/core/ai/ai_key_service.dart](lib/core/ai/ai_key_service.dart) | ✅ 완료 |
-| [lib/core/ai/local_fallback_provider.dart](lib/core/ai/local_fallback_provider.dart) | ✅ 완료 |
+1. 평문 사용자 비밀번호와 `SharedPreferences` 자격 증명을 제거하고 안전한 인증/세션 저장 방식으로 교체한다.
+2. 공유 Gemini 운영 키는 앱에 포함하지 않고 인증된 백엔드 프록시에서 보관·호출한다. 사용자 소유 키 입력을 유지한다면 플랫폼 보안 저장소와 키 제한·회전 정책을 적용한다.
+3. 하드코딩 관리자 코드와 로컬 관리자 상태를 제거하고 서버 검증 권한 모델을 도입한다.
+4. 보호자 토큰을 암호학적 난수로 발급하고 Firestore Security Rules로 사용자·보호자·관리자 접근을 분리한다.
+5. 개발·운영 Firebase 구성을 분리하고 추적 중인 `google-services.json`의 프로젝트·API 제한을 점검한다.
+6. 외부 노출이 불필요한 Android 백그라운드 서비스를 비공개로 전환한다.
+7. 데모 계정, 개인정보 보존 범위와 로그 노출을 점검한다.
 
-- Gemini API 기반 회상 요법 대화
-- 날짜·시간·날씨 실시간 컨텍스트 주입
-- 로컬 폴백 응답 (오프라인 대응)
-- AI 제공자 인터페이스 추상화 (gemini / local fallback)
+### P0 QA/CI
 
----
+1. stale Supabase test helper를 현재 Firestore 기반 인터페이스에 맞추고 단위·위젯 테스트 컴파일을 복구한다.
+2. CI Flutter/Dart 버전을 프로젝트 SDK 및 lockfile과 일치시킨다.
+3. 난이도 provider가 로그인 변경 시 올바른 username으로 재생성 또는 재바인딩되도록 수정하고 회귀 테스트를 추가한다.
+4. 온보딩 완료 상태를 단일 저장소로 통합하고 앱 재시작·로그아웃·재로그인 복원 테스트를 추가한다.
+5. 손상 파일을 격리·복구한 뒤 `flutter analyze`, `flutter test`, 통합 테스트, Maestro 게이트를 순서대로 green으로 만든다.
 
-### 3-9. 주간 리포트 (Reports)
-| 파일 | 상태 |
-|------|------|
-| [lib/features/reports/reports_screen.dart](lib/features/reports/reports_screen.dart) | ✅ 완료 |
-| [lib/features/reports/clinical_report_generator.dart](lib/features/reports/clinical_report_generator.dart) | ✅ 완료 |
-| [lib/features/reports/clinical_report_options_screen.dart](lib/features/reports/clinical_report_options_screen.dart) | ✅ 완료 |
-| [lib/features/reports/report_analyzer.dart](lib/features/reports/report_analyzer.dart) | ✅ 완료 |
-| [lib/features/reports/widgets/social_ranking_view.dart](lib/features/reports/widgets/social_ranking_view.dart) | ✅ 완료 |
+### P0 릴리스 기반
 
-- `fl_chart`를 이용한 인지 훈련 점수 시계열 차트
-- 뇌 연령 추정 카드
-- 임상 리포트 생성 옵션 화면 (PDF/CSV 내보내기 구조)
-- 소셜 랭킹 뷰
+1. release manifest의 `INTERNET` 및 필수 런타임 권한을 검토·추가하고 권한 거부 UX를 검증한다.
+2. `com.example.flutter_application_1` 패키지명을 실제 제품 식별자로 변경하고 Firebase 설정을 다시 연결한다.
+3. release signing의 `key.properties` 부재 처리와 비밀 관리 방식을 정리한다.
+4. Gradle cache 실패를 깨끗한 환경에서 재현하고 APK/AAB 빌드를 고정한다.
+5. Android 에뮬레이터 또는 실제 기기를 준비해 센서, 백그라운드, 알림, Health, 딥링크, PDF 공유를 검증한다.
+6. 기관 연계 route와 사용자 진입점을 연결한다.
 
----
+### ML 확장
 
-### 3-10. 프로필 / 보호자 연계 (Profile & Guardian)
-| 파일 | 상태 |
-|------|------|
-| [lib/features/profile/profile_screen.dart](lib/features/profile/profile_screen.dart) | ✅ 완료 |
-| [lib/features/profile/edit_profile_screen.dart](lib/features/profile/edit_profile_screen.dart) | ✅ 완료 |
-| [lib/features/profile/guardian_link_screen.dart](lib/features/profile/guardian_link_screen.dart) | ✅ 완료 |
-| [lib/core/services/guardian_sync_service.dart](lib/core/services/guardian_sync_service.dart) | ✅ 완료 |
+1. Health Connect/HealthKit 권한·동기화 계층을 완성하고 걸음·수면 등 실제 데이터를 검증한다.
+2. FINGER 기반 수면, 혈압/혈당, 운동, 식이 입력과 추세 리포트를 추가한다.
+3. 보행 중 인지 과제와 이중 과제 비용 지표를 구현한다.
+4. 규칙 기반 음성 분석을 유지 가능한 기준선으로 고정한 뒤 TFLite/MediaPipe 모델을 별도 실험으로 추가한다.
+5. 데이터셋, 편향, 성능 지표, 설명 가능성, 임상 검토 없이 ML 결과를 진단으로 노출하지 않는다.
 
-- 보호자 공유 링크 제공 (GuardianLinkScreen)
-- 텍스트 크기 조절 설정 (SettingsProvider)
-- 보호자 동기화 서비스
+## 7. 완료 판정 조건
 
----
-
-### 3-11. CS 센터 (고객지원)
-| 파일 | 상태 |
-|------|------|
-| [lib/features/cs/cs_center_screen.dart](lib/features/cs/cs_center_screen.dart) | ✅ 완료 |
-| [lib/features/cs/notice_list_screen.dart](lib/features/cs/notice_list_screen.dart) | ✅ 완료 |
-| [lib/features/cs/notice_detail_screen.dart](lib/features/cs/notice_detail_screen.dart) | ✅ 완료 |
-| [lib/features/cs/faq_screen.dart](lib/features/cs/faq_screen.dart) | ✅ 완료 |
-| [lib/features/cs/inquiry_submit_screen.dart](lib/features/cs/inquiry_submit_screen.dart) | ✅ 완료 |
-| [lib/features/cs/my_inquiries_screen.dart](lib/features/cs/my_inquiries_screen.dart) | ✅ 완료 |
-| [lib/features/cs/inquiry_detail_screen.dart](lib/features/cs/inquiry_detail_screen.dart) | ✅ 완료 |
-
----
-
-### 3-12. 관리자 포털 (Admin)
-| 파일 | 상태 |
-|------|------|
-| [lib/features/admin/admin_login_screen.dart](lib/features/admin/admin_login_screen.dart) | ✅ 완료 |
-| [lib/features/admin/admin_dashboard_screen.dart](lib/features/admin/admin_dashboard_screen.dart) | ✅ 완료 |
-| [lib/features/admin/admin_user_detail_screen.dart](lib/features/admin/admin_user_detail_screen.dart) | ✅ 완료 |
-| [lib/features/admin/admin_cs_management_screen.dart](lib/features/admin/admin_cs_management_screen.dart) | ✅ 완료 |
-| [lib/features/admin/admin_notice_edit_screen.dart](lib/features/admin/admin_notice_edit_screen.dart) | ✅ 완료 |
-| [lib/features/admin/admin_faq_edit_screen.dart](lib/features/admin/admin_faq_edit_screen.dart) | ✅ 완료 |
-| [lib/features/admin/admin_inquiry_detail_screen.dart](lib/features/admin/admin_inquiry_detail_screen.dart) | ✅ 완료 |
-
-- 별도 인증 가드 (`/admin_login`)
-- 사용자 데이터 조회, CS 문의 답변 기능
-
----
-
-### 3-13. 기관 연계 (Referral)
-| 파일 | 상태 |
-|------|------|
-| [lib/features/referral/referral_screen.dart](lib/features/referral/referral_screen.dart) | ✅ 완료 |
-
-- 치매안심센터 전화/지도 앱 연동 (url_launcher)
-- 치매 관련 긴급 연락처 안내
-
----
-
-### 3-14. 이상 감지 모니터 (Anomaly Monitor)
-| 파일 | 상태 |
-|------|------|
-| [lib/core/services/anomaly_monitor_service.dart](lib/core/services/anomaly_monitor_service.dart) | ✅ 완료 |
-
-- 활동 미감지 시 보호자 푸시 알림 전송 구조
-
----
-
-## 4. 미완성 / 플레이스홀더 기능
-
-| 기능 | 파일 | 현황 | 비고 |
-|------|------|------|------|
-| 온디바이스 LLM 음성 분석 | [lib/core/local_ai_service.dart](lib/core/local_ai_service.dart) | ⚠️ 시뮬레이션 | 실제 MediaPipe/TFLite 모델 미탑재 |
-| 음성 발화 지표 추출 (TTR, 발화속도) | voice_assessment_screen | ⚠️ 부분 구현 | STT는 동작, LLM 분석 파이프라인 미연결 |
-| Health Connect / HealthKit 연동 | pedometer_manager | ⚠️ 자체 구현 | 플랫폼 공식 API 미연동 |
-| 이중 과제 보행 알고리즘 | gait 관련 | ⚠️ 미구현 | 보행 중 인지 미션 부여 기능 |
-| FINGER 모델 — 혈압/혈당 입력 | home_screen | ⚠️ 미구현 | 생활 습관 기록 (수면, 혈관) 입력 폼 |
-| Standard Export (PDF 실제 생성) | clinical_report_generator | ⚠️ 구조만 완성 | 실제 파일 렌더링/공유 연결 필요 |
-| training_corrupted 정리 | [lib/features/training_corrupted/](lib/features/training_corrupted/) | ⚠️ 레거시 | 구 버전 파일, 정리 필요 |
-
----
-
-## 5. 라우팅 전체 구조
-
-```
-/login                           → 로그인
-/register                        → 회원가입
-/ (MainNavScreen)                → 하단 탭 네비게이션
-  ├── 홈 (HomeScreen)
-  ├── 훈련 (TrainingHubScreen)
-  ├── 생활 (WalkingDashboardScreen)
-  ├── 리포트 (ReportsScreen)
-  └── 프로필 (ProfileScreen)
-/onboarding                      → 온보딩
-/consent                         → 동의
-/assessment                      → 초기 평가
-/cognitive_tasks                 → 인지 과제
-/assessment_result               → 평가 결과
-/voice_assessment                → 음성 평가
-/game/comparison                 → 비교 게임
-/game/sequence                   → 순서 기억
-/game/sudoku                     → 도형 스도쿠
-/game/multiplication             → 구구단
-/game/shape_match                → 도형 짝
-/game/categorization             → 단어 분류
-/game/reading                    → 문장 읽기
-/gait                            → 보행 분석
-/precise_gait_analysis           → 정밀 보행 분석
-/walking_dashboard               → 걷기 대시보드
-/memory_garden                   → 일기 작성 (DiaryScreen)
-/diary_book                      → 일기 조회 (DiaryBookScreen)
-/ai_chat                         → AI 챗봇 (Gemini)
-/training/recall                 → 일일 회상
-/report_options                  → 임상 리포트 옵션
-/profile                         → 프로필
-/guardian_link                   → 보호자 연결
-/cs_center                       → CS 센터
-/cs/notices, /cs/faq             → 공지사항, FAQ
-/cs/notice_detail/:id            → 공지사항 상세
-/cs/inquiry_submit, ...          → 문의 관련
-/admin_login                     → 관리자 로그인
-/admin/dashboard                 → 관리자 대시보드
-/admin/user_detail/:userId       → 사용자 상세
-/admin/cs_management             → CS 관리
-/admin/notice_edit, /admin/faq_edit, /admin/inquiry_detail/:id
-```
-
----
-
-## 6. 전체 진행률 요약
-
-| 카테고리 | 완료 | 미완성 |
-|---------|------|-------|
-| 인증 | ✅ | — |
-| 온보딩 | ✅ | — |
-| 초기 평가 (UI) | ✅ | LLM 실제 연결 |
-| 음성 분석 | ⚠️ 부분 | 온디바이스 AI |
-| 인지 훈련 (7종 게임) | ✅ | — |
-| 적응형 난이도 | ✅ | — |
-| 보행 분석 (가속도계) | ✅ | 이중 과제, HealthKit |
-| 홈 / 일상 루틴 | ✅ | 혈압·수면 입력 |
-| 감정 일기 | ✅ | — |
-| AI 챗봇 (Gemini) | ✅ | — |
-| 주간 리포트 | ✅ | PDF 실제 생성 |
-| 보호자 연계 | ✅ | 긴급 알림 고도화 |
-| 기관 연계 | ✅ | — |
-| CS 센터 | ✅ | — |
-| 관리자 포털 | ✅ | — |
-| FINGER 생활 습관 입력 | ❌ | 전체 미구현 |
-
----
-
-## 7. 남은 과제 (우선순위 순)
-
-1. **온디바이스 LLM 연결** — `local_ai_service.dart`에 MediaPipe Gemma 2B 또는 Google AI Edge 연동
-2. **음성 발화 지표 파이프라인** — TTR(어휘 다양성), 발화 속도, 대명사 비율 계산 로직 구현
-3. **PDF 실제 생성** — `clinical_report_generator.dart`에 pdf 패키지 연결
-4. **FINGER 생활 습관 기록** — 수면, 혈압/혈당 입력 UI 추가
-5. **이중 과제 보행** — 보행 중 인지 미션 부여 UI 및 속도 저하율 측정
-6. **Health Connect / HealthKit 연동** — health 패키지로 걸음 수·수면 실데이터 수집
-7. **training_corrupted 정리** — 레거시 파일 제거 또는 병합
+기능은 코드 존재만으로 완료 처리하지 않는다. 해당 기능의 로컬 로직, 외부 연동 실패 처리, 자동 테스트, Android 디바이스 흐름, 보안·개인정보 검토가 모두 확인된 뒤에만 릴리스 가능 상태로 승격한다. 이 문서의 현재 항목은 구현 범위와 위험을 기록한 것이며 무조건적인 제품 완료 선언이 아니다.

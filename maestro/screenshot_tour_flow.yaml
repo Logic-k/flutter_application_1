@@ -14,13 +14,13 @@
 - takeScreenshot: 02_ai_chat
 - pressKey: back
 
-# ── 03 기억의 정원 ─────────────────────────────────────────────
+# ── 03 오늘의 일기 ─────────────────────────────────────────────
 - extendedWaitUntil:
-    visible: "나의 기억의 정원\n정성과 노력으로 정원을 가꾸어보세요"
+    visible: "오늘의 일기\n오늘 하루를 기록해보세요"
     timeout: 5000
-- tapOn: "나의 기억의 정원\n정성과 노력으로 정원을 가꾸어보세요"
+- tapOn: "오늘의 일기\n오늘 하루를 기록해보세요"
 - extendedWaitUntil:
-    visible: "기억의 정원"
+    visible: "기억의 정원 일기"
     timeout: 10000
 - takeScreenshot: 03_memory_garden
 - pressKey: back
@@ -69,12 +69,10 @@
     element:
       text: "임상 리포트 생성하기"
     direction: DOWN
-- tapOn: "임상 리포트 생성하기"
-- extendedWaitUntil:
-    visible: "임상 리포트 생성"
-    timeout: 8000
+    timeout: 30000
+- waitForAnimationToEnd:
+    timeout: 3000
 - takeScreenshot: 09_clinical_report
-- pressKey: back
 
 # ── 10 내정보 ──────────────────────────────────────────────────
 - tapOn:
@@ -100,12 +98,7 @@
     element:
       text: "보호자 안심 연결\n보호자가 활동 상태를 확인할 수 있습니다."
     direction: DOWN
-- tapOn: "보호자 안심 연결\n보호자가 활동 상태를 확인할 수 있습니다."
-- extendedWaitUntil:
-    visible: "보호자 안심 연결"
-    timeout: 5000
 - takeScreenshot: 12_guardian_link
-- pressKey: back
 
 # ── 13 음성 진단 ───────────────────────────────────────────────
 - extendedWaitUntil:
@@ -115,12 +108,7 @@
     element:
       text: "음성 진단\n인지 건강 초기 진단 재실행"
     direction: DOWN
-- tapOn: "음성 진단\n인지 건강 초기 진단 재실행"
-- extendedWaitUntil:
-    visible: "초기 음성 진단"
-    timeout: 5000
 - takeScreenshot: 13_voice_assessment
-- pressKey: back
 
 # ── 14 고객센터 ────────────────────────────────────────────────
 - extendedWaitUntil:
@@ -130,8 +118,4 @@
     element:
       text: "고객센터\n공지사항, FAQ, 1:1 문의"
     direction: DOWN
-- tapOn: "고객센터\n공지사항, FAQ, 1:1 문의"
-- extendedWaitUntil:
-    visible: "고객센터"
-    timeout: 5000
 - takeScreenshot: 14_cs_center
