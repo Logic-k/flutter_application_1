@@ -1,252 +1,281 @@
-# MemoryLink
+<div align="center">
 
-**모바일 센서 기반 다중중재 치매 예방 플랫폼**  
-캡스톤 디자인 프로젝트 | Flutter (Android / iOS / Web)
+# 🧠 MemoryLink
 
----
+### *기억을 잇다, 오늘을 기록하다*
 
-## 프로젝트 개요
+**초기 치매·경도인지장애(MCI) 예방을 위한 종합 인지 건강 관리 앱**
 
-초기 치매 및 경도인지장애(MCI) 환자를 위한 Flutter 기반 크로스 플랫폼 앱입니다.  
-스마트폰 내장 센서(가속도계, 자이로스코프)와 Gemini 기반 AI 분석을 결합하여, 사용자가 일상 속에서 위험 신호를 조기 인지하고 다중중재 예방 루틴을 지속할 수 있도록 돕는 SaMD 수준의 플랫폼입니다.
+<br>
 
-**지원 플랫폼:** Android · iOS · Web
+[![Flutter](https://img.shields.io/badge/Flutter-3.41.5-02569B?style=for-the-badge&logo=flutter&logoColor=white)](https://flutter.dev)
+[![Dart](https://img.shields.io/badge/Dart-3.11-0175C2?style=for-the-badge&logo=dart&logoColor=white)](https://dart.dev)
+[![Firebase](https://img.shields.io/badge/Firebase-Firestore-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)](https://firebase.google.com)
+[![Gemini](https://img.shields.io/badge/Google-Gemini_AI-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://ai.google.dev)
+[![SQLite](https://img.shields.io/badge/SQLite-Local_DB-003B57?style=for-the-badge&logo=sqlite&logoColor=white)](https://www.sqlite.org)
 
----
+<br>
 
-## 기술 스택
-
-| 영역 | 기술 |
-|------|------|
-| 프레임워크 | Flutter (Dart 3.11.3+) |
-| 상태 관리 | Provider (`ChangeNotifierProvider`, `ProxyProvider`) |
-| 라우팅 | GoRouter |
-| 클라우드 DB | Firebase (Firestore) |
-| 로컬 DB | SQLite (sqflite) |
-| AI / LLM | Google Gemini (`google_generative_ai`) |
-| 차트 | fl_chart |
-| 달력 | table_calendar |
-| 음성 인식 | speech_to_text |
-| 음성 출력 (TTS) | flutter_tts |
-| 오디오 녹음 | record |
-| 오디오 재생 | audioplayers |
-| 센서 | sensors_plus (가속도계/자이로스코프) |
-| 걸음 수 | 자체 PedometerManager + 백그라운드 서비스 |
-| 헬스 데이터 | health (Health Connect / HealthKit) |
-| PDF 생성 | pdf + printing |
-| QR 코드 | qr_flutter |
-| 이미지 선택 | image_picker |
-| SVG | flutter_svg |
-| 애니메이션 | lottie |
-| 진동 | vibration |
-| 공유 | share_plus |
-| 국제화 | intl (한국어 날짜/시간) |
-| 테스트 | flutter_test · mocktail · integration_test · sqflite_common_ffi |
-| 아이콘 | flutter_launcher_icons |
+</div>
 
 ---
 
-## 디자인 시스템
+## 📱 앱 소개
 
-**라벤더 캄 (Direction A)** — 노년층 시각 안정성 최우선 설계
-
-| 역할 | 색상 | 색상코드 |
-|------|------|---------|
-| 강조색 (Primary) | 라벤더 | `#6C5CE7` |
-| 배경 | 연보라 화이트 | `#F1F0FB` |
-| 카드 | 흰색 | `#FFFFFF` |
-| 텍스트 | 딥 퍼플 네이비 | `#241F3D` |
+MemoryLink는 **기억력 저하가 걱정되는 60~80대 사용자와 그 가족**을 위해 설계된 디지털 건강 관리 앱입니다.
+7종의 인지 훈련 게임, AI 회상 대화, 스마트폰 센서 기반 보행 분석, 감정 일기를 하나의 앱에서 제공하며,
+보호자와 실시간으로 건강 상태를 공유합니다.
 
 ---
 
-## 주요 기능
+## ✨ 주요 기능
 
-- **인지 훈련** — 7종 미니게임 (계산·기억력·언어·집중력), 폐루프 적응형 난이도
-- **보행 분석** — 3축 가속도 기반 보행 변동성(CV) 측정, 치매 전조 지표 시각화
-- **음성 평가** — STT 기반 실시간 음성 텍스트 변환 및 발화 분석
-- **감정 일기** — 달력 기반 감정 기록, 일기 작성 및 조회
-- **AI 챗봇** — Gemini 기반 회상 요법 대화, 날짜·시간·날씨 컨텍스트 주입
-- **주간 리포트** — 인지 훈련 점수 시계열 차트, 뇌 연령 추정, 임상 리포트 생성
-- **보호자 연계** — QR 코드 기반 공유 링크, 이상 감지 시 푸시 알림
-- **기관 연계** — 치매안심센터 전화/지도 연동
-- **관리자 포털** — 사용자 데이터 조회, CS 문의 답변
-
----
-
-## 프로젝트 구조
-
-```
-lib/
-├── core/
-│   ├── services/          # 백그라운드 서비스, 이상 감지, AI, 보호자 동기화, 일기 알림
-│   ├── ai/                # Gemini, 로컬 폴백, AI 키 관리
-│   ├── database_helper.dart
-│   ├── firebase_service.dart
-│   ├── router.dart
-│   ├── theme.dart
-│   └── ...
-├── features/
-│   ├── auth/              # 로그인, 회원가입
-│   ├── onboarding/        # 온보딩, 동의
-│   ├── assessment/        # 초기 평가, 인지 과제
-│   ├── voice_assessment/  # 음성 평가
-│   ├── training/          # 인지 훈련 허브, 7종 미니게임
-│   ├── gait_analysis/     # 보행 분석
-│   ├── home/              # 홈 화면
-│   ├── diary/             # 감정 일기 (작성/조회)
-│   ├── ai_chat/           # AI 챗봇 (Gemini)
-│   ├── reports/           # 주간 리포트, 임상 PDF
-│   ├── profile/           # 프로필, 보호자 연계
-│   ├── cs/                # CS 센터
-│   ├── admin/             # 관리자 포털
-│   └── referral/          # 기관 연계
-test/
-├── unit/                  # 단위 테스트 (7개)
-├── widget/                # 위젯 테스트 (3개)
-└── helpers/               # 테스트 헬퍼, Mock 정의
-integration_test/          # 통합 테스트 (2개)
-maestro/                   # Maestro QA 자동화 (11개 flow)
-```
+<table>
+  <tr>
+    <td align="center" width="33%">
+      <h3>🧠 인지 훈련</h3>
+      <p>7종 게임 · 적응형 1~10단계<br>비교·수열·스도쿠·구구단<br>분류·도형·문장 읽기</p>
+    </td>
+    <td align="center" width="33%">
+      <h3>🚶 보행 분석</h3>
+      <p>스마트폰 센서 기반<br>걸음 수 · 보폭 · 변동성(CV)<br>일별·주별 활동 차트</p>
+    </td>
+    <td align="center" width="33%">
+      <h3>🤖 AI 회상 대화</h3>
+      <p>Google Gemini 기반<br>회상 요법 챗봇<br>날씨·날짜 컨텍스트 자동 반영</p>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" width="33%">
+      <h3>📔 감정 일기</h3>
+      <p>달력 기반 Memory Garden<br>날짜별 자유 서술 일기<br>작성 알림 기능</p>
+    </td>
+    <td align="center" width="33%">
+      <h3>📊 주간 리포트</h3>
+      <p>4개 인지 영역 점수 추이<br>익명 집단 백분위 비교<br>임상 참고용 PDF 생성·공유</p>
+    </td>
+    <td align="center" width="33%">
+      <h3>👨‍👩‍👧 보호자 연계</h3>
+      <p>QR 코드 연결<br>웹 대시보드 실시간 모니터링<br>이상 활동 감지 자동 알림</p>
+    </td>
+  </tr>
+</table>
 
 ---
 
-## 시작하기
+## 📸 스크린샷
 
-### 사전 요구사항
+<div align="center">
+<img src="01_home.png" width="160" alt="홈 화면">
+<img src="02_ai_chat.png" width="160" alt="AI 챗봇">
+<img src="03_memory_garden.png" width="160" alt="감정 일기">
+<img src="04_training_hub.png" width="160" alt="훈련 허브">
+<img src="05_training_game.png" width="160" alt="게임 플레이">
+<img src="06_walking_dashboard.png" width="160" alt="보행 대시보드">
+</div>
 
-- Flutter SDK 3.11.3 이상
-- Dart 3.x 이상
-- Android Studio / Xcode
+<br>
 
-### 설치 및 실행
+<div align="center">
+<img src="07_reports.png" width="160" alt="주간 리포트">
+<img src="09_clinical_report.png" width="160" alt="임상 리포트">
+<img src="10_profile.png" width="160" alt="프로필">
+<img src="12_guardian_link.png" width="160" alt="보호자 연결">
+<img src="13_voice_assessment.png" width="160" alt="음성 평가">
+<img src="14_cs_center.png" width="160" alt="CS 센터">
+</div>
+
+---
+
+## 🔢 숫자로 보는 MemoryLink
+
+<div align="center">
+
+| 항목 | 수치 |
+|:---:|:---:|
+| 🎮 인지 훈련 게임 | **7종** |
+| 📈 인지 평가 영역 | **4개** (계산·논리·기억·집중) |
+| 🎯 적응형 난이도 | **10단계** |
+| 📋 PDF 리포트 | **4페이지** |
+| 🧪 자동화 테스트 | **단위 63 · 위젯 36 · 통합 5 · Maestro 19** |
+| 📲 화면 수 | **30+** |
+
+</div>
+
+---
+
+## 🛠 기술 스택
+
+<div align="center">
+
+**모바일 프레임워크**
+
+![Flutter](https://img.shields.io/badge/Flutter-Framework-02569B?logo=flutter)
+![Dart](https://img.shields.io/badge/Dart-Language-0175C2?logo=dart)
+![Provider](https://img.shields.io/badge/Provider-State_Management-6C5CE7)
+![GoRouter](https://img.shields.io/badge/GoRouter-Routing-6C5CE7)
+
+**백엔드 & 데이터**
+
+![Firebase](https://img.shields.io/badge/Cloud_Firestore-NoSQL-FFCA28?logo=firebase&logoColor=black)
+![SQLite](https://img.shields.io/badge/SQLite-Local_DB-003B57?logo=sqlite)
+![SharedPreferences](https://img.shields.io/badge/SharedPreferences-Settings-gray)
+
+**AI & 센서**
+
+![Gemini](https://img.shields.io/badge/Google_Gemini-AI_Chat-4285F4?logo=google)
+![STT](https://img.shields.io/badge/speech__to__text-Voice-34A853?logo=google)
+![Sensors](https://img.shields.io/badge/sensors__plus-Accelerometer-FF6B6B)
+![Pedometer](https://img.shields.io/badge/pedometer-Step_Counter-3FBF8F)
+
+**UI & 시각화**
+
+![FL Chart](https://img.shields.io/badge/FL_Chart-Graphs-6C5CE7)
+![Lottie](https://img.shields.io/badge/Lottie-Animations-00D2D3)
+![Table Calendar](https://img.shields.io/badge/Table_Calendar-Diary-ECE9FC?labelColor=6C5CE7)
+![PDF](https://img.shields.io/badge/pdf_printing-Clinical_Report-EC407A)
+
+</div>
+
+---
+
+## 🚀 시작하기
 
 ```bash
-git clone https://github.com/Logic-k/flutter_application_1.git
-cd flutter_application_1
+# 1. 의존성 설치
 flutter pub get
+
+# 2. (선택) Gemini API 키 설정
+# lib/core/ai/ai_key_service.dart 에서 API 키 입력
+
+# 3. 앱 실행
 flutter run
 ```
 
-### 테스트 실행
+> **플랫폼별 필요 사항**
+> - Android: Android SDK + 기기 또는 에뮬레이터
+> - iOS: macOS + Xcode + CocoaPods + 서명 설정
+> - Firebase 기능: 플랫폼별 `google-services.json` / `GoogleService-Info.plist`
+
+---
+
+## 🏗 아키텍처
+
+```
+lib/
+├── core/                     공통 기반
+│   ├── theme.dart            Lavender Calm 디자인 시스템 (#6C5CE7)
+│   ├── router.dart           GoRouter 경로 설정
+│   ├── database_helper.dart  SQLite 로컬 DB
+│   ├── firebase_service.dart Firestore 동기화
+│   └── ai/                   Gemini + 로컬 폴백 AI 모듈
+│
+└── features/                 기능별 화면
+    ├── auth/                 로그인 · 회원가입
+    ├── training/             인지 훈련 허브 + 7종 게임
+    ├── gait_analysis/        보행 분석 · 걷기 대시보드
+    ├── diary/                감정 일기 (Memory Garden)
+    ├── ai_chat/              AI 회상 대화
+    ├── reports/              주간 리포트 · PDF 생성
+    ├── voice_assessment/     음성 평가 (STT + 언어 지표)
+    ├── profile/              프로필 · 보호자 연결
+    ├── cs/                   고객 지원 센터
+    └── admin/                관리자 대시보드
+```
+
+---
+
+<details>
+<summary>📋 전체 화면 경로 목록 펼치기</summary>
+
+```
+/login                         로그인
+/register                      회원가입
+/                              메인 탭 (홈·훈련·생활·리포트·프로필)
+/onboarding                    온보딩
+/consent                       데이터 수집 동의
+/assessment                    초기 인지 평가
+/voice_assessment              음성 평가
+/training_hub                  인지 훈련 허브
+/game/comparison               비교 게임
+/game/sequence                 수열 게임
+/game/sudoku                   도형 스도쿠
+/game/multiplication           구구단 게임
+/game/shape_match              도형 짝 맞추기
+/game/categorization           단어 분류
+/game/reading                  문장 읽기
+/gait                          보행 분석
+/walking_dashboard             걷기 대시보드
+/memory_garden                 일기 작성
+/diary_book                    일기 조회
+/ai_chat                       AI 회상 대화
+/report_options                임상 리포트 옵션
+/profile                       프로필
+/guardian_link                 보호자 연결
+/cs_center                     CS 센터
+/admin_login                   관리자 로그인
+/admin/dashboard               관리자 대시보드
+```
+
+</details>
+
+<details>
+<summary>🧪 QA 현황 펼치기</summary>
+
+| 테스트 유형 | 수량 |
+|---|---|
+| 단위 테스트 | 63개 |
+| 위젯 테스트 | 36개 |
+| 통합 테스트 | 5개 |
+| Maestro E2E flow | 19개 (게이팅) + 1개 (스크린샷) |
 
 ```bash
-# 단위 + 위젯 테스트
+flutter analyze
 flutter test
-
-# 통합 테스트 (연결된 기기 필요)
 flutter test integration_test/
-
-# Maestro QA 자동화
 maestro test maestro/
+flutter build apk
 ```
 
-### 환경 설정
+</details>
 
-Firebase 연결을 위해 `google-services.json`(Android) 및 `GoogleService-Info.plist`(iOS)가 필요합니다.  
-Gemini AI 키는 앱 내 `ai_key_service.dart`를 통해 관리됩니다.
+<details>
+<summary>📌 현재 구현 상태 펼치기</summary>
 
----
+| 영역 | 상태 |
+|---|---|
+| 인증 | 로컬 SQLite 기반 (Firebase Auth 미사용) |
+| 인지 훈련 | 7종 게임 + 적응형 난이도 완료 |
+| 보행 분석 | 센서 기반 분석 완료, HealthKit 실기기 검증 필요 |
+| AI 대화 | Gemini REST API + 로컬 폴백 완료 |
+| 리포트 | 차트 + 4페이지 PDF 생성 완료 |
+| 보호자 연계 | Firestore 공유 + 로컬 이상 알림 완료 |
+| 음성 평가 | STT + 규칙 기반 지표(TTR/WPM) 완료 |
+| 관리자 | CS 관리 + 사용자 조회 화면 완료 |
 
-## 개발 현황
-
-### 구현 완료 기능
-
-| 카테고리 | 주요 내용 | 상태 |
-|---------|----------|------|
-| 인증 | Firebase 기반 로그인/회원가입, GoRouter 인증 가드 | ✅ |
-| 온보딩 | 건강 데이터 수집 동의 절차, 민감 정보 미수집 방침 | ✅ |
-| 초기 평가 | 인지 과제, 결과 화면 | ✅ |
-| 음성 평가 | STT 실시간 변환, 발화 분석 점수 UI | ⚠️ LLM 미연결 |
-| 인지 훈련 (7종) | 비교·구구단·순서기억·도형스도쿠·도형짝·단어분류·문장읽기 | ✅ |
-| 적응형 난이도 | DifficultyProvider, 카테고리별 레벨 SQLite 저장 | ✅ |
-| 보행 분석 | 가속도 기반 보행 변동성(CV), 백그라운드 Pedometer | ✅ |
-| 홈 / 일상 루틴 | 실시간 걸음 수, MIND 식단 추천 | ✅ |
-| 감정 일기 | 달력 기반 작성·조회, 날짜별 감정 기록 | ✅ |
-| AI 챗봇 | Gemini 기반 회상 요법 대화, 실시간 컨텍스트 주입 | ✅ |
-| 주간 리포트 | fl_chart 시계열 차트, 뇌 연령 추정, 임상 리포트 구조 | ✅ |
-| 프로필 / 보호자 연계 | QR 코드 공유 링크, 텍스트 크기 설정 | ✅ |
-| CS 센터 | 공지사항, FAQ, 문의 제출/조회 | ✅ |
-| 관리자 포털 | 사용자 조회, CS 문의 답변, 공지·FAQ 편집 | ✅ |
-| 기관 연계 | 치매안심센터 전화/지도 연동 (url_launcher) | ✅ |
-| 이상 감지 모니터 | 활동 미감지 시 보호자 푸시 알림 구조 | ✅ |
-| UI/UX | 라벤더 캄 전면 리디자인, 카드형 레이아웃 | ✅ |
-| 다중 플랫폼 | Android · iOS · Web 빌드 지원, 앱 아이콘 전체 적용 | ✅ |
-| QA 자동화 | Maestro 11개 flow, 데모 계정 2개 | ✅ |
-| 테스트 커버리지 | 단위 7개 · 위젯 3개 · 통합 2개 | ✅ |
-
-### 미완성 / 플레이스홀더 기능
-
-| 기능 | 현황 | 비고 |
-|------|------|------|
-| 온디바이스 LLM 음성 분석 | ⚠️ 시뮬레이션 | 실제 MediaPipe/TFLite 모델 미탑재 |
-| 음성 발화 지표 추출 (TTR, 발화속도) | ⚠️ 부분 구현 | STT 동작, LLM 파이프라인 미연결 |
-| Health Connect / HealthKit 연동 | ⚠️ 패키지 탑재 완료 | 실제 권한 획득 및 데이터 연동 미완 |
-| 이중 과제 보행 알고리즘 | ⚠️ 미구현 | 보행 중 인지 미션 부여 기능 |
-| FINGER 모델 — 혈압/혈당 입력 | ⚠️ 미구현 | 생활 습관 기록 입력 폼 |
-| PDF 실제 생성 | ⚠️ 패키지 탑재 완료 | 렌더링/공유 연결 필요 |
-| training_corrupted 정리 | ⚠️ 레거시 | 구 버전 파일, 정리 필요 |
+</details>
 
 ---
 
-## 라우팅 구조
+## 📄 관련 문서
 
-```
-/login                           → 로그인
-/register                        → 회원가입
-/ (MainNavScreen)                → 하단 탭 네비게이션
-  ├── 홈 (HomeScreen)
-  ├── 훈련 (TrainingHubScreen)
-  ├── 생활 (WalkingDashboardScreen)
-  ├── 리포트 (ReportsScreen)
-  └── 프로필 (ProfileScreen)
-/onboarding                      → 온보딩
-/consent                         → 동의
-/assessment                      → 초기 평가
-/cognitive_tasks                 → 인지 과제
-/assessment_result               → 평가 결과
-/voice_assessment                → 음성 평가
-/game/comparison                 → 비교 게임
-/game/sequence                   → 순서 기억
-/game/sudoku                     → 도형 스도쿠
-/game/multiplication             → 구구단
-/game/shape_match                → 도형 짝
-/game/categorization             → 단어 분류
-/game/reading                    → 문장 읽기
-/gait                            → 보행 분석
-/precise_gait_analysis           → 정밀 보행 분석
-/walking_dashboard               → 걷기 대시보드
-/memory_garden                   → 일기 작성 (DiaryScreen)
-/diary_book                      → 일기 조회 (DiaryBookScreen)
-/ai_chat                         → AI 챗봇 (Gemini)
-/training/recall                 → 일일 회상
-/report_options                  → 임상 리포트 옵션
-/profile                         → 프로필
-/guardian_link                   → 보호자 연결
-/cs_center                       → CS 센터
-/cs/notices, /cs/faq             → 공지사항, FAQ
-/cs/inquiry_submit, ...          → 문의 관련
-/admin_login                     → 관리자 로그인
-/admin/dashboard                 → 관리자 대시보드
-/admin/user_detail/:userId       → 사용자 상세
-/admin/cs_management             → CS 관리
-/admin/notice_edit, /admin/faq_edit, /admin/inquiry_detail/:id
-```
+- [PROJECT_DOCS.md](PROJECT_DOCS.md) — 기능 및 아키텍처 상세
+- [capstone_project_plan_renewal.md](capstone_project_plan_renewal.md) — 캡스톤 설계 계획
 
 ---
 
-## 남은 과제 (우선순위 순)
+<div align="center">
 
-1. **온디바이스 LLM 연결** — `local_ai_service.dart`에 MediaPipe Gemma 2B 또는 Google AI Edge 연동
-2. **음성 발화 지표 파이프라인** — TTR(어휘 다양성), 발화 속도, 대명사 비율 계산 로직 구현
-3. **PDF 실제 생성** — `clinical_report_generator.dart`에 pdf/printing 패키지 연결
-4. **Health Connect / HealthKit 데이터 연동** — health 패키지로 걸음 수·수면 실데이터 수집
-5. **FINGER 생활 습관 기록** — 수면, 혈압/혈당 입력 UI 추가
-6. **이중 과제 보행** — 보행 중 인지 미션 부여 UI 및 속도 저하율 측정
-7. **training_corrupted 정리** — 레거시 파일 제거 또는 병합
-8. **테스트 커버리지 확대** — 보행 분석·음성 평가·보호자 연계 영역 추가
+> ⚠️ **의료 면책 고지**
+>
+> MemoryLink는 **연구·캡스톤 프로토타입**입니다.
+> 의료기기 또는 임상적으로 검증된 소프트웨어(SaMD)가 아니며,
+> 앱 내 결과를 진단·치료 판단에 사용해서는 안 됩니다.
 
----
+<br>
 
-## 라이선스
+**2026 캡스톤 디자인 프로젝트** · 팀 MemoryLink
 
-캡스톤 디자인 프로젝트 — 학술 목적으로 개발되었습니다.
+[![Contact](https://img.shields.io/badge/Contact-teammemorylink@gmail.com-6C5CE7?style=flat-square&logo=gmail&logoColor=white)](mailto:teammemorylink@gmail.com)
+
+</div>
