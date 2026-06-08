@@ -161,6 +161,132 @@ flutter run
 
 ## 🏗 아키텍처
 
+### 전체 시스템 구조
+
+```mermaid
+graph TB
+    subgraph APP["📱 Flutter App"]
+        UI["UI · 화면 레이어"]
+        State["Provider 상태 관리"]
+        Core["Core Services"]
+    end
+
+    subgraph LOCAL["💾 로컬 저장소 (오프라인 우선)"]
+        SQLite[("SQLite\n훈련 점수 · 걸음 수 · 일기")]
+        SP["SharedPreferences\n설정 · 자동 로그인"]
+    end
+
+    subgraph CLOUD["☁️ 클라우드"]
+        FS[("Cloud Firestore\n보호자 공유 데이터")]
+        GM["🤖 Google Gemini\nAI 회상 대화"]
+    end
+
+    subgraph SENSOR["📡 디바이스 센서"]
+        ACC["가속도계 · 자이로\n보행 분석"]
+        MIC["마이크 · STT\n음성 평가"]
+        PED["만보계\n걸음 수"]
+    end
+
+    UI <--> State
+    State <--> Core
+    Core <--> SQLite
+    Core <--> SP
+    Core <-->|"인터넷 연결 시"| FS
+    Core <-->|"AI 대화"| GM
+    Core --> ACC
+    Core --> MIC
+    Core --> PED
+```
+
+---
+
+### 앱 화면 네비게이션 플로우
+
+```mermaid
+flowchart TD
+    Login(["🔐 로그인 / 회원가입"]) --> Onboard["온보딩\n목표 선택 · 동의"]
+    Onboard --> Home["🏠 홈 대시보드"]
+
+    Home --> T["🧠 훈련 탭"]
+    Home --> L["🚶 생활 탭"]
+    Home --> R["📊 리포트 탭"]
+    Home --> P["👤 프로필 탭"]
+
+    T --> Hub["훈련 허브"]
+    Hub --> G1["비교 게임"]
+    Hub --> G2["수열 게임"]
+    Hub --> G3["도형 스도쿠"]
+    Hub --> G4["구구단"]
+    Hub --> G5["단어 분류"]
+    Hub --> G6["도형 짝 맞추기"]
+    Hub --> G7["문장 읽기"]
+
+    L --> Walk["보행 분석"]
+    L --> Diary["감정 일기"]
+    L --> AI["AI 회상 대화"]
+
+    R --> Weekly["주간 리포트"]
+    Weekly --> PDF["PDF 생성 · 공유"]
+
+    P --> Guardian["보호자 연결"]
+    P --> Voice["음성 평가"]
+    P --> CS["CS 센터"]
+```
+
+---
+
+### 적응형 난이도 알고리즘
+
+```mermaid
+flowchart TD
+    Start(["게임 시작\n현재 레벨 확인 1~10"]) --> Q["문제 출제"]
+    Q --> A{"정답?"}
+    A -->|"✅ 정답"| R["연속 정답 카운트 +1"]
+    A -->|"❌ 오답"| W["연속 오답 카운트 +1"]
+    R --> C3{"3회 연속 정답?"}
+    W --> C2{"2회 연속 오답?"}
+    C3 -->|"Yes"| Up["레벨 UP ⬆️\nmax 10단계"]
+    C3 -->|"No"| Q
+    C2 -->|"Yes"| Down["레벨 DOWN ⬇️\nmin 1단계"]
+    C2 -->|"No"| Q
+    Up --> Save["SQLite 저장"]
+    Down --> Save
+    Save --> Q
+```
+
+---
+
+### 데이터 흐름 — 로컬 우선 전략
+
+```mermaid
+graph LR
+    subgraph DEVICE["사용자 디바이스"]
+        ACT["앱 사용\n게임 · 걷기 · 일기"]
+        DB[("SQLite 로컬 DB")]
+        NOTIF["📬 이상 감지 알림\n7일 평균 대비 30% 미만"]
+    end
+
+    subgraph NETWORK["인터넷 연결 시"]
+        FS[("Cloud Firestore")]
+        GM["Gemini API"]
+    end
+
+    subgraph GUARDIAN["보호자"]
+        WEB["웹 대시보드\n실시간 모니터링"]
+    end
+
+    ACT -->|"즉시 저장"| DB
+    DB -->|"이상 감지"| NOTIF
+    DB -->|"주기적 동기화"| FS
+    FS --> WEB
+    ACT <-->|"AI 대화"| GM
+```
+
+---
+
+<details>
+<summary>📁 프로젝트 폴더 구조 펼치기</summary>
+
 ```
 lib/
 ├── core/                     공통 기반
@@ -182,6 +308,8 @@ lib/
     ├── cs/                   고객 지원 센터
     └── admin/                관리자 대시보드
 ```
+
+</details>
 
 ---
 
