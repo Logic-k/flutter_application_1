@@ -151,9 +151,12 @@ class _DiaryScreenState extends State<DiaryScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final provider = context.watch<DiaryProvider>();
+    // 키보드가 50dp 이상 올라왔을 때 캘린더를 숨김
+    final keyboardOpen = MediaQuery.of(context).viewInsets.bottom > 50;
 
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
         title: const Text('기억의 정원 일기'),
         actions: [
@@ -168,13 +171,19 @@ class _DiaryScreenState extends State<DiaryScreen> {
           ? const Center(child: CircularProgressIndicator())
           : Column(
               children: [
-                Expanded(
-                  flex: 6,
-                  child: _buildCalendar(theme, provider),
+                // 키보드가 열리면 캘린더를 애니메이션으로 접음
+                AnimatedSize(
+                  duration: const Duration(milliseconds: 200),
+                  curve: Curves.easeInOut,
+                  child: SizedBox(
+                    height: keyboardOpen ? 0 : null,
+                    child: _buildCalendar(theme, provider),
+                  ),
                 ),
-                Divider(height: 1, color: theme.colorScheme.outlineVariant),
+                if (!keyboardOpen)
+                  Divider(height: 1, color: theme.colorScheme.outlineVariant),
+                // 입력 패널: 나머지 공간 전부 사용
                 Expanded(
-                  flex: 4,
                   child: _buildInputPanel(theme),
                 ),
               ],

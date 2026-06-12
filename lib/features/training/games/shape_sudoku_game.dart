@@ -20,78 +20,86 @@ class _ShapeSudokuGameState extends State<ShapeSudokuGame> {
   final int _totalSteps = 5;
   int _score = 0;
 
-  final List<IconData> _symbols = [
+  // 3×3용 기호 3개 / 4×4용 기호 4개
+  static const List<IconData> _symbols = [
     Icons.wb_sunny_outlined,
     Icons.cloud_outlined,
     Icons.beach_access_outlined,
     Icons.waves_outlined,
   ];
 
-  late int _gridSize;
+  late int _gridSize;   // 3 또는 4
   late List<List<int>> _grid;
-  late List<List<bool>> _isVisible;
   late int _targetRow;
   late int _targetCol;
   late int _correctSymbolIdx;
-  bool _isInitialized = false;
 
   @override
   void initState() {
     super.initState();
     _generateSudoku();
-    _isInitialized = true;
     _stopwatch.start();
   }
 
+  // ── Latin Square 생성 ──────────────────────────────────────────
+  // 기본 cyclic 패턴에서 행/열/기호를 랜덤 순열하여 다양한 패턴 생성
+  List<List<int>> _buildLatinSquare(int n, {bool randomize = true}) {
+    // 기본 순환 패턴
+    List<List<int>> grid =
+        List.generate(n, (i) => List.generate(n, (j) => (i + j) % n));
+
+    if (!randomize) return grid;
+
+    // 행 셔플
+    final rowOrder = List.generate(n, (i) => i)..shuffle(_random);
+    grid = rowOrder.map((r) => List<int>.from(grid[r])).toList();
+
+    // 열 셔플
+    final colOrder = List.generate(n, (i) => i)..shuffle(_random);
+    grid = List.generate(n, (r) => colOrder.map((c) => grid[r][c]).toList());
+
+    // 기호 순열 (같은 모양이 다른 위치에 오게)
+    final symOrder = List.generate(n, (i) => i)..shuffle(_random);
+    grid = List.generate(
+        n, (r) => grid[r].map((v) => symOrder[v]).toList());
+
+    return grid;
+  }
+
   void _generateSudoku() {
-    final diffProvider = context.read<DifficultyProvider>();
-    final level = diffProvider.getLevel(GameCategory.memory);
+    final level = context.read<DifficultyProvider>().getLevel(GameCategory.memory);
 
+    // Level 1-4: 3×3 (단순 순환 패턴으로 규칙 파악 용이)
+    // Level 5-10: 4×4 (랜덤 Latin Square로 난이도↑)
     _gridSize = (level <= 4) ? 3 : 4;
-    
-    int shift = _random.nextInt(_gridSize);
-    _grid = List.generate(_gridSize, (i) => 
-      List.generate(_gridSize, (j) => (i + j + shift) % _gridSize)
-    );
+    final randomize = level >= 5;
 
-    int visibleCount = (_gridSize * _gridSize) - (level > 7 ? 4 : 2);
-    _isVisible = List.generate(_gridSize, (_) => List.generate(_gridSize, (_) => false));
-    
-    int placed = 0;
-    while (placed < visibleCount) {
-      int r = _random.nextInt(_gridSize);
-      int c = _random.nextInt(_gridSize);
-      if (!_isVisible[r][c]) {
-        _isVisible[r][c] = true;
-        placed++;
-      }
-    }
+    _grid = _buildLatinSquare(_gridSize, randomize: randomize);
 
+    // 타겟 셀 하나만 숨기고 나머지는 모두 표시
     _targetRow = _random.nextInt(_gridSize);
     _targetCol = _random.nextInt(_gridSize);
-    _isVisible[_targetRow][_targetCol] = false;
     _correctSymbolIdx = _grid[_targetRow][_targetCol];
-    
+
     _stopwatch.reset();
   }
 
   void _checkAnswer(int selectedIdx) {
     _stopwatch.stop();
-    double reactionTime = _stopwatch.elapsedMilliseconds / 1000.0;
-    
-    bool isCorrect = (selectedIdx == _correctSymbolIdx);
+    final reactionTime = _stopwatch.elapsedMilliseconds / 1000.0;
+
+    final isCorrect = selectedIdx == _correctSymbolIdx;
     if (isCorrect) {
       _score++;
-      HapticFeedback.mediumImpact(); // 성공 시 햅틱 피드백
+      HapticFeedback.mediumImpact();
     } else {
-      HapticFeedback.heavyImpact(); // 실패 시 다른 느낌의 피드백
+      HapticFeedback.heavyImpact();
     }
 
-    // 난이도 제공자에게 결과 및 반응 시간 보고
     context.read<DifficultyProvider>().updatePerformance(
-      GameCategory.memory, 
-      isCorrect, 
-      responseTime: reactionTime
+      GameCategory.memory,
+      isCorrect,
+      responseTime: reactionTime,
     );
 
     if (_currentStep < _totalSteps) {
@@ -101,7 +109,9 @@ class _ShapeSudokuGameState extends State<ShapeSudokuGame> {
         _stopwatch.start();
       });
     } else {
-      context.read<UserProvider>().setCognitiveScore('memory', (_score / _totalSteps) * 100.0);
+      context
+          .read<UserProvider>()
+          .setCognitiveScore('memory', (_score / _totalSteps) * 100.0);
       _showResultDialog();
     }
   }
@@ -128,10 +138,15 @@ class _ShapeSudokuGameState extends State<ShapeSudokuGame> {
 
   @override
   Widget build(BuildContext context) {
-    if (!_isInitialized) return const Scaffold(body: Center(child: CircularProgressIndicator()));
     final theme = Theme.of(context);
     final diffProvider = context.watch<DifficultyProvider>();
+    final level = diffProvider.getLevel(GameCategory.memory);
     final targetTime = diffProvider.getTargetTime(GameCategory.memory);
+
+    final iconSize = _gridSize == 3 ? 44.0 : 34.0;
+    final questionFontSize = _gridSize == 3 ? 40.0 : 30.0;
+    final btnSize = _gridSize == 3 ? 76.0 : 66.0;
+    final btnIconSize = _gridSize == 3 ? 34.0 : 28.0;
 
     return GameTemplate(
       title: '그림 스도쿠',
@@ -140,36 +155,33 @@ class _ShapeSudokuGameState extends State<ShapeSudokuGame> {
       totalSteps: _totalSteps,
       child: Column(
         children: [
-          // 권장 시간 표시
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: theme.primaryColor.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.timer_outlined, size: 16, color: theme.primaryColor),
-                const SizedBox(width: 8),
-                Text(
-                  '권장 시간: ${targetTime.toStringAsFixed(1)}초',
-                  style: TextStyle(color: theme.primaryColor, fontWeight: FontWeight.bold, fontSize: 13),
-                ),
-              ],
-            ),
+          // 난이도 + 권장시간 배지
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _infoBadge(theme, Icons.bar_chart_outlined,
+                  'Lv.$level  $_gridSize×$_gridSize'),
+              const SizedBox(width: 10),
+              _infoBadge(theme, Icons.timer_outlined,
+                  '목표 ${targetTime.toStringAsFixed(1)}초'),
+            ],
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 20),
+
+          // 그리드
           AspectRatio(
             aspectRatio: 1,
             child: Container(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
                 color: theme.cardColor,
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: theme.brightness == Brightness.light ? 0.05 : 0.2),
+                    color: Colors.black.withValues(
+                        alpha: theme.brightness == Brightness.light
+                            ? 0.05
+                            : 0.2),
                     blurRadius: 10,
                   ),
                 ],
@@ -179,18 +191,29 @@ class _ShapeSudokuGameState extends State<ShapeSudokuGame> {
                 children: List.generate(_gridSize, (r) {
                   return TableRow(
                     children: List.generate(_gridSize, (c) {
-                      bool isTarget = (r == _targetRow && c == _targetCol);
-                      bool visible = _isVisible[r][c];
+                      final isTarget = r == _targetRow && c == _targetCol;
                       return AspectRatio(
                         aspectRatio: 1,
                         child: Container(
                           alignment: Alignment.center,
-                          color: isTarget ? theme.primaryColor.withValues(alpha: 0.1) : null,
+                          color: isTarget
+                              ? theme.primaryColor.withValues(alpha: 0.12)
+                              : null,
                           child: isTarget
-                              ? Text('?', style: TextStyle(fontSize: _gridSize == 3 ? 40 : 32, fontWeight: FontWeight.bold, color: theme.primaryColor))
-                              : (visible 
-                                  ? Icon(_symbols[_grid[r][c]], size: _gridSize == 3 ? 44 : 36, color: theme.colorScheme.onSurface.withValues(alpha: 0.8))
-                                  : const SizedBox.shrink()),
+                              ? Text(
+                                  '?',
+                                  style: TextStyle(
+                                    fontSize: questionFontSize,
+                                    fontWeight: FontWeight.bold,
+                                    color: theme.primaryColor,
+                                  ),
+                                )
+                              : Icon(
+                                  _symbols[_grid[r][c]],
+                                  size: iconSize,
+                                  color: theme.colorScheme.onSurface
+                                      .withValues(alpha: 0.8),
+                                ),
                         ),
                       );
                     }),
@@ -199,9 +222,16 @@ class _ShapeSudokuGameState extends State<ShapeSudokuGame> {
               ),
             ),
           ),
+
           const Spacer(),
-          Text('알맞은 그림을 선택하세요', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
-          const SizedBox(height: 24),
+          Text(
+            '알맞은 그림을 선택하세요',
+            style: theme.textTheme.titleSmall
+                ?.copyWith(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 20),
+
+          // 보기 버튼 (_gridSize 개)
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: List.generate(_gridSize, (idx) {
@@ -209,18 +239,42 @@ class _ShapeSudokuGameState extends State<ShapeSudokuGame> {
                 onTap: () => _checkAnswer(idx),
                 borderRadius: BorderRadius.circular(16),
                 child: Container(
-                  width: _gridSize == 3 ? 80 : 70,
-                  height: _gridSize == 3 ? 80 : 70,
+                  width: btnSize,
+                  height: btnSize,
                   decoration: BoxDecoration(
                     color: theme.cardColor,
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: theme.primaryColor.withValues(alpha: 0.2)),
+                    border: Border.all(
+                        color: theme.primaryColor.withValues(alpha: 0.25)),
                   ),
-                  child: Icon(_symbols[idx], color: theme.primaryColor, size: _gridSize == 3 ? 36 : 32),
+                  child: Icon(_symbols[idx],
+                      color: theme.primaryColor, size: btnIconSize),
                 ),
               );
             }),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _infoBadge(ThemeData theme, IconData icon, String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+      decoration: BoxDecoration(
+        color: theme.primaryColor.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 15, color: theme.primaryColor),
+          const SizedBox(width: 6),
+          Text(label,
+              style: TextStyle(
+                  color: theme.primaryColor,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13)),
         ],
       ),
     );

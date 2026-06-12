@@ -8,6 +8,7 @@ import 'core/theme.dart';
 import 'core/router.dart';
 import 'core/user_provider.dart';
 import 'core/firebase_service.dart';
+import 'core/cs_service.dart';
 import 'core/local_ai_service.dart';
 import 'core/ai/ai_chat_service.dart';
 import 'core/services/background_service.dart';
@@ -62,7 +63,9 @@ void main() async {
 
   // Firebase 초기화
   await FirebaseService.initialize();
-  
+  // 공지사항/FAQ 데모 데이터 (비어있을 때만 삽입)
+  await CsService.seedDemoData();
+
   final userProvider = UserProvider();
   await userProvider.checkLoginStatus();
 

@@ -151,44 +151,105 @@ class DatabaseHelper {
       'pedometer_enabled': 1,
     });
 
-    // 7일치 훈련 점수 — 전반적으로 높음 (80~92점)
+    // 30일치 훈련 점수 (index 0 = 29일 전, index 29 = 오늘)
+    // memory: 0-100 스케일 (shape_sudoku 방식, > 10 이면 그대로 사용)
+    // calculation/logic/attention: 0-10 스케일 (게임에서 × 10 정규화 후 0-100 표시)
+    // 완만한 우상향 추세 + 자연스러운 등락
     const minjunScores = [
-      [82.0, 78.0, 81.0, 75.0],
-      [83.0, 79.0, 82.0, 76.0],
-      [87.0, 84.0, 86.0, 81.0],
-      [84.0, 81.0, 83.0, 78.0],
-      [90.0, 87.0, 89.0, 84.0],
-      [86.0, 83.0, 85.0, 80.0],
-      [88.0, 85.0, 87.0, 82.0],
+      // [memory, calculation, logic, attention]  — day 0 (29일 전)
+      [80.0, 7.8, 8.0, 7.5],
+      [82.0, 7.9, 8.1, 7.6],
+      [81.0, 8.0, 8.0, 7.5],
+      [83.0, 7.8, 8.2, 7.7],
+      [80.0, 8.1, 8.1, 7.6],
+      [84.0, 7.9, 8.3, 7.8],
+      [82.0, 8.2, 8.0, 7.5],
+      [85.0, 8.0, 8.2, 7.9],
+      [83.0, 8.1, 8.3, 7.7],
+      [81.0, 7.9, 8.1, 7.6],
+      // day 10~19
+      [83.0, 8.2, 8.3, 7.8],
+      [85.0, 8.3, 8.4, 7.9],
+      [84.0, 8.2, 8.3, 7.8],
+      [86.0, 8.4, 8.5, 8.0],
+      [85.0, 8.3, 8.4, 7.9],
+      [87.0, 8.5, 8.6, 8.1],
+      [84.0, 8.2, 8.3, 7.8],
+      [86.0, 8.4, 8.5, 8.0],
+      [85.0, 8.3, 8.4, 8.1],
+      [88.0, 8.6, 8.7, 8.3],
+      // day 20~29
+      [87.0, 8.5, 8.6, 8.2],
+      [88.0, 8.6, 8.7, 8.3],
+      [87.0, 8.5, 8.6, 8.2],
+      [89.0, 8.7, 8.8, 8.4],
+      [88.0, 8.6, 8.7, 8.3],
+      [90.0, 8.8, 8.9, 8.5],
+      [88.0, 8.6, 8.7, 8.3],
+      [91.0, 8.8, 9.0, 8.6],
+      [90.0, 8.9, 8.9, 8.5],
+      [92.0, 9.0, 9.1, 8.7],
     ];
-    for (int i = 0; i < 7; i++) {
-      final date = now.subtract(Duration(days: 6 - i));
-      final dateStr = date.toIso8601String().replaceFirst(
-          RegExp(r'T.*'), 'T10:${(i * 7).toString().padLeft(2, '0')}:00.000');
-      final cats = ['memory', 'calculation', 'logic', 'attention'];
-      for (int c = 0; c < 4; c++) {
-        await db.insert('training_scores', {
-          'user_id': minjunId,
-          'category': cats[c],
-          'score': minjunScores[i][c],
-          'created_at': dateStr,
-        });
-      }
+    await _insertTrainingScores(db, minjunId, minjunScores, now, hour: 10);
+
+    // 30일치 걷기 — 주중 높음(7500~10200), 주말 낮음(6500~8000)
+    const minjunSteps = [
+      7200, 9100, 8500, 9300, 8700, 7500, 6800, // week 1
+      9000, 8800, 8600, 9400, 8900, 7800, 7100, // week 2
+      9200, 8700, 9000, 9500, 9100, 7900, 6900, // week 3
+      9300, 8900, 9100, 9800, 9400, 7700, 7300, // week 4
+      8800, 9100,                                // +2일
+    ];
+    await _insertDailySteps(db, minjunId, minjunSteps, now);
+
+    // 20일치 일기 (30일 중 10일 건너뜀 — 자연스러운 공백 포함)
+    // 일기 있는 날 인덱스: 0,1,2,4,5,7,8,9,11,12,14,15,16,18,19,21,22,24,25,27
+    const minjunDiaryDays = [
+      0, 1, 2, 4, 5, 7, 8, 9, 11, 12, 14, 15, 16, 18, 19, 21, 22, 24, 25, 27
+    ];
+    const minjunDiaries = [
+      '오늘 아침 일찍 일어나 공원에서 30분 걸었다. 바람이 시원하고 기분이 좋았다. 훈련 게임도 한 판 했는데 그림 스도쿠가 생각보다 재미있다.',
+      '오후에 마트에 다녀왔다. 장을 보면서 아내가 좋아하는 과일을 샀다. 저녁 식사 후 산책도 했더니 만 보가 넘었다.',
+      '병원에서 정기 검진을 받았다. 의사 선생님이 요즘 꾸준히 운동하고 있어서 좋아 보인다고 하셨다. 앱 덕분인 것 같다.',
+      '손자가 학교 성적표를 들고 왔다. 수학을 잘해서 내가 구구단 게임을 가르쳐 줬다. 함께 하니 더 재미있었다.',
+      '오늘은 구름이 많아 산책을 짧게 했다. 대신 훈련 게임을 두 가지나 했다. 규칙 찾기 게임에서 높은 점수가 나왔다.',
+      '오랜만에 친구들과 점심을 먹었다. 예전 이야기를 하다 보니 시간이 금방 지나갔다. 많이 웃었더니 기분이 좋다.',
+      '아침 체조 후 앱에서 AI 챗봇과 이야기를 나눴다. 오늘 기분과 어제 있었던 일을 말했더니 칭찬을 해줬다. 뿌듯했다.',
+      '날씨가 맑아서 뒷산까지 걸었다. 경치가 아름다웠다. 돌아오는 길에 이웃 어르신을 만나 잠시 이야기를 나눴다.',
+      '오늘은 집에서 쉬었다. TV를 보다가 퀴즈 프로그램이 나왔는데 훈련 덕분에 예전보다 잘 맞추는 것 같다.',
+      '며칠 전부터 연습했던 수열 게임을 드디어 다 맞혔다. 작은 성취지만 뿌듯하다.',
+      '주말에 아들 가족이 왔다. 손녀가 많이 컸다. 함께 공원을 걸으니 오늘 걸음수가 유독 많이 나왔다.',
+      '아침에 일어나 어제 걸음수를 확인했다. 목표를 달성하니 기분이 좋다. 오늘도 열심히 걸어야겠다.',
+      '오늘따라 기억력 게임에서 실수가 많았다. 조금 피곤한 것 같다. 일찍 자야겠다.',
+      '어제 충분히 쉬었더니 오늘은 훈련 점수가 잘 나왔다. 컨디션 관리가 중요하다는 걸 다시 느꼈다.',
+      '이웃 어르신과 함께 동네 복지관 프로그램에 참여했다. 노래도 배우고 즐거운 시간이었다.',
+      '오늘은 일기를 쓰면서 한 달 동안 꾸준히 훈련을 했다는 게 새삼 뿌듯하게 느껴졌다.',
+      '아침 산책 중에 꽃이 피기 시작한 것을 발견했다. 봄이 오는 걸 보니 마음이 따뜻해졌다. 사진을 찍어 아들한테 보냈다.',
+      '손자와 영상통화를 했다. 멀리 살아서 자주 못 보지만 화면으로라도 보니 기분이 좋다.',
+      '오늘 임상 리포트를 생성해봤다. 지난 한 달 동안의 기록이 한눈에 보이니 꾸준히 노력한 것이 느껴졌다. 의사 선생님께 가져갈 생각이다.',
+      '매일 훈련과 걷기를 하고 있다. 처음엔 귀찮기도 했는데 이제는 습관이 된 것 같다. 뇌도 근육처럼 쓸수록 좋아지나 보다.',
+    ];
+    for (int k = 0; k < minjunDiaryDays.length; k++) {
+      final dayIdx = minjunDiaryDays[k];
+      final date = now.subtract(Duration(days: 29 - dayIdx));
+      final dateStr = date.toIso8601String().split('T')[0];
+      final ts = '${dateStr}T20:00:00.000';
+      await db.insert('diary_entries', {
+        'user_id': minjunId,
+        'date': dateStr,
+        'content': minjunDiaries[k],
+        'created_at': ts,
+        'updated_at': ts,
+      });
     }
 
-    // 7일치 걷기 — 건강한 수준 (7000~9500보)
-    const minjunSteps = [6900, 8500, 7800, 9200, 7200, 8700, 9100];
-    for (int i = 0; i < 7; i++) {
-      final dateStr = now
-          .subtract(Duration(days: 6 - i))
-          .toIso8601String()
-          .split('T')[0];
-      final steps = minjunSteps[i];
-      await db.insert('daily_steps', {
+    // 25일치 활성 사용자 기록 (30일 중 5일 빠짐)
+    for (int i = 0; i < 30; i++) {
+      if (i == 3 || i == 6 || i == 10 || i == 20 || i == 23) continue;
+      final dateStr =
+          now.subtract(Duration(days: 29 - i)).toIso8601String().split('T')[0];
+      await db.insert('daily_active_users', {
         'user_id': minjunId,
-        'steps': steps,
-        'calories': (steps * 0.04).roundToDouble(),
-        'distance': (steps * 0.0008).roundToDouble(),
         'date': dateStr,
       });
     }
@@ -207,41 +268,90 @@ class DatabaseHelper {
       'pedometer_enabled': 1,
     });
 
-    // 7일치 훈련 점수 — 전반적으로 매우 낮음 (18~35점)
+    // 30일치 훈련 점수 — 전반적으로 낮음
+    // memory: 0-100 스케일 (20~35점)
+    // calculation/logic/attention: 0-10 스케일 (2.0~3.4 → ×10 = 20~34%)
     const sonjaScores = [
-      [28.0, 33.0, 23.0, 26.0],
-      [20.0, 25.0, 15.0, 20.0],
-      [26.0, 31.0, 21.0, 25.0],
-      [23.0, 28.0, 18.0, 22.0],
-      [30.0, 34.0, 24.0, 29.0],
-      [25.0, 29.0, 19.0, 24.0],
-      [28.0, 32.0, 22.0, 27.0],
+      [28.0, 2.8, 2.3, 2.6],
+      [20.0, 2.0, 1.5, 2.0],
+      [26.0, 2.5, 2.1, 2.4],
+      [23.0, 2.3, 1.8, 2.2],
+      [30.0, 2.9, 2.4, 2.7],
+      [25.0, 2.4, 1.9, 2.3],
+      [28.0, 2.7, 2.2, 2.6],
+      [22.0, 2.1, 1.6, 2.1],
+      [27.0, 2.6, 2.2, 2.5],
+      [24.0, 2.2, 1.8, 2.2],
+      [29.0, 2.8, 2.3, 2.6],
+      [21.0, 2.0, 1.5, 2.0],
+      [25.0, 2.4, 2.0, 2.3],
+      [23.0, 2.2, 1.7, 2.1],
+      [31.0, 3.0, 2.5, 2.8],
+      [26.0, 2.5, 2.0, 2.4],
+      [29.0, 2.8, 2.3, 2.6],
+      [22.0, 2.1, 1.6, 2.0],
+      [27.0, 2.6, 2.1, 2.4],
+      [24.0, 2.3, 1.9, 2.2],
+      [32.0, 3.1, 2.5, 2.8],
+      [25.0, 2.4, 2.0, 2.3],
+      [28.0, 2.7, 2.2, 2.5],
+      [21.0, 2.0, 1.5, 1.9],
+      [30.0, 2.9, 2.4, 2.7],
+      [24.0, 2.3, 1.8, 2.2],
+      [27.0, 2.6, 2.1, 2.4],
+      [22.0, 2.1, 1.6, 2.0],
+      [31.0, 3.0, 2.4, 2.7],
+      [28.0, 2.8, 2.2, 2.6],
     ];
-    for (int i = 0; i < 7; i++) {
-      final date = now.subtract(Duration(days: 6 - i));
-      final dateStr = date.toIso8601String().replaceFirst(
-          RegExp(r'T.*'), 'T14:${(i * 5).toString().padLeft(2, '0')}:00.000');
-      final cats = ['memory', 'calculation', 'logic', 'attention'];
-      for (int c = 0; c < 4; c++) {
+    await _insertTrainingScores(db, sonjaId, sonjaScores, now, hour: 14);
+
+    // 30일치 걷기 — 매우 적음 (600~1500보)
+    const sonjaSteps = [
+       950,  600, 1100,  800, 1500,  900, 1200,
+       700, 1100,  850, 1300,  950, 1400,  650,
+      1000,  750, 1200,  900, 1350,  800, 1100,
+       600,  950,  700, 1250,  850, 1400,  750,
+      1050,  900,
+    ];
+    await _insertDailySteps(db, sonjaId, sonjaSteps, now);
+  }
+
+  static const _scoreCategories = ['memory', 'calculation', 'logic', 'attention'];
+
+  // 하루 1회씩 [memory, calculation, logic, attention] 점수를 삽입
+  // (index 0 = 가장 오래된 날, 마지막 index = 오늘)
+  Future<void> _insertTrainingScores(
+    Database db,
+    int userId,
+    List<List<double>> scores,
+    DateTime now, {
+    required int hour,
+  }) async {
+    for (int i = 0; i < scores.length; i++) {
+      final date = now.subtract(Duration(days: scores.length - 1 - i));
+      final dateStr =
+          '${date.toIso8601String().split('T')[0]}T$hour:${(i % 60).toString().padLeft(2, '0')}:00.000';
+      for (int c = 0; c < _scoreCategories.length; c++) {
         await db.insert('training_scores', {
-          'user_id': sonjaId,
-          'category': cats[c],
-          'score': sonjaScores[i][c],
+          'user_id': userId,
+          'category': _scoreCategories[c],
+          'score': scores[i][c],
           'created_at': dateStr,
         });
       }
     }
+  }
 
-    // 7일치 걷기 — 매우 적음 (600~1500보)
-    const sonjaSteps = [950, 600, 1100, 800, 1500, 900, 1200];
-    for (int i = 0; i < 7; i++) {
+  Future<void> _insertDailySteps(
+      Database db, int userId, List<int> stepsPerDay, DateTime now) async {
+    for (int i = 0; i < stepsPerDay.length; i++) {
       final dateStr = now
-          .subtract(Duration(days: 6 - i))
+          .subtract(Duration(days: stepsPerDay.length - 1 - i))
           .toIso8601String()
           .split('T')[0];
-      final steps = sonjaSteps[i];
+      final steps = stepsPerDay[i];
       await db.insert('daily_steps', {
-        'user_id': sonjaId,
+        'user_id': userId,
         'steps': steps,
         'calories': (steps * 0.04).roundToDouble(),
         'distance': (steps * 0.0008).roundToDouble(),
