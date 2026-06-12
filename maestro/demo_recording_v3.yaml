@@ -1,0 +1,192 @@
+appId: com.example.flutter_application_1
+---
+# ═══════════════════════════════════════════════════════════════
+# MemoryLink 경진대회 시연영상 — ENHANCED RECORDING FLOW (v3)
+# 실제 사용자 인터랙션 포함: 게임, 일기, AI 대화 등
+# ═══════════════════════════════════════════════════════════════
+
+# ── Scene 1: 로그인 (0:00~0:15) ──────────────────────────────
+- runFlow: helpers/login_helper.yaml
+
+# ── Scene 2: 홈 화면 (0:15~0:22) ────────────────────────────
+- extendedWaitUntil:
+    visible: "MemoryLink"
+    timeout: 10000
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# ── Scene 3: 인지훈련 — 게임 플레이 (0:22~1:20) ────────────
+# 훈련 탭 진입
+- tapOn:
+    point: "43%,93%"
+- extendedWaitUntil:
+    visible: "두뇌 트레이닝 센터"
+    timeout: 8000
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# 게임 진입 (MLGameCard merged text)
+- tapOn: "10, Lv.1\n누가 큰가요?\n빠른 수식 비교\n10%"
+- extendedWaitUntil:
+    visible: "누가 큰가요?"
+    timeout: 10000
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# 게임 플레이 (2회 탭)
+- tapOn:
+    point: "35%,55%"
+- waitForAnimationToEnd:
+    timeout: 1000
+- tapOn:
+    point: "65%,55%"
+- waitForAnimationToEnd:
+    timeout: 1000
+
+# 게임 종료 → 홈 복귀
+- pressKey: back
+- waitForAnimationToEnd:
+    timeout: 1500
+- tapOn:
+    point: "21%,93%"
+- extendedWaitUntil:
+    visible: "MemoryLink"
+    timeout: 8000
+- waitForAnimationToEnd:
+    timeout: 1000
+
+# ── Scene 4: 생활습관 — 걷기 + 일기 작성 (1:20~2:20) ──────
+- tapOn:
+    point: "53%,93%"
+- extendedWaitUntil:
+    visible: "생활습관"
+    timeout: 8000
+- waitForAnimationToEnd:
+    timeout: 1500
+- extendedWaitUntil:
+    visible: "/ 10,000 보"
+    timeout: 10000
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# 홈 복귀 → Memory Garden (일기)
+- tapOn:
+    point: "21%,93%"
+- extendedWaitUntil:
+    visible: "MemoryLink"
+    timeout: 8000
+- waitForAnimationToEnd:
+    timeout: 1000
+
+# 스크롤로 카드 위치 확인 후 탭 (v2에서 검증된 전체 텍스트)
+- tapOn: "오늘의 일기\n오늘 하루를 기록해보세요"
+- extendedWaitUntil:
+    visible: "기억의 정원 일기"
+    timeout: 10000
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# 일기 텍스트 작성
+- tapOn: "오늘 하루를 기록해보세요..."
+- inputText: "Today was a good day. Park walk. Happy."
+- hideKeyboard
+- waitForAnimationToEnd:
+    timeout: 1000
+
+# 저장
+- tapOn: "저장"
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# 뒤로가기 (홈)
+- pressKey: back
+- extendedWaitUntil:
+    visible: "MemoryLink"
+    timeout: 8000
+- waitForAnimationToEnd:
+    timeout: 1000
+
+# ── Scene 5: AI 대화 도우미 (2:20~3:00) ────────────────────
+- tapOn: "AI 도우미\nAI와 대화로 인지 건강을 확인해보세요"
+- extendedWaitUntil:
+    visible: "AI 대화 도우미"
+    timeout: 10000
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# 메시지 전송
+- tapOn: "메시지를 입력하세요..."
+- inputText: "Hello! How are you?"
+- hideKeyboard
+- waitForAnimationToEnd:
+    timeout: 1000
+# 전송 버튼 탭
+- tapOn:
+    point: "92%,91%"
+- waitForAnimationToEnd:
+    timeout: 10000
+
+# 홈 복귀 (뒤로가기)
+- pressKey: back
+- waitForAnimationToEnd:
+    timeout: 1500
+- tapOn:
+    point: "21%,93%"
+- extendedWaitUntil:
+    visible: "MemoryLink"
+    timeout: 10000
+- waitForAnimationToEnd:
+    timeout: 1000
+
+# ── Scene 6: 리포트 (3:00~3:35) ──────────────────────────
+- tapOn:
+    point: "64%,93%"
+- extendedWaitUntil:
+    visible: "주간 분석 리포트"
+    timeout: 8000
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# 스크롤: 소셜 랭킹 → 임상 리포트 버튼
+- scrollUntilVisible:
+    element:
+      text: "동년배 중에서 평균보다 높은 수준의 인지 능력을 보여주고 계십니다. 훌륭합니다!"
+    direction: DOWN
+    timeout: 30000
+- waitForAnimationToEnd:
+    timeout: 1000
+
+- scrollUntilVisible:
+    element:
+      text: "임상 리포트 생성하기"
+    direction: DOWN
+    timeout: 30000
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# ── Scene 7: 프로필 쇼케이스 (3:35~4:10) ─────────────────────
+- tapOn:
+    point: "74%,93%"
+- extendedWaitUntil:
+    visible: "내 정보"
+    timeout: 8000
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# 보호자 연결 버튼 쇼케이스
+- scrollUntilVisible:
+    element:
+      text: "보호자 안심 연결\n보호자가 활동 상태를 확인할 수 있습니다."
+    direction: DOWN
+    timeout: 20000
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# 고객센터 버튼 쇼케이스
+- scrollUntilVisible:
+    element:
+      text: "고객센터\n공지사항, FAQ, 1:1 문의"
+    direction: DOWN
+    timeout: 20000
+- waitForAnimationToEnd:
+    timeout: 2000

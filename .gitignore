@@ -75,6 +75,21 @@ lib/features/training_corrupted/
 *.keystore
 android/key.properties
 
-# 개발 중 캡처한 스크린샷 (임시)
+# 개발 중 캡처한 스크린샷 및 디버그 산출물 (임시)
 screen_*.png
+screenshot_*.png
+debug_*.png
+dump_*.png
 ui_dump.xml
+screenshots/
+build_output.txt
+report.xml
+
+# 데모 영상 (대용량 — Git에 포함하지 않음)
+*.mp4
+
+# 팀 리서치 PDF (대용량)
+MemoryLInkApp_Design/*.pdf
+
+# AI 코딩 도구 작업 폴더
+.omo/

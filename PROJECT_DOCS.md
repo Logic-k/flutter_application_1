@@ -36,9 +36,10 @@
 | 버전 | 1.0.0+1 |
 | 개발 언어 | Dart (Flutter 프레임워크) |
 | 지원 플랫폼 | Android, iOS, Web |
-| 필요 Flutter 버전 | 3.11.3 이상 |
-| 데이터 저장 방식 | 로컬(SQLite) + 클라우드(Firebase Firestore) 병행 |
-| AI 엔진 | Google Gemini (`google_generative_ai`) |
+| Dart SDK 제약 | `^3.11.3` (`pubspec.yaml`의 Dart 제약이며 Flutter 버전이 아님) |
+| Flutter SDK | 저장소에 고정 버전 없음. 설치된 SDK가 위 Dart 제약을 지원해야 함 |
+| 데이터 저장 방식 | 기능별 로컬 SQLite 또는 Firebase Firestore 사용 |
+| AI 엔진 | 런타임 Gemini REST API (`http`) + API 키가 없을 때 로컬 폴백 |
 | 기본 테스트 계정 | Maestro 데모: `kim_minjun` / `park_sonja` |
 
 ---
@@ -73,7 +74,9 @@ Firebase 기능을 사용하기 위해 다음 파일이 필요합니다:
 - Android: `android/app/google-services.json`
 - iOS: `ios/Runner/GoogleService-Info.plist`
 
-파일이 없으면 Firestore 기능이 비활성화되지만, 로컬 SQLite 기반 기능은 정상 동작합니다.
+`main.dart`는 `FirebaseService.initialize()`를 조건 없이 호출합니다. 따라서 플랫폼별
+Firebase 설정이 없거나 잘못되면 앱 시작 자체가 실패할 수 있습니다. Firestore를 쓰지 않는
+로컬 기능만 실행하려는 경우에도 별도의 Firebase 초기화 우회 코드는 현재 없습니다.
 
 ### 2-4. 앱 실행
 
@@ -91,7 +94,7 @@ flutter run -d [기기ID]  ← 원하는 기기로 실행
 ### 2-5. Maestro QA 자동화 실행
 
 ```
-# 전체 11개 flow 실행
+# 게이팅 flow 19개 실행(helpers와 screenshot flow는 별도)
 maestro test maestro/
 
 # 개별 flow 실행
@@ -161,7 +164,7 @@ flutter_application_1/            ← 프로젝트 최상위 폴더
 │
 ├── test/                         ← 단위/위젯 테스트
 ├── integration_test/             ← 통합 테스트
-├── maestro/                      ← Maestro QA 자동화 (11개 flow)
+├── maestro/                      ← Maestro QA 자동화 (게이팅 19개 + 스크린샷 1개)
 ├── android/                      ← 안드로이드 플랫폼 설정
 ├── ios/                          ← iOS 플랫폼 설정
 └── pubspec.yaml                  ← 패키지 의존성 목록
@@ -178,7 +181,7 @@ flutter_application_1/            ← 프로젝트 최상위 폴더
 | 패키지 | 버전 | 용도 |
 |--------|------|------|
 | `go_router` | 17.1.0 | 화면 전환 관리 (URL 기반 라우팅) |
-| `google_fonts` | 8.0.2 | 구글 폰트 (Outfit) |
+| `google_fonts` | 8.0.2 | 의존성에 포함되어 있으나 현재 앱 테마는 로컬 NanumGothic 사용 |
 | `fl_chart` | 1.2.0 | 점수 추이 차트 |
 | `table_calendar` | 3.1.2 | 일기 달력 UI |
 | `lottie` | 3.1.2 | JSON 애니메이션 재생 |
@@ -197,7 +200,8 @@ flutter_application_1/            ← 프로젝트 최상위 폴더
 
 | 패키지 | 버전 | 용도 |
 |--------|------|------|
-| `google_generative_ai` | 0.4.6 | Gemini LLM API (AI 챗봇) |
+| `http` | 1.2.2 | Gemini REST API 및 날씨 API 통신 |
+| `google_generative_ai` | 0.4.6 | 의존성에 남아 있으나 현재 Gemini 런타임 경로에서는 사용하지 않음 |
 
 ### 센서/하드웨어 관련
 
@@ -209,7 +213,7 @@ flutter_application_1/            ← 프로젝트 최상위 폴더
 | `flutter_tts` | 4.2.5 | 텍스트 → 음성 (TTS) |
 | `record` | 6.2.0 | 오디오 녹음 |
 | `vibration` | 3.1.8 | 진동 제어 |
-| `health` | 11.1.1 | Apple HealthKit / Google Fit 연동 (탑재 완료, 실연동 미완) |
+| `health` | 11.1.1 | iOS HealthKit / Android Health Connect 연동 (부분 구현, 기기 검증 미완) |
 | `image_picker` | 1.1.2 | 갤러리/카메라 이미지 선택 |
 
 ### 백그라운드/알림 관련
@@ -240,11 +244,13 @@ flutter_application_1/            ← 프로젝트 최상위 폴더
 ### 5-1. `main.dart` — 앱 시작점
 
 **하는 일:**
-1. 한국어 날짜 형식 초기화
-2. Firebase 초기화
-3. 백그라운드 만보계 서비스 시작
-4. 앱 전체 Provider들을 등록
-5. 화면 표시 시작
+1. Flutter 바인딩, KST timezone, 로컬 알림과 일기 알림 예약 초기화
+2. 한국어 날짜 형식 초기화
+3. `IS_EMULATOR`가 `false`일 때만 백그라운드 서비스 구성
+4. 로컬 AI와 AI 대화 서비스 초기화
+5. Firebase를 조건 없이 초기화
+6. `UserProvider.checkLoginStatus()`로 저장된 자격증명 확인
+7. 앱 전체 Provider를 등록하고 화면 표시
 
 **등록되는 Provider 목록:**
 
@@ -256,6 +262,7 @@ flutter_application_1/            ← 프로젝트 최상위 폴더
 | `PedometerManager` | 걸음 수·칼로리·거리 |
 | `SettingsProvider` | 글자 크기, 음성 안내 등 앱 설정 |
 | `DifficultyProvider` | 게임 난이도 자동 조정 |
+| `DiaryProvider` | 날짜별 자유 서술 일기 로드·저장 |
 
 ---
 
@@ -276,7 +283,10 @@ flutter_application_1/            ← 프로젝트 최상위 폴더
 | `/gait` | 보행 분석 |
 | `/profile` | 프로필 |
 
-**자동 리디렉션:** 미로그인 상태에서 다른 화면 접근 시 `/login`으로 이동합니다.
+**자동 리디렉션:** 일반 앱 경로는 미로그인 시 `/login`으로 이동하고, 로그인한
+사용자가 `/login` 또는 `/register`에 접근하면 `/`로 이동합니다. `/admin_login`을
+제외한 관리자 경로는 별도의 `AdminProvider` 세션이 없으면 `/admin_login`으로
+리디렉션됩니다. 일반 로그인과 관리자 로그인은 서로 다른 가드입니다.
 
 ---
 
@@ -307,9 +317,7 @@ flutter_application_1/            ← 프로젝트 최상위 폴더
 | 스마트 케어 | `#FF7AA2` (핑크) |
 | 읽기/걸음 | `#FFB74D` (앰버) |
 
-**폰트:**
-- `Outfit` (구글 폰트) — 영문 제목용
-- `NanumGothic` (로컬 폰트) — 한국어 텍스트·PDF 리포트용
+**폰트:** 앱의 `ThemeData`와 PDF 리포트 모두 번들된 `NanumGothic`을 사용합니다.
 
 **접근성:**
 - 글자 크기 3단계 (1.0x / 1.2x / 1.4x)
@@ -326,7 +334,8 @@ flutter_application_1/            ← 프로젝트 최상위 폴더
 - 인지 훈련 점수 (계산력, 논리력, 기억력, 집중력 각 0~10점)
 
 **데이터 보존:**
-- 로그인 정보 → `SharedPreferences` (자동 로그인)
+- 인증 → 로컬 SQLite 기반 인증
+- 로그인 성공 시 아이디와 비밀번호 → `SharedPreferences`에 평문 저장 후 자동 로그인에 재사용
 - 훈련 점수 → `SQLite DB`
 
 ---
@@ -341,19 +350,23 @@ flutter_application_1/            ← 프로젝트 최상위 폴더
 | `training_scores` | 인지 훈련 점수 이력 |
 | `daily_steps` | 일별 걸음 수·칼로리·거리 |
 | `checklist` | 일일 할 일 체크 |
+| `daily_active_users` | 사용자별 일일 활성 기록(DAU, 사용자/날짜 중복 방지) |
+| `diary_entries` | 사용자별 날짜 단위 자유 서술 일기 |
 
 ---
 
 ### 5-6. `core/firebase_service.dart` — Firebase 연동
 
-Firebase Firestore를 통해 클라우드에 데이터를 저장하고 동기화합니다.
+Firebase는 범용 SQLite 동기화 계층이 아니라 기능별 저장소입니다.
 
-**클라우드 저장 데이터:**
-- 사용자 프로필
-- 공지사항 / FAQ / 문의 (CS 센터)
-- 관리자 관리 데이터
+**Firestore 소유 기능:**
+- `CsService`: 공지사항, FAQ, 문의와 답변
+- `DifficultyProvider`: 사용자별 훈련 난이도
+- `GuardianSyncService`: 보호자 공유 뷰와 전역 통계
+- `SocialRankingView`: `global_stats/score_stats` 읽기
 
-> 인터넷 미연결 시에는 로컬 SQLite로 자동 전환되어 기본 기능이 정상 작동합니다.
+SQLite의 사용자, 점수, 걸음, 체크리스트, DAU, 일기 전체를 Firestore와 자동
+동기화하는 공통 큐나 오프라인 재전송 계층은 구현되어 있지 않습니다.
 
 ---
 
@@ -362,15 +375,17 @@ Firebase Firestore를 통해 클라우드에 데이터를 저장하고 동기화
 | 파일 | 역할 |
 |------|------|
 | `ai_provider_interface.dart` | AI 제공자 공통 인터페이스 |
-| `gemini_provider.dart` | Google Gemini API 연동 |
-| `local_fallback_provider.dart` | 오프라인 시 로컬 대체 응답 |
-| `ai_key_service.dart` | API 키 보관 및 제공 |
+| `gemini_provider.dart` | `http`로 Gemini REST API 호출 및 사용 가능 모델 탐색 |
+| `local_fallback_provider.dart` | API 키가 없거나 Gemini 호출이 실패할 때 로컬 응답 |
+| `ai_key_service.dart` | 앱 입력 키를 SharedPreferences에 저장하고 dart-define 키보다 우선 제공 |
 
 ---
 
 ### 5-8. `core/services/background_service.dart` — 백그라운드 만보계
 
-앱을 완전히 닫아도 걸음 수가 측정되도록 백그라운드에서 실행됩니다.
+`main.dart`는 `IS_EMULATOR=false`일 때 서비스 구성을 수행하지만
+`autoStart`는 `false`입니다. 실제 시작은 사용자의 보행 추적 설정과 권한 획득
+흐름에 따라 조건부로 수행되며, 항상 실행되는 서비스가 아닙니다.
 
 **필요한 안드로이드 권한:**
 - `ACTIVITY_RECOGNITION` — 걸음 수 감지
@@ -392,9 +407,9 @@ Firebase Firestore를 통해 클라우드에 데이터를 저장하고 동기화
 
 ### 6-1. 인증 (auth/)
 
-- `LoginScreen` — Firebase 기반 로그인
-- `RegisterScreen` — 신규 계정 생성
-- 자동 로그인: SharedPreferences에 세션 저장
+- `LoginScreen` — 로컬 SQLite 기반 인증
+- `RegisterScreen` — SQLite `users` 테이블에 신규 계정 생성
+- 자동 로그인: 성공한 아이디와 비밀번호를 SharedPreferences에 저장해 재인증
 
 ---
 
@@ -444,10 +459,13 @@ Firebase Firestore를 통해 클라우드에 데이터를 저장하고 동기화
 | 도형 짝 | 지각력 | 같은 도형 빠르게 찾기 |
 | 문장 읽기 | 집중력 | 독해 및 이해 문제 |
 
+별도 `/training/recall` 경로에는 날짜 기반 **오늘의 회상** 활동도 구현되어 있습니다.
+
 **난이도 자동 조정 (`DifficultyProvider`):**
 - 레벨 1~10단계
-- 최근 5회 성적 분석 → 자동 조정
-- SQLite에 카테고리별 저장
+- 3회 연속 정답이고, 반응 시간이 제공된 경우 최근 평균이 목표 시간 이하면 1단계 상승
+- 2회 연속 오답이면 1단계 하락
+- 사용자명이 설정된 경우 Firestore `training_difficulty/{username}`에 카테고리별 저장
 
 ---
 
@@ -478,10 +496,11 @@ Firebase Firestore를 통해 클라우드에 데이터를 저장하고 동기화
 **검사 방법:**
 1. 90초 동안 자유 발화 (한국어)
 2. 음성 → 텍스트 변환 (speech_to_text)
-3. 어휘 다양성(TTR), 말하기 속도, 문장 일관성 분석
-4. 점수 환산 저장
+3. 규칙 기반 음성 지표(TTR/WPM) 구현 및 문장 완결성 분석
+4. 점수 환산 후 화면에 표시
 
-> ⚠️ 현재 AI 분석 부분은 시뮬레이션입니다. 실제 LLM 파이프라인 연결이 필요합니다.
+현재 `LocalAIService`는 규칙 기반 엔진만 초기화합니다. TFLite 모델 파일은 보관되어
+있지만 로딩·추론 코드는 연결되지 않았으며, 이 지표는 Gemini/LLM 분석 결과가 아닙니다.
 
 ---
 
@@ -511,7 +530,7 @@ Firebase Firestore를 통해 클라우드에 데이터를 저장하고 동기화
 
 **주요 기능:**
 - `table_calendar` 기반 달력 UI로 날짜 선택
-- 감정 태그 및 자유 서술 작성
+- 자유 서술 작성(현재 DB 스키마에는 별도 감정 태그 컬럼 없음)
 - 날짜별 일기 기록 조회
 - 일기 작성 알림 (`diary_notification_service`)
 - `/memory_garden` 경로가 이 화면으로 연결됨
@@ -525,7 +544,7 @@ Firebase Firestore를 통해 클라우드에 데이터를 저장하고 동기화
 **주요 기능:**
 - Google Gemini API 기반 회상 요법 대화
 - 날짜·시간·날씨 실시간 컨텍스트 자동 주입
-- 오프라인 시 로컬 폴백 응답
+- API 키 없음 또는 Gemini 호출 실패 시 로컬 폴백 응답
 - AI 제공자 인터페이스 추상화 (향후 모델 교체 용이)
 
 ---
@@ -542,10 +561,10 @@ Firebase Firestore를 통해 클라우드에 데이터를 저장하고 동기화
 | 뇌 나이 카드 | 4가지 인지 점수 + 추이 |
 | 사회적 순위 | 익명 집단 백분위 비교 |
 | 점수 차트 | 과거 평가 꺾은선 그래프 |
-| AI 요약 | 자동 생성 건강 인사이트 |
+| 요약/인사이트 | 저장된 점수와 활동 데이터를 바탕으로 한 결정적 규칙 계산 |
 
 **임상 리포트 (`ClinicalReportGenerator`):**
-- 의료용 PDF 형식
+- 4페이지 PDF 생성 구현
 - 포함: 환자 정보, 보행 안정성, MMSE 점수, GDS 수준
 - NanumGothic 폰트 한국어 지원
 
@@ -598,7 +617,10 @@ Firebase Firestore를 통해 클라우드에 데이터를 저장하고 동기화
 게임 플레이 완료
          ↓
   DifficultyProvider.updatePerformance()
-  (최근 5회 성적으로 난이도 조정)
+  (3회 연속 정답, 선택적 목표 시간 또는 2회 연속 오답으로 조정)
+         ↓
+  Firestore training_difficulty/{username}
+  (레벨이 바뀌고 사용자명이 정상 바인딩된 경우)
          ↓
   UserProvider.setCognitiveScore()
          ↓
@@ -631,21 +653,17 @@ BackgroundService 시작
   날짜·시간·날씨 컨텍스트 주입
          ↓
   GeminiProvider.sendMessage()
-  인터넷 없음 → LocalFallbackProvider
+  API 키 없음 또는 요청 실패 → LocalFallbackProvider
          ↓
-  응답 스트리밍 → UI 표시
+  Future<String> 응답 완료 후 UI 표시
 ```
 
-### 7-5. 오프라인 ↔ 클라우드 전환
+### 7-5. 로컬과 클라우드의 경계
 
-```
-모든 데이터 먼저 로컬 SQLite 저장
-         ↓
-  인터넷 연결 확인
-         ↓
-  연결됨 → Firebase Firestore 동기화
-  연결 안됨 → 로컬만 사용 (정상 작동)
-```
+인증, 인지 점수, 걸음, 체크리스트, DAU, 일기는 SQLite가 소유합니다. CS,
+훈련 난이도, 보호자 공유, 전역 통계는 각 기능이 Firestore를 직접 사용합니다.
+모든 로컬 데이터를 먼저 저장한 뒤 연결 시 일괄 동기화하는 보편적 오프라인
+동기화는 없습니다.
 
 ---
 
@@ -661,6 +679,7 @@ BackgroundService 시작
 | `PedometerManager` | 걸음 수, 칼로리, 거리 | 홈, 생활 |
 | `SettingsProvider` | 글자 크기, 음성, 진동 | 전체 |
 | `DifficultyProvider` | 게임 레벨, 성적 기록 | 훈련 |
+| `DiaryProvider` | 날짜별 자유 서술 일기 | 홈, 일기 작성/조회 |
 
 ### Provider 사용 예시 (Dart)
 
@@ -691,6 +710,13 @@ context.read<UserProvider>().login('id', 'password');
 | `WAKE_LOCK` | 화면 꺼져도 서비스 실행 |
 | `RECEIVE_BOOT_COMPLETED` | 재시작 후 서비스 자동 시작 |
 | `HIGH_SAMPLING_RATE_SENSORS` | 고정밀 가속도계 |
+| `READ_STEPS` / `WRITE_STEPS` | Android Health Connect 걸음 데이터 |
+| `SCHEDULE_EXACT_ALARM` | 일기 알림 예약 |
+| `POST_NOTIFICATIONS` | 알림 표시 |
+
+> `INTERNET` 권한은 현재 `debug`와 `profile` manifest에는 있지만
+> `android/app/src/main/AndroidManifest.xml`에는 없습니다. Gemini와 Firestore를
+> 사용하는 Android release 빌드는 배포 전에 main manifest에 권한을 추가해야 합니다.
 
 ### 9-2. iOS (`ios/Runner/Info.plist`)
 
@@ -705,18 +731,20 @@ context.read<UserProvider>().login('id', 'password');
 
 **Q. 인터넷 없이도 앱이 작동하나요?**  
 A. 네. 인지 훈련, 보행 분석, 일기 작성, 리포트 등 기본 기능은 모두 오프라인에서 동작합니다.  
-   AI 챗봇은 오프라인 시 로컬 폴백 응답으로 전환됩니다. Firestore 동기화만 인터넷이 필요합니다.
+   AI 챗봇은 API 키가 없거나 요청에 실패하면 로컬 폴백으로 전환됩니다.
+   다만 Firebase는 시작 시 조건 없이 초기화되고, Firestore 기능에는 인터넷과
+   올바른 Firebase 설정이 필요합니다. 범용 Firestore 동기화는 없습니다.
 
 ---
 
 **Q. 앱을 닫아도 걸음 수가 측정되나요?**  
-A. Android에서는 백그라운드 서비스가 지속 실행됩니다.  
+A. Android에서는 에뮬레이터 여부, 사용자 설정, 권한에 따라 백그라운드 서비스가 조건부 시작됩니다.
    배터리 최적화가 켜져 있으면 강제 종료될 수 있으니, 설정 → 앱 → MemoryLink → 배터리 → '제한 없음'으로 설정하세요.
 
 ---
 
 **Q. 게임 레벨이 자동으로 바뀌는 이유는?**  
-A. `DifficultyProvider`가 최근 5회 성적을 분석해 자동 조정합니다. (1~10단계)
+A. `DifficultyProvider`가 3회 연속 정답 또는 2회 연속 오답을 기준으로 조정합니다. 반응 시간이 전달된 게임은 최근 평균이 목표 시간 이내인지도 확인합니다. (1~10단계)
 
 ---
 
@@ -730,5 +758,17 @@ A. `assets/fonts/NanumGothic-Bold.ttf` 파일 위치와 `pubspec.yaml` 폰트 �
 
 ---
 
-*문서 최종 작성일: 2026년 6월 4일*  
+## 11. QA 현황과 현재 한계
+
+- 단위 테스트 63개
+- 위젯 테스트 36개
+- 통합 테스트 5개
+- 게이팅 Maestro flow 19개
+- 스크린샷 flow 1개
+- 현재 `flutter analyze`, `flutter test`, `flutter build`는 green이 아니다.
+- 현재 환경에는 Android 에뮬레이터 없음.
+- `lib/features/training_corrupted/training_hub_screen.dart`는 파일시스템 손상 상태이며
+  저장소 전체 분석/테스트/빌드를 방해할 수 있습니다.
+
+*문서 최종 수정일: 2026년 6월 6일*
 *앱 버전: 1.0.0+1*

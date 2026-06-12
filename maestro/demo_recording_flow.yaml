@@ -1,0 +1,205 @@
+appId: com.example.flutter_application_1
+---
+# ═══════════════════════════════════════════════════════════════
+# MemoryLink 경진대회 시연영상 — RAW RECORDING FLOW (v2)
+# 각 Scene 사이에 3~5초 대기시간을 두어 편집 시 절단 포인트 확보
+# 모든 텍스트 패턴은 통과 검증된 개별 플로우에서 가져옴
+# ═══════════════════════════════════════════════════════════════
+
+# ── Scene 1-2: 오프닝 / 문제제기 (포스트 프로덕션) ────────────
+- runFlow: helpers/login_helper.yaml
+
+# ── Scene 3: 솔루션 — 홈 화면 전체 노출 (5초) ──────────────
+- extendedWaitUntil:
+    visible: "MemoryLink"
+    timeout: 10000
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# ── Scene 4: 인지 훈련 (Training Hub) ───────────────────────
+- tapOn:
+    point: "43%,93%"
+- extendedWaitUntil:
+    visible: "두뇌 트레이닝 센터"
+    timeout: 8000
+# 5초간 허브 화면에서 7종 게임 카드 그리드 쇼케이스
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# ── Scene 5: 음성 평가 ───────────────────────────────────────
+- tapOn:
+    point: "74%,93%"
+- extendedWaitUntil:
+    visible: "내 정보"
+    timeout: 8000
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# 음성 진단까지 스크롤 → 진입
+- scrollUntilVisible:
+    element:
+      text: "음성 진단\n인지 건강 초기 진단 재실행"
+    direction: DOWN
+    timeout: 20000
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn: "음성 진단\n인지 건강 초기 진단 재실행"
+- extendedWaitUntil:
+    visible: "초기 음성 진단"
+    timeout: 10000
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# 음성 평가 화면에서 뒤로가기
+- pressKey: back
+- extendedWaitUntil:
+    visible: "내 정보"
+    timeout: 5000
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# ── Scene 6: 보행 분석 + 감정 일기 ──────────────────────────
+# Home으로 복귀 후 Walking 탭 이동
+- tapOn:
+    point: "24%,93%"
+- extendedWaitUntil:
+    visible: "MemoryLink"
+    timeout: 8000
+- waitForAnimationToEnd:
+    timeout: 2000
+
+- tapOn:
+    point: "53%,93%"
+- extendedWaitUntil:
+    visible: "생활습관"
+    timeout: 8000
+- extendedWaitUntil:
+    visible: "/ 10,000 보"
+    timeout: 10000
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# 정밀 보행 분석 CTA 카드 탭
+- tapOn: "보행 정밀 분석\n3분간의 걸음으로 당신의 뇌 건강 패턴을 분석합니다."
+- extendedWaitUntil:
+    visible: "정밀 보행 분석"
+    timeout: 10000
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# 뒤로가기
+- pressKey: back
+- extendedWaitUntil:
+    visible: "생활습관"
+    timeout: 5000
+
+# Home 탭 복귀
+- tapOn:
+    point: "24%,93%"
+- extendedWaitUntil:
+    visible: "MemoryLink"
+    timeout: 8000
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Memory Garden (오늘의 일기) 진입
+- tapOn: "오늘의 일기\n오늘 하루를 기록해보세요"
+- extendedWaitUntil:
+    visible: "기억의 정원 일기"
+    timeout: 10000
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# 뒤로가기
+- pressKey: back
+- extendedWaitUntil:
+    visible: "MemoryLink"
+    timeout: 5000
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# ── Scene 7: AI 대화 + 리포트 ───────────────────────────────
+# AI 채팅 진입
+- tapOn: "AI 도우미\nAI와 대화로 인지 건강을 확인해보세요"
+- extendedWaitUntil:
+    visible: "AI 대화 도우미"
+    timeout: 10000
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# 뒤로가기
+- pressKey: back
+- extendedWaitUntil:
+    visible: "MemoryLink"
+    timeout: 5000
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Reports 탭
+- tapOn:
+    point: "64%,93%"
+- extendedWaitUntil:
+    visible: "주간 분석 리포트"
+    timeout: 8000
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Social Ranking까지 스크롤
+- scrollUntilVisible:
+    element:
+      text: "동년배 중에서 평균보다 높은 수준의 인지 능력을 보여주고 계십니다. 훌륭합니다!"
+    direction: DOWN
+    timeout: 30000
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# 임상 리포트까지 스크롤
+- scrollUntilVisible:
+    element:
+      text: "임상 리포트 생성하기"
+    direction: DOWN
+    timeout: 30000
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# ── Scene 8: 보호자 안심 연결 + 고객센터 ────────────────────
+- tapOn:
+    point: "74%,93%"
+- extendedWaitUntil:
+    visible: "내 정보"
+    timeout: 8000
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# 보호자 안심 연결까지 스크롤
+- scrollUntilVisible:
+    element:
+      text: "보호자 안심 연결\n보호자가 활동 상태를 확인할 수 있습니다."
+    direction: DOWN
+    timeout: 20000
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# 고객센터까지 스크롤
+- scrollUntilVisible:
+    element:
+      text: "고객센터\n공지사항, FAQ, 1:1 문의"
+    direction: DOWN
+    timeout: 20000
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# 고객센터 진입 (메인 화면 4개 메뉴 노출)
+- tapOn: "고객센터\n공지사항, FAQ, 1:1 문의"
+- extendedWaitUntil:
+    visible: "고객센터"
+    timeout: 10000
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# 종료: 뒤로가기 (클로징은 포스트 프로덕션)
+- pressKey: back
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Scene 9: 클로징 (포스트 프로덕션 - 로고 + 면책문구)
