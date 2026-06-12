@@ -2,6 +2,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:flutter_application_1/core/database_helper.dart';
 import 'package:flutter_application_1/core/user_provider.dart';
 import 'package:flutter_application_1/core/settings_provider.dart';
+import 'package:flutter_application_1/features/diary/diary_provider.dart';
 import 'package:flutter_application_1/features/gait_analysis/pedometer_manager.dart';
 import 'package:flutter_application_1/features/training/difficulty_provider.dart';
 
@@ -13,6 +14,8 @@ class MockUserProvider extends Mock implements UserProvider {}
 class MockPedometerManager extends Mock implements PedometerManager {}
 
 class MockDifficultyProvider extends Mock implements DifficultyProvider {}
+
+class MockDiaryProvider extends Mock implements DiaryProvider {}
 
 // --- Settings Fake (simpler than Mock for value-only providers) ---
 class FakeSettingsProvider extends SettingsProvider {
