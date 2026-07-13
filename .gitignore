@@ -93,3 +93,4 @@ MemoryLInkApp_Design/**/*.pdf
 
 # AI 코딩 도구 작업 폴더
 .omo/
+.firebase/
