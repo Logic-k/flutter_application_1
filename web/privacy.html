@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MemoryLink 개인정보 처리방침</title>
+  <style>
+    :root { --bg:#f6f8fb; --card:#fff; --text:#1c2430; --muted:#5b6675; --primary:#2C3E6B; --line:#e5e9f0; }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body { background:var(--bg); color:var(--text); font-family:-apple-system,'Apple SD Gothic Neo','맑은 고딕',sans-serif; line-height:1.7; padding:0 0 60px; }
+    header { background:var(--primary); color:#fff; padding:32px 20px; }
+    .wrap { max-width:760px; margin:0 auto; padding:0 20px; }
+    header .wrap { padding:0 20px; }
+    h1 { font-size:24px; }
+    .updated { opacity:.8; font-size:13px; margin-top:6px; }
+    main { margin-top:24px; }
+    section { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:20px 22px; margin-bottom:16px; }
+    h2 { font-size:17px; color:var(--primary); margin-bottom:10px; }
+    p, li { font-size:14px; color:var(--text); }
+    ul { padding-left:20px; margin-top:6px; }
+    li { margin-bottom:4px; }
+    .muted { color:var(--muted); font-size:13px; }
+    table { width:100%; border-collapse:collapse; margin-top:8px; font-size:13px; }
+    th, td { border:1px solid var(--line); padding:8px 10px; text-align:left; vertical-align:top; }
+    th { background:#eef2f8; }
+    .note { background:#fff8e6; border:1px solid #f0e0b0; border-radius:10px; padding:12px 14px; font-size:13px; color:#7a5c00; margin-top:10px; }
+    a { color:var(--primary); }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <h1>MemoryLink 개인정보 처리방침</h1>
+      <div class="updated">시행일: 2026-07-12 · 버전 1.0</div>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <main>
+      <section>
+        <p>MemoryLink(이하 "서비스")는 이용자의 인지 건강 관리를 돕기 위한 애플리케이션입니다. 본 방침은 서비스가 어떤 개인정보를 어떻게 수집·이용·보관·파기하는지 설명합니다.</p>
+        <div class="note">본 문서는 캡스톤/베타 단계 서비스의 처리방침 초안입니다. 정식 출시 전 운영 주체·연락처·보관 기간을 실제 값으로 확정해야 합니다. 대괄호 [ ] 항목은 배포 전 채워 주세요.</div>
+      </section>
+
+      <section>
+        <h2>1. 수집하는 개인정보 항목</h2>
+        <table>
+          <tr><th>구분</th><th>항목</th><th>저장 위치</th></tr>
+          <tr><td>계정</td><td>아이디, 비밀번호(단방향 해시), 이름, 나이, 성별</td><td>기기 내 로컬(SQLite)</td></tr>
+          <tr><td>건강 정보</td><td>몸무게, 혈액형, 복용 약물, 비상 연락처</td><td>기기 내 로컬</td></tr>
+          <tr><td>인지·활동</td><td>인지 훈련 점수, 게임 반응시간, 걸음 수·보행 지표, 감정 일기</td><td>기기 내 로컬 / (보호자 연결 시) 클라우드</td></tr>
+          <tr><td>음성</td><td>음성 진단 시 마이크 녹음 및 변환 텍스트</td><td>기기 내 처리(음성-텍스트 변환)</td></tr>
+          <tr><td>AI 대화</td><td>이용자가 입력한 대화 내용</td><td>온디바이스 모델 또는 Google Gemini API</td></tr>
+        </table>
+      </section>
+
+      <section>
+        <h2>2. 개인정보의 이용 목적</h2>
+        <ul>
+          <li>인지 건강 상태 측정·추세 분석 및 훈련 난이도 조정</li>
+          <li>일일 알림, 리포트(PDF) 생성 등 서비스 기능 제공</li>
+          <li>보호자 안심 연결(이용자가 명시적으로 동의·활성화한 경우에 한함)</li>
+          <li>고객센터 문의 응대</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>3. 제3자 처리 및 국외 이전</h2>
+        <ul>
+          <li><b>Google Firebase(Firestore/Hosting)</b>: 보호자 연결 데이터, 고객센터 문의, 익명 통계 저장. 서버는 국외에 위치할 수 있습니다.</li>
+          <li><b>Google Gemini API</b>: 이용자가 AI 대화를 온라인 모드로 사용할 경우 대화 내용이 Google로 전송됩니다. 온디바이스 모델 사용 시 전송되지 않습니다.</li>
+          <li>서비스는 위 목적 외에 개인정보를 판매하거나 광고 목적으로 제3자에게 제공하지 않습니다.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>4. 보관 및 파기</h2>
+        <ul>
+          <li>계정·건강·활동 데이터는 기본적으로 기기 내에 저장되며, 앱 내 "측정 데이터 초기화" 또는 앱 삭제로 파기됩니다.</li>
+          <li>보호자 연결·문의 데이터는 목적 달성 또는 이용자 요청 시 지체 없이 파기합니다.</li>
+          <li>법령에 별도 보관 의무가 있는 경우 해당 기간 동안 보관합니다.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>5. 이용자의 권리</h2>
+        <p>이용자는 언제든지 본인의 개인정보 열람·정정·삭제·처리정지를 요청할 수 있으며, 앱 내 설정에서 데이터를 직접 초기화할 수 있습니다.</p>
+      </section>
+
+      <section>
+        <h2>6. 안전성 확보 조치</h2>
+        <ul>
+          <li>비밀번호는 평문이 아닌 단방향 해시(솔트 적용)로 저장합니다.</li>
+          <li>보호자 열람 링크는 추측이 어려운 암호학적 난수 토큰으로 보호됩니다.</li>
+          <li>민감정보(건강)는 최소 수집 원칙을 따릅니다.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>7. 아동·고령자 보호 및 의료적 고지</h2>
+        <p>본 서비스가 제공하는 점수·위험도·권고는 참고용이며 의학적 진단이 아닙니다. 건강상 우려가 있는 경우 반드시 전문의와 상담하시기 바랍니다.</p>
+      </section>
+
+      <section>
+        <h2>8. 문의처</h2>
+        <p class="muted">운영 주체: [사업자/팀명]<br>이메일: [privacy@example.com]<br>개인정보 보호책임자: [담당자명]</p>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

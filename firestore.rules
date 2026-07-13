@@ -1,0 +1,93 @@
+rules_version = '2';
+
+// ============================================================================
+// MemoryLink Firestore 보안 규칙
+// ============================================================================
+//
+// ⚠️  중요 전제 조건 (배포 전 반드시 확인)
+//   현재 앱은 Firebase Authentication을 사용하지 않고 로컬 SQLite로 인증한다.
+//   따라서 클라이언트 요청의 request.auth 는 항상 null 이다.
+//   → 아래 auth 기반 규칙을 그대로 배포하면 모든 Firestore 접근이 차단되어
+//     앱이 동작하지 않는다.
+//
+//   프로덕션 출시 전 P0 작업:
+//     1) Firebase Anonymous(또는 Email) Auth 를 활성화하고
+//        앱 시작 시 signInAnonymously / signIn 을 호출한다.
+//     2) 사용자 소유 문서(uid 기준) 규칙으로 전환한다.
+//     3) 관리자 쓰기(notices/faqs/inquiries 관리)는 Custom Claims(admin=true)
+//        또는 서버(Cloud Functions/Admin SDK)로만 허용한다.
+//
+//   이 파일은 "목표 최소권한 모델"이다. Auth 도입 전까지는 배포하지 말고,
+//   Auth 도입과 함께 아래 uid/claim 조건을 실제 스키마에 맞춰 활성화한다.
+// ============================================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── 공통 헬퍼 ────────────────────────────────────────────────
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    function isAdmin() {
+      // Custom Claim 기반 관리자 판별 (Cloud Functions 로 부여)
+      return isSignedIn() && request.auth.token.admin == true;
+    }
+
+    // ── 공지사항: 로그인 사용자 읽기, 관리자만 쓰기 ───────────────
+    match /notices/{noticeId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // ── FAQ: 로그인 사용자 읽기, 관리자만 쓰기 ────────────────────
+    match /faqs/{faqId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // ── 1:1 문의: 본인 생성·조회, 관리자 조회·답변 ────────────────
+    //   문서에 authorUid 필드를 저장하여 소유권을 판별한다.
+    match /inquiries/{inquiryId} {
+      allow create: if isSignedIn()
+        && request.resource.data.authorUid == request.auth.uid;
+      allow read, update: if isAdmin()
+        || (isSignedIn() && resource.data.authorUid == request.auth.uid);
+      allow delete: if isAdmin();
+
+      match /replies/{replyId} {
+        allow read: if isAdmin()
+          || (isSignedIn()
+              && get(/databases/$(database)/documents/inquiries/$(inquiryId)).data.authorUid == request.auth.uid);
+        allow write: if isAdmin();
+      }
+    }
+
+    // ── 보호자 열람 문서 ─────────────────────────────────────────
+    //   문서 ID = 암호학적 난수 토큰. 토큰을 아는 보호자만 읽을 수 있다.
+    //   (토큰 자체가 비밀 자격 증명 역할)
+    //   쓰기는 본인 앱(uid 소유)만 허용한다.
+    match /guardian_views/{token} {
+      allow read: if true; // 토큰(문서 ID)을 알아야만 접근 가능 = 사실상 비밀키
+      allow create, update: if isSignedIn()
+        && request.resource.data.ownerUid == request.auth.uid;
+      allow delete: if isSignedIn()
+        && resource.data.ownerUid == request.auth.uid;
+    }
+
+    // ── 소셜 랭킹 통계: 집계 읽기 공개, 본인 문서만 쓰기 ──────────
+    match /global_stats/{userId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn() && request.auth.uid == userId;
+    }
+
+    // ── 적응형 훈련 난이도: 본인 문서만 접근 ──────────────────────
+    match /training_difficulty/{userId} {
+      allow read, write: if isSignedIn() && request.auth.uid == userId;
+    }
+
+    // ── 그 외 모든 경로 기본 차단 ────────────────────────────────
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

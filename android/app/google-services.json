@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "702473908574",
+    "firebase_url": "https://memorylink-7af26-default-rtdb.asia-southeast1.firebasedatabase.app",
     "project_id": "memorylink-7af26",
     "storage_bucket": "memorylink-7af26.firebasestorage.app"
   },
@@ -10,6 +11,25 @@
         "mobilesdk_app_id": "1:702473908574:android:afce45ca210ac3ed3bdfcf",
         "android_client_info": {
           "package_name": "com.example.flutter_application_1"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAO0iFYxuGQjZsckAH0dM1AA6BnnSLEufQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:702473908574:android:43d771cd5ee2c3c63bdfcf",
+        "android_client_info": {
+          "package_name": "com.teammemorylink.memorylink"
         }
       },
       "oauth_client": [],
