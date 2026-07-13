@@ -87,6 +87,23 @@ MemoryLink는 **기억력 저하가 걱정되는 60~80대 사용자와 그 가�
 
 ---
 
+## 🎬 기능별 시연 영상
+
+실제 앱 시연 영상을 기능별 클립으로 나눴습니다. **클립을 클릭하면 GitHub에서 바로 재생됩니다.**
+
+| 클립 | 내용 | 길이 |
+|---|---|:---:|
+| [▶ 로그인 · 홈 화면](docs/demo/01_login_home.mp4) | 온보딩 → 로그인 → 홈 대시보드 | 14초 |
+| [▶ 주요 탭 둘러보기](docs/demo/02_main_tabs.mp4) | 인지훈련 · 생활습관 · 리포트 · 내 정보 | 23초 |
+| [▶ 인지 훈련 7종 게임](docs/demo/03_cognitive_training.mp4) | 비교 · 구구단 · 규칙찾기 · 스도쿠 · 범주화 · 회상 · 문장읽기 | 57초 |
+| [▶ 만보기 · 보행 분석](docs/demo/04_walking_lifestyle.mp4) | 걸음 수 측정 · 보행 정밀 분석 | 15초 |
+| [▶ 주간 · 임상 리포트](docs/demo/05_reports.mp4) | 영역별 인지 지표 · 임상 리포트 생성 · 공유 | 20초 |
+| [▶ AI 회상 대화](docs/demo/06_ai_chat.mp4) | Gemini 기반 회상 요법 챗봇 | 29초 |
+| [▶ 기억의 정원 (일기)](docs/demo/07_memory_garden.mp4) | 달력 기반 일기 작성 · 모아보기 | 11초 |
+| [▶ 보호자 연결 · 안전 기능](docs/demo/08_guardian_safety.mp4) | QR 연결 · 웹 대시보드 · 응급 전화 · FAQ | 21초 |
+
+---
+
 ## 🔢 숫자로 보는 MemoryLink
 
 <div align="center">

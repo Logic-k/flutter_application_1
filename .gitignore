@@ -87,6 +87,8 @@ report.xml
 
 # 데모 영상 (대용량 — Git에 포함하지 않음)
 *.mp4
+# 단, 기능별 압축 시연 클립은 포함
+!docs/demo/*.mp4
 
 # 팀 리서치 PDF (대용량)
 MemoryLInkApp_Design/**/*.pdf
