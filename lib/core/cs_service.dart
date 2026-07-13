@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
+import 'auth_service.dart';
 import 'firebase_service.dart';
 
 class CsService {
@@ -78,6 +79,8 @@ class CsService {
   }) async {
     await _db.collection('inquiries').add({
       'username': username,
+      // Security Rules 소유권 판별용 (rules: authorUid == request.auth.uid)
+      'authorUid': AuthService.uid ?? '',
       'title': title,
       'body': body,
       'status': 'pending',
@@ -88,8 +91,11 @@ class CsService {
   static Future<List<Map<String, dynamic>>> fetchMyInquiries(
       String username) async {
     try {
+      // 규칙상 본인(authorUid) 문서만 조회 가능하므로 쿼리에 uid 조건이 필수다.
+      // username 조건은 한 기기(동일 uid)에서 여러 로컬 계정을 쓸 때의 분리용.
       final snapshot = await _db
           .collection('inquiries')
+          .where('authorUid', isEqualTo: AuthService.uid ?? '')
           .where('username', isEqualTo: username)
           .get();
       final docs = snapshot.docs.map(_docToMap).toList();

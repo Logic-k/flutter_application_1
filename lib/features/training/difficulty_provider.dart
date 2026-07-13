@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import '../../core/auth_service.dart';
 import '../../core/firebase_service.dart';
 
 enum GameCategory {
@@ -62,13 +63,23 @@ class DifficultyProvider extends ChangeNotifier {
     return max(2.0, 5.0 - (level * 0.3));
   }
 
+  /// Firestore 문서 ID. 익명 uid를 접두사로 붙여 기기(익명 세션) 간
+  /// username 충돌을 막고, Security Rules의 ownerUid 검사와 짝을 이룬다.
+  /// uid가 없으면(오프라인·미인증) 원격 동기화를 건너뛴다.
+  String? get _docId {
+    final uid = AuthService.uid;
+    if (uid == null || username.isEmpty) return null;
+    return '${uid}_$username';
+  }
+
   /// Firestore에서 초기 난이도 데이터를 불러옵니다.
   Future<void> loadLevels() async {
-    if (username.isEmpty) return;
+    final docId = _docId;
+    if (docId == null) return;
     try {
       final doc = await FirebaseService.db
           .collection('training_difficulty')
-          .doc(username)
+          .doc(docId)
           .get();
 
       if (doc.exists) {
@@ -122,12 +133,15 @@ class DifficultyProvider extends ChangeNotifier {
 
   /// Firestore에 현재 난이도 상태를 저장합니다.
   Future<void> _syncToFirestore() async {
-    if (username.isEmpty) return;
+    final docId = _docId;
+    if (docId == null) return;
     try {
       await FirebaseService.db
           .collection('training_difficulty')
-          .doc(username)
+          .doc(docId)
           .set({
+        'ownerUid': AuthService.uid,
+        'username': username,
         'calculation_level': _levels[GameCategory.calculation],
         'logic_level': _levels[GameCategory.logic],
         'memory_level': _levels[GameCategory.memory],

@@ -1,5 +1,9 @@
 # MemoryLink 현재 상태 및 로드맵
 
+> **2026-07-13 추가**: Firebase Anonymous Auth 도입 완료 — `AuthService` 신설, 앱 시작 시
+> `signInAnonymously()`, Firestore 쓰기 경로에 소유권 필드(`authorUid`/`ownerUid`) 반영,
+> `firestore.rules` 실제 스키마와 일치화. 콘솔에서 익명 로그인 활성화 + 규칙 배포만 남음.
+>
 > **2026-07-12 갱신 요약** (이 저장소에서 직접 실행 검증):
 > - `flutter analyze` 에러 0 (info 3), `flutter test` **117/117 통과**, **release AAB 빌드 성공(64.3MB, 서명됨)**.
 > - P0 보안·릴리스 항목 다수 반영됨: 비밀번호 sha256+salt 해싱, 온보딩 상태 DB 통합,

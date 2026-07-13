@@ -4,21 +4,16 @@ rules_version = '2';
 // MemoryLink Firestore 보안 규칙
 // ============================================================================
 //
-// ⚠️  중요 전제 조건 (배포 전 반드시 확인)
-//   현재 앱은 Firebase Authentication을 사용하지 않고 로컬 SQLite로 인증한다.
-//   따라서 클라이언트 요청의 request.auth 는 항상 null 이다.
-//   → 아래 auth 기반 규칙을 그대로 배포하면 모든 Firestore 접근이 차단되어
-//     앱이 동작하지 않는다.
+// 전제 조건
+//   앱은 시작 시 signInAnonymously()로 익명 세션을 만든다 (AuthService).
+//   사용자 계정 자체는 로컬 SQLite이며, request.auth.uid 는 "기기(설치) 단위"
+//   식별자다. 소유권 필드(authorUid/ownerUid)는 쓰기 시 클라이언트가 기록한다.
 //
-//   프로덕션 출시 전 P0 작업:
-//     1) Firebase Anonymous(또는 Email) Auth 를 활성화하고
-//        앱 시작 시 signInAnonymously / signIn 을 호출한다.
-//     2) 사용자 소유 문서(uid 기준) 규칙으로 전환한다.
-//     3) 관리자 쓰기(notices/faqs/inquiries 관리)는 Custom Claims(admin=true)
-//        또는 서버(Cloud Functions/Admin SDK)로만 허용한다.
+//   배포 전 Firebase 콘솔에서 Authentication > Anonymous 로그인 활성화 필수.
 //
-//   이 파일은 "목표 최소권한 모델"이다. Auth 도입 전까지는 배포하지 말고,
-//   Auth 도입과 함께 아래 uid/claim 조건을 실제 스키마에 맞춰 활성화한다.
+//   관리자 쓰기(notices/faqs 등록, 문의 답변)는 Custom Claims(admin=true)가
+//   있어야 허용된다. Claims 부여 체계(Cloud Functions/Admin SDK) 도입 전까지
+//   운영 콘텐츠는 Firebase 콘솔에서 직접 등록한다.
 // ============================================================================
 
 service cloud.firestore {
@@ -74,15 +69,25 @@ service cloud.firestore {
         && resource.data.ownerUid == request.auth.uid;
     }
 
-    // ── 소셜 랭킹 통계: 집계 읽기 공개, 본인 문서만 쓰기 ──────────
-    match /global_stats/{userId} {
+    // ── 소셜 랭킹 통계: 전 사용자 공유 EMA 집계 문서 ──────────────
+    //   GuardianSyncService._updateGlobalStats 가 score_stats 단일 문서를
+    //   merge 갱신한다. 공유 집계 특성상 서명된 클라이언트 쓰기를 허용한다.
+    //   (베타 한계 — 추후 Cloud Functions 집계로 이전 예정)
+    match /global_stats/score_stats {
       allow read: if isSignedIn();
-      allow write: if isSignedIn() && request.auth.uid == userId;
+      allow write: if isSignedIn();
     }
 
-    // ── 적응형 훈련 난이도: 본인 문서만 접근 ──────────────────────
-    match /training_difficulty/{userId} {
-      allow read, write: if isSignedIn() && request.auth.uid == userId;
+    // ── 적응형 훈련 난이도: 본인(ownerUid) 문서만 접근 ────────────
+    //   문서 ID = "<uid>_<username>" (DifficultyProvider._docId)
+    match /training_difficulty/{docId} {
+      allow read: if isSignedIn() && resource.data.ownerUid == request.auth.uid;
+      allow create: if isSignedIn()
+        && request.resource.data.ownerUid == request.auth.uid;
+      allow update: if isSignedIn()
+        && resource.data.ownerUid == request.auth.uid
+        && request.resource.data.ownerUid == request.auth.uid;
+      allow delete: if isSignedIn() && resource.data.ownerUid == request.auth.uid;
     }
 
     // ── 그 외 모든 경로 기본 차단 ────────────────────────────────

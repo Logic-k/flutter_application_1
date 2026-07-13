@@ -7,7 +7,9 @@ import 'package:timezone/timezone.dart' as tz;
 import 'core/theme.dart';
 import 'core/router.dart';
 import 'core/user_provider.dart';
+import 'package:flutter/foundation.dart';
 import 'core/firebase_service.dart';
+import 'core/auth_service.dart';
 import 'core/cs_service.dart';
 import 'core/local_ai_service.dart';
 import 'core/ai/ai_chat_service.dart';
@@ -71,7 +73,13 @@ void main() async {
   // Firebase 초기화 (IS_EMULATOR=true 빌드에서는 네트워크 없으므로 건너뜀)
   if (!isEmulator) {
     await FirebaseService.initialize();
-    await CsService.seedDemoData();
+    // Firestore Security Rules 통과용 익명 세션 (실패해도 로컬 기능은 동작)
+    await AuthService.ensureSignedIn();
+    // 데모 공지/FAQ 시드는 개발 빌드 전용 — 운영 콘텐츠는 관리자(콘솔)가 등록하며
+    // 배포된 규칙상 일반 클라이언트의 notices/faqs 쓰기는 거부된다.
+    if (kDebugMode) {
+      await CsService.seedDemoData();
+    }
   }
 
   final userProvider = UserProvider();

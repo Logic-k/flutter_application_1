@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../auth_service.dart';
 import '../database_helper.dart';
 
 class GuardianSyncService {
@@ -78,6 +79,8 @@ class GuardianSyncService {
 
       await _firestore.collection('guardian_views').doc(token).set({
         'token': token,
+        // Security Rules 소유권 판별용 (rules: ownerUid == request.auth.uid)
+        'ownerUid': AuthService.uid ?? '',
         'user_name': userName,
         'today_steps': todaySteps,
         'weekly_avg_steps': weeklyAvg,
@@ -122,6 +125,7 @@ class GuardianSyncService {
           '[MemoryLink 안심 알림] $userName 님의 오늘 활동량이 평소(평균 $weeklyAvg보)보다 '
           '현저히 낮은 $todaySteps보에 머물러 있습니다. 안부를 확인해 주시기 바랍니다.';
       await _firestore.collection('guardian_views').doc(token).set({
+        'ownerUid': AuthService.uid ?? '',
         'is_anomaly': true,
         'anomaly_message': message,
         'user_name': userName,
