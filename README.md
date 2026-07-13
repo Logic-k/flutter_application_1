@@ -89,18 +89,24 @@ MemoryLink는 **기억력 저하가 걱정되는 60~80대 사용자와 그 가�
 
 ## 🎬 기능별 시연 영상
 
-실제 앱 시연 영상을 기능별 클립으로 나눴습니다. **클립을 클릭하면 GitHub에서 바로 재생됩니다.**
+실제 앱 시연 영상을 기능별 클립으로 나눈 것입니다. (자동 재생 · 무음)
 
-| 클립 | 내용 | 길이 |
-|---|---|:---:|
-| [▶ 로그인 · 홈 화면](docs/demo/01_login_home.mp4) | 온보딩 → 로그인 → 홈 대시보드 | 14초 |
-| [▶ 주요 탭 둘러보기](docs/demo/02_main_tabs.mp4) | 인지훈련 · 생활습관 · 리포트 · 내 정보 | 23초 |
-| [▶ 인지 훈련 7종 게임](docs/demo/03_cognitive_training.mp4) | 비교 · 구구단 · 규칙찾기 · 스도쿠 · 범주화 · 회상 · 문장읽기 | 57초 |
-| [▶ 만보기 · 보행 분석](docs/demo/04_walking_lifestyle.mp4) | 걸음 수 측정 · 보행 정밀 분석 | 15초 |
-| [▶ 주간 · 임상 리포트](docs/demo/05_reports.mp4) | 영역별 인지 지표 · 임상 리포트 생성 · 공유 | 20초 |
-| [▶ AI 회상 대화](docs/demo/06_ai_chat.mp4) | Gemini 기반 회상 요법 챗봇 | 29초 |
-| [▶ 기억의 정원 (일기)](docs/demo/07_memory_garden.mp4) | 달력 기반 일기 작성 · 모아보기 | 11초 |
-| [▶ 보호자 연결 · 안전 기능](docs/demo/08_guardian_safety.mp4) | QR 연결 · 웹 대시보드 · 응급 전화 · FAQ | 21초 |
+<table>
+  <tr>
+    <td align="center" width="25%"><img src="docs/demo/01_login_home.gif" width="200" alt="로그인 · 홈"><br><b>로그인 · 홈</b><br><sub>온보딩 → 홈 대시보드 (14초)</sub></td>
+    <td align="center" width="25%"><img src="docs/demo/02_main_tabs.gif" width="200" alt="주요 탭 둘러보기"><br><b>주요 탭 둘러보기</b><br><sub>훈련·생활·리포트·내정보 (23초)</sub></td>
+    <td align="center" width="25%"><img src="docs/demo/03_cognitive_training.gif" width="200" alt="인지 훈련 7종"><br><b>인지 훈련 7종 게임</b><br><sub>비교·구구단·스도쿠·회상 등 (57초)</sub></td>
+    <td align="center" width="25%"><img src="docs/demo/04_walking_lifestyle.gif" width="200" alt="만보기 · 보행 분석"><br><b>만보기 · 보행 분석</b><br><sub>걸음 측정·정밀 분석 (15초)</sub></td>
+  </tr>
+  <tr>
+    <td align="center" width="25%"><img src="docs/demo/05_reports.gif" width="200" alt="주간 · 임상 리포트"><br><b>주간 · 임상 리포트</b><br><sub>인지 지표·리포트 생성 (20초)</sub></td>
+    <td align="center" width="25%"><img src="docs/demo/06_ai_chat.gif" width="200" alt="AI 회상 대화"><br><b>AI 회상 대화</b><br><sub>Gemini 회상 요법 챗봇 (29초)</sub></td>
+    <td align="center" width="25%"><img src="docs/demo/07_memory_garden.gif" width="200" alt="기억의 정원"><br><b>기억의 정원 (일기)</b><br><sub>달력 일기 작성·모아보기 (11초)</sub></td>
+    <td align="center" width="25%"><img src="docs/demo/08_guardian_safety.gif" width="200" alt="보호자 연결 · 안전"><br><b>보호자 연결 · 안전</b><br><sub>QR·대시보드·응급 전화 (21초)</sub></td>
+  </tr>
+</table>
+
+> 🎞 원본 화질 MP4 다운로드: [로그인·홈](docs/demo/01_login_home.mp4) · [탭 둘러보기](docs/demo/02_main_tabs.mp4) · [인지 훈련](docs/demo/03_cognitive_training.mp4) · [보행 분석](docs/demo/04_walking_lifestyle.mp4) · [리포트](docs/demo/05_reports.mp4) · [AI 대화](docs/demo/06_ai_chat.mp4) · [일기](docs/demo/07_memory_garden.mp4) · [보호자·안전](docs/demo/08_guardian_safety.mp4)
 
 ---
 
