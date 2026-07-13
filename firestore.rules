@@ -84,7 +84,10 @@ service cloud.firestore {
     // ── 적응형 훈련 난이도: 본인(ownerUid) 문서만 접근 ────────────
     //   문서 ID = "<uid>_<username>" (DifficultyProvider._docId)
     match /training_difficulty/{docId} {
-      allow read: if isSignedIn() && resource.data.ownerUid == request.auth.uid;
+      // resource == null 허용: 아직 문서가 없는 최초 get이 깨끗한 NOT_FOUND로
+      // 떨어지게 한다 (없으면 permission-denied 에러가 나 클라이언트 로그 오염)
+      allow read: if isSignedIn()
+        && (resource == null || resource.data.ownerUid == request.auth.uid);
       allow create: if isSignedIn()
         && request.resource.data.ownerUid == request.auth.uid;
       allow update: if isSignedIn()
