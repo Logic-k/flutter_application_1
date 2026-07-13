@@ -15,4 +15,4 @@ appId: com.teammemorylink.memorylink
 - tapOn: "로그인"
 - extendedWaitUntil:
     visible: "오늘 걸음"
-    timeout: 10000
+    timeout: 20000

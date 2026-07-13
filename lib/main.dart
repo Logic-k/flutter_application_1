@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
@@ -73,13 +75,15 @@ void main() async {
   // Firebase 초기화 (IS_EMULATOR=true 빌드에서는 네트워크 없으므로 건너뜀)
   if (!isEmulator) {
     await FirebaseService.initialize();
-    // Firestore Security Rules 통과용 익명 세션 (실패해도 로컬 기능은 동작)
-    await AuthService.ensureSignedIn();
+    // Firestore Security Rules 통과용 익명 세션. 네트워크 지연이 첫 화면
+    // 표시를 막지 않도록 백그라운드로 수행한다 (실패해도 로컬 기능은 동작).
     // 데모 공지/FAQ 시드는 개발 빌드 전용 — 운영 콘텐츠는 관리자(콘솔)가 등록하며
     // 배포된 규칙상 일반 클라이언트의 notices/faqs 쓰기는 거부된다.
-    if (kDebugMode) {
-      await CsService.seedDemoData();
-    }
+    unawaited(AuthService.ensureSignedIn().then((_) async {
+      if (kDebugMode) {
+        await CsService.seedDemoData();
+      }
+    }));
   }
 
   final userProvider = UserProvider();

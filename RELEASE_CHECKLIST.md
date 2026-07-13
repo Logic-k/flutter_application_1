@@ -25,12 +25,16 @@
    - `AuthService.ensureSignedIn()`이 앱 시작 시 `signInAnonymously()` 호출 (실패 시 로컬 기능만 동작).
    - 소유권 필드 반영: `inquiries.authorUid`, `guardian_views.ownerUid`, `training_difficulty` 문서 ID `<uid>_<username>` + `ownerUid`.
    - `firestore.rules`를 실제 스키마에 맞게 갱신 (`global_stats/score_stats` 공유 집계 허용 — 베타 한계).
-   - **남은 수동 작업: Firebase 콘솔에서 Authentication > 로그인 방법 > 익명 활성화** 후 규칙 배포.
+   - 콘솔 익명 로그인 활성화 완료 (2026-07-13, 사용자 수행).
    - 주의: 기존 username 키 `training_difficulty` 문서는 새 키와 호환되지 않음(베타 데이터라 신규 시작 결정). 데모 공지/FAQ 시드는 debug 빌드 전용으로 전환.
-2. **개인정보 처리방침 실제 배포** — `firebase deploy --only hosting` 후 `https://memorylink-7af26.web.app/privacy.html` 접근 확인, `web/privacy.html`의 `[ ]` 항목(운영주체·연락처) 채우기.
-3. **google-services.json 프로젝트 분리 점검** — dev/prod 분리, API 키 애플리케이션 제한(패키지명+SHA-1) 설정. (파일 자체는 공개 식별자만 포함하므로 커밋 유지 가능하나, 보안은 규칙+키 제한으로 확보)
-4. **키스토어 백업** — `android/memorylink-release.jks`는 `.gitignore` 처리. 분실 시 앱 업데이트 불가하므로 안전한 곳에 별도 백업.
-5. **실기기 QA** — 센서/보행 백그라운드 수집, 알림(정확 알람 권한), Health Connect, PDF 공유, 보호자 딥링크(`memorylink-7af26.web.app/guardian.html`).
+2. **개인정보 처리방침 실제 배포** — ✅ 완료 (2026-07-13). 문의처 Team MemoryLink / teammemorylink@gmail.com 확정, `https://memorylink-7af26.web.app/privacy.html` HTTP 200 확인. Play 콘솔에 이 URL 입력.
+3. **google-services.json 프로젝트 분리 점검** — ✅ API 키 애플리케이션 제한 적용됨 (2026-07-13, 외부 REST 호출 차단 확인).
+   - release SHA-1: `6A:9A:38:51:EC:45:A9:E7:FA:76:41:63:3C:A9:CB:A1:E7:02:89:2C`
+   - **debug SHA-1도 등록 필요** (미등록 시 개발 빌드에서 익명 로그인 차단): `EA:80:B6:AB:2A:8E:34:12:94:99:93:CF:70:33:D6:25:F1:E5:87:69`
+4. **키스토어 백업** — `android/memorylink-release.jks`는 `.gitignore` 처리. 분실 시 앱 업데이트 불가하므로 안전한 곳에 별도 백업. (사용자 확인 필요)
+5. **Firestore 보안 규칙 배포** — ✅ 완료 (2026-07-13). 익명 Auth 활성화 후 `firebase deploy --only firestore:rules` 실행.
+   검증: guardian_views 비인증 읽기 404(정상 통과), notices 비인증 읽기 403(정상 거부).
+6. **실기기 QA** — 센서/보행 백그라운드 수집, 알림(정확 알람 권한), Health Connect, PDF 공유, 보호자 딥링크(`memorylink-7af26.web.app/guardian.html`).
 
 ## 3. 스토어 콘솔 입력 자료
 

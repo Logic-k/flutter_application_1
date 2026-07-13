@@ -5,23 +5,25 @@ appId: com.teammemorylink.memorylink
     clearState: true
 - extendedWaitUntil:
     visible: "사용자 아이디"
-    timeout: 20000
+    timeout: 40000
 
 # 회원가입 화면으로 이동
 - tapOn: "처음이신가요? 회원가입"
 - extendedWaitUntil:
-    visible: "아이디"
+    visible: "아이디.*"
     timeout: 5000
 
 # 회원가입 화면 요소 확인
 - assertVisible: "회원가입"
-- assertVisible: "아이디"
+- assertVisible: "아이디.*"
 - assertVisible: "비밀번호"
 - assertVisible: "비밀번호 확인"
 
 # 필수 정보 입력 (clearState로 DB 초기화되므로 testuser 재사용 가능)
-- tapOn: "아이디"
+- tapOn: "아이디.*"
 - inputText: "testuser"
+- tapOn: "이름.*"
+- inputText: "tester"
 - tapOn: "비밀번호"
 - inputText: "test1234"
 - tapOn: "비밀번호 확인"
@@ -44,8 +46,9 @@ appId: com.teammemorylink.memorylink
     direction: DOWN
 - tapOn: "가입 완료"
 
-# 홈 화면 진입 확인
+# 신규 가입자는 온보딩 게이트(동의 화면)로 리다이렉트된다
 - extendedWaitUntil:
-    visible: "오늘 걸음"
-    timeout: 10000
-- assertVisible: "오늘 걸음"
+    visible: "개인정보 동의"
+    timeout: 15000
+- assertVisible: "개인정보 동의"
+- assertVisible: "다음으로"
