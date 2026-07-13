@@ -24,6 +24,10 @@ class _DiaryScreenState extends State<DiaryScreen> {
   bool _isListening = false;
   bool _speechAvailable = false;
   bool _loaded = false;
+  // 음성 인식 시작 시점의 기존 텍스트.
+  // partial result는 매번 "지금까지 인식된 전체 문장"이므로
+  // 기준 텍스트 + 최신 인식 결과로 '교체'해야 중복 누적이 없다.
+  String _sttBaseText = '';
 
   @override
   void initState() {
@@ -117,14 +121,15 @@ class _DiaryScreenState extends State<DiaryScreen> {
       return;
     }
     if (!_speechAvailable) return;
+    _sttBaseText = _textController.text;
     setState(() => _isListening = true);
     await _speech.listen(
       onResult: (SpeechRecognitionResult result) {
         if (mounted) {
-          final existing = _textController.text;
           final recognized = result.recognizedWords;
-          _textController.text =
-              existing.isEmpty ? recognized : '$existing $recognized';
+          _textController.text = _sttBaseText.isEmpty
+              ? recognized
+              : '$_sttBaseText $recognized';
           _textController.selection = TextSelection.fromPosition(
             TextPosition(offset: _textController.text.length),
           );

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'dart:math';
 import '../../../core/user_provider.dart';
+import '../../../core/services/voice_service.dart';
 import '../widgets/game_template.dart';
 import '../difficulty_provider.dart';
 
@@ -89,7 +90,9 @@ class _SequenceGameState extends State<SequenceGame> {
         _generateSequence();
       });
     } else {
-      context.read<UserProvider>().setCognitiveScore('logic', (_score / _totalSteps) * 10.0);
+      // 0-100 스케일로 저장 (전 카테고리 공통)
+      context.read<UserProvider>().setCognitiveScore('logic', (_score / _totalSteps) * 100.0);
+      VoiceService().speakSuccess();
       _showResultDialog();
     }
   }

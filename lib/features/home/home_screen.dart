@@ -6,6 +6,7 @@ import '../gait_analysis/pedometer_manager.dart';
 import '../diary/diary_provider.dart';
 import '../../core/ai/ai_chat_service.dart';
 import '../../core/user_provider.dart';
+import '../../core/database_helper.dart';
 import '../../core/ml_widgets.dart';
 import '../../core/theme.dart';
 
@@ -17,17 +18,25 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  int _todayTrainingCount = 0;
+
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _loadTodayDiary());
+    WidgetsBinding.instance.addPostFrameCallback((_) => _loadTodayData());
   }
 
-  Future<void> _loadTodayDiary() async {
+  Future<void> _loadTodayData() async {
     final userId =
         context.read<UserProvider>().currentUser?['id'] as int?;
     if (userId == null) return;
     await context.read<DiaryProvider>().loadMonth(userId, DateTime.now());
+    try {
+      final count = await DatabaseHelper().getTodayTrainingCount(userId);
+      if (mounted) setState(() => _todayTrainingCount = count);
+    } catch (e) {
+      debugPrint('오늘 훈련 수 로드 실패: $e');
+    }
   }
 
   @override
@@ -129,7 +138,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Expanded(child: _buildQuickStat(
                 icon: Icons.psychology_rounded,
                 label: '훈련 현황',
-                value: '오늘 2개',
+                value: '오늘 $_todayTrainingCount개',
                 progress: null,
               )),
             ],

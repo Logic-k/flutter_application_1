@@ -78,7 +78,8 @@ class _ShapeMatchGameState extends State<ShapeMatchGame> {
         _stopwatch.start();
       });
     } else {
-      context.read<UserProvider>().setCognitiveScore('attention', (_score / _totalSteps) * 10.0);
+      // 0-100 스케일로 저장 (전 카테고리 공통)
+      context.read<UserProvider>().setCognitiveScore('attention', (_score / _totalSteps) * 100.0);
       VoiceService().speakSuccess();
       _showResultDialog();
     }

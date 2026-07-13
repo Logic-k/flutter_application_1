@@ -75,8 +75,11 @@ class AssessmentResultScreen extends StatelessWidget {
             ),
             const Spacer(),
             FilledButton(
-              onPressed: () {
-                context.go('/');
+              onPressed: () async {
+                // 초기 평가까지 마쳤으므로 온보딩 완료 처리
+                // (라우터가 더 이상 /consent로 리다이렉트하지 않음)
+                await context.read<UserProvider>().completeOnboarding();
+                if (context.mounted) context.go('/');
               },
               child: const Text('홈 화면으로 이동'),
             ),

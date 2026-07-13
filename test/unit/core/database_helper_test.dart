@@ -66,6 +66,45 @@ void main() {
       expect(user!['age'], 70);
     });
 
+    test('비밀번호는 평문으로 저장되지 않고 해시로 검증된다', () async {
+      await db.insertUser({
+        'username': 'hashuser',
+        'password': 'secret123',
+        'goal': 'prevention',
+        'age': 65,
+        'weight': 70.0,
+        'has_completed_onboarding': 0,
+        'pedometer_enabled': 0,
+      });
+      final user = await db.getUser('hashuser', 'secret123');
+      expect(user, isNotNull);
+      expect(user!['password'], isNull, reason: '평문 비밀번호가 저장되면 안 된다');
+      expect(user['password_hash'], isNotNull);
+      expect(user['password_salt'], isNotNull);
+    });
+
+    test('세션 토큰 발급 후 getUserBySessionToken으로 조회된다', () async {
+      final id = await db.insertUser({
+        'username': 'tokenuser',
+        'password': 'pw',
+        'goal': 'prevention',
+        'age': 65,
+        'weight': 70.0,
+        'has_completed_onboarding': 0,
+        'pedometer_enabled': 0,
+      });
+      await db.setSessionToken(id, 'abc123token');
+
+      final found = await db.getUserBySessionToken('tokenuser', 'abc123token');
+      expect(found, isNotNull);
+      expect(found!['id'], id);
+
+      // 토큰 무효화 후에는 조회되지 않는다
+      await db.setSessionToken(id, null);
+      final gone = await db.getUserBySessionToken('tokenuser', 'abc123token');
+      expect(gone, isNull);
+    });
+
     test('updateUserOnboarding: 온보딩 완료 상태를 업데이트한다', () async {
       final id = await db.insertUser({
         'username': 'onboarduser',
@@ -151,6 +190,62 @@ void main() {
       await db.updateDailySteps(userId, 5000, 250.0, 3.5);
       final steps = await db.getWeeklySteps(userId);
       expect(steps.length, lessThanOrEqualTo(7));
+    });
+  });
+
+  group('DatabaseHelper - Health Log (FINGER) 작업', () {
+    late DatabaseHelper db;
+    late int userId;
+
+    setUp(() async {
+      DatabaseHelper.resetForTest();
+      db = DatabaseHelper();
+      userId = await db.insertUser({
+        'username': 'healthuser',
+        'password': 'pass',
+        'goal': 'prevention',
+        'age': 66,
+        'weight': 68.0,
+        'has_completed_onboarding': 1,
+        'pedometer_enabled': 0,
+      });
+    });
+
+    test('upsertHealthLog + getHealthLog: 같은 날짜는 갱신된다(1건 유지)', () async {
+      await db.upsertHealthLog(
+        userId: userId, date: '2026-07-12',
+        sleepHours: 7.0, sleepQuality: 3, systolic: 120, diastolic: 80,
+        glucose: 95.0, dietScore: 3, memo: '첫 기록',
+      );
+      // 같은 날 다시 저장 → update
+      await db.upsertHealthLog(
+        userId: userId, date: '2026-07-12',
+        sleepHours: 8.5, sleepQuality: 4, systolic: 118, diastolic: 78,
+        glucose: 90.0, dietScore: 5, memo: '수정',
+      );
+
+      final log = await db.getHealthLog(userId, '2026-07-12');
+      expect(log, isNotNull);
+      expect(log!['sleep_hours'], 8.5);
+      expect(log['diet_score'], 5);
+      expect(log['memo'], '수정');
+
+      final recent = await db.getRecentHealthLogs(userId, 14);
+      expect(recent.length, 1, reason: '같은 날짜는 upsert되어 1건만 존재해야 한다');
+    });
+
+    test('getHealthLog: 기록 없는 날짜는 null', () async {
+      final log = await db.getHealthLog(userId, '2000-01-01');
+      expect(log, isNull);
+    });
+
+    test('resetUserMeasurementData: 건강 기록도 삭제된다', () async {
+      await db.upsertHealthLog(
+        userId: userId, date: '2026-07-12', sleepHours: 7.0, dietScore: 2,
+      );
+      await db.resetUserMeasurementData(userId);
+      final recent = await db.getRecentHealthLogs(userId, 14);
+      expect(recent, isEmpty);
     });
   });
 

@@ -11,7 +11,8 @@ enum GameCategory {
 }
 
 class DifficultyProvider extends ChangeNotifier {
-  final String username;
+  String _username;
+  String get username => _username;
 
   // 게임 카테고리별 현재 난이도 (1 ~ 10)
   final Map<GameCategory, int> _levels = {
@@ -37,7 +38,21 @@ class DifficultyProvider extends ChangeNotifier {
     GameCategory.perception: [],
   };
 
-  DifficultyProvider({required this.username});
+  DifficultyProvider({required String username}) : _username = username;
+
+  /// 로그인/로그아웃 시 사용자 전환. 사용자가 바뀌면 레벨을 초기화하고
+  /// 새 사용자의 난이도를 Firestore에서 다시 불러온다.
+  Future<void> setUsername(String username) async {
+    if (username == _username) return;
+    _username = username;
+    for (final category in GameCategory.values) {
+      _levels[category] = 1;
+      _recentResults[category]!.clear();
+      _recentResponseTimes[category]!.clear();
+    }
+    notifyListeners();
+    if (_username.isNotEmpty) await loadLevels();
+  }
 
   int getLevel(GameCategory category) => _levels[category] ?? 1;
 

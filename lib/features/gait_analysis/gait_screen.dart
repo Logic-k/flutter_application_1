@@ -119,8 +119,6 @@ class _GaitScreenState extends State<GaitScreen> {
             const SizedBox(height: 16),
             _buildWeeklyChart(theme, pedometer),
 
-            const SizedBox(height: 48),
-            _buildManualAnalysisCard(context, theme),
             const SizedBox(height: 40),
           ],
         ),
@@ -283,51 +281,4 @@ class _GaitScreenState extends State<GaitScreen> {
     );
   }
 
-  Widget _buildManualAnalysisCard(BuildContext context, ThemeData theme) {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(colors: [
-          theme.primaryColor,
-          theme.primaryColor.withValues(alpha: 0.8)
-        ]),
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-              color: theme.primaryColor.withValues(alpha: 0.3),
-              blurRadius: 10,
-              offset: const Offset(0, 4))
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('정밀 보행 분석',
-              style: TextStyle(
-                  color: theme.colorScheme.onPrimary,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold)),
-          const SizedBox(height: 8),
-          Text(
-            '3분간 직접 걸으며 보행의 안정성(변동성)을 측정합니다. 정기적인 정밀 분석은 치매 조기 발견에 도움이 됩니다.',
-            style: TextStyle(
-                color: theme.colorScheme.onPrimary.withValues(alpha: 0.8),
-                fontSize: 14),
-          ),
-          const SizedBox(height: 20),
-          ElevatedButton(
-            onPressed: () => context.push('/precise_gait_analysis'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: theme.colorScheme.onPrimary,
-              foregroundColor: theme.primaryColor,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
-            ),
-            child: const Text('지금 정밀 분석 시작하기',
-                style: TextStyle(fontWeight: FontWeight.bold)),
-          ),
-        ],
-      ),
-    );
-  }
 }

@@ -31,13 +31,46 @@ class PedometerManager with ChangeNotifier {
     _initOnStart();
   }
 
+  // 마지막으로 관찰한 사용자 id — 로그아웃/계정 전환 감지용
+  int? _lastUserId;
+
   void _onUserChanged() {
-    if (_userProvider.currentUser != null) {
-      _loadTodayStepsFromDB();
-    } else {
+    final userId = _userProvider.currentUser?['id'] as int?;
+
+    if (userId == null) {
+      // 로그아웃: 백그라운드 추적을 중지해 다음 로그인 계정의
+      // daily_steps에 걸음이 섞여 기록되는 것을 방지한다.
+      if (_lastUserId != null) {
+        _lastUserId = null;
+        FlutterBackgroundService().invoke('stopService');
+        _isTracking = false;
+      }
       _todaySteps = 0;
       _todayCalories = 0.0;
       _todayDistance = 0.0;
+      notifyListeners();
+      return;
+    }
+
+    final userChanged = userId != _lastUserId;
+    _lastUserId = userId;
+    if (userChanged) {
+      // 새 계정 로그인: 해당 계정의 설정에 따라 추적 상태 재설정
+      _isTracking = _userProvider.pedometerEnabled;
+      if (_isTracking) _resumeTrackingIfPermitted();
+      notifyListeners();
+    }
+    _loadTodayStepsFromDB();
+  }
+
+  /// 권한이 이미 있을 때만 조용히 추적 재개 (권한 팝업 없이)
+  Future<void> _resumeTrackingIfPermitted() async {
+    final activityStatus = await Permission.activityRecognition.status;
+    final notificationStatus = await Permission.notification.status;
+    if (activityStatus.isGranted && notificationStatus.isGranted) {
+      await _startServiceDirectly();
+    } else {
+      _isTracking = false;
       notifyListeners();
     }
   }
@@ -60,8 +93,9 @@ class PedometerManager with ChangeNotifier {
   }
 
   Future<void> _initOnStart() async {
+    _lastUserId = _userProvider.currentUser?['id'] as int?;
     _isTracking = _userProvider.pedometerEnabled;
-    
+
     if (_isTracking) {
       // 앱 시작 시 추적이 켜져있다면 권한부터 확인
       final activityStatus = await Permission.activityRecognition.status;
@@ -98,7 +132,8 @@ class PedometerManager with ChangeNotifier {
     
     final double weight = _userProvider.weight ?? 60.0;
     final int age = _userProvider.age ?? 40;
-    final ageFactor = (100 - age) / 100.0;
+    // 나이 보정은 0.4~1.0 범위로 제한 (100세 이상에서 0·음수 칼로리 방지)
+    final ageFactor = ((100 - age) / 100.0).clamp(0.4, 1.0);
     _todayCalories = _todaySteps * 0.04 * (weight / 60.0) * ageFactor;
 
     if (_userProvider.currentUser != null) {
@@ -123,12 +158,16 @@ class PedometerManager with ChangeNotifier {
   /// 최근 활동량 대비 급격한 감소 감지 (50% 이하 하락 시)
   Future<void> _checkStepAnomaly() async {
     final summary = await getWeeklySummary();
-    if (summary.length < 3) return;
+    // 오늘 데이터를 기준선에서 제외해야 오늘 걸음이 평균을 끌어내려
+    // 감지가 둔감해지는 것을 막는다.
+    final today = DateTime.now().toIso8601String().split('T')[0];
+    final baseline = summary
+        .where((e) => (e['date'] as String?) != today)
+        .map((e) => (e['steps'] as num).toDouble())
+        .toList();
+    if (baseline.length < 3) return;
 
-    final avgSteps = summary
-            .map((e) => (e['steps'] as num).toDouble())
-            .reduce((a, b) => a + b) /
-        summary.length;
+    final avgSteps = baseline.reduce((a, b) => a + b) / baseline.length;
 
     if (avgSteps > 1000 && _todaySteps < (avgSteps * 0.5)) {
       if (!_isAnomalyDetected) {

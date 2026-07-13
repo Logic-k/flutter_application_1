@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../../core/user_provider.dart';
 import 'widgets/game_template.dart';
 
 class DailyRecallPage extends StatefulWidget {
@@ -43,9 +41,9 @@ class _DailyRecallPageState extends State<DailyRecallPage> {
   }
 
   void _showCompletionDialog() {
-    // 회상 훈련은 정답이 없으므로 참여 자체에 높은 점수를 부여합니다.
-    context.read<UserProvider>().setCognitiveScore('memory', 100.0);
-    
+    // 회상 훈련은 정답이 없는 참여형 활동이므로 인지 점수를 기록하지 않는다.
+    // (참여만으로 memory 100점을 저장하면 실제 측정된 기억력 점수를
+    //  덮어써 리포트·임상 데이터가 왜곡된다)
     showDialog(
       context: context,
       barrierDismissible: false,

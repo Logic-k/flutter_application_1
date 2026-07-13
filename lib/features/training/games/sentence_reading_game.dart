@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:provider/provider.dart';
@@ -12,14 +13,38 @@ class SentenceReadingGame extends StatefulWidget {
   @override
   State<SentenceReadingGame> createState() => _SentenceReadingGameState();
 
+  /// 목표 문장과 인식 결과의 유사도(0~100)를 계산한다.
+  ///
+  /// 편집 거리(Levenshtein) 기반이라 "같은 길이의 아무 말"로는
+  /// 점수가 나오지 않는다. STT가 앞뒤에 잡음 단어를 붙이는 경우를
+  /// 대비해, 인식 결과 안에 목표 문장 전체가 포함되면 만점 처리한다.
   static double computeSpeechScore(String target, String recognized) {
-    String cleanTarget = target.replaceAll(' ', '');
-    String cleanInput = recognized.replaceAll(' ', '');
-    if (cleanInput.isEmpty) return 0.0;
-    if (cleanInput.contains(cleanTarget) || cleanTarget.contains(cleanInput)) {
-      return 100.0;
+    final cleanTarget = target.replaceAll(RegExp(r'[^가-힣0-9A-Za-z]'), '');
+    final cleanInput = recognized.replaceAll(RegExp(r'[^가-힣0-9A-Za-z]'), '');
+    if (cleanTarget.isEmpty || cleanInput.isEmpty) return 0.0;
+    if (cleanInput.contains(cleanTarget)) return 100.0;
+
+    final dist = _levenshtein(cleanTarget, cleanInput);
+    final maxLen = max(cleanTarget.length, cleanInput.length);
+    return ((1.0 - dist / maxLen) * 100.0).clamp(0.0, 100.0);
+  }
+
+  static int _levenshtein(String a, String b) {
+    final m = a.length;
+    final n = b.length;
+    var prev = List<int>.generate(n + 1, (j) => j);
+    var curr = List<int>.filled(n + 1, 0);
+    for (var i = 1; i <= m; i++) {
+      curr[0] = i;
+      for (var j = 1; j <= n; j++) {
+        final cost = a.codeUnitAt(i - 1) == b.codeUnitAt(j - 1) ? 0 : 1;
+        curr[j] = min(min(curr[j - 1] + 1, prev[j] + 1), prev[j - 1] + cost);
+      }
+      final tmp = prev;
+      prev = curr;
+      curr = tmp;
     }
-    return (cleanInput.length / cleanTarget.length * 100).clamp(0, 100).toDouble();
+    return prev[n];
   }
 }
 
@@ -30,7 +55,9 @@ class _SentenceReadingGameState extends State<SentenceReadingGame> {
   
   int _currentStep = 1;
   final int _totalSteps = 5;
-  
+  final List<double> _sentenceScores = [];
+  int _attempts = 0;
+
   final List<String> _sentences = [
     "화창한 봄날에 개나리가 피었습니다.",
     "건강을 위해 매일 꾸준히 걷는 것이 좋습니다.",
@@ -79,9 +106,22 @@ class _SentenceReadingGameState extends State<SentenceReadingGame> {
     final double score = SentenceReadingGame.computeSpeechScore(_targetSentence, _text);
 
     if (score > 70) {
+      _sentenceScores.add(score);
+      _attempts = 0;
       context.read<DifficultyProvider>().updatePerformance(GameCategory.perception, true);
       _nextStep();
+    } else if (_attempts >= 1) {
+      // 두 번째 시도도 실패하면 낮은 점수를 기록하고 다음 문장으로 진행
+      // (같은 문장에서 무한히 막히는 것 방지)
+      _sentenceScores.add(score);
+      _attempts = 0;
+      context.read<DifficultyProvider>().updatePerformance(GameCategory.perception, false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('괜찮아요, 다음 문장으로 넘어갈게요.')),
+      );
+      _nextStep();
     } else {
+      _attempts++;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('다시 한번 명확하게 읽어주세요.')),
       );
@@ -96,7 +136,13 @@ class _SentenceReadingGameState extends State<SentenceReadingGame> {
         _text = '';
       });
     } else {
-      context.read<UserProvider>().setCognitiveScore('perception', 100.0);
+      // 문장별 유사도 점수의 평균을 저장한다.
+      // 카테고리는 UserProvider가 처리하는 'voice'(언어·발화) 사용
+      // ('perception'은 provider가 인식하지 못해 화면에 반영되지 않았음)
+      final avg = _sentenceScores.isEmpty
+          ? 0.0
+          : _sentenceScores.reduce((a, b) => a + b) / _sentenceScores.length;
+      context.read<UserProvider>().setCognitiveScore('voice', avg);
       VoiceService().speakSuccess();
       _showResultDialog();
     }

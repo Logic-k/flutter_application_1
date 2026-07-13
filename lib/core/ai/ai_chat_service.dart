@@ -2,7 +2,9 @@ import 'package:flutter/foundation.dart';
 import 'ai_provider_interface.dart';
 import 'ai_key_service.dart';
 import 'gemini_provider.dart';
+import 'gemma_local_provider.dart';
 import 'local_fallback_provider.dart';
+import 'model_download_service.dart';
 import '../app_config.dart';
 import '../../features/ai_chat/models/chat_message.dart';
 
@@ -53,6 +55,7 @@ class AiChatService {
 
   static String get currentProviderName => _provider.providerName;
   static bool get isUsingAI => _provider is! LocalFallbackProvider;
+  static bool get isUsingLocalModel => _provider is GemmaLocalProvider;
 
   /// 메시지 전송 — 내부 제공자에 위임
   static Future<String> chat(
@@ -71,6 +74,14 @@ class AiChatService {
   }
 
   static Future<void> _applyBestProvider() async {
+    // 우선순위: 온디바이스 Gemma > Gemini API > LocalFallback
+    if (await ModelDownloadService.isModelReady()) {
+      _provider = GemmaLocalProvider();
+      debugPrint('[AiChatService] 온디바이스 Gemma 모델 사용');
+      _initialized = true;
+      return;
+    }
+
     final key = await AiKeyService.resolveKey(
       dartDefineKey: AppConfig.geminiApiKey,
     );

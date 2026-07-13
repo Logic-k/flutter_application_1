@@ -102,6 +102,16 @@ class _AiChatScreenState extends State<AiChatScreen> {
 
   Future<void> _endSession() async {
     if (_sessionEnded) return;
+
+    // 사용자가 한 마디도 하지 않았으면 분석하지 않는다 (0점 결과 방지)
+    final hasUserSpeech = _messages.any((m) => m.isUser);
+    if (!hasUserSpeech) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('먼저 한 마디 이상 대화해 주세요.')),
+      );
+      return;
+    }
+
     setState(() {
       _sessionEnded = true;
       _isLoading = true;

@@ -43,6 +43,13 @@ void main() async {
   await flutterLocalNotificationsPlugin.initialize(
     settings: const InitializationSettings(android: androidSettings, iOS: iosSettings),
   );
+  // Android 13+ 알림 런타임 권한 요청.
+  // (만보기 토글에서만 요청하면 만보기를 안 쓰는 사용자는
+  //  저녁 일기 알림을 영영 받지 못한다)
+  await flutterLocalNotificationsPlugin
+      .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>()
+      ?.requestNotificationsPermission();
   await DiaryNotificationService.initialize(flutterLocalNotificationsPlugin);
   await DiaryNotificationService.scheduleDailyReminder(flutterLocalNotificationsPlugin);
 
@@ -61,10 +68,11 @@ void main() async {
   // AI 대화 서비스 초기화 (GEMINI_API_KEY 없으면 LocalFallback 자동 사용)
   await AiChatService.initialize();
 
-  // Firebase 초기화
-  await FirebaseService.initialize();
-  // 공지사항/FAQ 데모 데이터 (비어있을 때만 삽입)
-  await CsService.seedDemoData();
+  // Firebase 초기화 (IS_EMULATOR=true 빌드에서는 네트워크 없으므로 건너뜀)
+  if (!isEmulator) {
+    await FirebaseService.initialize();
+    await CsService.seedDemoData();
+  }
 
   final userProvider = UserProvider();
   await userProvider.checkLoginStatus();
@@ -84,9 +92,10 @@ void main() async {
         ChangeNotifierProxyProvider<UserProvider, DifficultyProvider>(
           create: (context) => DifficultyProvider(username: ''),
           update: (context, user, previous) {
-            final username = user.currentUser?['username'] ?? '';
+            final username = user.currentUser?['username'] as String? ?? '';
             final provider = previous ?? DifficultyProvider(username: username);
-            if (username.isNotEmpty) provider.loadLevels();
+            // 로그인 사용자가 바뀌면 난이도를 초기화하고 Firestore에서 재로딩
+            provider.setUsername(username);
             return provider;
           },
         ),

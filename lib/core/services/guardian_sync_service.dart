@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../database_helper.dart';
@@ -26,9 +27,12 @@ class GuardianSyncService {
     return token;
   }
 
+  // 보호자 링크는 URL만 알면 건강 데이터를 열람할 수 있으므로
+  // 추측이 어렵도록 암호학적 난수로 16자 토큰을 생성한다.
   String _generateToken(int userId) {
-    final seed = userId * 997 + DateTime.now().millisecondsSinceEpoch % 999983;
-    return seed.toRadixString(36).padLeft(8, '0').toUpperCase().substring(0, 8);
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    final rand = Random.secure();
+    return List.generate(16, (_) => chars[rand.nextInt(chars.length)]).join();
   }
 
   Future<GuardianSyncResult> syncToFirestore({

@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../../core/user_provider.dart';
+import '../../../core/settings_provider.dart';
+import '../../../core/services/voice_service.dart';
 import '../widgets/game_template.dart';
 import '../difficulty_provider.dart';
 
@@ -123,11 +125,12 @@ class _CategorizationGameState extends State<CategorizationGame> {
     _waitingNext = true;
 
     final isCorrect = selected == _questions[_currentStep - 1]['answer'];
+    final haptic = context.read<SettingsProvider>().hapticFeedbackEnabled;
     if (isCorrect) {
       _score++;
-      HapticFeedback.mediumImpact();
+      if (haptic) HapticFeedback.mediumImpact();
     } else {
-      HapticFeedback.heavyImpact();
+      if (haptic) HapticFeedback.heavyImpact();
     }
 
     context
@@ -144,9 +147,10 @@ class _CategorizationGameState extends State<CategorizationGame> {
           _waitingNext = false;
         });
       } else {
-        // 0-10 스케일로 저장 (logic 카테고리는 × 10 → 0-100 정규화)
-        final normalized = (_score / _totalSteps) * 10.0;
+        // 0-100 스케일로 저장 (전 카테고리 공통)
+        final normalized = (_score / _totalSteps) * 100.0;
         context.read<UserProvider>().setCognitiveScore('logic', normalized);
+        VoiceService().speakSuccess();
         setState(() {
           _isFinished = true;
           _waitingNext = false;

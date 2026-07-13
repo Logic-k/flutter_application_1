@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'dart:math';
 import '../../../core/user_provider.dart';
+import '../../../core/services/voice_service.dart';
 import '../widgets/game_template.dart';
 import '../difficulty_provider.dart';
 
@@ -36,27 +37,30 @@ class _ComparisonGameState extends State<ComparisonGame> {
     final level = diffProvider.getLevel(GameCategory.calculation);
 
     int range = 10 + (level * 10);
-    
-    _leftVal = _random.nextInt(range) + 1;
-    _leftExpr = '$_leftVal';
-    
-    _rightVal = _random.nextInt(range) + 1;
-    if (_leftVal == _rightVal) _rightVal++;
-    _rightExpr = '$_rightVal';
 
-    if (_random.nextDouble() < (level * 0.1).clamp(0.1, 0.8)) {
-      int a = _random.nextInt(range ~/ 2) + 1;
-      int b = _random.nextInt(range ~/ 2) + 1;
-      _leftVal = a + b;
-      _leftExpr = '$a + $b';
-    }
-    
-    if (_random.nextDouble() < (level * 0.1).clamp(0.1, 0.8)) {
-      int a = _random.nextInt(range ~/ 2) + 1;
-      int b = _random.nextInt(range ~/ 2) + 1;
-      _rightVal = a + b;
-      _rightExpr = '$a + $b';
-    }
+    // 좌우 값이 같으면 정답이 없는 문제가 되므로 다를 때까지 재생성한다.
+    // (식 치환 이후에도 값이 같아질 수 있어 전체를 루프로 감싼다)
+    do {
+      _leftVal = _random.nextInt(range) + 1;
+      _leftExpr = '$_leftVal';
+
+      _rightVal = _random.nextInt(range) + 1;
+      _rightExpr = '$_rightVal';
+
+      if (_random.nextDouble() < (level * 0.1).clamp(0.1, 0.8)) {
+        int a = _random.nextInt(range ~/ 2) + 1;
+        int b = _random.nextInt(range ~/ 2) + 1;
+        _leftVal = a + b;
+        _leftExpr = '$a + $b';
+      }
+
+      if (_random.nextDouble() < (level * 0.1).clamp(0.1, 0.8)) {
+        int a = _random.nextInt(range ~/ 2) + 1;
+        int b = _random.nextInt(range ~/ 2) + 1;
+        _rightVal = a + b;
+        _rightExpr = '$a + $b';
+      }
+    } while (_leftVal == _rightVal);
   }
 
   void _checkAnswer(bool leftSelected) {
@@ -71,7 +75,9 @@ class _ComparisonGameState extends State<ComparisonGame> {
         _generateProblem();
       });
     } else {
-      context.read<UserProvider>().setCognitiveScore('calculation', (_score / _totalSteps) * 10.0);
+      // 0-100 스케일로 저장 (전 카테고리 공통)
+      context.read<UserProvider>().setCognitiveScore('calculation', (_score / _totalSteps) * 100.0);
+      VoiceService().speakSuccess();
       _showResultDialog();
     }
   }
@@ -119,8 +125,6 @@ class _ComparisonGameState extends State<ComparisonGame> {
               Expanded(child: _buildChoiceCard(theme, _rightExpr, false)),
             ],
           ),
-          const SizedBox(height: 32),
-          Text('= 같습니다 =', style: TextStyle(color: theme.colorScheme.onSurfaceVariant, fontSize: 16)),
         ],
       ),
     );

@@ -43,14 +43,14 @@ class _CognitiveTasksScreenState extends State<CognitiveTasksScreen> {
 
   void _onRecallComplete() {
     _memoryScore = _selectedWords.where((w) => _targetWords.contains(w)).length;
-    // 3문제 중 맞춘 개수를 0~10점으로 환산 (예: 3개 다 맞히면 10점)
-    context.read<UserProvider>().setCognitiveScore('memory', (_memoryScore / 3.0) * 10.0);
+    // 3문제 중 맞춘 개수를 0~100점으로 환산 (예: 3개 다 맞히면 100점)
+    context.read<UserProvider>().setCognitiveScore('memory', (_memoryScore / 3.0) * 100.0);
     setState(() => _currentTask = 3);
   }
 
   void _onAttentionComplete() {
-    // 5문제 중 맞춘 개수를 0~10점으로 환산
-    context.read<UserProvider>().setCognitiveScore('attention', (_attentionScore / 5.0) * 10.0);
+    // 5문제 중 맞춘 개수를 0~100점으로 환산
+    context.read<UserProvider>().setCognitiveScore('attention', (_attentionScore / 5.0) * 100.0);
     context.push('/assessment_result');
   }
 
@@ -90,14 +90,41 @@ class _CognitiveTasksScreenState extends State<CognitiveTasksScreen> {
   }
 
   Widget _buildDistracter() {
+    // 단어 암기와 회상 사이의 '방해 과제'(간섭). 즉답 리허설을 막기 위해
+    // 실제로 골라야 하는 3지선다로 제시한다. 정답을 눌러야 다음으로 진행.
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const Text('간단한 계산을 해주세요', style: TextStyle(fontSize: 20)),
+        const Text('잠깐! 간단한 계산을 해주세요', style: TextStyle(fontSize: 20)),
         const SizedBox(height: 40),
         const Text('5 + 3 = ?', style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold)),
         const SizedBox(height: 32),
-        ElevatedButton(onPressed: _onDistracterComplete, child: const Text('8', style: TextStyle(fontSize: 24))),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [6, 8, 9].map((n) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: ElevatedButton(
+                onPressed: () {
+                  if (n == 8) {
+                    _onDistracterComplete();
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('다시 한번 계산해 보세요.'),
+                        duration: Duration(milliseconds: 800),
+                      ),
+                    );
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 18),
+                ),
+                child: Text('$n', style: const TextStyle(fontSize: 24)),
+              ),
+            );
+          }).toList(),
+        ),
       ],
     );
   }

@@ -70,7 +70,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     final items = [
       ('전체 회원', admin.totalUsers, Icons.people_outline),
       ('오늘 활성', admin.dauCount, Icons.today_outlined),
-      ('주간 활성', admin.newUsersThisWeek, Icons.trending_up),
+      ('주간 활성', admin.weeklyActiveUsers, Icons.trending_up),
     ];
     return Row(
       children: items

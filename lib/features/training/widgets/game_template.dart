@@ -6,7 +6,7 @@ import '../../../core/settings_provider.dart';
 import '../../../core/theme.dart';
 import '../difficulty_provider.dart';
 
-class GameTemplate extends StatelessWidget {
+class GameTemplate extends StatefulWidget {
   final String title;
   final String objective;
   final Widget child;
@@ -25,13 +25,31 @@ class GameTemplate extends StatelessWidget {
   });
 
   @override
+  State<GameTemplate> createState() => _GameTemplateState();
+}
+
+class _GameTemplateState extends State<GameTemplate> {
+  @override
+  void initState() {
+    super.initState();
+    // 시작 안내는 게임 진입 시 1회만 발화한다.
+    // (build에서 호출하면 문제를 풀 때마다 리빌드되어 반복 발화됨)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      if (context.read<SettingsProvider>().voiceGuidanceEnabled) {
+        VoiceService().speakTrainingStart(widget.title);
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final settings = context.read<SettingsProvider>();
-    if (settings.voiceGuidanceEnabled) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        VoiceService().speakTrainingStart(title);
-      });
-    }
+    final title = widget.title;
+    final objective = widget.objective;
+    final currentStep = widget.currentStep;
+    final totalSteps = widget.totalSteps;
+    final onExit = widget.onExit;
+    final child = widget.child;
 
     final progress = currentStep / totalSteps;
 

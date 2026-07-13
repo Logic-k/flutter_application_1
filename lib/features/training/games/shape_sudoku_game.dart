@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'dart:math';
 import '../../../core/user_provider.dart';
+import '../../../core/settings_provider.dart';
+import '../../../core/services/voice_service.dart';
 import '../widgets/game_template.dart';
 import '../difficulty_provider.dart';
 
@@ -89,11 +91,12 @@ class _ShapeSudokuGameState extends State<ShapeSudokuGame> {
     final reactionTime = _stopwatch.elapsedMilliseconds / 1000.0;
 
     final isCorrect = selectedIdx == _correctSymbolIdx;
+    final haptic = context.read<SettingsProvider>().hapticFeedbackEnabled;
     if (isCorrect) {
       _score++;
-      HapticFeedback.mediumImpact();
+      if (haptic) HapticFeedback.mediumImpact();
     } else {
-      HapticFeedback.heavyImpact();
+      if (haptic) HapticFeedback.heavyImpact();
     }
 
     context.read<DifficultyProvider>().updatePerformance(
@@ -112,6 +115,7 @@ class _ShapeSudokuGameState extends State<ShapeSudokuGame> {
       context
           .read<UserProvider>()
           .setCognitiveScore('memory', (_score / _totalSteps) * 100.0);
+      VoiceService().speakSuccess();
       _showResultDialog();
     }
   }

@@ -1,4 +1,7 @@
-import 'package:flutter/foundation.dart' show visibleForTesting;
+import 'dart:convert';
+import 'dart:math';
+import 'package:crypto/crypto.dart';
+import 'package:flutter/foundation.dart' show visibleForTesting, kReleaseMode;
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
@@ -32,11 +35,38 @@ class DatabaseHelper {
     final bool isTest = pathOverride != null;
     return await openDatabase(
       path,
-      version: 5,
+      version: 8,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
       singleInstance: !isTest,
     );
+  }
+
+  // ── 비밀번호 해시 유틸 ────────────────────────────────────────
+  // 평문 비밀번호는 저장하지 않고 salt + SHA-256 해시만 저장한다.
+
+  static String generateSalt() {
+    final rand = Random.secure();
+    return List.generate(
+      16,
+      (_) => rand.nextInt(256).toRadixString(16).padLeft(2, '0'),
+    ).join();
+  }
+
+  static String hashPassword(String password, String salt) =>
+      sha256.convert(utf8.encode('$salt:$password')).toString();
+
+  /// row에 평문 'password'가 있으면 해시/솔트 컬럼으로 대체한다.
+  static Map<String, dynamic> _withHashedPassword(Map<String, dynamic> row) {
+    final pw = row['password'];
+    if (pw is! String || pw.isEmpty) return row;
+    final salt = generateSalt();
+    return {
+      ...row,
+      'password': null,
+      'password_hash': hashPassword(pw, salt),
+      'password_salt': salt,
+    };
   }
 
   Future<void> _onCreate(Database db, int version) async {
@@ -45,7 +75,11 @@ class DatabaseHelper {
       CREATE TABLE users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         username TEXT UNIQUE,
+        name TEXT,
         password TEXT,
+        password_hash TEXT,
+        password_salt TEXT,
+        session_token TEXT,
         goal TEXT,
         age INTEGER,
         weight REAL,
@@ -119,27 +153,35 @@ class DatabaseHelper {
       )
     ''');
 
-    // admin 계정 (자동화 테스트용)
-    await db.insert('users', {
-      'username': 'admin',
-      'password': 'admin',
-      'goal': 'prevention',
-      'age': 65,
-      'weight': 70.0,
-      'has_completed_onboarding': 1,
-      'pedometer_enabled': 1,
-    });
+    // FINGER 건강 기록 (수면·혈압·혈당·식이) — 하루 1건 upsert
+    await db.execute(_healthLogsDdl);
 
-    // 데모 계정 시드
-    await _seedDemoAccounts(db);
+    // admin·데모 계정은 개발/데모 빌드에서만 시드한다 (릴리스 빌드 제외)
+    if (!kReleaseMode) {
+      // admin 계정 (자동화 테스트용)
+      await db.insert('users', _withHashedPassword({
+        'username': 'admin',
+        'name': '관리자',
+        'password': 'admin',
+        'goal': 'prevention',
+        'age': 65,
+        'weight': 70.0,
+        'has_completed_onboarding': 1,
+        'pedometer_enabled': 1,
+      }));
+
+      // 데모 계정 시드
+      await _seedDemoAccounts(db);
+    }
   }
 
   Future<void> _seedDemoAccounts(Database db) async {
     final now = DateTime.now();
 
     // ── 계정 1: 김민준 (건강한 사람 — 치매 예방 우수) ──────────────────
-    final int minjunId = await db.insert('users', {
+    final int minjunId = await db.insert('users', _withHashedPassword({
       'username': 'kim_minjun',
+      'name': '김민준',
       'password': 'demo1234',
       'goal': 'prevention',
       'age': 68,
@@ -149,11 +191,12 @@ class DatabaseHelper {
       'emergency_contact': '010-1234-5678',
       'has_completed_onboarding': 1,
       'pedometer_enabled': 1,
-    });
+    }));
 
     // 30일치 훈련 점수 (index 0 = 29일 전, index 29 = 오늘)
-    // memory: 0-100 스케일 (shape_sudoku 방식, > 10 이면 그대로 사용)
-    // calculation/logic/attention: 0-10 스케일 (게임에서 × 10 정규화 후 0-100 표시)
+    // memory: 0-100 스케일 그대로 삽입
+    // calculation/logic/attention: 아래 배열은 0-10 스케일이며
+    //   _insertTrainingScores에서 ×10 하여 0-100으로 저장 (전 카테고리 0-100 통일)
     // 완만한 우상향 추세 + 자연스러운 등락
     const minjunScores = [
       // [memory, calculation, logic, attention]  — day 0 (29일 전)
@@ -255,8 +298,9 @@ class DatabaseHelper {
     }
 
     // ── 계정 2: 박순자 (위험한 사람 — 치매 위험 경고) ─────────────────
-    final int sonjaId = await db.insert('users', {
+    final int sonjaId = await db.insert('users', _withHashedPassword({
       'username': 'park_sonja',
+      'name': '박순자',
       'password': 'demo1234',
       'goal': 'concern',
       'age': 76,
@@ -266,11 +310,11 @@ class DatabaseHelper {
       'emergency_contact': '010-9876-5432',
       'has_completed_onboarding': 1,
       'pedometer_enabled': 1,
-    });
+    }));
 
     // 30일치 훈련 점수 — 전반적으로 낮음
     // memory: 0-100 스케일 (20~35점)
-    // calculation/logic/attention: 0-10 스케일 (2.0~3.4 → ×10 = 20~34%)
+    // calculation/logic/attention: 0-10 스케일 배열 → 삽입 시 ×10 (20~34점)
     const sonjaScores = [
       [28.0, 2.8, 2.3, 2.6],
       [20.0, 2.0, 1.5, 2.0],
@@ -320,6 +364,8 @@ class DatabaseHelper {
 
   // 하루 1회씩 [memory, calculation, logic, attention] 점수를 삽입
   // (index 0 = 가장 오래된 날, 마지막 index = 오늘)
+  // memory(index 0)는 0-100 스케일 그대로, 나머지는 0-10 배열을 ×10 하여
+  // 저장 스케일을 0-100으로 통일한다.
   Future<void> _insertTrainingScores(
     Database db,
     int userId,
@@ -332,10 +378,11 @@ class DatabaseHelper {
       final dateStr =
           '${date.toIso8601String().split('T')[0]}T$hour:${(i % 60).toString().padLeft(2, '0')}:00.000';
       for (int c = 0; c < _scoreCategories.length; c++) {
+        final raw = scores[i][c];
         await db.insert('training_scores', {
           'user_id': userId,
           'category': _scoreCategories[c],
-          'score': scores[i][c],
+          'score': c == 0 ? raw : raw * 10.0,
           'created_at': dateStr,
         });
       }
@@ -359,6 +406,26 @@ class DatabaseHelper {
       });
     }
   }
+
+  // FINGER 건강 기록 테이블 DDL (onCreate/onUpgrade 공용)
+  static const String _healthLogsDdl = '''
+    CREATE TABLE IF NOT EXISTS health_logs (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,
+      date TEXT NOT NULL,
+      sleep_hours REAL,
+      sleep_quality INTEGER,
+      systolic INTEGER,
+      diastolic INTEGER,
+      glucose REAL,
+      diet_score INTEGER,
+      memo TEXT,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      UNIQUE(user_id, date),
+      FOREIGN KEY (user_id) REFERENCES users (id)
+    )
+  ''';
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < 2) {
@@ -408,6 +475,45 @@ class DatabaseHelper {
         )
       ''');
     }
+    if (oldVersion < 6) {
+      await db.execute('ALTER TABLE users ADD COLUMN name TEXT');
+    }
+    if (oldVersion < 7) {
+      // 1) 점수 스케일 통일: 기존 0-10 스케일(calculation/logic/attention)을
+      //    0-100으로 승격. (memory는 원래 0-100이라 대상에서 제외.
+      //    score <= 10 조건은 구버전 데이터 판별용 — 신규 데이터는 항상 0-100)
+      await db.execute('''
+        UPDATE training_scores SET score = score * 10
+        WHERE category IN ('calculation', 'logic', 'attention') AND score <= 10
+      ''');
+
+      // 2) 비밀번호 평문 저장 폐기: 해시/솔트/세션토큰 컬럼 추가 후
+      //    기존 평문 비밀번호를 해시로 이전하고 평문은 삭제
+      await db.execute('ALTER TABLE users ADD COLUMN password_hash TEXT');
+      await db.execute('ALTER TABLE users ADD COLUMN password_salt TEXT');
+      await db.execute('ALTER TABLE users ADD COLUMN session_token TEXT');
+      final rows = await db.query(
+        'users',
+        columns: ['id', 'password'],
+        where: 'password IS NOT NULL',
+      );
+      for (final row in rows) {
+        final salt = generateSalt();
+        await db.update(
+          'users',
+          {
+            'password': null,
+            'password_hash': hashPassword(row['password'] as String, salt),
+            'password_salt': salt,
+          },
+          where: 'id = ?',
+          whereArgs: [row['id']],
+        );
+      }
+    }
+    if (oldVersion < 8) {
+      await db.execute(_healthLogsDdl);
+    }
   }
 
   Future<void> resetUserMeasurementData(int userId) async {
@@ -415,22 +521,161 @@ class DatabaseHelper {
     await db.delete('training_scores', where: 'user_id = ?', whereArgs: [userId]);
     await db.delete('daily_steps', where: 'user_id = ?', whereArgs: [userId]);
     await db.delete('checklist', where: 'user_id = ?', whereArgs: [userId]);
+    await db.delete('health_logs', where: 'user_id = ?', whereArgs: [userId]);
+  }
+
+  // --- FINGER 건강 기록 (Health Log) Operations ---
+
+  /// 하루 1건 기준으로 저장(있으면 갱신). date는 'yyyy-MM-dd' 형식.
+  Future<void> upsertHealthLog({
+    required int userId,
+    required String date,
+    double? sleepHours,
+    int? sleepQuality,
+    int? systolic,
+    int? diastolic,
+    double? glucose,
+    int? dietScore,
+    String? memo,
+  }) async {
+    final db = await database;
+    final nowIso = DateTime.now().toIso8601String();
+    final existing = await db.query(
+      'health_logs',
+      where: 'user_id = ? AND date = ?',
+      whereArgs: [userId, date],
+      limit: 1,
+    );
+    final values = <String, dynamic>{
+      'user_id': userId,
+      'date': date,
+      'sleep_hours': sleepHours,
+      'sleep_quality': sleepQuality,
+      'systolic': systolic,
+      'diastolic': diastolic,
+      'glucose': glucose,
+      'diet_score': dietScore,
+      'memo': memo,
+      'updated_at': nowIso,
+    };
+    if (existing.isEmpty) {
+      values['created_at'] = nowIso;
+      await db.insert('health_logs', values);
+    } else {
+      await db.update(
+        'health_logs',
+        values,
+        where: 'user_id = ? AND date = ?',
+        whereArgs: [userId, date],
+      );
+    }
+  }
+
+  /// 특정 날짜 기록 조회 (없으면 null)
+  Future<Map<String, dynamic>?> getHealthLog(int userId, String date) async {
+    final db = await database;
+    final rows = await db.query(
+      'health_logs',
+      where: 'user_id = ? AND date = ?',
+      whereArgs: [userId, date],
+      limit: 1,
+    );
+    return rows.isNotEmpty ? rows.first : null;
+  }
+
+  /// 최근 N일 기록을 날짜 오름차순으로 반환 (추세 차트용)
+  Future<List<Map<String, dynamic>>> getRecentHealthLogs(
+      int userId, int days) async {
+    final db = await database;
+    final since = DateTime.now()
+        .subtract(Duration(days: days - 1))
+        .toIso8601String()
+        .split('T')[0];
+    return db.query(
+      'health_logs',
+      where: 'user_id = ? AND date >= ?',
+      whereArgs: [userId, since],
+      orderBy: 'date ASC',
+    );
   }
 
   // --- User Operations ---
   Future<int> insertUser(Map<String, dynamic> row) async {
     Database db = await database;
-    return await db.insert('users', row);
+    // 평문 비밀번호는 저장 전 해시/솔트로 변환된다.
+    return await db.insert('users', _withHashedPassword(row));
   }
 
+  /// username으로 조회 후 salt+SHA-256 해시를 검증한다.
+  /// 구버전(평문) 행은 검증 성공 시 즉시 해시로 업그레이드한다.
   Future<Map<String, dynamic>?> getUser(String username, String password) async {
     Database db = await database;
-    List<Map<String, dynamic>> results = await db.query(
+    final results = await db.query(
       'users',
-      where: 'username = ? AND password = ?',
-      whereArgs: [username, password],
+      where: 'username = ?',
+      whereArgs: [username],
+      limit: 1,
+    );
+    if (results.isEmpty) return null;
+    final user = results.first;
+
+    final hash = user['password_hash'] as String?;
+    final salt = user['password_salt'] as String?;
+    if (hash != null && salt != null) {
+      return hashPassword(password, salt) == hash ? user : null;
+    }
+
+    // 레거시 평문 행 (마이그레이션 이전 데이터 방어)
+    if (user['password'] == password) {
+      final newSalt = generateSalt();
+      await db.update(
+        'users',
+        {
+          'password': null,
+          'password_hash': hashPassword(password, newSalt),
+          'password_salt': newSalt,
+        },
+        where: 'id = ?',
+        whereArgs: [user['id']],
+      );
+      return user;
+    }
+    return null;
+  }
+
+  Future<Map<String, dynamic>?> getUserById(int id) async {
+    Database db = await database;
+    final results = await db.query(
+      'users',
+      where: 'id = ?',
+      whereArgs: [id],
+      limit: 1,
     );
     return results.isNotEmpty ? results.first : null;
+  }
+
+  /// 자동 로그인용: username + 세션 토큰으로 사용자 조회
+  Future<Map<String, dynamic>?> getUserBySessionToken(
+      String username, String token) async {
+    if (token.isEmpty) return null;
+    Database db = await database;
+    final results = await db.query(
+      'users',
+      where: 'username = ? AND session_token = ?',
+      whereArgs: [username, token],
+      limit: 1,
+    );
+    return results.isNotEmpty ? results.first : null;
+  }
+
+  Future<void> setSessionToken(int userId, String? token) async {
+    Database db = await database;
+    await db.update(
+      'users',
+      {'session_token': token},
+      where: 'id = ?',
+      whereArgs: [userId],
+    );
   }
 
   Future<int> updateUserOnboarding(int userId, bool completed) async {
@@ -534,6 +779,18 @@ class DatabaseHelper {
     ''', [userId, userId]);
   }
 
+  /// 오늘 훈련을 수행한 인지 영역(카테고리) 수. 홈 화면 "훈련 현황"용.
+  Future<int> getTodayTrainingCount(int userId) async {
+    final db = await database;
+    final today = DateTime.now().toIso8601String().split('T')[0];
+    final res = await db.rawQuery('''
+      SELECT COUNT(DISTINCT category) as cnt
+      FROM training_scores
+      WHERE user_id = ? AND date(created_at) = ?
+    ''', [userId, today]);
+    return Sqflite.firstIntValue(res) ?? 0;
+  }
+
   Future<List<Map<String, dynamic>>> getScoreHistory(int userId) async {
     Database db = await database;
     return await db.query(
@@ -610,11 +867,13 @@ class DatabaseHelper {
     return Sqflite.firstIntValue(res) ?? 0;
   }
 
-  Future<int> getNewUsersThisWeek() async {
+  /// 최근 7일 주간 활성 사용자 수(WAU).
+  /// user-day 행이 아니라 고유 사용자 수를 센다.
+  Future<int> getWeeklyActiveUsers() async {
     final db = await database;
     final weekAgo = DateTime.now().subtract(const Duration(days: 7));
     final res = await db.rawQuery(
-      'SELECT COUNT(*) as cnt FROM daily_active_users WHERE date >= ?',
+      'SELECT COUNT(DISTINCT user_id) as cnt FROM daily_active_users WHERE date >= ?',
       [weekAgo.toIso8601String().split('T')[0]],
     );
     return Sqflite.firstIntValue(res) ?? 0;
@@ -723,8 +982,9 @@ class DatabaseHelper {
 
   Future<void> deleteOldDiaries(int userId) async {
     final db = await database;
+    // 보관 기간은 개인정보 처리방침 고지(최대 3년)와 일치시킨다.
     final cutoff = DateTime.now()
-        .subtract(const Duration(days: 365))
+        .subtract(const Duration(days: 365 * 3))
         .toIso8601String()
         .split('T')[0];
     await db.delete(

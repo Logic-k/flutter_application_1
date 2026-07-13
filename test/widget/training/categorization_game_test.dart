@@ -141,8 +141,8 @@ void main() {
 
     expect(find.text('훈련 완료!'), findsOneWidget);
     expect(find.text('10문제 중 10개 정답'), findsOneWidget);
-    // logic 점수는 0-10 스케일로 저장된다 (10/10 정답 → 10.0)
-    verify(() => mockUser.setCognitiveScore('logic', 10.0)).called(1);
+    // logic 점수는 0-100 스케일로 저장된다 (10/10 정답 → 100.0)
+    verify(() => mockUser.setCognitiveScore('logic', 100.0)).called(1);
   });
 
   testWidgets('CategorizationGame: 진행 바(LinearProgressIndicator)가 표시된다',

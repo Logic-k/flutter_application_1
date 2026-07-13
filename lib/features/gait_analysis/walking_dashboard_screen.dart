@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:go_router/go_router.dart';
 import 'pedometer_manager.dart';
 import '../../core/ml_widgets.dart';
 import '../../core/theme.dart';
@@ -43,24 +42,12 @@ class _WalkingDashboardScreenState extends State<WalkingDashboardScreen> {
   Widget build(BuildContext context) {
     final pedometer = context.watch<PedometerManager>();
     final progress = (pedometer.todaySteps / 10000).clamp(0.01, 1.0);
+    // 걸음 수 기준 활동 시간 추정 (약 100보/분)
+    final activityMinutes = (pedometer.todaySteps / 100).floor();
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('생활습관'),
-        actions: [
-          Container(
-            margin: const EdgeInsets.only(right: 16),
-            decoration: BoxDecoration(
-              color: MLColors.surfaceAlt,
-              shape: BoxShape.circle,
-              border: Border.all(color: MLColors.line),
-            ),
-            child: IconButton(
-              icon: const Icon(Icons.history_rounded, color: MLColors.textSoft),
-              onPressed: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('지난 보행 기록을 불러오는 중입니다...'))),
-            ),
-          ),
-        ],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator(color: MLColors.primary))
@@ -97,34 +84,7 @@ class _WalkingDashboardScreenState extends State<WalkingDashboardScreen> {
                   ),
                   const SizedBox(height: 20),
 
-                  // 2. 정밀 분석 CTA
-                  GestureDetector(
-                    onTap: () => context.push('/precise_gait_analysis'),
-                    child: MLHeroCard(
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: const [
-                                Text('보행 정밀 분석', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w900)),
-                                SizedBox(height: 4),
-                                Text('3분간의 걸음으로 당신의 뇌 건강 패턴을 분석합니다.', style: TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w600)),
-                              ],
-                            ),
-                          ),
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.15), shape: BoxShape.circle),
-                            child: const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white, size: 16),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // 3. 오늘의 성과 그리드 (MLMetricCard × 4)
+                  // 2. 오늘의 성과 그리드 (MLMetricCard × 4)
                   MLSectionTitle('오늘의 성과'),
                   GridView.count(
                     shrinkWrap: true,
@@ -137,16 +97,13 @@ class _WalkingDashboardScreenState extends State<WalkingDashboardScreen> {
                       MLMetricCard(icon: Icons.directions_walk_rounded, color: MLColors.read, label: '걸음 수', value: pedometer.todaySteps.toString(), unit: '걸음'),
                       MLMetricCard(icon: Icons.map_rounded, color: MLColors.calc, label: '이동 거리', value: pedometer.todayDistance.toStringAsFixed(2), unit: 'km'),
                       MLMetricCard(icon: Icons.local_fire_department_rounded, color: MLColors.bad, label: '소모 칼로리', value: pedometer.todayCalories.toInt().toString(), unit: 'kcal'),
-                      MLMetricCard(icon: Icons.timer_rounded, color: MLColors.good, label: '활동 시간', value: '0', unit: '분'),
+                      MLMetricCard(icon: Icons.timer_rounded, color: MLColors.good, label: '활동 시간', value: activityMinutes.toString(), unit: '분'),
                     ],
                   ),
                   const SizedBox(height: 24),
 
                   // 4. 주간 기록 차트
-                  MLSectionTitle(
-                    '주간 활동 추이',
-                    trailing: TextButton(onPressed: () {}, child: const Text('상세보기')),
-                  ),
+                  MLSectionTitle('주간 활동 추이'),
                   MLCard(
                     padding: const EdgeInsets.all(16),
                     child: SizedBox(
@@ -172,8 +129,19 @@ class _WalkingDashboardScreenState extends State<WalkingDashboardScreen> {
       stepMap[row['date'] as String] = (row['steps'] ?? 0) as int;
     }
 
-    final groups = <BarChartGroupData>[];
     final now = DateTime.now();
+    // 실제 최대 걸음 수에 맞춰 축 상한을 정한다 (목표선 12000이 항상
+    // 보이도록 최소 12000, 초과 시 값이 잘리지 않도록 1.15배 여유)
+    double peak = 0;
+    for (int i = 6; i >= 0; i--) {
+      final dayKey =
+          now.subtract(Duration(days: i)).toIso8601String().split('T')[0];
+      final s = (stepMap[dayKey] ?? 0).toDouble();
+      if (s > peak) peak = s;
+    }
+    final double maxY = peak > 12000 ? peak * 1.15 : 12000;
+
+    final groups = <BarChartGroupData>[];
     for (int i = 6; i >= 0; i--) {
       final day = now.subtract(Duration(days: i));
       final dayKey = day.toIso8601String().split('T')[0];
@@ -184,14 +152,14 @@ class _WalkingDashboardScreenState extends State<WalkingDashboardScreen> {
           width: 16,
           color: MLColors.primary,
           borderRadius: BorderRadius.circular(8),
-          backDrawRodData: BackgroundBarChartRodData(show: true, toY: 12000, color: MLColors.primary.withValues(alpha: 0.10)),
+          backDrawRodData: BackgroundBarChartRodData(show: true, toY: maxY, color: MLColors.primary.withValues(alpha: 0.10)),
         ),
       ]));
     }
 
     return BarChartData(
       alignment: BarChartAlignment.spaceEvenly,
-      maxY: 12000,
+      maxY: maxY,
       barTouchData: BarTouchData(enabled: true),
       titlesData: FlTitlesData(
         show: true,

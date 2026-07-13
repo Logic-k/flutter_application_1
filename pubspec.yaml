@@ -64,10 +64,12 @@ dependencies:
   url_launcher: ^6.3.2
   image_picker: ^1.1.2
   google_generative_ai: ^0.4.6
+  flutter_gemma: ^0.2.0
   http: ^1.2.2
   flutter_svg: ^2.0.10
   table_calendar: ^3.1.2
   timezone: ^0.11.0
+  crypto: ^3.0.7
 
 dev_dependencies:
   flutter_test:

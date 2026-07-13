@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'services/voice_service.dart';
 
 enum AppFontSize {
   normal,
@@ -34,6 +35,7 @@ class SettingsProvider extends ChangeNotifier {
     _fontSize = AppFontSize.values[fontSizeIndex];
     _voiceGuidanceEnabled = prefs.getBool('voice_guidance') ?? true;
     _hapticFeedbackEnabled = prefs.getBool('haptic_feedback') ?? true;
+    VoiceService.voiceEnabled = _voiceGuidanceEnabled;
     notifyListeners();
   }
 
@@ -46,6 +48,8 @@ class SettingsProvider extends ChangeNotifier {
 
   Future<void> setVoiceGuidance(bool enabled) async {
     _voiceGuidanceEnabled = enabled;
+    // 게임 등에서 직접 호출하는 VoiceService에도 즉시 반영
+    VoiceService.voiceEnabled = enabled;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('voice_guidance', enabled);
     notifyListeners();

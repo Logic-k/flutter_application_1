@@ -12,6 +12,7 @@ class RegisterScreen extends StatefulWidget {
 
 class _RegisterScreenState extends State<RegisterScreen> {
   final _usernameController = TextEditingController();
+  final _nameController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   final _ageController = TextEditingController();
@@ -24,12 +25,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   String _selectedGoal = '예방';
   bool _isError = false;
+  String _errorText = '모든 필수 필드를 정확히 입력해 주세요.';
 
   static const _bloodTypes = ['모름', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+
+  // 화면 라벨 → 저장용 goal 코드 (시드/DB와 포맷 일치)
+  static const _goalCodes = {
+    '예방': 'prevention',
+    '걱정': 'concern',
+    '가족 관리': 'family',
+  };
 
   @override
   void dispose() {
     _usernameController.dispose();
+    _nameController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     _ageController.dispose();
@@ -39,29 +49,47 @@ class _RegisterScreenState extends State<RegisterScreen> {
     super.dispose();
   }
 
+  void _fail(String message) {
+    setState(() {
+      _isError = true;
+      _errorText = message;
+    });
+  }
+
   Future<void> _handleRegister() async {
     if (_usernameController.text.isEmpty ||
+        _nameController.text.isEmpty ||
         _passwordController.text.isEmpty ||
         _ageController.text.isEmpty ||
         _weightController.text.isEmpty) {
-      setState(() => _isError = true);
+      _fail('모든 필수 필드를 정확히 입력해 주세요.');
       return;
     }
 
     if (_passwordController.text != _confirmPasswordController.text) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('비밀번호가 일치하지 않습니다.')),
-      );
+      _fail('비밀번호가 일치하지 않습니다.');
       return;
     }
 
-    final int age = int.tryParse(_ageController.text) ?? 40;
-    final double weight = double.tryParse(_weightController.text) ?? 60.0;
+    // 나이/체중은 숫자만 허용 (조용히 기본값으로 대체하지 않음)
+    final int? age = int.tryParse(_ageController.text);
+    if (age == null || age < 1 || age > 120) {
+      _fail('나이를 1~120 사이 숫자로 입력해 주세요.');
+      return;
+    }
+    final double? weight = double.tryParse(_weightController.text);
+    if (weight == null || weight < 20 || weight > 300) {
+      _fail('체중을 20~300(kg) 사이 숫자로 입력해 주세요.');
+      return;
+    }
+
+    final goalCode = _goalCodes[_selectedGoal] ?? 'prevention';
 
     final success = await context.read<UserProvider>().register(
       _usernameController.text,
+      _nameController.text,
       _passwordController.text,
-      _selectedGoal,
+      goalCode,
       age,
       weight,
       bloodType: _selectedBloodType == '모름' ? null : _selectedBloodType,
@@ -71,9 +99,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
 
     if (success) {
-      if (mounted) context.pushReplacement('/');
+      // 신규 가입자는 동의 → 사용 목적 → 초기 평가 순으로 진행
+      if (mounted) context.go('/consent');
     } else {
-      setState(() => _isError = true);
+      // register 실패의 대표 원인은 아이디 중복 (users.username UNIQUE)
+      _fail('가입에 실패했습니다. 이미 사용 중인 아이디일 수 있습니다.');
     }
   }
 
@@ -106,7 +136,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
               const SizedBox(height: 40),
               TextField(
                 controller: _usernameController,
-                decoration: const InputDecoration(labelText: '아이디'),
+                decoration: const InputDecoration(labelText: '아이디 (로그인에 사용)'),
+              ),
+              const SizedBox(height: 20),
+              TextField(
+                controller: _nameController,
+                decoration: const InputDecoration(labelText: '이름 (화면에 표시될 이름)'),
               ),
               const SizedBox(height: 20),
               TextField(
@@ -222,7 +257,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 Padding(
                   padding: const EdgeInsets.only(bottom: 12.0),
                   child: Text(
-                    '모든 필수 필드를 정확히 입력해 주세요.',
+                    _errorText,
                     style: TextStyle(color: theme.colorScheme.error, fontSize: 13),
                   ),
                 ),

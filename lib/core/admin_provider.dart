@@ -11,7 +11,7 @@ class AdminProvider extends ChangeNotifier {
 
   int totalUsers = 0;
   int dauCount = 0;
-  int newUsersThisWeek = 0;
+  int weeklyActiveUsers = 0;
   List<Map<String, dynamic>> allUsers = [];
   List<Map<String, dynamic>> atRiskUsers = [];
   Map<String, double> avgScores = {};
@@ -49,7 +49,7 @@ class AdminProvider extends ChangeNotifier {
     try {
       totalUsers = await _db.getTotalUserCount();
       dauCount = await _db.getDauCount();
-      newUsersThisWeek = await _db.getNewUsersThisWeek();
+      weeklyActiveUsers = await _db.getWeeklyActiveUsers();
       allUsers = await _db.getAllUsers();
       atRiskUsers = await _db.getAtRiskUsers();
       avgScores = await _db.getAvgScoresByCategory();

@@ -18,7 +18,6 @@ import '../features/auth/login_screen.dart';
 import '../features/auth/register_screen.dart';
 import '../features/profile/profile_screen.dart';
 import '../features/gait_analysis/gait_screen.dart';
-import '../features/gait_analysis/precise_analysis_screen.dart';
 import '../features/diary/diary_screen.dart';
 import '../features/diary/diary_book_screen.dart';
 import '../features/profile/guardian_link_screen.dart';
@@ -41,6 +40,9 @@ import '../features/admin/admin_inquiry_detail_screen.dart';
 import '../features/reports/clinical_report_options_screen.dart';
 import '../features/voice_assessment/voice_assessment_screen.dart';
 import '../features/ai_chat/ai_chat_screen.dart';
+import '../features/settings/model_download_screen.dart';
+import '../features/settings/settings_screen.dart';
+import '../features/health/health_input_screen.dart';
 import 'admin_provider.dart';
 import 'user_provider.dart';
 
@@ -57,6 +59,16 @@ GoRouter createAppRouter(
       final isAuthRoute = loc == '/login' || loc == '/register';
       final isAdminRoute = loc.startsWith('/admin') && loc != '/admin_login';
 
+      // 온보딩(동의→목적→초기평가) 플로우 경로
+      const onboardingRoutes = {
+        '/consent',
+        '/onboarding',
+        '/assessment',
+        '/cognitive_tasks',
+        '/assessment_result',
+      };
+      final needsOnboarding = isLoggedIn && !userProvider.hasCompletedOnboarding;
+
       // 관리자 포털 가드: 미로그인 시 /admin_login으로
       if (isAdminRoute && !adminProvider.isAdminLoggedIn) {
         return '/admin_login';
@@ -65,7 +77,13 @@ GoRouter createAppRouter(
       // 일반 앱 인증 가드 (admin 경로 제외)
       if (!loc.startsWith('/admin')) {
         if (!isLoggedIn && !isAuthRoute) return '/login';
-        if (isLoggedIn && isAuthRoute) return '/';
+        if (isLoggedIn && isAuthRoute) {
+          return needsOnboarding ? '/consent' : '/';
+        }
+        // 신규 가입자는 동의·온보딩·초기평가를 마칠 때까지 본 화면 진입 불가
+        if (needsOnboarding && !onboardingRoutes.contains(loc)) {
+          return '/consent';
+        }
       }
       return null;
     },
@@ -135,10 +153,6 @@ GoRouter createAppRouter(
       ),
       GoRoute(path: '/gait', builder: (context, state) => const GaitScreen()),
       GoRoute(
-        path: '/precise_gait_analysis',
-        builder: (context, state) => const PreciseGaitAnalysisScreen(),
-      ),
-      GoRoute(
         path: '/memory_garden',
         builder: (context, state) => const DiaryScreen(),
       ),
@@ -169,6 +183,18 @@ GoRouter createAppRouter(
       GoRoute(
         path: '/profile',
         builder: (context, state) => const ProfileScreen(),
+      ),
+      GoRoute(
+        path: '/ondevice-ai',
+        builder: (context, state) => const ModelDownloadScreen(),
+      ),
+      GoRoute(
+        path: '/settings',
+        builder: (context, state) => const SettingsScreen(),
+      ),
+      GoRoute(
+        path: '/health_input',
+        builder: (context, state) => const HealthInputScreen(),
       ),
 
       // --- CS센터 (사용자) ---

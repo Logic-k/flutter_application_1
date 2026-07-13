@@ -24,11 +24,18 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   String? _imagePath;
 
+  // 사진 경로는 계정별로 저장한다 (계정 전환 시 이전 사용자 사진 노출 방지)
+  String get _imagePrefKey =>
+      'profile_image_path_${context.read<UserProvider>().currentUser?['id']}';
+
   @override
   void initState() {
     super.initState();
     final user = context.read<UserProvider>();
-    _nameController = TextEditingController(text: user.currentUser?['username']);
+    final currentName = user.currentUser?['name'] as String?;
+    _nameController = TextEditingController(
+      text: currentName?.isNotEmpty == true ? currentName : user.currentUser?['username'],
+    );
     _ageController = TextEditingController(text: user.age?.toString());
     _weightController = TextEditingController(text: user.weight?.toString());
     _bloodTypeController = TextEditingController(text: user.bloodType);
@@ -38,10 +45,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   Future<void> _loadImagePath() async {
+    final key = _imagePrefKey;
     final prefs = await SharedPreferences.getInstance();
-    final path = prefs.getString('profile_image_path');
+    final path = prefs.getString(key);
     if (path != null && File(path).existsSync()) {
-      setState(() => _imagePath = path);
+      if (mounted) setState(() => _imagePath = path);
     }
   }
 
@@ -77,8 +85,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
     if (source == null && _imagePath != null) {
       // 사진 제거
+      final key = _imagePrefKey;
       final prefs = await SharedPreferences.getInstance();
-      await prefs.remove('profile_image_path');
+      await prefs.remove(key);
       setState(() => _imagePath = null);
       return;
     }
@@ -87,6 +96,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     final picker = ImagePicker();
     final picked = await picker.pickImage(source: source, imageQuality: 80);
     if (picked == null || !mounted) return;
+    final key = _imagePrefKey;
 
     // 앱 문서 디렉토리에 복사하여 영구 저장
     final appDir = await getApplicationDocumentsDirectory();
@@ -94,8 +104,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     final saved = await File(picked.path).copy('${appDir.path}/$fileName');
 
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('profile_image_path', saved.path);
-    setState(() => _imagePath = saved.path);
+    await prefs.setString(key, saved.path);
+    if (mounted) setState(() => _imagePath = saved.path);
   }
 
   @override
@@ -113,9 +123,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     if (_formKey.currentState!.validate()) {
       final userProvider = context.read<UserProvider>();
 
-      if (_nameController.text != userProvider.currentUser?['username']) {
-        await userProvider.updateUsername(_nameController.text);
-      }
+      await userProvider.updateName(_nameController.text);
 
       await userProvider.updateMedicalInfo(
         age: int.tryParse(_ageController.text),
@@ -197,7 +205,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             const SizedBox(height: 16),
             _buildTextField(
               controller: _nameController,
-              label: '이름',
+              label: '이름 (화면에 표시될 이름)',
               icon: Icons.person_outline,
               validator: (value) => (value == null || value.isEmpty) ? '이름을 입력해주세요' : null,
             ),
