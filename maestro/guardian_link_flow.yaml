@@ -1,4 +1,4 @@
-﻿appId: com.example.flutter_application_1
+﻿appId: com.teammemorylink.memorylink
 ---
 # 보호자 안심 연결 카드 UI 테스트 (프로필 화면에서 시각적 확인)
 - runFlow: helpers/login_helper.yaml

@@ -1,4 +1,4 @@
-﻿appId: com.example.flutter_application_1
+﻿appId: com.teammemorylink.memorylink
 ---
 # 소셜 랭킹 (인구 통계학적 비교) 위젯 테스트
 - runFlow: helpers/login_helper.yaml

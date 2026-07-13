@@ -1,4 +1,4 @@
-appId: com.example.flutter_application_1
+appId: com.teammemorylink.memorylink
 ---
 - runFlow: helpers/login_helper.yaml
 

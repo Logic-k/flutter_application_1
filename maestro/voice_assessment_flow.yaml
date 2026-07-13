@@ -1,4 +1,4 @@
-﻿appId: com.example.flutter_application_1
+﻿appId: com.teammemorylink.memorylink
 ---
 # 음성 진단 화면 UI 테스트
 - runFlow: helpers/login_helper.yaml

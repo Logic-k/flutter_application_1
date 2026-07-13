@@ -1,4 +1,4 @@
-appId: com.example.flutter_application_1
+appId: com.teammemorylink.memorylink
 ---
 # 조건부 실행: "확인" 버튼이 보이면 탭
 - tapOn: "확인"

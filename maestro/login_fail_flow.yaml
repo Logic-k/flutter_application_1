@@ -1,4 +1,4 @@
-appId: com.example.flutter_application_1
+appId: com.teammemorylink.memorylink
 ---
 # 로그인 실패 케이스 테스트
 - launchApp:

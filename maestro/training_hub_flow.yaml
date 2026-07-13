@@ -1,4 +1,4 @@
-﻿appId: com.example.flutter_application_1
+﻿appId: com.teammemorylink.memorylink
 ---
 # 인지훈련 허브 및 게임 진입 테스트
 - runFlow: helpers/login_helper.yaml

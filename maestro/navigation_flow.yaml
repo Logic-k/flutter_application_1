@@ -1,4 +1,4 @@
-appId: com.example.flutter_application_1
+appId: com.teammemorylink.memorylink
 ---
 # 하단 네비게이션 탭 전환 테스트
 # 실제 좌표 (1080x2400): 홈=30%, 인지훈련=43%, 생활습관=53%, 리포트=64%, 내정보=74% / y=93%
