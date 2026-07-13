@@ -62,7 +62,10 @@ service cloud.firestore {
     //   (토큰 자체가 비밀 자격 증명 역할)
     //   쓰기는 본인 앱(uid 소유)만 허용한다.
     match /guardian_views/{token} {
-      allow read: if true; // 토큰(문서 ID)을 알아야만 접근 가능 = 사실상 비밀키
+      // 토큰(문서 ID)을 알아야만 단일 문서 조회 가능 = 사실상 비밀키.
+      // list를 열면 토큰 열거가 가능해지므로 반드시 get만 허용한다.
+      allow get: if true;
+      allow list: if false;
       allow create, update: if isSignedIn()
         && request.resource.data.ownerUid == request.auth.uid;
       allow delete: if isSignedIn()
