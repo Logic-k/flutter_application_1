@@ -97,7 +97,7 @@ MemoryLink는 **기억력 저하가 걱정되는 60~80대 사용자와 그 가�
 | 📈 인지 평가 영역 | **4개** (계산·논리·기억·집중) |
 | 🎯 적응형 난이도 | **10단계** |
 | 📋 PDF 리포트 | **4페이지** |
-| 🧪 자동화 테스트 | **단위 63 · 위젯 36 · 통합 5 · Maestro 19** |
+| 🧪 자동화 테스트 | **flutter test 117 · Maestro E2E 17 flow** |
 | 📲 화면 수 | **30+** |
 
 </div>
@@ -379,10 +379,9 @@ lib/
 
 | 테스트 유형 | 수량 |
 |---|---|
-| 단위 테스트 | 63개 |
-| 위젯 테스트 | 36개 |
+| flutter test (단위·위젯) | 117개 통과 |
 | 통합 테스트 | 5개 |
-| Maestro E2E flow | 19개 (게이팅) + 1개 (스크린샷) |
+| Maestro E2E flow | 17개 통과 (게이팅) + 스크린샷 투어 |
 
 ```bash
 flutter analyze
@@ -399,7 +398,7 @@ flutter build apk
 
 | 영역 | 상태 |
 |---|---|
-| 인증 | 로컬 SQLite 기반 (Firebase Auth 미사용) |
+| 인증 | 로컬 SQLite 계정 + Firebase Anonymous Auth (Firestore 소유권 모델 적용) |
 | 인지 훈련 | 7종 게임 + 적응형 난이도 완료 |
 | 보행 분석 | 센서 기반 분석 완료, HealthKit 실기기 검증 필요 |
 | AI 대화 | Gemini REST API + 로컬 폴백 완료 |
@@ -407,6 +406,21 @@ flutter build apk
 | 보호자 연계 | Firestore 공유 + 로컬 이상 알림 완료 |
 | 음성 평가 | STT + 규칙 기반 지표(TTR/WPM) 완료 |
 | 관리자 | CS 관리 + 사용자 조회 화면 완료 |
+| 설정·건강 기록 | 통합 설정 화면(`/settings`) + 혈압·혈당 등 건강 기록 입력 완료 |
+
+</details>
+
+<details>
+<summary>🚀 출시 준비 현황 펼치기 (2026-07 기준)</summary>
+
+| 항목 | 상태 |
+|---|---|
+| 패키지명 | `com.teammemorylink.memorylink` 전환 완료 |
+| release AAB 빌드 | 서명 빌드 성공 (R8 minify + resource shrink) |
+| Firebase Anonymous Auth | 도입 완료 — 앱 시작 시 자동 익명 로그인, 실패 시 로컬 모드 |
+| Firestore 보안 규칙 | 소유권 기반 규칙 작성·배포 완료 (비인증 접근 차단 검증) |
+| 개인정보 처리방침 | [memorylink-7af26.web.app/privacy.html](https://memorylink-7af26.web.app/privacy.html) 배포 완료 |
+| 남은 작업 | 실기기 QA (센서·알림·Health Connect·PDF 공유·보호자 딥링크) |
 
 </details>
 

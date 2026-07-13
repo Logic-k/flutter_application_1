@@ -94,3 +94,8 @@ MemoryLInkApp_Design/**/*.pdf
 # AI 코딩 도구 작업 폴더
 .omo/
 .firebase/
+
+# 공모전 제출 문서 (개인정보 메타데이터 포함 — 로컬 보관, 공개 저장소 제외)
+2026 한이음 드림업 개발보고서_MemoryLink_최종.docx
+2026년_제작설계서_MemoryLink_최종.pptx
+[[]서식2[]] 2026년_제작설계서_MemoryLink.pptx
