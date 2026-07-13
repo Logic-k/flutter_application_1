@@ -1,5 +1,15 @@
 # MemoryLink 현재 상태 및 로드맵
 
+> **2026-07-12 갱신 요약** (이 저장소에서 직접 실행 검증):
+> - `flutter analyze` 에러 0 (info 3), `flutter test` **117/117 통과**, **release AAB 빌드 성공(64.3MB, 서명됨)**.
+> - P0 보안·릴리스 항목 다수 반영됨: 비밀번호 sha256+salt 해싱, 온보딩 상태 DB 통합,
+>   DifficultyProvider username 재바인딩, 패키지명 `com.teammemorylink.memorylink`,
+>   release INTERNET 권한, 서명 크래시 가드, R8 minify, 보호자 토큰 `Random.secure()`.
+> - 신규: **통합 설정 화면(`/settings`)**, **FINGER 건강 기록(`/health_input`: 수면·혈압·혈당·식이+추세, DB v8 `health_logs`)**, `firestore.rules`, `web/privacy.html`, `RELEASE_CHECKLIST.md`.
+> - 남은 출시 블로커는 `RELEASE_CHECKLIST.md` §2 참조 (Firebase Auth 도입, 방침 배포, 실기기 QA).
+>
+> 아래 본문(6/8 기준)은 이력 보존용이며, 최신 릴리스 판단은 위 요약과 RELEASE_CHECKLIST를 따른다.
+
 > 기준일: 2026-06-08
 > 문서 역할: 저장소의 현재 구현, 외부 연동, QA 근거, 릴리스 차단 요인, 다음 작업 순서를 기록하는 권위 문서
 > 제품 단계: 연구·캡스톤 프로토타입. 의료기기 또는 상용 서비스의 완성·검증 상태를 의미하지 않는다.
