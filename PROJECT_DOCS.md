@@ -1,5 +1,18 @@
 # MemoryLink 프로젝트 문서
 
+## 2026-07-23 인지훈련 게임화 기준
+
+- 인지훈련은 8개 활동의 과정 지도로 구성한다. 신규 사용자는 비교, 수열,
+  그림 스도쿠, 같은 모양 찾기, 일상 회상 5개 활동부터 시작한다.
+- 완료 기록, XP, 레벨, 숙련도, 연속 학습, 잠금 해제는 **SQLite v9**에
+  사용자 ID별로 저장한다.
+- `training_scores`는 기존 임상/리포트 점수 이력이고, XP와 연속 학습은
+  격려용 과정 지표다. 두 값을 서로 임상 지표로 해석하지 않는다.
+- 게임화 API 연동은 이번 범위에서 보류한다. HTTP 저장소, Firestore 동기화,
+  DTO, 동기화 큐, 백엔드 인증은 구현하지 않는다.
+- 검증 기준 SDK는 Flutter 3.41.5이다. CI Android API 33과 로컬
+  `QA_Device` Android API 36을 사용한다.
+
 ---
 
 ## 목차
@@ -348,6 +361,10 @@ flutter_application_1/            ← 프로젝트 최상위 폴더
 |--------|----------|
 | `users` | 사용자 계정 (아이디, 비밀번호, 나이, 체중, 목표 등) |
 | `training_scores` | 인지 훈련 점수 이력 |
+| `training_attempts` | 활동별 완료 시도, 획득 XP, 서울 기준 완료일 |
+| `training_user_progress` | 사용자별 총 XP와 현재/최장 연속 학습 |
+| `training_activity_progress` | 활동별 최고 점수, 숙련도, 완료 횟수 |
+| `training_unlocks` | 사용자별 열린 활동과 해제 근거 |
 | `daily_steps` | 일별 걸음 수·칼로리·거리 |
 | `checklist` | 일일 할 일 체크 |
 | `daily_active_users` | 사용자별 일일 활성 기록(DAU, 사용자/날짜 중복 방지) |
@@ -760,15 +777,12 @@ A. `assets/fonts/NanumGothic-Bold.ttf` 파일 위치와 `pubspec.yaml` 폰트 �
 
 ## 11. QA 현황과 현재 한계
 
-- 단위 테스트 63개
-- 위젯 테스트 36개
-- 통합 테스트 5개
-- 게이팅 Maestro flow 19개
-- 스크린샷 flow 1개
-- 현재 `flutter analyze`, `flutter test`, `flutter build`는 green이 아니다.
-- 현재 환경에는 Android 에뮬레이터 없음.
-- `lib/features/training_corrupted/training_hub_screen.dart`는 파일시스템 손상 상태이며
-  저장소 전체 분석/테스트/빌드를 방해할 수 있습니다.
+- 기본 검증: `flutter analyze --no-fatal-infos`, `flutter test`
+- Android 통합 기준: CI API 33, 로컬 `QA_Device` API 36
+- 게임화 검증: 초기 잠금, 완료, XP/숙련도, 다음 활동 해제, 재시작 복원,
+  중복 탭, 오프라인, 글자 크기 1.0/1.2/1.4
+- Play Store 업로드 전에는 release AAB와 별도로 실기기 센서, 알림,
+  Health Connect, PDF 공유를 재검증해야 한다.
 
-*문서 최종 수정일: 2026년 6월 6일*
+*문서 최종 수정일: 2026년 7월 23일*
 *앱 버전: 1.0.0+1*

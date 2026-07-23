@@ -7,6 +7,7 @@ import '../features/assessment/assessment_screen.dart';
 import '../features/assessment/cognitive_tasks_screen.dart';
 import '../features/assessment/result_screen.dart';
 import '../features/training/training_hub_page.dart';
+import '../features/training/domain/training_catalog.dart';
 import '../features/training/games/comparison_game.dart';
 import '../features/training/games/sequence_game.dart';
 import '../features/training/games/shape_sudoku_game.dart';
@@ -38,7 +39,7 @@ import '../features/admin/admin_notice_edit_screen.dart';
 import '../features/admin/admin_faq_edit_screen.dart';
 import '../features/admin/admin_inquiry_detail_screen.dart';
 import '../features/reports/clinical_report_options_screen.dart';
-import '../features/voice_assessment/voice_assessment_screen.dart';
+import '../features/voice_assessment/voice_assessment_blocked_screen.dart';
 import '../features/ai_chat/ai_chat_screen.dart';
 import '../features/settings/model_download_screen.dart';
 import '../features/settings/settings_screen.dart';
@@ -124,31 +125,31 @@ GoRouter createAppRouter(
         builder: (context, state) => const TrainingHubScreen(),
       ),
       GoRoute(
-        path: '/game/comparison',
+        path: trainingActivityById('comparison').route,
         builder: (context, state) => const ComparisonGame(),
       ),
       GoRoute(
-        path: '/game/sequence',
+        path: trainingActivityById('sequence').route,
         builder: (context, state) => const SequenceGame(),
       ),
       GoRoute(
-        path: '/game/sudoku',
+        path: trainingActivityById('shape_sudoku').route,
         builder: (context, state) => const ShapeSudokuGame(),
       ),
       GoRoute(
-        path: '/game/multiplication',
+        path: trainingActivityById('multiplication').route,
         builder: (context, state) => const MultiplicationGame(),
       ),
       GoRoute(
-        path: '/game/shape_match',
+        path: trainingActivityById('shape_match').route,
         builder: (context, state) => const ShapeMatchGame(),
       ),
       GoRoute(
-        path: '/game/categorization',
+        path: trainingActivityById('categorization').route,
         builder: (context, state) => const CategorizationGame(),
       ),
       GoRoute(
-        path: '/game/reading',
+        path: trainingActivityById('sentence_reading').route,
         builder: (context, state) => const SentenceReadingGame(),
       ),
       GoRoute(path: '/gait', builder: (context, state) => const GaitScreen()),
@@ -166,7 +167,7 @@ GoRouter createAppRouter(
       ),
       GoRoute(
         path: '/voice_assessment',
-        builder: (context, state) => const VoiceAssessmentScreen(),
+        builder: (context, state) => const VoiceAssessmentBlockedScreen(),
       ),
       GoRoute(
         path: '/ai_chat',
@@ -177,7 +178,7 @@ GoRouter createAppRouter(
         builder: (context, state) => const WalkingDashboardScreen(),
       ),
       GoRoute(
-        path: '/training/recall',
+        path: trainingActivityById('daily_recall').route,
         builder: (context, state) => const DailyRecallPage(),
       ),
       GoRoute(

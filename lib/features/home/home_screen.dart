@@ -6,9 +6,9 @@ import '../gait_analysis/pedometer_manager.dart';
 import '../diary/diary_provider.dart';
 import '../../core/ai/ai_chat_service.dart';
 import '../../core/user_provider.dart';
-import '../../core/database_helper.dart';
 import '../../core/ml_widgets.dart';
 import '../../core/theme.dart';
+import '../training/training_progress_provider.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -18,8 +18,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int _todayTrainingCount = 0;
-
   @override
   void initState() {
     super.initState();
@@ -31,12 +29,6 @@ class _HomeScreenState extends State<HomeScreen> {
         context.read<UserProvider>().currentUser?['id'] as int?;
     if (userId == null) return;
     await context.read<DiaryProvider>().loadMonth(userId, DateTime.now());
-    try {
-      final count = await DatabaseHelper().getTodayTrainingCount(userId);
-      if (mounted) setState(() => _todayTrainingCount = count);
-    } catch (e) {
-      debugPrint('오늘 훈련 수 로드 실패: $e');
-    }
   }
 
   @override
@@ -44,6 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final theme = Theme.of(context);
     final userProvider = context.watch<UserProvider>();
     final pedometer = context.watch<PedometerManager>();
+    final trainingProgress = context.watch<TrainingProgressProvider>();
     final todayStr = DateFormat('MM월 dd일 EEEE', 'ko_KR').format(DateTime.now());
 
     return Scaffold(
@@ -76,7 +69,13 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildHeaderCard(context, userProvider, pedometer, todayStr),
+            _buildHeaderCard(
+              context,
+              userProvider,
+              pedometer,
+              trainingProgress.todayDistinctActivityCount,
+              todayStr,
+            ),
             const SizedBox(height: 20),
             _buildAiAssistantCard(context),
             const SizedBox(height: 20),
@@ -106,6 +105,7 @@ class _HomeScreenState extends State<HomeScreen> {
     BuildContext context,
     UserProvider userProvider,
     PedometerManager pedometer,
+    int todayTrainingCount,
     String todayStr,
   ) {
     final stepProgress = (pedometer.todaySteps / 10000).clamp(0.0, 1.0);
@@ -138,7 +138,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Expanded(child: _buildQuickStat(
                 icon: Icons.psychology_rounded,
                 label: '훈련 현황',
-                value: '오늘 $_todayTrainingCount개',
+                value: '오늘 $todayTrainingCount개',
                 progress: null,
               )),
             ],

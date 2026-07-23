@@ -36,6 +36,7 @@ class FloatingPillNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = Theme.of(context);
+    final canShowLabel = MediaQuery.sizeOf(context).width >= 340;
     return SafeArea(
       top: false,
       child: Padding(
@@ -57,28 +58,34 @@ class FloatingPillNav extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: List.generate(items.length, (i) {
                 final on = i == currentIndex;
-                final showLabel = on || !labelOnActiveOnly;
-                return GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTap: () => onTap(i),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    padding: EdgeInsets.symmetric(horizontal: on ? 14 : 10, vertical: 9),
-                    decoration: BoxDecoration(
-                      color: on ? t.colorScheme.primary : Colors.transparent,
-                      borderRadius: BorderRadius.circular(22),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(items[i].icon, size: 22, color: on ? t.colorScheme.onPrimary : MLColors.textFaint),
-                        if (showLabel) ...[
-                          const SizedBox(width: 7),
-                          Text(items[i].label, style: TextStyle(
-                            fontSize: 13, fontWeight: FontWeight.w800,
-                            color: on ? t.colorScheme.onPrimary : MLColors.textFaint)),
+                final showLabel = canShowLabel && (on || !labelOnActiveOnly);
+                return Semantics(
+                  label: items[i].label,
+                  button: true,
+                  selected: on,
+                  excludeSemantics: true,
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () => onTap(i),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      padding: EdgeInsets.symmetric(horizontal: on ? 14 : 10, vertical: 9),
+                      decoration: BoxDecoration(
+                        color: on ? t.colorScheme.primary : Colors.transparent,
+                        borderRadius: BorderRadius.circular(22),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(items[i].icon, size: 22, color: on ? t.colorScheme.onPrimary : MLColors.textFaint),
+                          if (showLabel) ...[
+                            const SizedBox(width: 7),
+                            Text(items[i].label, style: TextStyle(
+                              fontSize: 13, fontWeight: FontWeight.w800,
+                              color: on ? t.colorScheme.onPrimary : MLColors.textFaint)),
+                          ],
                         ],
-                      ],
+                      ),
                     ),
                   ),
                 );

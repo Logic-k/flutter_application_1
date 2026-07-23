@@ -5,6 +5,7 @@ import 'package:flutter_application_1/core/settings_provider.dart';
 import 'package:flutter_application_1/features/diary/diary_provider.dart';
 import 'package:flutter_application_1/features/gait_analysis/pedometer_manager.dart';
 import 'package:flutter_application_1/features/training/difficulty_provider.dart';
+import 'package:flutter_application_1/features/training/training_progress_provider.dart';
 
 // --- Core Mocks ---
 class MockDatabaseHelper extends Mock implements DatabaseHelper {}
@@ -14,6 +15,9 @@ class MockUserProvider extends Mock implements UserProvider {}
 class MockPedometerManager extends Mock implements PedometerManager {}
 
 class MockDifficultyProvider extends Mock implements DifficultyProvider {}
+
+class MockTrainingProgressProvider extends Mock
+    implements TrainingProgressProvider {}
 
 class MockDiaryProvider extends Mock implements DiaryProvider {}
 

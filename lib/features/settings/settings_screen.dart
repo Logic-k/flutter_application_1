@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../core/user_provider.dart';
+import '../training/training_progress_provider.dart';
 import '../../core/settings_provider.dart';
 import '../../core/ml_widgets.dart';
 import '../../core/theme.dart';
@@ -416,24 +417,63 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   void _showResetDialog(UserProvider userProvider) {
+    var isResetting = false;
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('데이터 초기화'),
-        content: const Text('지금까지의 인지 훈련 점수와 활동 기록이 모두 삭제됩니다. 정말 초기화하시겠습니까? (계정은 유지됩니다)'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('취소')),
-          TextButton(
-            onPressed: () {
-              userProvider.resetMeasurementData();
-              Navigator.pop(ctx);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('데이터가 초기화되었습니다.')),
-              );
-            },
-            child: const Text('초기화', style: TextStyle(color: MLColors.warn)),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          title: const Text('데이터 초기화'),
+          content: const Text(
+            '인지 훈련 점수와 활동 기록, XP, 숙련도, 연속 학습 기록이 모두 삭제됩니다. '
+            '계정은 유지되며 시작 활동은 다시 열립니다.',
           ),
-        ],
+          actions: [
+            TextButton(
+              onPressed: isResetting ? null : () => Navigator.pop(ctx),
+              child: const Text('취소'),
+            ),
+            TextButton(
+              onPressed: isResetting
+                  ? null
+                  : () async {
+                      setDialogState(() => isResetting = true);
+                      try {
+                        await userProvider.resetMeasurementData();
+                        if (!ctx.mounted || !mounted) return;
+                        await context
+                            .read<TrainingProgressProvider>()
+                            .refresh();
+                        if (!ctx.mounted || !mounted) return;
+                        Navigator.pop(ctx);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('데이터가 초기화되었습니다.'),
+                          ),
+                        );
+                      } catch (_) {
+                        if (!ctx.mounted || !mounted) return;
+                        setDialogState(() => isResetting = false);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              '데이터를 초기화하지 못했습니다. 다시 시도해 주세요.',
+                            ),
+                          ),
+                        );
+                      }
+                    },
+              child: isResetting
+                  ? const SizedBox.square(
+                      dimension: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Text(
+                      '초기화',
+                      style: TextStyle(color: MLColors.warn),
+                    ),
+            ),
+          ],
+        ),
       ),
     );
   }

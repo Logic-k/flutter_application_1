@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:flutter_application_1/core/user_provider.dart';
 import 'package:flutter_application_1/core/settings_provider.dart';
 import 'package:flutter_application_1/features/training/difficulty_provider.dart';
+import 'package:flutter_application_1/features/training/training_progress_provider.dart';
 import 'mock_definitions.dart';
 
 /// 게임/화면 위젯 테스트에 필요한 Provider 트리를 포함해 위젯을 pump한다.
@@ -13,18 +14,24 @@ Future<void> pumpWithProviders(
   Widget widget, {
   UserProvider? userProvider,
   DifficultyProvider? difficultyProvider,
+  TrainingProgressProvider? trainingProgressProvider,
   SettingsProvider? settingsProvider,
 }) async {
   final user = userProvider ?? _buildFakeUserProvider();
   final difficulty = difficultyProvider ??
       DifficultyProvider(username: 'testuser');
   final settings = settingsProvider ?? FakeSettingsProvider();
+  final trainingProgress =
+      trainingProgressProvider ?? MockTrainingProgressProvider();
 
   await tester.pumpWidget(
     MultiProvider(
       providers: [
         ChangeNotifierProvider<UserProvider>.value(value: user),
         ChangeNotifierProvider<DifficultyProvider>.value(value: difficulty),
+        ChangeNotifierProvider<TrainingProgressProvider>.value(
+          value: trainingProgress,
+        ),
         ChangeNotifierProvider<SettingsProvider>.value(value: settings),
       ],
       child: MaterialApp(home: widget),

@@ -36,6 +36,7 @@ void main() {
   final readme = _readDocument(root, 'README.md');
   final projectDocs = _readDocument(root, 'PROJECT_DOCS.md');
   final progress = _readDocument(root, 'PROGRESS.md');
+  final releaseChecklist = _readDocument(root, 'RELEASE_CHECKLIST.md');
   final capstone = _readDocument(root, 'capstone_project_plan_renewal.md');
   final portingGuide = _readOptionalDocument(
     root,
@@ -56,34 +57,34 @@ void main() {
     expect(capstone, isNot(contains('미완성 항목: 온디바이스 LLM 음성 분석')));
   });
 
-  test('문서는 QA 수치와 현재 실행 한계를 정확히 기록한다', () {
-    for (final document in [projectDocs, progress]) {
-      expect(document, contains('단위 테스트 63개'));
-      expect(document, contains('위젯 테스트 36개'));
-      expect(document, contains('통합 테스트 5개'));
-      expect(document, isNot(contains('Maestro 11개')));
-      expect(document, isNot(contains('Maestro QA 자동화 (11개 flow)')));
+  test('문서는 게임화 저장 경계와 Android 검증 기준을 정확히 기록한다', () {
+    for (final document in [projectDocs, progress, releaseChecklist]) {
+      expect(document, contains('SQLite v9'));
+      expect(document, contains('게임화 API 연동은 이번 범위에서 보류'));
+      expect(document, contains('Firestore 동기화'));
     }
-    expect(projectDocs, contains('게이팅 Maestro flow 19개'));
-    expect(projectDocs, contains('스크린샷 flow 1개'));
-    expect(
-      projectDocs,
-      contains(
-        '현재 `flutter analyze`, `flutter test`, `flutter build`는 green이 아니다',
-      ),
+    for (final document in [projectDocs, progress]) {
+      expect(document, contains('Flutter 3.41.5'));
+      expect(document, contains('API 33'));
+      expect(document, contains('API 36'));
+    }
+
+    final databaseHelper = _readDocument(root, 'lib/core/database_helper.dart');
+    final catalog = _readDocument(
+      root,
+      'lib/features/training/domain/training_catalog.dart',
     );
-    // PROGRESS.md는 2026-06-08 Maestro 20/20 통과 이후의 최신 현황을 기록한다.
-    expect(progress, contains('Maestro E2E flow 20개'));
-    expect(progress, contains('green 아님'));
-    expect(progress, contains('Android 에뮬레이터 없음'));
-    expect(projectDocs, contains('Android 에뮬레이터 없음'));
-    expect(
-      progress,
-      contains(
-        '`lib/features/training_corrupted/training_hub_screen.dart`는 '
-        '파일시스템 손상 상태',
-      ),
+    final repository = _readDocument(
+      root,
+      'lib/features/training/data/sqlite_training_progress_repository.dart',
     );
+    expect(databaseHelper, contains('version: 9'));
+    expect(
+      RegExp(r'^  TrainingActivity\(', multiLine: true).allMatches(catalog),
+      hasLength(8),
+    );
+    expect(repository, isNot(contains("package:http")));
+    expect(repository, isNot(contains('cloud_firestore')));
   });
 
   test('문서는 향후 개발 우선순위와 문서 역할을 구분한다', () {

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -20,6 +22,18 @@ class _WalkingDashboardScreenState extends State<WalkingDashboardScreen> {
   void initState() {
     super.initState();
     _loadWeeklyData();
+    unawaited(context.read<PedometerManager>().refreshTracking());
+  }
+
+  Future<void> _toggleTracking(PedometerManager pedometer, bool enabled) async {
+    await pedometer.toggleTracking(enabled);
+    if (!mounted || !enabled || pedometer.isTracking) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('실시간 측정을 사용하려면 신체 활동 권한을 허용해 주세요.'),
+      ),
+    );
   }
 
   Future<void> _loadWeeklyData() async {
@@ -56,6 +70,39 @@ class _WalkingDashboardScreenState extends State<WalkingDashboardScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  MLCard(
+                    child: Row(
+                      children: [
+                        MLIconTile(
+                          icon: Icons.sensors_rounded,
+                          color: pedometer.isTracking ? MLColors.good : MLColors.textSoft,
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text('실시간 보행 측정', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+                              const SizedBox(height: 3),
+                              Text(
+                                pedometer.isTracking
+                                    ? '측정 중입니다. 걸음 수가 자동으로 반영됩니다.'
+                                    : '스위치를 켜고 신체 활동 권한을 허용해 주세요.',
+                                style: const TextStyle(color: MLColors.textSoft, fontSize: 13),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Switch(
+                          value: pedometer.isTracking,
+                          onChanged: (enabled) => _toggleTracking(pedometer, enabled),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
                   // 1. 원형 게이지
                   MLCard(
                     child: SizedBox(

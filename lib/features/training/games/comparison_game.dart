@@ -3,8 +3,11 @@ import 'package:provider/provider.dart';
 import 'dart:math';
 import '../../../core/user_provider.dart';
 import '../../../core/services/voice_service.dart';
+import '../application/training_attempt_input.dart';
+import '../application/training_completion_ui.dart';
 import '../widgets/game_template.dart';
 import '../difficulty_provider.dart';
+import '../training_progress_provider.dart';
 
 class ComparisonGame extends StatefulWidget {
   const ComparisonGame({super.key});
@@ -18,6 +21,11 @@ class _ComparisonGameState extends State<ComparisonGame> {
   int _currentStep = 1;
   final int _totalSteps = 10;
   int _score = 0;
+  late final String _attemptId;
+  late final DateTime _startedAt;
+  TrainingAttemptInput? _completionInput;
+  bool _isSaving = false;
+  bool _isFinished = false;
 
   late String _leftExpr;
   late int _leftVal;
@@ -28,6 +36,8 @@ class _ComparisonGameState extends State<ComparisonGame> {
   @override
   void initState() {
     super.initState();
+    _attemptId = createTrainingAttemptId();
+    _startedAt = DateTime.now();
     _generateProblem();
     _isInitialized = true;
   }
@@ -64,10 +74,17 @@ class _ComparisonGameState extends State<ComparisonGame> {
   }
 
   void _checkAnswer(bool leftSelected) {
-    bool isCorrect = (leftSelected && _leftVal > _rightVal) || (!leftSelected && _rightVal > _leftVal);
+    if (_isSaving || _isFinished) return;
+
+    bool isCorrect =
+        (leftSelected && _leftVal > _rightVal) ||
+        (!leftSelected && _rightVal > _leftVal);
     if (isCorrect) _score++;
 
-    context.read<DifficultyProvider>().updatePerformance(GameCategory.calculation, isCorrect);
+    context.read<DifficultyProvider>().updatePerformance(
+      GameCategory.calculation,
+      isCorrect,
+    );
 
     if (_currentStep < _totalSteps) {
       setState(() {
@@ -75,36 +92,57 @@ class _ComparisonGameState extends State<ComparisonGame> {
         _generateProblem();
       });
     } else {
-      // 0-100 스케일로 저장 (전 카테고리 공통)
-      context.read<UserProvider>().setCognitiveScore('calculation', (_score / _totalSteps) * 100.0);
-      VoiceService().speakSuccess();
-      _showResultDialog();
+      final completedAt = DateTime.now();
+      _completionInput = TrainingAttemptInput(
+        attemptId: _attemptId,
+        userId: context.read<UserProvider>().currentUser!['id'] as int,
+        activityId: 'comparison',
+        completedAt: completedAt,
+        score: (_score / _totalSteps) * 100.0,
+        correctAnswers: _score,
+        totalQuestions: _totalSteps,
+        durationMs: completedAt.difference(_startedAt).inMilliseconds,
+      );
+      setState(() => _isFinished = true);
+      _submitCompletion();
     }
   }
 
-  void _showResultDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        title: const Text('계산 훈련 완료!'),
-        content: Text('$_totalSteps문제 중 $_score문제를 맞히셨습니다.\n난이도가 클라우드와 동기화되었습니다.'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              Navigator.of(context).pop();
-            },
-            child: const Text('확인'),
+  Future<void> _submitCompletion() async {
+    final input = _completionInput;
+    if (input == null || _isSaving) return;
+
+    setState(() => _isSaving = true);
+    try {
+      final result = await context.read<TrainingProgressProvider>().complete(
+        input,
+      );
+      if (!mounted) return;
+      VoiceService().speakSuccess();
+      await showTrainingCompletionResult(context, result);
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _isSaving = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('기록을 저장하지 못했습니다. 다시 시도해 주세요.'),
+          action: SnackBarAction(
+            label: '다시 시도',
+            onPressed: () => _submitCompletion(),
           ),
-        ],
-      ),
-    );
+        ),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (!_isInitialized) return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    if (!_isInitialized) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
     final theme = Theme.of(context);
 
     return GameTemplate(
@@ -112,6 +150,7 @@ class _ComparisonGameState extends State<ComparisonGame> {
       objective: '더 큰 숫자를 가진 쪽을 터치하세요.',
       currentStep: _currentStep,
       totalSteps: _totalSteps,
+      adaptiveCategory: GameCategory.calculation,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -120,7 +159,14 @@ class _ComparisonGameState extends State<ComparisonGame> {
               Expanded(child: _buildChoiceCard(theme, _leftExpr, true)),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Text('VS', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: theme.colorScheme.onSurfaceVariant)),
+                child: Text(
+                  'VS',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
               ),
               Expanded(child: _buildChoiceCard(theme, _rightExpr, false)),
             ],
@@ -132,7 +178,8 @@ class _ComparisonGameState extends State<ComparisonGame> {
 
   Widget _buildChoiceCard(ThemeData theme, String expr, bool isLeft) {
     return InkWell(
-      onTap: () => _checkAnswer(isLeft),
+      key: Key('comparison-answer-${isLeft ? 'left' : 'right'}'),
+      onTap: _isSaving || _isFinished ? null : () => _checkAnswer(isLeft),
       borderRadius: BorderRadius.circular(20),
       child: Container(
         height: 180,
@@ -142,7 +189,9 @@ class _ComparisonGameState extends State<ComparisonGame> {
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: theme.shadowColor.withValues(alpha: theme.brightness == Brightness.light ? 0.05 : 0.3),
+              color: theme.shadowColor.withValues(
+                alpha: theme.brightness == Brightness.light ? 0.05 : 0.3,
+              ),
               blurRadius: 10,
             ),
           ],

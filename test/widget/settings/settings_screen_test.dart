@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_application_1/features/settings/settings_screen.dart';
 
+import '../../helpers/mock_definitions.dart';
 import '../../helpers/test_helpers.dart';
 
 void main() {
@@ -42,5 +44,67 @@ void main() {
 
     expect(find.text('개인정보 처리방침'), findsOneWidget);
     expect(find.text('로그아웃'), findsOneWidget);
+  });
+
+  testWidgets('초기화 성공 후에만 완료 메시지를 표시하고 진행 상태를 갱신한다', (
+    tester,
+  ) async {
+    final user = MockUserProvider();
+    final progress = MockTrainingProgressProvider();
+    when(() => user.resetMeasurementData()).thenAnswer((_) async {});
+    when(() => progress.refresh()).thenAnswer((_) async {});
+    await pumpWithProviders(
+      tester,
+      const SettingsScreen(),
+      userProvider: user,
+      trainingProgressProvider: progress,
+    );
+    await tester.pump();
+
+    await tester.scrollUntilVisible(
+      find.text('측정 데이터 초기화'),
+      300,
+    );
+    await tester.tap(find.text('측정 데이터 초기화'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(TextButton, '초기화'));
+    await tester.pumpAndSettle();
+
+    verify(() => user.resetMeasurementData()).called(1);
+    verify(() => progress.refresh()).called(1);
+    expect(find.text('데이터가 초기화되었습니다.'), findsOneWidget);
+    expect(find.text('데이터 초기화'), findsNothing);
+  });
+
+  testWidgets('초기화 실패 시 성공 메시지를 표시하지 않고 재시도할 수 있다', (
+    tester,
+  ) async {
+    final user = MockUserProvider();
+    final progress = MockTrainingProgressProvider();
+    when(() => user.resetMeasurementData()).thenThrow(Exception('disk'));
+    await pumpWithProviders(
+      tester,
+      const SettingsScreen(),
+      userProvider: user,
+      trainingProgressProvider: progress,
+    );
+    await tester.pump();
+
+    await tester.scrollUntilVisible(
+      find.text('측정 데이터 초기화'),
+      300,
+    );
+    await tester.tap(find.text('측정 데이터 초기화'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(TextButton, '초기화'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('데이터가 초기화되었습니다.'), findsNothing);
+    expect(
+      find.text('데이터를 초기화하지 못했습니다. 다시 시도해 주세요.'),
+      findsOneWidget,
+    );
+    expect(find.text('데이터 초기화'), findsOneWidget);
+    expect(find.widgetWithText(TextButton, '초기화'), findsOneWidget);
   });
 }

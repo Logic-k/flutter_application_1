@@ -3,8 +3,11 @@ import 'package:provider/provider.dart';
 import 'dart:math';
 import '../../../core/user_provider.dart';
 import '../../../core/services/voice_service.dart';
+import '../application/training_attempt_input.dart';
+import '../application/training_completion_ui.dart';
 import '../widgets/game_template.dart';
 import '../difficulty_provider.dart';
+import '../training_progress_provider.dart';
 
 class SequenceGame extends StatefulWidget {
   const SequenceGame({super.key});
@@ -18,6 +21,11 @@ class _SequenceGameState extends State<SequenceGame> {
   int _currentStep = 1;
   final int _totalSteps = 5;
   int _score = 0;
+  late final String _attemptId;
+  late final DateTime _startedAt;
+  TrainingAttemptInput? _completionInput;
+  bool _isSaving = false;
+  bool _isFinished = false;
 
   late List<int> _sequence;
   late int _correctAnswer;
@@ -27,6 +35,8 @@ class _SequenceGameState extends State<SequenceGame> {
   @override
   void initState() {
     super.initState();
+    _attemptId = createTrainingAttemptId();
+    _startedAt = DateTime.now();
     _generateSequence();
     _isInitialized = true;
   }
@@ -79,10 +89,15 @@ class _SequenceGameState extends State<SequenceGame> {
   }
 
   void _checkAnswer(int selected) {
+    if (_isSaving || _isFinished) return;
+
     bool isCorrect = (selected == _correctAnswer);
     if (isCorrect) _score++;
 
-    context.read<DifficultyProvider>().updatePerformance(GameCategory.logic, isCorrect);
+    context.read<DifficultyProvider>().updatePerformance(
+      GameCategory.logic,
+      isCorrect,
+    );
 
     if (_currentStep < _totalSteps) {
       setState(() {
@@ -90,36 +105,57 @@ class _SequenceGameState extends State<SequenceGame> {
         _generateSequence();
       });
     } else {
-      // 0-100 스케일로 저장 (전 카테고리 공통)
-      context.read<UserProvider>().setCognitiveScore('logic', (_score / _totalSteps) * 100.0);
-      VoiceService().speakSuccess();
-      _showResultDialog();
+      final completedAt = DateTime.now();
+      _completionInput = TrainingAttemptInput(
+        attemptId: _attemptId,
+        userId: context.read<UserProvider>().currentUser!['id'] as int,
+        activityId: 'sequence',
+        completedAt: completedAt,
+        score: (_score / _totalSteps) * 100.0,
+        correctAnswers: _score,
+        totalQuestions: _totalSteps,
+        durationMs: completedAt.difference(_startedAt).inMilliseconds,
+      );
+      setState(() => _isFinished = true);
+      _submitCompletion();
     }
   }
 
-  void _showResultDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        title: const Text('논리 훈련 완료!'),
-        content: Text('$_totalSteps문제 중 $_score문제를 맞히셨습니다.'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              Navigator.of(context).pop();
-            },
-            child: const Text('확인'),
+  Future<void> _submitCompletion() async {
+    final input = _completionInput;
+    if (input == null || _isSaving) return;
+
+    setState(() => _isSaving = true);
+    try {
+      final result = await context.read<TrainingProgressProvider>().complete(
+        input,
+      );
+      if (!mounted) return;
+      VoiceService().speakSuccess();
+      await showTrainingCompletionResult(context, result);
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _isSaving = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('기록을 저장하지 못했습니다. 다시 시도해 주세요.'),
+          action: SnackBarAction(
+            label: '다시 시도',
+            onPressed: () => _submitCompletion(),
           ),
-        ],
-      ),
-    );
+        ),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (!_isInitialized) return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    if (!_isInitialized) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
     final theme = Theme.of(context);
 
     return GameTemplate(
@@ -127,6 +163,7 @@ class _SequenceGameState extends State<SequenceGame> {
       objective: '물음표(?)에 들어갈 알맞은 숫자를 고르세요.',
       currentStep: _currentStep,
       totalSteps: _totalSteps,
+      adaptiveCategory: GameCategory.logic,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -138,23 +175,34 @@ class _SequenceGameState extends State<SequenceGame> {
                 height: 65,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: n == -1 ? theme.primaryColor.withValues(alpha: 0.1) : theme.cardColor,
+                  color: n == -1
+                      ? theme.primaryColor.withValues(alpha: 0.1)
+                      : theme.cardColor,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: n == -1 ? theme.primaryColor : theme.dividerColor, width: 2),
+                  border: Border.all(
+                    color: n == -1 ? theme.primaryColor : theme.dividerColor,
+                    width: 2,
+                  ),
                 ),
                 child: Text(
                   n == -1 ? '?' : '$n',
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: n == -1 ? theme.primaryColor : theme.colorScheme.onSurface,
+                    color: n == -1
+                        ? theme.primaryColor
+                        : theme.colorScheme.onSurface,
                   ),
                 ),
               );
             }).toList(),
           ),
           const SizedBox(height: 12),
-          Icon(Icons.arrow_right_alt, size: 40, color: theme.colorScheme.onSurfaceVariant),
+          Icon(
+            Icons.arrow_right_alt,
+            size: 40,
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
           const SizedBox(height: 48),
           GridView.count(
             shrinkWrap: true,
@@ -162,12 +210,22 @@ class _SequenceGameState extends State<SequenceGame> {
             mainAxisSpacing: 16,
             crossAxisSpacing: 16,
             childAspectRatio: 2.5,
-            children: _options.map((opt) {
+            children: _options.asMap().entries.map((entry) {
+              final index = entry.key;
+              final opt = entry.value;
               return ElevatedButton(
-                onPressed: () => _checkAnswer(opt),
+                key: Key('sequence-answer-$index'),
+                onPressed: _isSaving || _isFinished
+                    ? null
+                    : () => _checkAnswer(opt),
                 style: ElevatedButton.styleFrom(
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  textStyle: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  textStyle: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 child: Text('$opt'),
               );

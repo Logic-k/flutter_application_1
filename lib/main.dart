@@ -23,6 +23,10 @@ import 'features/diary/diary_provider.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 import 'features/training/difficulty_provider.dart';
+import 'features/training/application/training_completion_service.dart';
+import 'features/training/data/sqlite_training_progress_repository.dart';
+import 'features/training/training_progress_provider.dart';
+import 'core/database_helper.dart';
 import 'core/settings_provider.dart';
 import 'core/admin_provider.dart';
 
@@ -31,37 +35,49 @@ final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  const bool isEmulator = bool.fromEnvironment(
+    'IS_EMULATOR',
+    defaultValue: false,
+  );
 
   // Timezone 초기화 (저녁 7시 KST 알림 스케줄링용)
   tz_data.initializeTimeZones();
   tz.setLocalLocation(tz.getLocation('Asia/Seoul'));
 
-  // 알림 플러그인 초기화
-  const AndroidInitializationSettings androidSettings =
-      AndroidInitializationSettings('@mipmap/ic_launcher');
-  const DarwinInitializationSettings iosSettings = DarwinInitializationSettings(
-    requestAlertPermission: true,
-    requestBadgePermission: true,
-    requestSoundPermission: true,
-  );
-  await flutterLocalNotificationsPlugin.initialize(
-    settings: const InitializationSettings(android: androidSettings, iOS: iosSettings),
-  );
-  // Android 13+ 알림 런타임 권한 요청.
-  // (만보기 토글에서만 요청하면 만보기를 안 쓰는 사용자는
-  //  저녁 일기 알림을 영영 받지 못한다)
-  await flutterLocalNotificationsPlugin
-      .resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin>()
-      ?.requestNotificationsPermission();
-  await DiaryNotificationService.initialize(flutterLocalNotificationsPlugin);
-  await DiaryNotificationService.scheduleDailyReminder(flutterLocalNotificationsPlugin);
+  if (!isEmulator) {
+    // 알림 플러그인 초기화
+    const AndroidInitializationSettings androidSettings =
+        AndroidInitializationSettings('@mipmap/ic_launcher');
+    const DarwinInitializationSettings iosSettings =
+        DarwinInitializationSettings(
+          requestAlertPermission: true,
+          requestBadgePermission: true,
+          requestSoundPermission: true,
+        );
+    await flutterLocalNotificationsPlugin.initialize(
+      settings: const InitializationSettings(
+        android: androidSettings,
+        iOS: iosSettings,
+      ),
+    );
+    // Android 13+ 알림 런타임 권한 요청.
+    // (만보기 토글에서만 요청하면 만보기를 안 쓰는 사용자는
+    //  저녁 일기 알림을 영영 받지 못한다)
+    await flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >()
+        ?.requestNotificationsPermission();
+    await DiaryNotificationService.initialize(flutterLocalNotificationsPlugin);
+    await DiaryNotificationService.scheduleDailyReminder(
+      flutterLocalNotificationsPlugin,
+    );
+  }
 
   // 한국어 날짜 형식 데이터 초기화
   await initializeDateFormatting('ko_KR', null);
   
   // 에뮬레이터 빌드 시 --dart-define=IS_EMULATOR=true 로 실행하면 건너뜀
-  const bool isEmulator = bool.fromEnvironment('IS_EMULATOR', defaultValue: false);
   if (!isEmulator) {
     await PedometerBackgroundService.initializeService();
   }
@@ -87,7 +103,11 @@ void main() async {
   }
 
   final userProvider = UserProvider();
-  await userProvider.checkLoginStatus();
+  final trainingRepository = SqliteTrainingProgressRepository(DatabaseHelper());
+  final trainingCompletionService = TrainingCompletionService(
+    repository: trainingRepository,
+    clock: DateTime.now,
+  );
 
   runApp(
     MultiProvider(
@@ -111,10 +131,26 @@ void main() async {
             return provider;
           },
         ),
+        ChangeNotifierProxyProvider<UserProvider, TrainingProgressProvider>(
+          create: (_) => TrainingProgressProvider(
+            repository: trainingRepository,
+            completionService: trainingCompletionService,
+            clock: DateTime.now,
+          ),
+          update: (_, user, previous) {
+            final provider = previous!;
+            final userId = user.currentUser?['id'] as int?;
+            if (provider.userId != userId) {
+              unawaited(provider.updateUser(userId));
+            }
+            return provider;
+          },
+        ),
       ],
       child: const MemoryLinkApp(),
     ),
   );
+  unawaited(userProvider.checkLoginStatus());
 }
 
 class MemoryLinkApp extends StatefulWidget {
@@ -141,7 +177,7 @@ class _MemoryLinkAppState extends State<MemoryLinkApp> {
   Widget build(BuildContext context) {
     final userProvider = context.watch<UserProvider>();
     final settings = context.watch<SettingsProvider>();
-    
+
     if (userProvider.isLoading) {
       return MaterialApp(
         theme: AppTheme.lightTheme,

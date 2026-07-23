@@ -7,18 +7,27 @@ import 'package:flutter_application_1/features/home/home_screen.dart';
 import 'package:flutter_application_1/core/user_provider.dart';
 import 'package:flutter_application_1/features/diary/diary_provider.dart';
 import 'package:flutter_application_1/features/gait_analysis/pedometer_manager.dart';
+import 'package:flutter_application_1/features/training/training_progress_provider.dart';
 import '../../helpers/mock_definitions.dart';
 
 Widget _buildSubject({
   required MockUserProvider mockUser,
   required MockPedometerManager mockPedometer,
   required MockDiaryProvider mockDiary,
+  MockTrainingProgressProvider? mockTrainingProgress,
 }) {
+  final progress = mockTrainingProgress ?? MockTrainingProgressProvider();
+  if (mockTrainingProgress == null) {
+    when(() => progress.todayDistinctActivityCount).thenReturn(0);
+  }
   return MultiProvider(
     providers: [
       ChangeNotifierProvider<UserProvider>.value(value: mockUser),
       ChangeNotifierProvider<PedometerManager>.value(value: mockPedometer),
       ChangeNotifierProvider<DiaryProvider>.value(value: mockDiary),
+      ChangeNotifierProvider<TrainingProgressProvider>.value(
+        value: progress,
+      ),
     ],
     child: const MaterialApp(home: HomeScreen()),
   );
@@ -53,6 +62,7 @@ void main() {
   late MockUserProvider mockUser;
   late MockPedometerManager mockPedometer;
   late MockDiaryProvider mockDiary;
+  late MockTrainingProgressProvider mockTrainingProgress;
 
   setUpAll(() async {
     registerFallbackValue(DateTime(2026));
@@ -63,9 +73,11 @@ void main() {
     mockUser = MockUserProvider();
     mockPedometer = MockPedometerManager();
     mockDiary = MockDiaryProvider();
+    mockTrainingProgress = MockTrainingProgressProvider();
     _stubUser(mockUser);
     _stubPedometer(mockPedometer);
     _stubDiary(mockDiary);
+    when(() => mockTrainingProgress.todayDistinctActivityCount).thenReturn(2);
   });
 
   testWidgets('HomeScreen: MemoryLink 타이틀이 AppBar에 표시된다', (tester) async {
@@ -113,5 +125,19 @@ void main() {
 
     // 3500 → "3,500보" 형식으로 포맷팀
     expect(find.textContaining('3,500'), findsOneWidget);
+  });
+
+  testWidgets('HomeScreen: 진행 Provider의 오늘 활동 수를 즉시 표시한다', (tester) async {
+    await tester.pumpWidget(
+      _buildSubject(
+        mockUser: mockUser,
+        mockPedometer: mockPedometer,
+        mockDiary: mockDiary,
+        mockTrainingProgress: mockTrainingProgress,
+      ),
+    );
+    await tester.pump();
+
+    expect(find.text('오늘 2개'), findsOneWidget);
   });
 }

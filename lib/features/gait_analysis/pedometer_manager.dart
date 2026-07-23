@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -12,7 +12,7 @@ import '../../core/services/guardian_sync_service.dart';
 /// 
 /// [agency-mobile-app-builder]: 백그라운드 서비스와 UI 간의 
 /// 상태를 중계하고, 동백전 스타일의 지표를 계산합니다.
-class PedometerManager with ChangeNotifier {
+class PedometerManager with ChangeNotifier, WidgetsBindingObserver {
   final UserProvider _userProvider;
   final _dbHelper = DatabaseHelper();
   
@@ -20,6 +20,8 @@ class PedometerManager with ChangeNotifier {
   double _todayCalories = 0.0;
   double _todayDistance = 0.0;
   bool _isTracking = false;
+  StreamSubscription<Map<String, dynamic>?>? _stepUpdates;
+  late final Future<void> _initialization;
 
   int get todaySteps => _todaySteps;
   double get todayCalories => _todayCalories;
@@ -28,7 +30,24 @@ class PedometerManager with ChangeNotifier {
 
   PedometerManager(this._userProvider) {
     _userProvider.addListener(_onUserChanged);
-    _initOnStart();
+    WidgetsBinding.instance.addObserver(this);
+    _listenToBackgroundService();
+    _initialization = _initOnStart();
+  }
+
+  @override
+  void dispose() {
+    _userProvider.removeListener(_onUserChanged);
+    WidgetsBinding.instance.removeObserver(this);
+    _stepUpdates?.cancel();
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      unawaited(refreshTracking());
+    }
   }
 
   // 마지막으로 관찰한 사용자 id — 로그아웃/계정 전환 감지용
@@ -66,8 +85,7 @@ class PedometerManager with ChangeNotifier {
   /// 권한이 이미 있을 때만 조용히 추적 재개 (권한 팝업 없이)
   Future<void> _resumeTrackingIfPermitted() async {
     final activityStatus = await Permission.activityRecognition.status;
-    final notificationStatus = await Permission.notification.status;
-    if (activityStatus.isGranted && notificationStatus.isGranted) {
+    if (activityStatus.isGranted) {
       await _startServiceDirectly();
     } else {
       _isTracking = false;
@@ -99,16 +117,14 @@ class PedometerManager with ChangeNotifier {
     if (_isTracking) {
       // 앱 시작 시 추적이 켜져있다면 권한부터 확인
       final activityStatus = await Permission.activityRecognition.status;
-      final notificationStatus = await Permission.notification.status;
       
-      if (activityStatus.isGranted && notificationStatus.isGranted) {
-        _startServiceDirectly();
+      if (activityStatus.isGranted) {
+        await _startServiceDirectly();
       } else {
         // 권한이 없다면 팝업 요청
         await toggleTracking(true);
       }
     }
-    _listenToBackgroundService();
   }
 
   Future<void> _startServiceDirectly() async {
@@ -116,14 +132,23 @@ class PedometerManager with ChangeNotifier {
     if (!await service.isRunning()) {
       await service.startService();
     }
+    service.invoke('request_steps');
   }
 
   void _listenToBackgroundService() {
-    FlutterBackgroundService().on('update_steps').listen((event) {
+    _stepUpdates = FlutterBackgroundService().on('update_steps').listen((event) {
       if (event != null && event['steps'] != null) {
-        _updateMetrics(event['steps'] as int);
+        _updateMetrics((event['steps'] as num).toInt());
       }
     });
+  }
+
+  /// 생활습관 탭 진입 또는 앱 복귀 시 서비스 상태와 현재 걸음 수를 동기화한다.
+  Future<void> refreshTracking() async {
+    await _initialization;
+    await _loadTodayStepsFromDB();
+    if (!_isTracking) return;
+    await _resumeTrackingIfPermitted();
   }
 
   void _updateMetrics(int steps) {
@@ -242,15 +267,15 @@ class PedometerManager with ChangeNotifier {
   /// 추적 시작 (백그라운드 서비스 실행)
   Future<void> toggleTracking(bool enabled) async {
     if (enabled) {
-      // [agency-mobile-app-builder]: 안드로이드 13+ 대응을 위해 알림 권한도 함께 요청
+      // 알림 권한은 포그라운드 서비스 알림 노출용이며, 보행 측정 자체를
+      // 차단하는 권한이 아니다. 신체 활동 권한만 필수로 판정한다.
       Map<Permission, PermissionStatus> statuses = await [
         Permission.activityRecognition,
         Permission.notification,
       ].request();
 
-      if (statuses[Permission.activityRecognition] != PermissionStatus.granted ||
-          statuses[Permission.notification] != PermissionStatus.granted) {
-        debugPrint('필수 권한(보행 또는 알림)이 거부되었습니다.');
+      if (statuses[Permission.activityRecognition] != PermissionStatus.granted) {
+        debugPrint('필수 신체 활동 권한이 거부되었습니다.');
         _isTracking = false;
         notifyListeners();
         return;
@@ -266,7 +291,7 @@ class PedometerManager with ChangeNotifier {
       if (!isRunning) {
         await service.startService();
       }
-      // UI 전용 스트림은 제거하고 백그라운드 이벤트(update_steps)만 사용합니다.
+      service.invoke('request_steps');
     } else {
       service.invoke('stopService');
     }

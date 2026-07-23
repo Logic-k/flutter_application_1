@@ -3,8 +3,11 @@ import 'package:provider/provider.dart';
 import 'dart:math';
 import '../../../core/user_provider.dart';
 import '../../../core/services/voice_service.dart';
+import '../application/training_attempt_input.dart';
+import '../application/training_completion_ui.dart';
 import '../widgets/game_template.dart';
 import '../difficulty_provider.dart';
+import '../training_progress_provider.dart';
 
 class MultiplicationGame extends StatefulWidget {
   const MultiplicationGame({super.key});
@@ -18,6 +21,11 @@ class _MultiplicationGameState extends State<MultiplicationGame> {
   int _currentStep = 1;
   final int _totalSteps = 10;
   int _score = 0;
+  late final String _attemptId;
+  late final DateTime _startedAt;
+  TrainingAttemptInput? _completionInput;
+  bool _isSaving = false;
+  bool _isFinished = false;
 
   late String _expression;
   late int _answer;
@@ -27,6 +35,8 @@ class _MultiplicationGameState extends State<MultiplicationGame> {
   @override
   void initState() {
     super.initState();
+    _attemptId = createTrainingAttemptId();
+    _startedAt = DateTime.now();
     _generateProblem();
     _isInitialized = true;
   }
@@ -36,7 +46,7 @@ class _MultiplicationGameState extends State<MultiplicationGame> {
     final level = diffProvider.getLevel(GameCategory.calculation);
 
     int a, b, c = 0;
-    
+
     if (level <= 3) {
       a = _random.nextInt(4) + 2;
       b = _random.nextInt(9) + 1;
@@ -73,10 +83,15 @@ class _MultiplicationGameState extends State<MultiplicationGame> {
   }
 
   void _checkAnswer(int selected) {
+    if (_isSaving || _isFinished) return;
+
     bool isCorrect = (selected == _answer);
     if (isCorrect) _score++;
 
-    context.read<DifficultyProvider>().updatePerformance(GameCategory.calculation, isCorrect);
+    context.read<DifficultyProvider>().updatePerformance(
+      GameCategory.calculation,
+      isCorrect,
+    );
 
     if (_currentStep < _totalSteps) {
       setState(() {
@@ -84,36 +99,57 @@ class _MultiplicationGameState extends State<MultiplicationGame> {
         _generateProblem();
       });
     } else {
-      // 0-100 스케일로 저장 (전 카테고리 공통)
-      context.read<UserProvider>().setCognitiveScore('calculation', (_score / _totalSteps) * 100.0);
-      VoiceService().speakSuccess();
-      _showResultDialog();
+      final completedAt = DateTime.now();
+      _completionInput = TrainingAttemptInput(
+        attemptId: _attemptId,
+        userId: context.read<UserProvider>().currentUser!['id'] as int,
+        activityId: 'multiplication',
+        completedAt: completedAt,
+        score: (_score / _totalSteps) * 100.0,
+        correctAnswers: _score,
+        totalQuestions: _totalSteps,
+        durationMs: completedAt.difference(_startedAt).inMilliseconds,
+      );
+      setState(() => _isFinished = true);
+      _submitCompletion();
     }
   }
 
-  void _showResultDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        title: const Text('계산 훈련 완료!'),
-        content: Text('$_totalSteps문제 중 $_score문제를 맞히셨습니다.\n난이도가 실시간으로 저장되었습니다!'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              Navigator.of(context).pop();
-            },
-            child: const Text('확인'),
+  Future<void> _submitCompletion() async {
+    final input = _completionInput;
+    if (input == null || _isSaving) return;
+
+    setState(() => _isSaving = true);
+    try {
+      final result = await context.read<TrainingProgressProvider>().complete(
+        input,
+      );
+      if (!mounted) return;
+      VoiceService().speakSuccess();
+      await showTrainingCompletionResult(context, result);
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _isSaving = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('기록을 저장하지 못했습니다. 다시 시도해 주세요.'),
+          action: SnackBarAction(
+            label: '다시 시도',
+            onPressed: () => _submitCompletion(),
           ),
-        ],
-      ),
-    );
+        ),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (!_isInitialized) return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    if (!_isInitialized) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
     final theme = Theme.of(context);
 
     return GameTemplate(
@@ -121,6 +157,7 @@ class _MultiplicationGameState extends State<MultiplicationGame> {
       objective: '가운데 수식의 정답을 아래에서 선택하세요.',
       currentStep: _currentStep,
       totalSteps: _totalSteps,
+      adaptiveCategory: GameCategory.calculation,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -152,16 +189,24 @@ class _MultiplicationGameState extends State<MultiplicationGame> {
             itemCount: _options.length,
             itemBuilder: (context, index) {
               return ElevatedButton(
-                onPressed: () => _checkAnswer(_options[index]),
+                key: Key('multiplication-answer-$index'),
+                onPressed: _isSaving || _isFinished
+                    ? null
+                    : () => _checkAnswer(_options[index]),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: theme.cardColor,
                   foregroundColor: theme.colorScheme.onSurface,
                   elevation: theme.brightness == Brightness.light ? 2 : 0,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
                 ),
                 child: Text(
                   _options[index].toString(),
-                  style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               );
             },

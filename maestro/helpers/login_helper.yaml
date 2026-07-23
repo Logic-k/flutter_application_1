@@ -6,7 +6,7 @@ appId: com.teammemorylink.memorylink
     timeout: 3000
 - extendedWaitUntil:
     visible: "사용자 아이디"
-    timeout: 50000
+    timeout: 90000
 - tapOn: "사용자 아이디"
 - inputText: "kim_minjun"
 - tapOn: "비밀번호"

@@ -1,0 +1,19 @@
+appId: com.teammemorylink.memorylink
+---
+- runFlow: training_game_flow.yaml
+- stopApp
+- launchApp
+- extendedWaitUntil:
+    visible: "오늘 걸음"
+    timeout: 20000
+- tapOn: "인지훈련"
+- extendedWaitUntil:
+    visible: "두뇌 트레이닝 센터"
+    timeout: 10000
+- assertVisible: ".*오늘 목표 1/3.*"
+- scrollUntilVisible:
+    element:
+      text: ".*구구단 맞추기.*"
+    direction: DOWN
+- assertVisible: ".*구구단 맞추기.*"
+- assertVisible: ".*도전 가능.*"

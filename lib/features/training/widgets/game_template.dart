@@ -12,6 +12,7 @@ class GameTemplate extends StatefulWidget {
   final Widget child;
   final int currentStep;
   final int totalSteps;
+  final GameCategory? adaptiveCategory;
   final VoidCallback? onExit;
 
   const GameTemplate({
@@ -21,6 +22,7 @@ class GameTemplate extends StatefulWidget {
     required this.child,
     required this.currentStep,
     required this.totalSteps,
+    this.adaptiveCategory,
     this.onExit,
   });
 
@@ -48,6 +50,7 @@ class _GameTemplateState extends State<GameTemplate> {
     final objective = widget.objective;
     final currentStep = widget.currentStep;
     final totalSteps = widget.totalSteps;
+    final adaptiveCategory = widget.adaptiveCategory;
     final onExit = widget.onExit;
     final child = widget.child;
 
@@ -61,27 +64,35 @@ class _GameTemplateState extends State<GameTemplate> {
           onPressed: onExit ?? () => context.pop(),
         ),
         actions: [
-          Consumer<DifficultyProvider>(
-            builder: (context, difficulty, _) {
-              final targetTime = difficulty.getTargetTime(GameCategory.perception);
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-                    decoration: BoxDecoration(
-                      color: MLColors.primarySoft,
-                      borderRadius: BorderRadius.circular(AppTheme.rBtn),
-                    ),
-                    child: Text(
-                      '목표: ${targetTime.toStringAsFixed(1)}초',
-                      style: const TextStyle(color: MLColors.primary, fontWeight: FontWeight.w800, fontSize: 13),
+          if (adaptiveCategory != null)
+            Consumer<DifficultyProvider>(
+              builder: (context, difficulty, _) {
+                final targetTime = difficulty.getTargetTime(adaptiveCategory);
+                return Center(
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 5,
+                      ),
+                      decoration: BoxDecoration(
+                        color: MLColors.primarySoft,
+                        borderRadius: BorderRadius.circular(AppTheme.rBtn),
+                      ),
+                      child: Text(
+                        '목표: ${targetTime.toStringAsFixed(1)}초',
+                        style: const TextStyle(
+                          color: MLColors.primary,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 13,
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              );
-            },
-          ),
+                );
+              },
+            ),
           Center(
             child: Padding(
               padding: const EdgeInsets.only(right: 20),

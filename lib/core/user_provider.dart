@@ -191,6 +191,7 @@ class UserProvider extends ChangeNotifier {
     _logicScore = 0;
     _memoryScore = 0;
     _attentionScore = 0;
+    _voiceScore = 0;
     
     for (var score in scores) {
       setCognitiveScore(score['category'], score['score'], persist: false);
