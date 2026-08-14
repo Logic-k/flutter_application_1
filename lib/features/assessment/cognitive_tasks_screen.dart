@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../core/user_provider.dart';
 import 'dart:async';
+import 'dart:math';
 
 class CognitiveTasksScreen extends StatefulWidget {
   const CognitiveTasksScreen({super.key});
@@ -25,9 +26,37 @@ class _CognitiveTasksScreenState extends State<CognitiveTasksScreen> {
   int _attentionScore = 0;
   final int _maxAttentionPhases = 5;
 
+  /// 문항별 정답 칸 위치(0~8).
+  ///
+  /// 예전에는 정답이 항상 4번(정중앙)으로 고정돼 있어, 첫 문항에서 가운데를
+  /// 찾은 사용자가 나머지 4문항을 보지도 않고 가운데만 눌러 100점을 받았다.
+  /// 그 점수가 attention 카테고리로 DB에 저장되고 임상 리포트까지 흘러가므로,
+  /// 측정값이라 부를 수 없는 상태였다.
+  late final List<int> _attentionTargets;
+
+  /// 문항별 (정답 기호, 방해 기호) 쌍. 위치만 바꾸면 기호를 외워서 풀 수 있다.
+  late final List<({IconData target, IconData distractor})> _attentionIcons;
+
+  static const List<({IconData target, IconData distractor})> _iconPairs = [
+    (target: Icons.circle_outlined, distractor: Icons.square_outlined),
+    (target: Icons.square_outlined, distractor: Icons.circle_outlined),
+    (target: Icons.change_history_outlined, distractor: Icons.square_outlined),
+    (target: Icons.star_outline, distractor: Icons.circle_outlined),
+    (target: Icons.favorite_outline, distractor: Icons.star_outline),
+  ];
+
   @override
   void initState() {
     super.initState();
+    // 화면이 살아 있는 동안 위치가 고정되도록 initState에서 한 번만 뽑는다.
+    // build에서 뽑으면 리빌드마다 정답이 옮겨 다닌다.
+    final rng = Random();
+    _attentionTargets =
+        List.generate(_maxAttentionPhases, (_) => rng.nextInt(9));
+    _attentionIcons = List.generate(
+      _maxAttentionPhases,
+      (i) => _iconPairs[i % _iconPairs.length],
+    );
     _startWordShow();
   }
 
@@ -176,25 +205,31 @@ class _CognitiveTasksScreenState extends State<CognitiveTasksScreen> {
           mainAxisSpacing: 16,
           crossAxisSpacing: 16,
           children: List.generate(9, (index) {
-            final isTarget = index == 4; // Mock target at index 4
-            return InkWell(
-              onTap: () {
-                if (index == 4) {
-                  _attentionScore++;
-                }
+            final targetIndex = _attentionTargets[_attentionPhase];
+            final icons = _attentionIcons[_attentionPhase];
+            final isTarget = index == targetIndex;
+            return Semantics(
+              button: true,
+              label: '${index + 1}번 칸',
+              child: InkWell(
+                onTap: () {
+                  if (isTarget) {
+                    _attentionScore++;
+                  }
 
-                if (_attentionPhase < _maxAttentionPhases - 1) {
-                  setState(() {
-                    _attentionPhase++;
-                  });
-                } else {
-                  _onAttentionComplete();
-                }
-              },
-              child: Icon(
-                isTarget ? Icons.circle_outlined : Icons.square_outlined,
-                size: 60,
-                color: Colors.teal,
+                  if (_attentionPhase < _maxAttentionPhases - 1) {
+                    setState(() {
+                      _attentionPhase++;
+                    });
+                  } else {
+                    _onAttentionComplete();
+                  }
+                },
+                child: Icon(
+                  isTarget ? icons.target : icons.distractor,
+                  size: 60,
+                  color: Colors.teal,
+                ),
               ),
             );
           }),
