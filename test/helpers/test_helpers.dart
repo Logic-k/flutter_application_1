@@ -22,7 +22,7 @@ Future<void> pumpWithProviders(
       DifficultyProvider(username: 'testuser');
   final settings = settingsProvider ?? FakeSettingsProvider();
   final trainingProgress =
-      trainingProgressProvider ?? MockTrainingProgressProvider();
+      trainingProgressProvider ?? buildFakeTrainingProgressProvider();
 
   await tester.pumpWidget(
     MultiProvider(
@@ -37,6 +37,30 @@ Future<void> pumpWithProviders(
       child: MaterialApp(home: widget),
     ),
   );
+}
+
+/// 기본값이 채워진 훈련 진행 Provider mock.
+///
+/// mocktail은 stub되지 않은 non-nullable 게터에 null을 돌려주므로, 화면이 새 지표를
+/// 읽기 시작하는 순간 관계없는 테스트까지 _TypeError로 무너진다. 화면이 읽을 만한
+/// 값은 여기서 미리 채워 둔다.
+TrainingProgressProvider buildFakeTrainingProgressProvider({
+  int todayDistinctActivityCount = 0,
+  int totalXp = 0,
+  int level = 1,
+  int currentStreak = 0,
+  int longestStreak = 0,
+}) {
+  final mock = MockTrainingProgressProvider();
+  when(() => mock.isLoading).thenReturn(false);
+  when(() => mock.isSaving).thenReturn(false);
+  when(() => mock.todayDistinctActivityCount)
+      .thenReturn(todayDistinctActivityCount);
+  when(() => mock.totalXp).thenReturn(totalXp);
+  when(() => mock.level).thenReturn(level);
+  when(() => mock.currentStreak).thenReturn(currentStreak);
+  when(() => mock.longestStreak).thenReturn(longestStreak);
+  return mock;
 }
 
 UserProvider _buildFakeUserProvider() {

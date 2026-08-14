@@ -19,6 +19,18 @@ class FloatingPillNav extends StatelessWidget {
   final List<MLNavItem> items;
   /// true 면 활성 탭만 라벨 노출(여백 ↑), false 면 전체 라벨.
   final bool labelOnActiveOnly;
+
+  /// 이 네비가 본문 위를 덮는 높이(SafeArea 제외).
+  /// 바깥 Padding bottom 14 + 알약 Container vertical 9×2 + 탭 최소 높이 48.
+  static const double overlayHeight = 14 + 18 + 48;
+
+  /// 탭 화면의 스크롤 뷰가 둬야 할 하단 여백.
+  ///
+  /// `MainNavScreen`이 `extendBody: true`를 쓰기 때문에 본문은 네비 **뒤로**
+  /// 흐른다. 이 값을 안 쓰고 숫자를 직접 박으면, 네비 높이가 바뀔 때 마지막
+  /// 항목이 조용히 가려진다. 실제로 탭 높이를 접근성 기준(48dp)에 맞춰 올렸을 때
+  /// 하드코딩된 110이 부족해져 E2E 4건이 깨졌다.
+  static const double contentBottomInset = overlayHeight + 40;
   const FloatingPillNav({
     super.key,
     required this.currentIndex,
@@ -69,10 +81,13 @@ class FloatingPillNav extends StatelessWidget {
                     onTap: () => onTap(i),
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 200),
-                      // 주 내비게이션이다. padding 9 + icon 22 = 40dp로는
-                      // 고령 사용자의 오탭이 잦다.
-                      constraints: const BoxConstraints(minHeight: 48, minWidth: 48),
-                      alignment: Alignment.center,
+                      // 주 내비게이션이다. 예전 padding 9 + icon 22 = 40dp로는
+                      // 고령 사용자의 오탭이 잦아 vertical을 13으로 올려 48dp를 만든다.
+                      //
+                      // 높이를 constraints나 alignment로 잡으면 안 된다. Container는
+                      // alignment가 있으면 부모 제약만큼 팽창하므로, 알약이 화면 전체를
+                      // 덮어 다른 요소를 전부 가린다(실제로 그렇게 만들어 E2E 20개 중
+                      // 14개가 깨졌다). 패딩으로만 크기를 만든다.
                       padding: EdgeInsets.symmetric(horizontal: on ? 14 : 10, vertical: 13),
                       decoration: BoxDecoration(
                         color: on ? t.colorScheme.primary : Colors.transparent,

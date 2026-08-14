@@ -10,15 +10,34 @@ import 'package:flutter_application_1/features/gait_analysis/pedometer_manager.d
 import 'package:flutter_application_1/features/training/training_progress_provider.dart';
 import '../../helpers/mock_definitions.dart';
 
+void _stubTrainingProgress(
+  MockTrainingProgressProvider mock, {
+  required int todayCount,
+  int totalXp = 340,
+  int level = 4,
+  int currentStreak = 3,
+  int longestStreak = 9,
+}) {
+  when(() => mock.isLoading).thenReturn(false);
+  when(() => mock.isSaving).thenReturn(false);
+  when(() => mock.todayDistinctActivityCount).thenReturn(todayCount);
+  when(() => mock.totalXp).thenReturn(totalXp);
+  when(() => mock.level).thenReturn(level);
+  when(() => mock.currentStreak).thenReturn(currentStreak);
+  when(() => mock.longestStreak).thenReturn(longestStreak);
+}
+
 Widget _buildSubject({
   required MockUserProvider mockUser,
   required MockPedometerManager mockPedometer,
   required MockDiaryProvider mockDiary,
   MockTrainingProgressProvider? mockTrainingProgress,
 }) {
+  // 홈 헤더가 레벨·XP·연속학습을 읽는다. stub하지 않으면 mocktail이 null을
+  // 돌려주어 화면 전체가 _TypeError로 무너진다.
   final progress = mockTrainingProgress ?? MockTrainingProgressProvider();
   if (mockTrainingProgress == null) {
-    when(() => progress.todayDistinctActivityCount).thenReturn(0);
+    _stubTrainingProgress(progress, todayCount: 0);
   }
   return MultiProvider(
     providers: [
@@ -77,7 +96,7 @@ void main() {
     _stubUser(mockUser);
     _stubPedometer(mockPedometer);
     _stubDiary(mockDiary);
-    when(() => mockTrainingProgress.todayDistinctActivityCount).thenReturn(2);
+    _stubTrainingProgress(mockTrainingProgress, todayCount: 2);
   });
 
   testWidgets('HomeScreen: MemoryLink 타이틀이 AppBar에 표시된다', (tester) async {
@@ -129,6 +148,63 @@ void main() {
     expect(find.text('3,500보'), findsOneWidget);
     expect(find.text('3,500 / 10,000 걸음'), findsOneWidget);
     expect(find.textContaining('3500 '), findsNothing);
+  });
+
+  testWidgets('HomeScreen: 레벨·XP·연속학습 배지를 헤더에 표시한다', (tester) async {
+    await tester.pumpWidget(_buildSubject(
+      mockUser: mockUser,
+      mockPedometer: mockPedometer,
+      mockDiary: mockDiary,
+      mockTrainingProgress: mockTrainingProgress,
+    ));
+    await tester.pump();
+
+    // 훈련 허브에서만 보이던 지표를 매일 여는 화면으로 끌어왔다.
+    expect(find.text('레벨 4'), findsOneWidget);
+    expect(find.text('340 XP'), findsOneWidget);
+    expect(find.text('3일 연속'), findsOneWidget);
+    // 최장 기록(9)이 현재 기록(3)보다 클 때만 노출한다.
+    expect(find.text('최장 9일'), findsOneWidget);
+  });
+
+  testWidgets('HomeScreen: 연속 기록이 없으면 연속 배지를 숨긴다', (tester) async {
+    _stubTrainingProgress(
+      mockTrainingProgress,
+      todayCount: 0,
+      currentStreak: 0,
+      longestStreak: 0,
+    );
+    await tester.pumpWidget(_buildSubject(
+      mockUser: mockUser,
+      mockPedometer: mockPedometer,
+      mockDiary: mockDiary,
+      mockTrainingProgress: mockTrainingProgress,
+    ));
+    await tester.pump();
+
+    // 0일 연속을 보여주는 건 격려가 아니라 잔소리다.
+    expect(find.textContaining('연속'), findsNothing);
+    expect(find.textContaining('최장'), findsNothing);
+    expect(find.text('레벨 4'), findsOneWidget);
+  });
+
+  testWidgets('HomeScreen: 최장 기록이 현재와 같으면 중복 표시하지 않는다', (tester) async {
+    _stubTrainingProgress(
+      mockTrainingProgress,
+      todayCount: 1,
+      currentStreak: 5,
+      longestStreak: 5,
+    );
+    await tester.pumpWidget(_buildSubject(
+      mockUser: mockUser,
+      mockPedometer: mockPedometer,
+      mockDiary: mockDiary,
+      mockTrainingProgress: mockTrainingProgress,
+    ));
+    await tester.pump();
+
+    expect(find.text('5일 연속'), findsOneWidget);
+    expect(find.textContaining('최장'), findsNothing);
   });
 
   testWidgets('HomeScreen: 진행 Provider의 오늘 활동 수를 즉시 표시한다', (tester) async {

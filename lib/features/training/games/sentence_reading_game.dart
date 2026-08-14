@@ -273,13 +273,16 @@ class _SentenceReadingGameState extends State<SentenceReadingGame> {
             child: Center(
               child: SingleChildScrollView(
                 // 문장이 바뀌면 TalkBack이 새 문항을 자동으로 읽어야 하므로
-                // liveRegion으로 표시한다. 라벨에 문항 번호와 문장을 모두 담았기에
-                // 안쪽 Text가 다시 읽히지 않도록 하위 시맨틱스는 제외한다.
+                // liveRegion으로 표시한다. 라벨에는 문장만으로는 알 수 없는
+                // 문항 번호를 함께 담아 맥락을 준다.
+                // 안쪽 Text의 시맨틱스는 지우지 않는다. 화면에 보이는 문장은
+                // 접근성 트리에도 그대로 남아 있어야 하고, Maestro E2E가 그 트리에서
+                // 문장 텍스트로 요소를 찾기 때문이다. 낭독이 조금 겹치는 편이
+                // 정보가 통째로 사라지는 것보다 낫다.
                 child: Semantics(
                   container: true,
                   liveRegion: true,
                   label: '$_currentStep번째 문장. $_targetSentence',
-                  excludeSemantics: true,
                   child: Container(
                     padding: const EdgeInsets.all(32),
                     decoration: BoxDecoration(
@@ -311,11 +314,13 @@ class _SentenceReadingGameState extends State<SentenceReadingGame> {
           const SizedBox(height: 16),
           // 채점 결과가 색과 굵기로만 구분돼 시각에 의존하므로(WCAG 1.4.1),
           // 판정과 다음 행동을 문장으로 읽어주는 liveRegion을 덧입힌다.
+          // 안쪽 Text의 시맨틱스는 살려둔다. 인식된 말과 안내 문구는 화면에
+          // 실제로 보이는 텍스트라 접근성 트리에서 사라지면 안 되고,
+          // Maestro E2E도 접근성 트리를 통해 이 문구를 찾는다.
           Semantics(
             container: true,
             liveRegion: true,
             label: _speechStatusLabel(),
-            excludeSemantics: true,
             child: Text(
               _text.isEmpty ? '아래 마이크를 누르고 말씀하세요' : _text,
               textAlign: TextAlign.center,
@@ -330,8 +335,9 @@ class _SentenceReadingGameState extends State<SentenceReadingGame> {
           ),
           const SizedBox(height: 20),
           // 마이크는 아이콘만 있어 대체 텍스트가 없다. 아이콘 한국어 이름과
-          // 현재 상태(듣는 중/대기)를 라벨로 주되, GestureDetector의 탭 시맨틱스는
-          // 그대로 살려야 TalkBack 두 번 탭으로 실행되므로 하위를 제외하지 않는다.
+          // 현재 상태(듣는 중/대기)를 라벨로 준다. 하위 시맨틱스는 그대로 살린다.
+          // GestureDetector의 탭 시맨틱스가 있어야 TalkBack 두 번 탭으로 실행되고,
+          // Maestro E2E도 접근성 트리에서 이 요소를 찾아 누르기 때문이다.
           Semantics(
             button: true,
             enabled: !_isSaving,
@@ -352,15 +358,14 @@ class _SentenceReadingGameState extends State<SentenceReadingGame> {
             ),
           ),
           const SizedBox(height: 12),
-          // 같은 안내가 바로 위 마이크 버튼 라벨에 이미 들어 있어,
-          // 그대로 두면 스크린리더가 두 번 읽는다. 시각 안내는 유지하고
-          // 음성 경로에서만 뺀다.
-          ExcludeSemantics(
-            child: Text(
-              _isListening ? '듣고 있습니다... (다 읽으면 버튼 클릭)' : '마이크 버튼을 눌러 시작',
-              style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
-              textAlign: TextAlign.center,
-            ),
+          // 마이크 버튼 라벨과 내용이 겹쳐 스크린리더가 두 번 읽을 수 있지만,
+          // 화면에 보이는 안내 문구는 접근성 트리에도 남겨둔다.
+          // Maestro E2E가 이 문구로 듣는 중/대기 상태를 확인하고,
+          // 스크린리더 사용자에게도 보이는 정보가 빠져서는 안 되기 때문이다.
+          Text(
+            _isListening ? '듣고 있습니다... (다 읽으면 버튼 클릭)' : '마이크 버튼을 눌러 시작',
+            style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
+            textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
         ],

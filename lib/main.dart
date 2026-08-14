@@ -79,15 +79,8 @@ Future<void> _prepareNotifications() async {
 /// 예전에는 전부 `runApp` 앞에서 `await` 되어 안드로이드 `Displayed`
 /// (= 첫 프레임) 시각을 그대로 밀어냈고, 실측이 `+15s078ms`였다.
 Future<void> _bootstrap({required bool isEmulator}) async {
-  if (isEmulator) return;
-
-  // 만보기 백그라운드 서비스 설정. autoStart:false라 여기서 실제로 시작되는 건
-  // 없고, 사용자가 만보기를 켤 때 비로소 startService가 불린다.
-  try {
-    await PedometerBackgroundService.initializeService();
-  } catch (e) {
-    debugPrint('[bootstrap] 만보기 서비스 설정 실패: $e');
-  }
+  // ── 에뮬레이터 빌드에서도 필요한 것 ──────────────────────────────
+  // 네트워크가 없어도 로컬 폴백으로 동작하므로 건너뛰면 안 된다.
 
   // 규칙 기반 엔진 준비 (모델 파일 없으면 그대로 규칙 기반으로 동작).
   await LocalAIService.initialize();
@@ -98,6 +91,18 @@ Future<void> _bootstrap({required bool isEmulator}) async {
     await AiChatService.initialize();
   } catch (e) {
     debugPrint('[bootstrap] AI 대화 초기화 실패 — 로컬 폴백으로 계속한다: $e');
+  }
+
+  // ── 실제 기기에서만 필요한 것 ────────────────────────────────────
+  // 네트워크·센서·알림 채널은 에뮬레이터 QA 빌드에서 건너뛴다.
+  if (isEmulator) return;
+
+  // 만보기 백그라운드 서비스 설정. autoStart:false라 여기서 실제로 시작되는 건
+  // 없고, 사용자가 만보기를 켤 때 비로소 startService가 불린다.
+  try {
+    await PedometerBackgroundService.initializeService();
+  } catch (e) {
+    debugPrint('[bootstrap] 만보기 서비스 설정 실패: $e');
   }
 
   await FirebaseService.initialize();

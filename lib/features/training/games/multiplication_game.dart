@@ -195,12 +195,13 @@ class _MultiplicationGameState extends State<MultiplicationGame> {
                     color: theme.colorScheme.surfaceContainerHighest,
                     borderRadius: BorderRadius.circular(30),
                   ),
-                  // 수식 텍스트 자체는 기호라서 낭독이 무의미하다.
-                  // excludeSemantics 로 원문을 가리고 한국어 label 만 읽히게 한다.
+                  // '×' 기호는 스크린리더가 뜻대로 읽지 못하므로 한국어 label 을 덧붙인다.
+                  // 다만 자식 시맨틱스는 지우지 않는다. 화면에 보이는 수식 텍스트가
+                  // 접근성 트리에 그대로 남아야 Maestro E2E 가 이 요소를 찾을 수 있고,
+                  // 보이는 글자가 트리에서 사라지는 편이 중복 낭독보다 더 나쁘다.
                   child: Semantics(
                     liveRegion: true,
                     label: _questionSemanticsLabel,
-                    excludeSemantics: true,
                     child: Text(
                       _expression,
                       style: TextStyle(
@@ -237,12 +238,13 @@ class _MultiplicationGameState extends State<MultiplicationGame> {
                     ),
                   ),
                   // 바깥이 아니라 버튼의 child 를 감싼다. 그래야 Key 와 탭 동작이
-                  // 그대로 ElevatedButton 에 남고, 버튼 노드 하나로 병합되어
-                  // "12" 처럼 숫자만 중복 낭독되는 일이 없다.
+                  // 그대로 ElevatedButton 에 남는다. label 은 "몇 번째 보기인지"를
+                  // 알려 주는 추가 정보일 뿐이므로, 보기 숫자 자체의 시맨틱스는
+                  // 지우지 않고 살려 둔다. Maestro E2E 가 접근성 트리에서 숫자
+                  // 텍스트로 보기를 찾기 때문이다.
                   child: Semantics(
                     button: true,
                     label: '${index + 1}번 보기, ${_options[index]}',
-                    excludeSemantics: true,
                     child: FittedBox(
                       fit: BoxFit.scaleDown,
                       child: Text(

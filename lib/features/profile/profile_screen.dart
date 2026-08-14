@@ -36,7 +36,8 @@ class ProfileScreen extends StatelessWidget {
         ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(22, 6, 22, 110),
+        padding: const EdgeInsets.fromLTRB(
+            22, 6, 22, FloatingPillNav.contentBottomInset),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

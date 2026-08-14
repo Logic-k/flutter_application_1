@@ -263,13 +263,15 @@ class _ShapeSudokuGameState extends State<ShapeSudokuGame> {
                 aspectRatio: 1,
                 // 문항 전체를 하나의 라이브 영역으로 묶는다. 문항이 바뀌면 label도
                 // 바뀌므로 TalkBack이 새 격자를 자동으로 읽어 준다.
-                // 하위는 아이콘과 '?' 텍스트뿐이라 그대로 두면 "?"만 낭독되어
-                // 의미가 없으므로 excludeSemantics로 막고 label에 전부 담는다.
+                // label에는 격자를 줄 단위로 풀어 쓴 요약을 담되, 자식 시맨틱스는
+                // 지우지 않는다. 화면에 보이는 '?' 텍스트가 접근성 트리에 남아 있어야
+                // 스크린리더 사용자도 눈에 보이는 것과 같은 정보를 얻고,
+                // 접근성 트리로 요소를 찾는 Maestro E2E도 문항을 인식할 수 있다.
+                // 요약과 개별 셀이 겹쳐 낭독되는 편이, 정보가 사라지는 것보다 낫다.
                 // Semantics는 제약을 그대로 통과시키므로 레이아웃에는 영향이 없다.
                 child: Semantics(
                   liveRegion: true,
                   label: _buildGridSemanticLabel(),
-                  excludeSemantics: true,
                   child: Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(

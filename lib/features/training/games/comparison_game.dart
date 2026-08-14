@@ -183,14 +183,20 @@ class _ComparisonGameState extends State<ComparisonGame> {
           Row(
             children: [
               Expanded(child: _buildChoiceCard(theme, _leftExpr, true)),
-              // 가운데 'VS'는 시각적 구분자일 뿐이라 그대로 읽히면 소음이 된다.
-              // 대신 이 자리를 문항 라이브 리전으로 삼아, 두 카드 사이에 놓인
-              // 잎(leaf) 노드 하나가 문항 전체를 대신 낭독하게 했다.
-              // (보기 카드를 감싸지 않았으므로 보기 label과 중복 낭독되지 않는다)
+              // 가운데 'VS' 자리를 문항 라이브 리전으로 삼아, 문항이 바뀔 때마다
+              // 스크린리더가 새 문항 전체를 자동으로 읽어 주도록 label을 붙였다.
+              // 자식('VS' 텍스트)의 시맨틱스는 지우지 않는다. 화면에 보이는 글자는
+              // 접근성 트리에도 남아 있어야 하고, Maestro E2E가 접근성 트리로
+              // 요소를 찾기 때문에 'VS'가 사라지면 게이팅 시나리오가 깨진다.
+              // 낭독이 약간 겹치더라도 정보가 사라지는 쪽보다 낫다.
               Semantics(
                 liveRegion: true,
-                excludeSemantics: true,
                 label: _buildQuestionSemanticsLabel(),
+                // label만 주면 자식 'VS'의 시맨틱스가 이 노드로 **병합**되어
+                // 노드 텍스트가 "문항 전체 + VS"가 된다. 그러면 화면에 또렷이
+                // 보이는 'VS'라는 요소가 접근성 트리에서는 사라진 것과 같다.
+                // explicitChildNodes로 자식이 제 노드를 유지하게 한다.
+                explicitChildNodes: true,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: Text(
@@ -215,13 +221,15 @@ class _ComparisonGameState extends State<ComparisonGame> {
     final bool enabled = !_isSaving && !_isFinished;
 
     // Key와 탭 동작은 InkWell에 그대로 두고 바깥만 Semantics로 감싼다.
-    // excludeSemantics로 안쪽 숫자 Text의 중복 낭독을 막는 대신,
-    // 자식의 탭 액션까지 함께 가려지므로 스크린리더 이중 탭이 죽지 않도록
+    // label에는 '1번 보기, 왼쪽'처럼 위치 정보를 덧붙여, 소리만 듣는 사용자도
+    // 좌우를 구분할 수 있게 한다. 다만 안쪽 숫자 Text의 시맨틱스는 지우지 않는다.
+    // 화면에 보이는 보기 숫자는 접근성 트리에 남아야 하며, Maestro E2E가
+    // 접근성 트리로 요소를 찾으므로 숫자가 사라지면 시나리오가 실패한다.
+    // 자식 시맨틱스를 살려 둔 상태에서도 스크린리더 이중 탭이 확실히 동작하도록
     // 동일한 처리를 Semantics의 onTap에 한 번 더 선언해 둔다.
     return Semantics(
       button: true,
       enabled: enabled,
-      excludeSemantics: true,
       label: _buildChoiceSemanticsLabel(expr, isLeft),
       onTap: enabled ? () => _checkAnswer(isLeft) : null,
       child: InkWell(

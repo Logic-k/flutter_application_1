@@ -61,7 +61,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator(color: MLColors.primary))
           : SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(22, 6, 22, 110),
+              padding: const EdgeInsets.fromLTRB(
+                  22, 6, 22, FloatingPillNav.contentBottomInset),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [

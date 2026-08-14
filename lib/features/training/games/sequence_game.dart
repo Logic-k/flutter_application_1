@@ -196,14 +196,17 @@ class _SequenceGameState extends State<SequenceGame> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           // 숫자 칸이 하나씩 따로 읽히면 '순서'라는 문제의 핵심이 전달되지 않는다.
-          // 그래서 칸 각각의 낭독은 제외하고(excludeSemantics), 순서 전체를 담은
-          // 문장 하나로 대체한다. liveRegion 은 label 이 바뀔 때 스스로 다시 읽히므로
+          // 그래서 순서 전체를 담은 문장을 label 로 얹어 맥락을 보강한다.
+          // 다만 자식 시맨틱스는 지우지 않는다. 각 칸의 숫자와 '?' 는 화면에 실제로
+          // 보이는 텍스트이므로 접근성 트리에도 남아 있어야 하고, Maestro E2E 가
+          // 바로 그 트리에서 요소를 찾기 때문이다. 낭독이 조금 겹치더라도
+          // 정보가 통째로 사라지는 것보다 낫다.
+          // liveRegion 은 label 이 바뀔 때 스스로 다시 읽히므로
           // 문항이 넘어가면 새 문제가 자동으로 안내된다.
           Semantics(
             container: true,
             liveRegion: true,
             label: _questionSemanticsLabel(),
-            excludeSemantics: true,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: _sequence.map((n) {
@@ -252,10 +255,12 @@ class _SequenceGameState extends State<SequenceGame> {
               final index = entry.key;
               final opt = entry.value;
               // 보기가 숫자뿐이라 '7' 처럼만 읽히면 네 개 중 어느 버튼인지 구분되지 않는다.
-              // 그래서 버튼 안쪽 Text 의 낭독만 번호가 붙은 라벨로 대체한다.
-              // 버튼 자체(Key·onPressed·InkWell)는 손대지 않아야 탭 동작과 E2E 참조가
-              // 그대로 유지되고, MergeSemantics 로 버튼 노드와 라벨을 한 노드로 합쳐
-              // '1번 보기, 7, 버튼' 처럼 한 번만 읽히게 한다.
+              // 그래서 번호를 붙인 label 을 더해 몇 번째 보기인지 알려 준다.
+              // 안쪽 Text 의 시맨틱스는 지우지 않는다. 화면에 보이는 숫자는 접근성
+              // 트리에도 남아 있어야 하며, Maestro E2E 가 그 트리에서 보기 숫자를
+              // 찾아 탭하기 때문이다. MergeSemantics 로 버튼 노드와 label 을 한 노드로
+              // 합쳐 두면 여러 노드로 흩어지지 않고 이어서 읽힌다.
+              // 버튼 자체(Key·onPressed)는 손대지 않아야 탭 동작과 E2E 참조가 유지된다.
               return MergeSemantics(
                 child: ElevatedButton(
                   key: Key('sequence-answer-$index'),
@@ -274,7 +279,6 @@ class _SequenceGameState extends State<SequenceGame> {
                   child: Semantics(
                     button: true,
                     label: '${index + 1}번 보기, $opt',
-                    excludeSemantics: true,
                     child: Text('$opt'),
                   ),
                 ),

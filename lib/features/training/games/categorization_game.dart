@@ -251,13 +251,15 @@ class _CategorizationGameState extends State<CategorizationGame> {
           // 단어 카드
           // 문항이 바뀌어도 화면 전환이 없어 스크린리더가 변화를 알아채지 못한다.
           // liveRegion으로 지정해 단계가 넘어갈 때마다 새 단어가 자동 낭독되게 한다.
-          // 카드 안의 Text가 따로 읽혀 중복되지 않도록 excludeSemantics를 쓰고,
-          // 대신 label에 문항 번호·단어·해야 할 일을 모두 담는다.
+          // label에는 문항 번호와 해야 할 일까지 담아 맥락을 보강하되,
+          // 카드 안 Text의 시맨틱스는 지우지 않고 그대로 남긴다.
+          // 화면에 보이는 단어는 접근성 트리에도 남아 있어야 하고,
+          // Maestro E2E가 접근성 트리로 문항 텍스트를 찾기 때문이다.
+          // 낭독이 조금 겹치는 편이 정보가 사라지는 것보다 낫다.
           Semantics(
             liveRegion: true,
             label:
                 '$_currentStep번 문제. ${q['item']}. 어느 분류에 속하는지 아래 보기에서 고르세요.',
-            excludeSemantics: true,
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 22),
               decoration: BoxDecoration(
@@ -289,15 +291,16 @@ class _CategorizationGameState extends State<CategorizationGame> {
                 final option = q['options'][idx] as String;
                 final disabled = _waitingNext || _isSaving;
                 // 보기 버튼은 텍스트만 읽히면 "과일"처럼 몇 번째 보기인지 알 수 없다.
-                // 보기 번호를 앞에 붙여 순서를 파악하게 하고, 버튼 내부 Text가 중복
-                // 낭독되지 않도록 excludeSemantics로 막는다. 대신 자식 semantics를
-                // 제외하면 버튼의 탭 액션까지 사라지므로, 같은 조건·같은 콜백을
-                // onTap으로 다시 연결해 TalkBack 두 번 탭 동작을 보존한다.
+                // 그래서 보기 번호를 앞에 붙인 label로 순서 정보를 보강한다.
+                // 다만 버튼 내부 Text의 시맨틱스는 지우지 않는다. 보기 글자는 화면에
+                // 보이는 정보라 접근성 트리에도 남아 있어야 하고, Maestro E2E가
+                // 접근성 트리에서 보기 텍스트를 찾아 탭하기 때문이다.
+                // onTap은 OutlinedButton과 같은 조건·같은 콜백으로 연결해
+                // TalkBack 두 번 탭 동작을 보장한다.
                 return Semantics(
                   button: true,
                   enabled: !disabled,
                   label: '${idx + 1}번 보기, $option',
-                  excludeSemantics: true,
                   onTap: disabled ? null : () => _checkAnswer(option),
                   child: SizedBox(
                     height: 64,
@@ -341,11 +344,11 @@ class _CategorizationGameState extends State<CategorizationGame> {
         ? Colors.orange
         : Colors.red;
     // 난이도는 배지 색(초록/주황/빨강)으로도 구분되지만 색은 스크린리더에 전달되지 않는다.
-    // 텍스트와 동일한 정보를 label로 명시하고, 장식용 막대그래프 아이콘이 따로
-    // 읽히지 않도록 하위 semantics는 제외한다.
+    // 그래서 "현재 난이도"라는 맥락을 붙인 label로 의미를 보강한다.
+    // 배지 안 Text의 시맨틱스는 그대로 살려 둔다. 화면에 보이는 등급 문구는
+    // 접근성 트리에도 있어야 하며, Maestro E2E가 그 텍스트로 난이도를 검증한다.
     return Semantics(
       label: '현재 난이도 $label',
-      excludeSemantics: true,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
         decoration: BoxDecoration(

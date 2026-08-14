@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/ml_widgets.dart';
 import 'application/training_completion_ui.dart';
 import 'domain/training_activity.dart';
 import 'domain/training_catalog.dart';
@@ -25,7 +26,8 @@ class TrainingHubScreen extends StatelessWidget {
         onRefresh: progress.refresh,
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 110),
+          padding: const EdgeInsets.fromLTRB(
+              20, 8, 20, FloatingPillNav.contentBottomInset),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [

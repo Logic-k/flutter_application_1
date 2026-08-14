@@ -14,6 +14,41 @@ import '../training/training_progress_provider.dart';
 /// 하루 걸음 목표. 진행률 계산과 표기가 같은 값을 보게 한다.
 const int _stepGoal = 10000;
 
+/// 히어로 카드(보라 그라디언트) 위에 얹는 성취 배지.
+/// 배경이 진한 보라라 흰 글자가 충분한 대비를 갖는다.
+class _HeroBadge extends StatelessWidget {
+  final IconData icon;
+  final String text;
+
+  const _HeroBadge({required this.icon, required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.18),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 15, color: Colors.white),
+          const SizedBox(width: 5),
+          Text(
+            text,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -69,7 +104,8 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(22, 6, 22, 110),
+        padding: const EdgeInsets.fromLTRB(
+            22, 6, 22, FloatingPillNav.contentBottomInset),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -77,7 +113,7 @@ class _HomeScreenState extends State<HomeScreen> {
               context,
               userProvider,
               pedometer,
-              trainingProgress.todayDistinctActivityCount,
+              trainingProgress,
               todayStr,
             ),
             const SizedBox(height: 20),
@@ -109,9 +145,10 @@ class _HomeScreenState extends State<HomeScreen> {
     BuildContext context,
     UserProvider userProvider,
     PedometerManager pedometer,
-    int todayTrainingCount,
+    TrainingProgressProvider progress,
     String todayStr,
   ) {
+    final todayTrainingCount = progress.todayDistinctActivityCount;
     final stepProgress = (pedometer.todaySteps / _stepGoal).clamp(0.0, 1.0);
 
     return MLHeroCard(
@@ -144,8 +181,45 @@ class _HomeScreenState extends State<HomeScreen> {
               )),
             ],
           ),
+          // 레벨·연속학습은 지금까지 훈련 허브에서만 보였다. 최장 기록은 DB에
+          // 저장되고 Provider까지 올라오는데도 어느 화면에서도 그려지지 않았다.
+          // 매일 여는 화면에 있어야 계속할 이유가 된다.
+          if (!progress.isLoading) ...[
+            const SizedBox(height: 16),
+            _buildProgressBadges(progress),
+          ],
         ],
       ),
+    );
+  }
+
+  /// 히어로 카드 하단의 성취 배지 줄.
+  Widget _buildProgressBadges(TrainingProgressProvider progress) {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        _HeroBadge(
+          icon: Icons.military_tech_rounded,
+          text: '레벨 ${progress.level}',
+        ),
+        _HeroBadge(
+          icon: Icons.bolt_rounded,
+          text: '${Fmt.count(progress.totalXp)} XP',
+        ),
+        if (progress.currentStreak > 0)
+          _HeroBadge(
+            icon: Icons.local_fire_department_rounded,
+            text: '${progress.currentStreak}일 연속',
+          ),
+        // 최장 기록은 지금 기록을 넘어섰을 때만 보여준다. 같은 값을 두 번
+        // 보여주면 정보가 아니라 잡음이다.
+        if (progress.longestStreak > progress.currentStreak)
+          _HeroBadge(
+            icon: Icons.emoji_events_rounded,
+            text: '최장 ${progress.longestStreak}일',
+          ),
+      ],
     );
   }
 
