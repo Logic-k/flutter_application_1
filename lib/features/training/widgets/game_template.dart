@@ -61,6 +61,9 @@ class _GameTemplateState extends State<GameTemplate> {
         title: Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
         leading: IconButton(
           icon: const Icon(Icons.close_rounded),
+          // tooltip이 없으면 TalkBack이 이 버튼을 "버튼"이라고만 읽는다.
+          // Flutter는 tooltip을 그대로 Semantics label로 노출한다.
+          tooltip: '훈련 그만두기',
           onPressed: onExit ?? () => context.pop(),
         ),
         actions: [
@@ -83,9 +86,11 @@ class _GameTemplateState extends State<GameTemplate> {
                       child: Text(
                         '목표: ${targetTime.toStringAsFixed(1)}초',
                         style: const TextStyle(
-                          color: MLColors.primary,
+                          // primary(#6C5CE7)를 primarySoft(#ECE9FC) 위에 얹으면
+                          // 4.08:1로 AA에 못 미친다. 같은 계열의 더 어두운 값을 쓴다.
+                          color: MLColors.primaryDeep,
                           fontWeight: FontWeight.w800,
-                          fontSize: 13,
+                          fontSize: 13.5,
                         ),
                       ),
                     ),

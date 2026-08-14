@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../../core/settings_provider.dart';
@@ -205,9 +206,20 @@ class _CategorizationGameState extends State<CategorizationGame> {
 
   void _showFeedback(bool isCorrect) {
     final theme = Theme.of(context);
+    final message = isCorrect ? '정답입니다!' : '아쉽네요. 다음 문제를 풀어보세요.';
+
+    // 정오답이 스낵바 배경색(초록/빨강)으로만 구분되면 색을 못 보는 사용자는 결과를 알 수 없다.
+    // 스낵바는 짧게 떴다 사라져 포커스를 받지 못하므로, 스크린리더에 직접 낭독을 요청해
+    // 청각 경로를 따로 만든다(WCAG 1.4.1).
+    SemanticsService.sendAnnouncement(
+      View.of(context),
+      message,
+      Directionality.of(context),
+    );
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(isCorrect ? '정답입니다!' : '아쉽네요. 다음 문제를 풀어보세요.'),
+        content: Text(message),
         backgroundColor: isCorrect
             ? Colors.green.shade600
             : theme.colorScheme.error,
@@ -237,21 +249,31 @@ class _CategorizationGameState extends State<CategorizationGame> {
           const SizedBox(height: 20),
 
           // 단어 카드
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 22),
-            decoration: BoxDecoration(
-              color: theme.primaryColor.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(
-                color: theme.primaryColor.withValues(alpha: 0.25),
-                width: 2,
+          // 문항이 바뀌어도 화면 전환이 없어 스크린리더가 변화를 알아채지 못한다.
+          // liveRegion으로 지정해 단계가 넘어갈 때마다 새 단어가 자동 낭독되게 한다.
+          // 카드 안의 Text가 따로 읽혀 중복되지 않도록 excludeSemantics를 쓰고,
+          // 대신 label에 문항 번호·단어·해야 할 일을 모두 담는다.
+          Semantics(
+            liveRegion: true,
+            label:
+                '$_currentStep번 문제. ${q['item']}. 어느 분류에 속하는지 아래 보기에서 고르세요.',
+            excludeSemantics: true,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 22),
+              decoration: BoxDecoration(
+                color: theme.primaryColor.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(
+                  color: theme.primaryColor.withValues(alpha: 0.25),
+                  width: 2,
+                ),
               ),
-            ),
-            child: Text(
-              q['item'],
-              style: theme.textTheme.displaySmall?.copyWith(
-                color: theme.primaryColor,
-                fontWeight: FontWeight.bold,
+              child: Text(
+                q['item'],
+                style: theme.textTheme.displaySmall?.copyWith(
+                  color: theme.primaryColor,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ),
@@ -265,25 +287,36 @@ class _CategorizationGameState extends State<CategorizationGame> {
               separatorBuilder: (_, _) => const SizedBox(height: 14),
               itemBuilder: (context, idx) {
                 final option = q['options'][idx] as String;
-                return SizedBox(
-                  height: 64,
-                  child: OutlinedButton(
-                    onPressed: _waitingNext || _isSaving
-                        ? null
-                        : () => _checkAnswer(option),
-                    style: OutlinedButton.styleFrom(
-                      side: BorderSide(
-                        color: theme.colorScheme.outlineVariant,
-                        width: 2,
+                final disabled = _waitingNext || _isSaving;
+                // 보기 버튼은 텍스트만 읽히면 "과일"처럼 몇 번째 보기인지 알 수 없다.
+                // 보기 번호를 앞에 붙여 순서를 파악하게 하고, 버튼 내부 Text가 중복
+                // 낭독되지 않도록 excludeSemantics로 막는다. 대신 자식 semantics를
+                // 제외하면 버튼의 탭 액션까지 사라지므로, 같은 조건·같은 콜백을
+                // onTap으로 다시 연결해 TalkBack 두 번 탭 동작을 보존한다.
+                return Semantics(
+                  button: true,
+                  enabled: !disabled,
+                  label: '${idx + 1}번 보기, $option',
+                  excludeSemantics: true,
+                  onTap: disabled ? null : () => _checkAnswer(option),
+                  child: SizedBox(
+                    height: 64,
+                    child: OutlinedButton(
+                      onPressed: disabled ? null : () => _checkAnswer(option),
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(
+                          color: theme.colorScheme.outlineVariant,
+                          width: 2,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
                       ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
-                    child: Text(
-                      option,
-                      style: theme.textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
+                      child: Text(
+                        option,
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
@@ -307,27 +340,34 @@ class _CategorizationGameState extends State<CategorizationGame> {
         : level <= 6
         ? Colors.orange
         : Colors.red;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.bar_chart_outlined, size: 15, color: color),
-          const SizedBox(width: 6),
-          Text(
-            label,
-            style: TextStyle(
-              color: color,
-              fontWeight: FontWeight.bold,
-              fontSize: 13,
+    // 난이도는 배지 색(초록/주황/빨강)으로도 구분되지만 색은 스크린리더에 전달되지 않는다.
+    // 텍스트와 동일한 정보를 label로 명시하고, 장식용 막대그래프 아이콘이 따로
+    // 읽히지 않도록 하위 semantics는 제외한다.
+    return Semantics(
+      label: '현재 난이도 $label',
+      excludeSemantics: true,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.bar_chart_outlined, size: 15, color: color),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: TextStyle(
+                color: color,
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

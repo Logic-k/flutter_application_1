@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'dart:math';
@@ -35,6 +36,33 @@ class _ShapeSudokuGameState extends State<ShapeSudokuGame> {
     Icons.beach_access_outlined,
     Icons.waves_outlined,
   ];
+
+  // 보기와 격자는 아이콘만 그리므로 스크린리더가 읽을 텍스트가 존재하지 않는다.
+  // 이 게임에서 실제로 사용하는 4개 기호만 한국어 이름으로 옮겨 준다.
+  // IconData는 == 를 재정의하고 있어 const Map의 키로 쓸 수 없으므로 조건문으로 둔다.
+  static String _symbolName(IconData icon) {
+    if (icon == Icons.wb_sunny_outlined) return '해';
+    if (icon == Icons.cloud_outlined) return '구름';
+    if (icon == Icons.beach_access_outlined) return '우산';
+    if (icon == Icons.waves_outlined) return '물결';
+    return '보기';
+  }
+
+  // 격자를 "줄 단위"로 읽어 줘야 가로·세로에 겹치면 안 된다는 규칙을
+  // 눈으로 보지 않고도 귀로 따라갈 수 있다.
+  String _buildGridSemanticLabel() {
+    final buffer = StringBuffer('$_gridSize 곱하기 $_gridSize 그림 스도쿠 문제. ');
+    for (var r = 0; r < _gridSize; r++) {
+      final cells = <String>[];
+      for (var c = 0; c < _gridSize; c++) {
+        final isTarget = r == _targetRow && c == _targetCol;
+        cells.add(isTarget ? '물음표' : _symbolName(_symbols[_grid[r][c]]));
+      }
+      buffer.write('${r + 1}번째 줄, ${cells.join(', ')}. ');
+    }
+    buffer.write('물음표 자리에 들어갈 그림을 고르세요.');
+    return buffer.toString();
+  }
 
   late int _gridSize; // 3 또는 4
   late List<List<int>> _grid;
@@ -110,6 +138,16 @@ class _ShapeSudokuGameState extends State<ShapeSudokuGame> {
     } else {
       if (haptic) HapticFeedback.heavyImpact();
     }
+
+    // 정답/오답이 진동으로만 전달되고 화면에는 아무 표시 없이 다음 문항으로 넘어간다.
+    // 시각·촉각 외의 경로가 없으면 스크린리더 사용자는 결과를 알 수 없다(WCAG 1.4.1).
+    SemanticsService.sendAnnouncement(
+      View.of(context),
+      isCorrect
+          ? '정답입니다.'
+          : '틀렸습니다. 정답은 ${_symbolName(_symbols[_correctSymbolIdx])}입니다.',
+      Directionality.of(context),
+    );
 
     context.read<DifficultyProvider>().updatePerformance(
       GameCategory.memory,
@@ -194,15 +232,18 @@ class _ShapeSudokuGameState extends State<ShapeSudokuGame> {
       child: Column(
         children: [
           // 난이도 + 권장시간 배지
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+          // Row로 두면 좁은 폭·큰 글자 배율에서 가로로 넘친다.
+          // Wrap은 글자 크기를 줄이지 않고 다음 줄로 내린다(고령 사용자 가독성 유지).
+          Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 10,
+            runSpacing: 8,
             children: [
               _infoBadge(
                 theme,
                 Icons.bar_chart_outlined,
                 'Lv.$level  $_gridSize×$_gridSize',
               ),
-              const SizedBox(width: 10),
               _infoBadge(
                 theme,
                 Icons.timer_outlined,
@@ -210,93 +251,124 @@ class _ShapeSudokuGameState extends State<ShapeSudokuGame> {
               ),
             ],
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
 
           // 그리드
-          AspectRatio(
-            aspectRatio: 1,
-            child: Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: theme.cardColor,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(
-                      alpha: theme.brightness == Brightness.light ? 0.05 : 0.2,
-                    ),
-                    blurRadius: 10,
-                  ),
-                ],
-              ),
-              child: Table(
-                border: TableBorder.all(color: theme.dividerColor, width: 2),
-                children: List.generate(_gridSize, (r) {
-                  return TableRow(
-                    children: List.generate(_gridSize, (c) {
-                      final isTarget = r == _targetRow && c == _targetCol;
-                      return AspectRatio(
-                        aspectRatio: 1,
-                        child: Container(
-                          alignment: Alignment.center,
-                          color: isTarget
-                              ? theme.primaryColor.withValues(alpha: 0.12)
-                              : null,
-                          child: isTarget
-                              ? Text(
-                                  '?',
-                                  style: TextStyle(
-                                    fontSize: questionFontSize,
-                                    fontWeight: FontWeight.bold,
-                                    color: theme.primaryColor,
-                                  ),
-                                )
-                              : Icon(
-                                  _symbols[_grid[r][c]],
-                                  size: iconSize,
-                                  color: theme.colorScheme.onSurface.withValues(
-                                    alpha: 0.8,
-                                  ),
-                                ),
+          // Expanded + AspectRatio: 폭이 아니라 "남은 세로 공간"에 맞춰 정사각형을
+          // 유지한 채 축소된다. 고정 높이로 두면 작은 화면·큰 글자 배율에서
+          // 하단 보기 버튼이 잘린다.
+          Expanded(
+            child: Center(
+              child: AspectRatio(
+                aspectRatio: 1,
+                // 문항 전체를 하나의 라이브 영역으로 묶는다. 문항이 바뀌면 label도
+                // 바뀌므로 TalkBack이 새 격자를 자동으로 읽어 준다.
+                // 하위는 아이콘과 '?' 텍스트뿐이라 그대로 두면 "?"만 낭독되어
+                // 의미가 없으므로 excludeSemantics로 막고 label에 전부 담는다.
+                // Semantics는 제약을 그대로 통과시키므로 레이아웃에는 영향이 없다.
+                child: Semantics(
+                  liveRegion: true,
+                  label: _buildGridSemanticLabel(),
+                  excludeSemantics: true,
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: theme.cardColor,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(
+                            alpha: theme.brightness == Brightness.light
+                                ? 0.05
+                                : 0.2,
+                          ),
+                          blurRadius: 10,
                         ),
-                      );
-                    }),
-                  );
-                }),
+                      ],
+                    ),
+                    child: Table(
+                      border: TableBorder.all(
+                        color: theme.dividerColor,
+                        width: 2,
+                      ),
+                      children: List.generate(_gridSize, (r) {
+                        return TableRow(
+                          children: List.generate(_gridSize, (c) {
+                            final isTarget = r == _targetRow && c == _targetCol;
+                            return AspectRatio(
+                              aspectRatio: 1,
+                              child: Container(
+                                alignment: Alignment.center,
+                                color: isTarget
+                                    ? theme.primaryColor.withValues(alpha: 0.12)
+                                    : null,
+                                child: isTarget
+                                    ? FittedBox(
+                                        fit: BoxFit.scaleDown,
+                                        child: Text(
+                                          '?',
+                                          style: TextStyle(
+                                            fontSize: questionFontSize,
+                                            fontWeight: FontWeight.bold,
+                                            color: theme.primaryColor,
+                                          ),
+                                        ),
+                                      )
+                                    : Icon(
+                                        _symbols[_grid[r][c]],
+                                        size: iconSize,
+                                        color: theme.colorScheme.onSurface
+                                            .withValues(alpha: 0.8),
+                                      ),
+                              ),
+                            );
+                          }),
+                        );
+                      }),
+                    ),
+                  ),
+                ),
               ),
             ),
           ),
 
-          const Spacer(),
+          const SizedBox(height: 16),
           Text(
             '알맞은 그림을 선택하세요',
             style: theme.textTheme.titleSmall?.copyWith(
               fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
 
           // 보기 버튼 (_gridSize 개)
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: List.generate(_gridSize, (idx) {
-              return InkWell(
-                onTap: _isSaving ? null : () => _checkAnswer(idx),
-                borderRadius: BorderRadius.circular(16),
-                child: Container(
-                  width: btnSize,
-                  height: btnSize,
-                  decoration: BoxDecoration(
-                    color: theme.cardColor,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: theme.primaryColor.withValues(alpha: 0.25),
+              // 보기는 아이콘뿐이라 낭독할 이름이 없고, 순서로도 지목할 수 없다.
+              // "몇 번째 보기인지 + 무슨 그림인지"를 함께 담아야 음성만으로 고를 수 있다.
+              // InkWell을 감싸 두면 탭 동작(onTap) 시맨틱스는 그대로 유지된다.
+              return Semantics(
+                button: true,
+                label: '${idx + 1}번 보기, ${_symbolName(_symbols[idx])}',
+                child: InkWell(
+                  onTap: _isSaving ? null : () => _checkAnswer(idx),
+                  borderRadius: BorderRadius.circular(16),
+                  child: Container(
+                    width: btnSize,
+                    height: btnSize,
+                    decoration: BoxDecoration(
+                      color: theme.cardColor,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: theme.primaryColor.withValues(alpha: 0.25),
+                      ),
                     ),
-                  ),
-                  child: Icon(
-                    _symbols[idx],
-                    color: theme.primaryColor,
-                    size: btnIconSize,
+                    child: Icon(
+                      _symbols[idx],
+                      color: theme.primaryColor,
+                      size: btnIconSize,
+                    ),
                   ),
                 ),
               );

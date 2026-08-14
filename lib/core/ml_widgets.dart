@@ -69,7 +69,11 @@ class FloatingPillNav extends StatelessWidget {
                     onTap: () => onTap(i),
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 200),
-                      padding: EdgeInsets.symmetric(horizontal: on ? 14 : 10, vertical: 9),
+                      // 주 내비게이션이다. padding 9 + icon 22 = 40dp로는
+                      // 고령 사용자의 오탭이 잦다.
+                      constraints: const BoxConstraints(minHeight: 48, minWidth: 48),
+                      alignment: Alignment.center,
+                      padding: EdgeInsets.symmetric(horizontal: on ? 14 : 10, vertical: 13),
                       decoration: BoxDecoration(
                         color: on ? t.colorScheme.primary : Colors.transparent,
                         borderRadius: BorderRadius.circular(22),
@@ -77,12 +81,13 @@ class FloatingPillNav extends StatelessWidget {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(items[i].icon, size: 22, color: on ? t.colorScheme.onPrimary : MLColors.textFaint),
+                          // 비선택 탭도 읽혀야 한다. 예전 textFaint는 2.47:1이었다.
+                          Icon(items[i].icon, size: 22, color: on ? t.colorScheme.onPrimary : t.colorScheme.onSurfaceVariant),
                           if (showLabel) ...[
                             const SizedBox(width: 7),
                             Text(items[i].label, style: TextStyle(
                               fontSize: 13, fontWeight: FontWeight.w800,
-                              color: on ? t.colorScheme.onPrimary : MLColors.textFaint)),
+                              color: on ? t.colorScheme.onPrimary : t.colorScheme.onSurfaceVariant)),
                           ],
                         ],
                       ),
@@ -251,8 +256,8 @@ class MLGameCard extends StatelessWidget {
           MLIconTile(icon: icon, color: color, size: 48),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(color: MLColors.textSoft.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(11)),
-            child: Text('Lv.$level', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: MLColors.textSoft)),
+            decoration: BoxDecoration(color: t.colorScheme.onSurfaceVariant.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(11)),
+            child: Text('Lv.$level', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w800, color: t.colorScheme.onSurfaceVariant)),
           ),
         ]),
         const SizedBox(height: 12),
@@ -296,7 +301,7 @@ class MLMetricCard extends StatelessWidget {
       Row(crossAxisAlignment: CrossAxisAlignment.baseline, textBaseline: TextBaseline.alphabetic, children: [
         Text(value, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900)),
         const SizedBox(width: 4),
-        Text(unit, style: const TextStyle(fontSize: 12.5, color: MLColors.textSoft)),
+        Text(unit, style: TextStyle(fontSize: 13, color: Theme.of(context).colorScheme.onSurfaceVariant)),
       ]),
     ]),
   );
@@ -323,11 +328,11 @@ class MLListRow extends StatelessWidget {
           child: Icon(icon, color: color, size: 21)),
         const SizedBox(width: 13),
         Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(title, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: titleColor)),
+          Text(title, style: TextStyle(fontSize: 15.5, fontWeight: FontWeight.w700, color: titleColor)),
           if (subtitle != null) Padding(padding: const EdgeInsets.only(top: 2),
-            child: Text(subtitle!, style: const TextStyle(fontSize: 12.5, color: MLColors.textSoft))),
+            child: Text(subtitle!, style: TextStyle(fontSize: 13, color: Theme.of(context).colorScheme.onSurfaceVariant))),
         ])),
-        trailing ?? const Icon(Icons.chevron_right_rounded, color: MLColors.textFaint),
+        trailing ?? Icon(Icons.chevron_right_rounded, color: Theme.of(context).colorScheme.onSurfaceVariant),
       ]),
     ),
   );

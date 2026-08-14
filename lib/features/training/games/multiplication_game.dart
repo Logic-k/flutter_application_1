@@ -5,6 +5,7 @@ import '../../../core/user_provider.dart';
 import '../../../core/services/voice_service.dart';
 import '../application/training_attempt_input.dart';
 import '../application/training_completion_ui.dart';
+import '../widgets/adaptive_answer_grid.dart';
 import '../widgets/game_template.dart';
 import '../difficulty_provider.dart';
 import '../training_progress_provider.dart';
@@ -28,9 +29,20 @@ class _MultiplicationGameState extends State<MultiplicationGame> {
   bool _isFinished = false;
 
   late String _expression;
+  // 화면의 '×' 기호는 스크린리더가 곱셈으로 읽어 주지 못해 뜻이 사라진다.
+  // 그래서 낭독 전용 한국어 표현을 따로 보관한다.
+  late String _spokenExpression;
   late int _answer;
   late List<int> _options;
   bool _isInitialized = false;
+
+  // 이 게임은 정답/오답을 화면에 표시하지 않고 곧바로 다음 문항으로 넘어간다.
+  // 시각 정보조차 없으므로, 직전 결과를 다음 문항 낭독 앞에 붙여 청각 경로를 만든다.
+  String _feedbackLabel = '';
+
+  // liveRegion 은 label 이 바뀔 때 자동 낭독되므로, 문항이 바뀌면 새 문제가 읽힌다.
+  String get _questionSemanticsLabel =>
+      '$_feedbackLabel문제 $_currentStep번. $_spokenExpression. 정답을 아래 보기에서 고르세요.';
 
   @override
   void initState() {
@@ -52,22 +64,27 @@ class _MultiplicationGameState extends State<MultiplicationGame> {
       b = _random.nextInt(9) + 1;
       _answer = a * b;
       _expression = '$a × $b';
+      _spokenExpression = '$a 곱하기 $b';
     } else if (level <= 6) {
       a = _random.nextInt(8) + 2;
       b = _random.nextInt(9) + 1;
       _answer = a * b;
       _expression = '$a × $b';
+      _spokenExpression = '$a 곱하기 $b';
     } else if (level <= 9) {
       a = _random.nextInt(9) + 11;
       b = _random.nextInt(9) + 2;
       _answer = a * b;
       _expression = '$a × $b';
+      _spokenExpression = '$a 곱하기 $b';
     } else {
       a = _random.nextInt(8) + 2;
       b = _random.nextInt(8) + 2;
       c = _random.nextInt(20) + 1;
       _answer = (a * b) + c;
       _expression = '($a × $b) + $c';
+      // 괄호는 낭독되지 않으므로 계산 순서를 말로 풀어 준다.
+      _spokenExpression = '$a 곱하기 $b, 그 결과에 $c 더하기';
     }
 
     _options = [_answer];
@@ -87,6 +104,9 @@ class _MultiplicationGameState extends State<MultiplicationGame> {
 
     bool isCorrect = (selected == _answer);
     if (isCorrect) _score++;
+
+    // _generateProblem() 이 _answer 를 덮어쓰기 전에 결과 문구를 만들어 둔다.
+    _feedbackLabel = isCorrect ? '정답입니다. ' : '틀렸습니다. 정답은 $_answer 이었습니다. ';
 
     context.read<DifficultyProvider>().updatePerformance(
       GameCategory.calculation,
@@ -159,57 +179,84 @@ class _MultiplicationGameState extends State<MultiplicationGame> {
       totalSteps: _totalSteps,
       adaptiveCategory: GameCategory.calculation,
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 60),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(30),
-            ),
-            child: Text(
-              _expression,
-              style: TextStyle(
-                fontSize: 56,
-                fontWeight: FontWeight.w900,
-                color: theme.colorScheme.primary,
+          // 수식 카드: 세로 공간이 부족하면 비율을 유지한 채 축소된다.
+          Flexible(
+            flex: 4,
+            child: Center(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 40,
+                    vertical: 60,
+                  ),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.surfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  // 수식 텍스트 자체는 기호라서 낭독이 무의미하다.
+                  // excludeSemantics 로 원문을 가리고 한국어 label 만 읽히게 한다.
+                  child: Semantics(
+                    liveRegion: true,
+                    label: _questionSemanticsLabel,
+                    excludeSemantics: true,
+                    child: Text(
+                      _expression,
+                      style: TextStyle(
+                        fontSize: 56,
+                        fontWeight: FontWeight.w900,
+                        color: theme.colorScheme.primary,
+                      ),
+                    ),
+                  ),
+                ),
               ),
             ),
           ),
-          const SizedBox(height: 60),
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: 20,
-              mainAxisSpacing: 20,
+          const SizedBox(height: 24),
+          Expanded(
+            flex: 6,
+            child: AdaptiveAnswerGrid(
+              itemCount: _options.length,
+              columns: 2,
+              spacing: 20,
               childAspectRatio: 1.5,
+              itemBuilder: (context, index) {
+                return ElevatedButton(
+                  key: Key('multiplication-answer-$index'),
+                  onPressed: _isSaving || _isFinished
+                      ? null
+                      : () => _checkAnswer(_options[index]),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: theme.cardColor,
+                    foregroundColor: theme.colorScheme.onSurface,
+                    elevation: theme.brightness == Brightness.light ? 2 : 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+                  // 바깥이 아니라 버튼의 child 를 감싼다. 그래야 Key 와 탭 동작이
+                  // 그대로 ElevatedButton 에 남고, 버튼 노드 하나로 병합되어
+                  // "12" 처럼 숫자만 중복 낭독되는 일이 없다.
+                  child: Semantics(
+                    button: true,
+                    label: '${index + 1}번 보기, ${_options[index]}',
+                    excludeSemantics: true,
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        _options[index].toString(),
+                        style: const TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
             ),
-            itemCount: _options.length,
-            itemBuilder: (context, index) {
-              return ElevatedButton(
-                key: Key('multiplication-answer-$index'),
-                onPressed: _isSaving || _isFinished
-                    ? null
-                    : () => _checkAnswer(_options[index]),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: theme.cardColor,
-                  foregroundColor: theme.colorScheme.onSurface,
-                  elevation: theme.brightness == Brightness.light ? 2 : 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                ),
-                child: Text(
-                  _options[index].toString(),
-                  style: const TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              );
-            },
           ),
         ],
       ),
