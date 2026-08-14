@@ -40,8 +40,14 @@ $flows = @(
     "maestro/memory_garden_flow.yaml",
     "maestro/training_game_flow.yaml",
     "maestro/edit_profile_flow.yaml",
-    "maestro/clinical_report_flow.yaml"
+    "maestro/clinical_report_flow.yaml",
+    # 인지훈련 게임화(커밋 ff9b6fb)와 함께 추가된 flow. 게이팅 목록에서 누락돼 있었다.
+    "maestro/training_progression_flow.yaml",
+    "maestro/training_persistence_flow.yaml",
+    "maestro/training_accessibility_flow.yaml"
 )
+# 게이팅 제외: demo_recording_flow / demo_recording_v3 / screenshot_tour_flow
+# (데모 영상·스크린샷 촬영용이며 통과/실패로 품질을 판정하는 flow가 아니다)
 
 if ($Flow -ne "") {
     $flows = @("maestro/${Flow}.yaml")

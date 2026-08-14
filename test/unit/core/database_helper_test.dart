@@ -2,6 +2,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:flutter_application_1/core/database_helper.dart';
 
+/// `getRecentHealthLogs`는 `DateTime.now()` 기준 조회 창을 계산하므로
+/// 건강 기록 테스트의 날짜는 고정값이 아니라 실행 시점 기준으로 만든다.
+String _dateNDaysAgo(int days) => DateTime.now()
+    .subtract(Duration(days: days))
+    .toIso8601String()
+    .split('T')[0];
+
 void main() {
   setUpAll(() {
     sqfliteFfiInit();
@@ -212,19 +219,20 @@ void main() {
     });
 
     test('upsertHealthLog + getHealthLog: 같은 날짜는 갱신된다(1건 유지)', () async {
+      final today = _dateNDaysAgo(0);
       await db.upsertHealthLog(
-        userId: userId, date: '2026-07-12',
+        userId: userId, date: today,
         sleepHours: 7.0, sleepQuality: 3, systolic: 120, diastolic: 80,
         glucose: 95.0, dietScore: 3, memo: '첫 기록',
       );
       // 같은 날 다시 저장 → update
       await db.upsertHealthLog(
-        userId: userId, date: '2026-07-12',
+        userId: userId, date: today,
         sleepHours: 8.5, sleepQuality: 4, systolic: 118, diastolic: 78,
         glucose: 90.0, dietScore: 5, memo: '수정',
       );
 
-      final log = await db.getHealthLog(userId, '2026-07-12');
+      final log = await db.getHealthLog(userId, today);
       expect(log, isNotNull);
       expect(log!['sleep_hours'], 8.5);
       expect(log['diet_score'], 5);
@@ -234,6 +242,23 @@ void main() {
       expect(recent.length, 1, reason: '같은 날짜는 upsert되어 1건만 존재해야 한다');
     });
 
+    test('getRecentHealthLogs: 조회 창 밖의 기록은 제외한다', () async {
+      await db.upsertHealthLog(
+        userId: userId, date: _dateNDaysAgo(0), sleepHours: 7.0,
+      );
+      await db.upsertHealthLog(
+        userId: userId, date: _dateNDaysAgo(13), sleepHours: 6.0,
+      );
+      // 창은 now-(days-1)부터이므로 14일 조회에서 13일 전은 포함, 14일 전은 제외된다.
+      await db.upsertHealthLog(
+        userId: userId, date: _dateNDaysAgo(14), sleepHours: 5.0,
+      );
+
+      final recent = await db.getRecentHealthLogs(userId, 14);
+      expect(recent, hasLength(2));
+      expect(recent.map((e) => e['sleep_hours']), isNot(contains(5.0)));
+    });
+
     test('getHealthLog: 기록 없는 날짜는 null', () async {
       final log = await db.getHealthLog(userId, '2000-01-01');
       expect(log, isNull);
@@ -241,8 +266,11 @@ void main() {
 
     test('resetUserMeasurementData: 건강 기록도 삭제된다', () async {
       await db.upsertHealthLog(
-        userId: userId, date: '2026-07-12', sleepHours: 7.0, dietScore: 2,
+        userId: userId, date: _dateNDaysAgo(0), sleepHours: 7.0, dietScore: 2,
       );
+      // 삭제 전에 실제로 조회되는지 먼저 확인해야 isEmpty 검증이 의미를 갖는다.
+      expect(await db.getRecentHealthLogs(userId, 14), hasLength(1));
+
       await db.resetUserMeasurementData(userId);
       final recent = await db.getRecentHealthLogs(userId, 14);
       expect(recent, isEmpty);

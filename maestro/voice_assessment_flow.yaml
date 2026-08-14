@@ -1,6 +1,10 @@
-﻿appId: com.teammemorylink.memorylink
+appId: com.teammemorylink.memorylink
 ---
-# 음성 진단 화면 UI 테스트
+# 음성 진단은 정확도 개선이 끝날 때까지 중지 상태다.
+# `/voice_assessment` 라우트는 VoiceAssessmentBlockedScreen을 띄운다
+# (lib/core/router.dart, lib/features/voice_assessment/voice_assessment_blocked_screen.dart).
+# 이 플로우는 "중지 안내가 사용자에게 정확히 보이고, 빠져나올 수 있는지"를 지킨다.
+# 기능이 다시 열리면 녹음 흐름 단언으로 되돌려야 한다.
 - runFlow: helpers/login_helper.yaml
 
 # 내정보 탭 진입
@@ -13,19 +17,20 @@
 # 건강 정보 섹션 아래 음성 진단 카드까지 스크롤
 - scrollUntilVisible:
     element:
-      text: "음성 진단\n인지 건강 초기 진단 재실행"
+      text: ".*음성 진단.*"
     direction: DOWN
-- tapOn: "음성 진단\n인지 건강 초기 진단 재실행"
+    visibilityPercentage: 50
+- tapOn: ".*음성 진단.*"
+
+# 중지 안내 화면 확인
 - extendedWaitUntil:
-    visible: "초기 음성 진단"
+    visible: "현재 사용할 수 없는 기능입니다"
     timeout: 5000
+- assertVisible: "현재 사용할 수 없는 기능입니다"
+- assertVisible: "정확도 개선이 완료될 때까지 음성 진단 기능을 중지합니다."
 
-# 화면 구성 요소 확인
-- assertVisible: "초기 음성 진단"
-- assertVisible: "녹음 시작하기"
-
-# STT 초기화 결과에 따른 힌트 문구 확인 (에뮬레이터 STT 활성화 시)
-- assertVisible: "아래 버튼을 눌러 시작하세요"
+# 중지 화면에 녹음 진입점이 남아 있으면 안 된다
+- assertNotVisible: "녹음 시작하기"
 
 # 뒤로가기 → 내정보 복귀
 - back
