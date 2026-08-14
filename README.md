@@ -120,7 +120,7 @@ MemoryLink는 **기억력 저하가 걱정되는 60~80대 사용자와 그 가�
 | 📈 인지 평가 영역 | **4개** (계산·논리·기억·집중) |
 | 🎯 적응형 난이도 | **10단계** |
 | 📋 PDF 리포트 | **4페이지** |
-| 🧪 자동화 테스트 | **flutter test 117 · Maestro E2E 17 flow** |
+| 🧪 자동화 테스트 | **flutter test 251 · Maestro E2E 20 flow** |
 | 📲 화면 수 | **30+** |
 
 </div>
@@ -400,11 +400,15 @@ lib/
 <details>
 <summary>🧪 QA 현황 펼치기</summary>
 
+> 2026-08-14 이 저장소에서 직접 실행해 확인한 수치다.
+
 | 테스트 유형 | 수량 |
 |---|---|
-| flutter test (단위·위젯) | 117개 통과 |
-| 통합 테스트 | 5개 |
-| Maestro E2E flow | 17개 통과 (게이팅) + 스크린샷 투어 |
+| flutter test (단위·위젯) | **251개 통과** (테스트 파일 34개) |
+| flutter analyze | 에러 0 · 경고 0 (info 6) |
+| 통합 테스트 | 2개 파일 |
+| Maestro E2E flow | 게이팅 20개 + 데모·스크린샷용 3개 (yaml 23개) |
+| release AAB | 빌드 성공 65.8MB (서명됨) |
 
 ```bash
 flutter analyze
@@ -427,9 +431,13 @@ flutter build apk
 | AI 대화 | Gemini REST API + 로컬 폴백 완료 |
 | 리포트 | 차트 + 4페이지 PDF 생성 완료 |
 | 보호자 연계 | Firestore 공유 + 로컬 이상 알림 완료 |
-| 음성 평가 | STT + 규칙 기반 지표(TTR/WPM) 완료 |
+| 음성 평가 | **중지됨** — 정확도 개선 전까지 안내 화면으로 대체 (`/voice_assessment`) |
+| 공공데이터 | 치매안심센터 찾기 (공공데이터포털 「국립중앙의료원_치매안심센터 정보」) |
 | 관리자 | CS 관리 + 사용자 조회 화면 완료 |
 | 설정·건강 기록 | 통합 설정 화면(`/settings`) + 혈압·혈당 등 건강 기록 입력 완료 |
+
+> 이 표는 "저장소에 실행 경로가 있다"는 뜻이며, 임상적 유효성이나 의료기기 적합성을
+> 의미하지 않는다. 다음 분기 우선순위와 알려진 한계는 [DEVELOPMENT_ROADMAP.md](DEVELOPMENT_ROADMAP.md) 참조.
 
 </details>
 
