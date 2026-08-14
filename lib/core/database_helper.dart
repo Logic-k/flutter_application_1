@@ -391,13 +391,16 @@ class DatabaseHelper {
     DateTime now, {
     required int hour,
   }) async {
+    // 하루 4행 × 30일 = 120행이다. 개별 await면 문장마다 MethodChannel을
+    // 왕복하므로 첫 실행이 눈에 띄게 느려진다. Batch로 한 번에 넘긴다.
+    final batch = db.batch();
     for (int i = 0; i < scores.length; i++) {
       final date = now.subtract(Duration(days: scores.length - 1 - i));
       final dateStr =
           '${date.toIso8601String().split('T')[0]}T$hour:${(i % 60).toString().padLeft(2, '0')}:00.000';
       for (int c = 0; c < _scoreCategories.length; c++) {
         final raw = scores[i][c];
-        await db.insert('training_scores', {
+        batch.insert('training_scores', {
           'user_id': userId,
           'category': _scoreCategories[c],
           'score': c == 0 ? raw : raw * 10.0,
@@ -405,17 +408,19 @@ class DatabaseHelper {
         });
       }
     }
+    await batch.commit(noResult: true);
   }
 
   Future<void> _insertDailySteps(
       Database db, int userId, List<int> stepsPerDay, DateTime now) async {
+    final batch = db.batch();
     for (int i = 0; i < stepsPerDay.length; i++) {
       final dateStr = now
           .subtract(Duration(days: stepsPerDay.length - 1 - i))
           .toIso8601String()
           .split('T')[0];
       final steps = stepsPerDay[i];
-      await db.insert('daily_steps', {
+      batch.insert('daily_steps', {
         'user_id': userId,
         'steps': steps,
         'calories': (steps * 0.04).roundToDouble(),
@@ -423,6 +428,7 @@ class DatabaseHelper {
         'date': dateStr,
       });
     }
+    await batch.commit(noResult: true);
   }
 
   // FINGER 건강 기록 테이블 DDL (onCreate/onUpgrade 공용)
