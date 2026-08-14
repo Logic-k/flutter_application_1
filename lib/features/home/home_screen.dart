@@ -6,9 +6,13 @@ import '../gait_analysis/pedometer_manager.dart';
 import '../diary/diary_provider.dart';
 import '../../core/ai/ai_chat_service.dart';
 import '../../core/user_provider.dart';
+import '../../core/formatters.dart';
 import '../../core/ml_widgets.dart';
 import '../../core/theme.dart';
 import '../training/training_progress_provider.dart';
+
+/// 하루 걸음 목표. 진행률 계산과 표기가 같은 값을 보게 한다.
+const int _stepGoal = 10000;
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -108,10 +112,7 @@ class _HomeScreenState extends State<HomeScreen> {
     int todayTrainingCount,
     String todayStr,
   ) {
-    final stepProgress = (pedometer.todaySteps / 10000).clamp(0.0, 1.0);
-    final stepsFormatted = pedometer.todaySteps
-        .toString()
-        .replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]},');
+    final stepProgress = (pedometer.todaySteps / _stepGoal).clamp(0.0, 1.0);
 
     return MLHeroCard(
       child: Column(
@@ -131,7 +132,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Expanded(child: _buildQuickStat(
                 icon: Icons.directions_walk_rounded,
                 label: '오늘 걸음',
-                value: '$stepsFormatted보',
+                value: Fmt.steps(pedometer.todaySteps),
                 progress: stepProgress,
               )),
               Container(width: 1, height: 44, color: Colors.white.withValues(alpha: 0.2)),
@@ -267,7 +268,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   Text('오늘의 걸음', style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 14, fontWeight: FontWeight.w600)),
                   Text(
-                    '${pedometer.todaySteps} / 10,000 걸음',
+                    Fmt.stepsOfGoal(pedometer.todaySteps, _stepGoal),
                     style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w900),
                   ),
                 ],
@@ -358,10 +359,12 @@ class _HomeScreenState extends State<HomeScreen> {
             style: FilledButton.styleFrom(
               backgroundColor: color,
               padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-              minimumSize: const Size(64, 40),
+              // 훈련으로 들어가는 주 진입 버튼이다. 40dp는 진전이 있는 고령
+              // 사용자에게 오탭을 유발한다.
+              minimumSize: const Size(88, AppTheme.minTapTarget),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.rBtn)),
             ),
-            child: const Text('시작', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w900)),
+            child: const Text('시작', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w900)),
           ),
         ],
       ),

@@ -4,8 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'pedometer_manager.dart';
+import '../../core/formatters.dart';
 import '../../core/ml_widgets.dart';
 import '../../core/theme.dart';
+
+/// 하루 걸음 목표. 홈 화면(`home_screen.dart`)과 같은 값을 쓴다.
+const int _stepGoal = 10000;
 
 class WalkingDashboardScreen extends StatefulWidget {
   const WalkingDashboardScreen({super.key});
@@ -55,7 +59,7 @@ class _WalkingDashboardScreenState extends State<WalkingDashboardScreen> {
   @override
   Widget build(BuildContext context) {
     final pedometer = context.watch<PedometerManager>();
-    final progress = (pedometer.todaySteps / 10000).clamp(0.01, 1.0);
+    final progress = (pedometer.todaySteps / _stepGoal).clamp(0.01, 1.0);
     // 걸음 수 기준 활동 시간 추정 (약 100보/분)
     final activityMinutes = (pedometer.todaySteps / 100).floor();
 
@@ -118,8 +122,8 @@ class _WalkingDashboardScreenState extends State<WalkingDashboardScreen> {
                           center: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text(pedometer.todaySteps.toString(), style: const TextStyle(fontSize: 38, fontWeight: FontWeight.w900)),
-                              const Text('/ 10,000 보', style: TextStyle(fontSize: 13, color: MLColors.textSoft, fontWeight: FontWeight.w600)),
+                              Text(Fmt.count(pedometer.todaySteps), style: const TextStyle(fontSize: 38, fontWeight: FontWeight.w900)),
+                              Text('/ ${Fmt.count(_stepGoal)} 보', style: const TextStyle(fontSize: 13, color: MLColors.textSoft, fontWeight: FontWeight.w600)),
                             ],
                           ),
                         ),
@@ -141,7 +145,7 @@ class _WalkingDashboardScreenState extends State<WalkingDashboardScreen> {
                     mainAxisSpacing: 14,
                     childAspectRatio: 1.5,
                     children: [
-                      MLMetricCard(icon: Icons.directions_walk_rounded, color: MLColors.read, label: '걸음 수', value: pedometer.todaySteps.toString(), unit: '걸음'),
+                      MLMetricCard(icon: Icons.directions_walk_rounded, color: MLColors.read, label: '걸음 수', value: Fmt.count(pedometer.todaySteps), unit: '걸음'),
                       MLMetricCard(icon: Icons.map_rounded, color: MLColors.calc, label: '이동 거리', value: pedometer.todayDistance.toStringAsFixed(2), unit: 'km'),
                       MLMetricCard(icon: Icons.local_fire_department_rounded, color: MLColors.bad, label: '소모 칼로리', value: pedometer.todayCalories.toInt().toString(), unit: 'kcal'),
                       MLMetricCard(icon: Icons.timer_rounded, color: MLColors.good, label: '활동 시간', value: activityMinutes.toString(), unit: '분'),

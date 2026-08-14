@@ -123,8 +123,12 @@ void main() {
     await tester.pumpWidget(_buildSubject(mockUser: mockUser, mockPedometer: mockPedometer, mockDiary: mockDiary));
     await tester.pump();
 
-    // 3500 → "3,500보" 형식으로 포맷팀
-    expect(find.textContaining('3,500'), findsOneWidget);
+    // 헤더 히어로 카드와 걷기 미니 카드가 같은 걸음 수를 각각 보여준다.
+    // 두 곳 모두 천 단위 구분 기호를 써야 한다 — 예전에는 헤더만 "3,500보"이고
+    // 미니 카드는 "3500 / 10,000 걸음"이라 같은 값이 다르게 읽혔다.
+    expect(find.text('3,500보'), findsOneWidget);
+    expect(find.text('3,500 / 10,000 걸음'), findsOneWidget);
+    expect(find.textContaining('3500 '), findsNothing);
   });
 
   testWidgets('HomeScreen: 진행 Provider의 오늘 활동 수를 즉시 표시한다', (tester) async {
