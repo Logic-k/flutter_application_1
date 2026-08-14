@@ -73,6 +73,19 @@ class AssessmentResultScreen extends StatelessWidget {
                 ],
               ),
             ),
+            // 상담을 권유해 놓고 "어디로 가야 하는지"를 알려주지 않으면
+            // 권유가 행동으로 이어지지 않는다. 고위험일 때만 노출한다.
+            if (score >= 0.6) ...[
+              const SizedBox(height: 16),
+              OutlinedButton.icon(
+                onPressed: () => context.push('/dementia_centers'),
+                icon: const Icon(Icons.place_outlined),
+                label: const Text('가까운 치매안심센터 찾기'),
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(52),
+                ),
+              ),
+            ],
             const Spacer(),
             FilledButton(
               onPressed: () async {

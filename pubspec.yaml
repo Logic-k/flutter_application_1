@@ -163,4 +163,7 @@ flutter:
     - assets/icon/
     - assets/models/
     - assets/illustrations/
+    # 공공데이터포털 「국립중앙의료원_치매안심센터 정보」.
+    # 교체 방법은 assets/data/README.md 참조.
+    - assets/data/dementia_centers.csv
 

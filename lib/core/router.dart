@@ -40,6 +40,7 @@ import '../features/admin/admin_faq_edit_screen.dart';
 import '../features/admin/admin_inquiry_detail_screen.dart';
 import '../features/reports/clinical_report_options_screen.dart';
 import '../features/voice_assessment/voice_assessment_blocked_screen.dart';
+import '../features/dementia_center/dementia_center_finder_screen.dart';
 import '../features/ai_chat/ai_chat_screen.dart';
 import '../features/settings/model_download_screen.dart';
 import '../features/settings/settings_screen.dart';
@@ -67,6 +68,9 @@ GoRouter createAppRouter(
         '/assessment',
         '/cognitive_tasks',
         '/assessment_result',
+        // 초기 평가 결과가 높게 나오면 그 자리에서 치매안심센터를 안내한다.
+        // 이 경로가 빠지면 안내 버튼이 /consent로 되돌아가 버린다.
+        '/dementia_centers',
       };
       final needsOnboarding = isLoggedIn && !userProvider.hasCompletedOnboarding;
 
@@ -168,6 +172,10 @@ GoRouter createAppRouter(
       GoRoute(
         path: '/voice_assessment',
         builder: (context, state) => const VoiceAssessmentBlockedScreen(),
+      ),
+      GoRoute(
+        path: '/dementia_centers',
+        builder: (context, state) => const DementiaCenterFinderScreen(),
       ),
       GoRoute(
         path: '/ai_chat',
