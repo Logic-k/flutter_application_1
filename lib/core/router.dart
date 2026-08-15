@@ -18,7 +18,6 @@ import '../features/training/games/sentence_reading_game.dart';
 import '../features/auth/login_screen.dart';
 import '../features/auth/register_screen.dart';
 import '../features/profile/profile_screen.dart';
-import '../features/gait_analysis/gait_screen.dart';
 import '../features/diary/diary_screen.dart';
 import '../features/diary/diary_book_screen.dart';
 import '../features/profile/guardian_link_screen.dart';
@@ -156,7 +155,6 @@ GoRouter createAppRouter(
         path: trainingActivityById('sentence_reading').route,
         builder: (context, state) => const SentenceReadingGame(),
       ),
-      GoRoute(path: '/gait', builder: (context, state) => const GaitScreen()),
       GoRoute(
         path: '/memory_garden',
         builder: (context, state) => const DiaryScreen(),

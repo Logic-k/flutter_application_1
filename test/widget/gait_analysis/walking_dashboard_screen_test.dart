@@ -4,12 +4,18 @@ import 'package:flutter_application_1/features/gait_analysis/walking_dashboard_s
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_application_1/features/gait_analysis/gait_provider.dart';
 
 import '../../helpers/mock_definitions.dart';
 
 Widget _buildSubject(MockPedometerManager pedometer) {
-  return ChangeNotifierProvider<PedometerManager>.value(
-    value: pedometer,
+  // 생활습관 탭에 걸음 간격 측정 카드가 들어가면서 GaitProvider가 필요해졌다.
+  // 실제 인스턴스를 쓰되 startMeasurement를 부르지 않으므로 센서는 켜지지 않는다.
+  return MultiProvider(
+    providers: [
+      ChangeNotifierProvider<PedometerManager>.value(value: pedometer),
+      ChangeNotifierProvider<GaitProvider>(create: (_) => GaitProvider()),
+    ],
     child: const MaterialApp(home: WalkingDashboardScreen()),
   );
 }

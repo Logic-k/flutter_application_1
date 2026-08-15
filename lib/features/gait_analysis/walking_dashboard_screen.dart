@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'pedometer_manager.dart';
+import 'widgets/gait_session_card.dart';
 import '../../core/formatters.dart';
 import '../../core/ml_widgets.dart';
 import '../../core/theme.dart';
@@ -106,6 +107,9 @@ class _WalkingDashboardScreenState extends State<WalkingDashboardScreen> {
                       ],
                     ),
                   ),
+                  const SizedBox(height: 20),
+
+                  const GaitSessionCard(),
                   const SizedBox(height: 20),
 
                   // 1. 원형 게이지
