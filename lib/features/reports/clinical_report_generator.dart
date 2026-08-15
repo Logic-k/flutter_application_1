@@ -6,7 +6,10 @@ import 'package:path_provider/path_provider.dart';
 import 'package:intl/intl.dart';
 import 'models/clinical_report_data.dart';
 
-/// 의사/요양보호사용 4페이지 임상 선별 리포트 생성기
+/// 의료진/보호자용 4페이지 인지 활동 요약 리포트 생성기.
+///
+/// 이 리포트는 진단·선별 도구가 아니다. 앱 안에서 수행한 훈련 결과를 정리해
+/// 상담 자리에서 참고할 수 있게 만드는 것이 목적이다.
 /// 모든 pw.Text에 NanumGothic을 명시 적용하여 한글 깨짐 방지
 class ClinicalReportGenerator {
   // 색상 팔레트 (모두 불투명 – PdfColor.withOpacity 미지원)
@@ -84,7 +87,9 @@ class ClinicalReportGenerator {
           pw.SizedBox(height: 14),
           _buildPatientInfoBox(data, dateStr),
           pw.SizedBox(height: 14),
-          _buildMmseBox(data),
+          _buildActivityIndexBox(data),
+          pw.SizedBox(height: 8),
+          _buildIndexDisclaimerStrip(),
           pw.SizedBox(height: 14),
           _buildDomainBars(data),
           pw.Spacer(),
@@ -189,7 +194,7 @@ class ClinicalReportGenerator {
               pw.Text('MemoryLink',
                   style: _ts(fontSize: 10, bold: true, color: PdfColors.white)),
               pw.SizedBox(height: 3),
-              pw.Text('인지 건강 선별 리포트',
+              pw.Text('인지 활동 요약 리포트',
                   style: _ts(fontSize: 18, bold: true, color: PdfColors.white)),
             ],
           ),
@@ -279,17 +284,17 @@ class ClinicalReportGenerator {
     );
   }
 
-  pw.Widget _buildMmseBox(ClinicalReportData data) {
-    final mmse = data.mmseEquivalent;
-    final band = _mmseband(mmse);
+  pw.Widget _buildActivityIndexBox(ClinicalReportData data) {
+    final index = data.activityIndex;
+    final band = CognitiveBandExt.fromScore(index);
     final bg = _bandBg(band);
     final fg = _bandFg(band);
 
     String deltaText = '';
-    if (data.prevMmseEquivalent != null) {
-      final d = mmse - data.prevMmseEquivalent!;
+    if (data.prevActivityIndex != null) {
+      final d = index - data.prevActivityIndex!;
       final sign = d >= 0 ? '↑ +' : '↓ ';
-      deltaText = '$sign${d.abs().toStringAsFixed(1)}점 (전회 대비)';
+      deltaText = '$sign${d.abs().toStringAsFixed(0)}점 (전회 대비)';
     }
 
     // borderRadius는 균일한 Border에만 사용 가능
@@ -311,16 +316,16 @@ class ClinicalReportGenerator {
                     child: pw.Column(
                       crossAxisAlignment: pw.CrossAxisAlignment.start,
                       children: [
-                        pw.Text('MMSE 환산 점수',
+                        pw.Text('MemoryLink 인지활동 지수',
                             style: _ts(fontSize: 10, color: _gray)),
                         pw.SizedBox(height: 4),
                         pw.RichText(
                           text: pw.TextSpan(children: [
                             pw.TextSpan(
-                                text: mmse.toStringAsFixed(1),
+                                text: index.toStringAsFixed(0),
                                 style: _ts(fontSize: 28, bold: true, color: fg)),
                             pw.TextSpan(
-                                text: ' / 30',
+                                text: ' / 100',
                                 style: _ts(fontSize: 13, color: _gray)),
                           ]),
                         ),
@@ -607,7 +612,7 @@ class ClinicalReportGenerator {
           ),
           ...domain.$2.map((score) {
             final band =
-                score != null ? _scoreBand(score) : null;
+                score != null ? CognitiveBandExt.fromScore(score) : null;
             final bg =
                 band != null ? _bandBg(band) : _lightGray;
             final fg =
@@ -637,7 +642,7 @@ class ClinicalReportGenerator {
         ),
         pw.SizedBox(height: 5),
         pw.Text(
-          '※ 셀 색상: 초록=정상, 노랑=경계선, 주황=경과관찰, 빨강=전문의의뢰',
+          '※ 셀 색상: 초록=양호, 노랑=주의 관찰, 주황=변화가 관찰됨, 빨강=상담 권유',
           style: _ts(fontSize: 7, color: _gray),
         ),
       ],
@@ -646,10 +651,10 @@ class ClinicalReportGenerator {
 
   pw.Widget _buildInterpretationTable() {
     final rows = [
-      ['75–100점', '정상', '현재 수준 유지, 예방적 훈련 지속'],
-      ['55–74점', '경계선', '3개월 후 재검사 권장'],
-      ['35–54점', '경과 관찰', '치매안심센터 상담 권장'],
-      ['0–34점', '전문의 의뢰', '신경과 / 정신건강의학과 진료'],
+      ['75–100점', '양호', '현재 수준 유지, 훈련 지속'],
+      ['55–74점', '주의 관찰', '3개월 후 재확인 권장'],
+      ['35–54점', '변화가 관찰됨', '치매안심센터 무료 상담(CIST) 안내'],
+      ['0–34점', '상담 권유', '보호자와 함께 전문기관 상담 권유'],
     ];
     final bgColors = [_greenBg, _amberBg, _orangeBg, _redBg];
     final fgColors = [_green, _amber, _orange, _red];
@@ -701,6 +706,28 @@ class ClinicalReportGenerator {
           );
         }),
       ],
+    );
+  }
+
+  /// 지수 바로 아래에 붙는 고지. 사용자는 판단 근거보다 숫자를 먼저 읽으므로
+  /// 고지가 숫자와 같은 화면에 있어야 한다. 4페이지 부록만으로는 늦다.
+  pw.Widget _buildIndexDisclaimerStrip() {
+    return pw.Container(
+      width: double.infinity,
+      padding: const pw.EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: const pw.BoxDecoration(
+        color: _lightGray,
+        borderRadius: pw.BorderRadius.all(pw.Radius.circular(6)),
+      ),
+      child: pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: MedicalDisclaimer.sentences
+            .map((s) => pw.Padding(
+                  padding: const pw.EdgeInsets.only(bottom: 1.5),
+                  child: pw.Text('· $s', style: _ts(fontSize: 7.5, color: _gray)),
+                ))
+            .toList(),
+      ),
     );
   }
 
@@ -772,37 +799,39 @@ class ClinicalReportGenerator {
   }
 
   pw.Widget _buildDoctorRecommendations(ClinicalReportData data) {
-    final mmse = data.mmseEquivalent;
+    final index = data.activityIndex;
     final reassessDate = DateTime.now().add(const Duration(days: 90));
     final reassessStr = DateFormat('yyyy-MM-dd').format(reassessDate);
-    final band = _mmseband(mmse);
-    final isUrgent = mmse < 18;
+    final band = CognitiveBandExt.fromScore(index);
+    final needsAttention = band == CognitiveBand.specialistReferral;
 
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
         _recItem(
-          '1. 재검사 권장',
+          '1. 재확인 권장',
           band == CognitiveBand.normal
-              ? '현재 정상 범위입니다. 6개월 후 추적 검사를 권장합니다.'
-              : 'MMSE 환산 ${mmse.toStringAsFixed(1)}점 → ${band.label} 구간\n권장 재검사일: $reassessStr',
+              ? '앱 내 수행이 안정적입니다. 6개월 후 재확인을 권장합니다.'
+              : '인지활동 지수 ${index.toStringAsFixed(0)}점 → ${band.label} 구간\n권장 재확인일: $reassessStr',
         ),
         pw.SizedBox(height: 8),
         _recItem(
-          '2. 추가 선별 도구',
-          'Mini-Cog: 3단어 회상 + 시계 그리기 (약 3분)\n'
-              'MoCA: 종합 인지 선별 (약 10분)\n'
-              'AD8: 보호자 관찰 기반 치매 선별\n'
-              'IQCODE: 일상 기능 변화 보호자 평가',
+          '2. 표준 선별 도구 안내',
+          // MMSE는 배타적 저작권 대상이라 안내에서 뺀다. CIST는 보건복지부가
+          // 저작권 문제를 해소하려고 개발·보급한 국내 표준 선별도구이며
+          // 전국 치매안심센터에서 무료로 시행한다.
+          'CIST(한국형 인지선별검사): 전국 치매안심센터 무료 시행\n'
+              '그 밖의 표준 도구 시행 여부는 담당 의료진 판단에 따릅니다.\n'
+              '본 리포트의 지수는 위 도구들과 등가성이 검증되지 않았습니다.',
         ),
         pw.SizedBox(height: 8),
         _recItem(
-          '3. 전문의 의뢰 기준',
-          isUrgent
-              ? '⚠ MMSE 환산 ${mmse.toStringAsFixed(1)}점: 전문의 의뢰를 권고합니다.'
-              : 'MMSE 환산 < 18점 또는 3개월 내 -4점 이상 하락 시\n'
-                  '2개 이상 도메인에서 경과 관찰 이하 확인 시\n'
-                  '일상생활 기능 저하(ADL) 확인 시',
+          '3. 상담을 고려할 때',
+          needsAttention
+              ? '⚠ 인지활동 지수 ${index.toStringAsFixed(0)}점: 보호자와 함께 전문기관 상담을 권유드립니다.'
+              : '인지활동 지수 35점 미만 또는 3개월 내 15점 이상 하락 시\n'
+                  '2개 이상 영역에서 하위 구간이 확인될 때\n'
+                  '일상생활 기능 저하(ADL)가 관찰될 때',
         ),
         if (data.riskFactors.checkedCount > 0) ...[
           pw.SizedBox(height: 8),
@@ -861,9 +890,9 @@ class ClinicalReportGenerator {
       case CognitiveBand.borderline:
         return '${d.score!.toStringAsFixed(0)}점 – 조금 더 주의가 필요해요';
       case CognitiveBand.needsFollowUp:
-        return '${d.score!.toStringAsFixed(0)}점 – 경과 관찰이 필요해요';
+        return '${d.score!.toStringAsFixed(0)}점 – 변화를 지켜봐 주세요';
       case CognitiveBand.specialistReferral:
-        return '${d.score!.toStringAsFixed(0)}점 – 전문가 상담을 권장해요';
+        return '${d.score!.toStringAsFixed(0)}점 – 보호자와 함께 상담을 권유드려요';
     }
   }
 
@@ -894,8 +923,9 @@ class ClinicalReportGenerator {
       ('주의집중력', 'MemoryLink 모양 찾기 과제 기반 측정'),
       ('실행기능', 'MemoryLink 수 비교·구구단 계산 과제 기반 측정'),
       ('언어능력', '문장 소리 내어 읽기 과제 (미완료 시 측정 불가)'),
-      ('시공간 지각', 'MemoryLink 그림 패턴 완성 과제 (스도쿠) 기반 측정'),
-      ('MMSE 환산', '각 영역 0–100점 종합 평균 → 30점 만점 환산\n(교육 수준 보정 없음, 선별 목적에 한함)'),
+      ('시공간 지각', '별도 측정 과제 없음 (현재 측정 불가)'),
+      ('MemoryLink 인지활동 지수',
+          '측정된 각 영역의 0–100점 평균값(앱 내부 지표).\n표준화 검사와의 등가성은 검증되지 않았습니다.'),
     ];
 
     return pw.Table(
@@ -927,11 +957,13 @@ class ClinicalReportGenerator {
 
   pw.Widget _buildDisclaimerBox() {
     const lines = [
-      '이 결과는 진단이 아니라 선별 및 경과 관찰용입니다.',
-      '본 리포트는 디지털 기기를 통한 인지 훈련 데이터 기반의 선별 참고 자료입니다.',
+      MedicalDisclaimer.notDiagnostic,
+      MedicalDisclaimer.notEquivalent,
+      '본 리포트는 디지털 기기를 통한 인지 훈련 활동 기록의 요약입니다.',
       '치매 등 신경인지 장애의 확진은 반드시 의료 전문가에 의해 이루어져야 합니다.',
       '이 결과만으로 치료 또는 치료 중단을 결정하지 마십시오.',
       '임상 증상, 병력, 보호자 진술과 함께 해석해야 합니다.',
+      MedicalDisclaimer.whereToGo,
     ];
     return pw.Container(
       padding: const pw.EdgeInsets.all(14),
@@ -1005,11 +1037,11 @@ class ClinicalReportGenerator {
           mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
           children: [
             pw.Text(
-              'MemoryLink 디지털 인지 선별 도구  |  발행: $dateStr',
+              'MemoryLink 인지 훈련 기록  |  발행: $dateStr',
               style: _ts(fontSize: 7, color: _gray),
             ),
             pw.Text(
-              '이 결과는 선별 목적이며 의학적 진단을 대체하지 않습니다.',
+              '진단·선별 검사가 아니며 의학적 진단을 대체하지 않습니다.',
               style: _ts(fontSize: 7, color: _gray),
             ),
             pw.Text(
@@ -1037,20 +1069,10 @@ class ClinicalReportGenerator {
   }
 
   // ── 밴드 헬퍼 ──
-
-  static CognitiveBand _mmseband(double mmse) {
-    if (mmse >= 25) return CognitiveBand.normal;
-    if (mmse >= 20) return CognitiveBand.borderline;
-    if (mmse >= 14) return CognitiveBand.needsFollowUp;
-    return CognitiveBand.specialistReferral;
-  }
-
-  static CognitiveBand _scoreBand(double score) {
-    if (score >= 75) return CognitiveBand.normal;
-    if (score >= 55) return CognitiveBand.borderline;
-    if (score >= 35) return CognitiveBand.needsFollowUp;
-    return CognitiveBand.specialistReferral;
-  }
+  //
+  // 구간 판정은 CognitiveBandExt.fromScore 한 곳에만 둔다.
+  // 예전에는 여기에 30점 척도(25/20/14)와 100점 척도(75/55/35) 두 벌이 따로
+  // 있어, 같은 사용자의 종합 밴드와 영역 밴드가 서로 다르게 나올 수 있었다.
 
   static PdfColor _bandFg(CognitiveBand band) {
     switch (band) {

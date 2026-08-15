@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../core/user_provider.dart';
+import '../reports/models/clinical_report_data.dart' show MedicalDisclaimer;
 
 class AssessmentResultScreen extends StatelessWidget {
   const AssessmentResultScreen({super.key});
@@ -53,7 +54,9 @@ class AssessmentResultScreen extends StatelessWidget {
               textAlign: TextAlign.center,
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
             ),
-            const SizedBox(height: 48),
+            const SizedBox(height: 32),
+            // 고지는 점수보다 앞서야 한다는 원칙이지만, 이 화면은 원형 점수가
+            // 시선을 먼저 끄는 구조라 바로 아래에 붙여 같은 화면 안에 둔다.
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -61,31 +64,44 @@ class AssessmentResultScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(Icons.warning_amber, color: Colors.orange),
+                  const Icon(Icons.info_outline, color: Colors.orange),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: Text(
-                      '이 결과는 "의학적 진단"이 아니며 관찰 지표일 뿐입니다. 자세한 진단은 전문의와 상담하세요.',
-                      style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurfaceVariant),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        for (final s in MedicalDisclaimer.sentences)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 4),
+                            child: Text(
+                              s,
+                              style: TextStyle(
+                                fontSize: 12.5,
+                                height: 1.45,
+                                color: theme.colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
                   ),
                 ],
               ),
             ),
-            // 상담을 권유해 놓고 "어디로 가야 하는지"를 알려주지 않으면
-            // 권유가 행동으로 이어지지 않는다. 고위험일 때만 노출한다.
-            if (score >= 0.6) ...[
-              const SizedBox(height: 16),
-              OutlinedButton.icon(
-                onPressed: () => context.push('/dementia_centers'),
-                icon: const Icon(Icons.place_outlined),
-                label: const Text('가까운 치매안심센터 찾기'),
-                style: OutlinedButton.styleFrom(
-                  minimumSize: const Size.fromHeight(52),
-                ),
+            // 고지에서 "치매안심센터를 찾아가라"고 안내해 놓고 갈 길을 알려주지
+            // 않으면 권유가 행동으로 이어지지 않는다. 점수와 무관하게 항상
+            // 노출한다 — 점수가 낮을 때만 보여주면 그 자체가 판정 신호가 된다.
+            const SizedBox(height: 16),
+            OutlinedButton.icon(
+              onPressed: () => context.push('/dementia_centers'),
+              icon: const Icon(Icons.place_outlined),
+              label: const Text('가까운 치매안심센터 찾기'),
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size.fromHeight(52),
               ),
-            ],
+            ),
             const Spacer(),
             FilledButton(
               onPressed: () async {

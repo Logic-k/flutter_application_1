@@ -205,7 +205,7 @@ class _ClinicalReportOptionsScreenState
             type: ReportType.doctor,
             icon: Icons.medical_services_outlined,
             title: '의료진용 리포트',
-            subtitle: '점수·추이·임상 권고사항·전문의 의뢰 기준',
+            subtitle: '영역별 점수·추이·상담 시 참고사항',
           ),
           const SizedBox(height: 16),
           _buildTypeCard(
