@@ -60,6 +60,24 @@ class ProfileScreen extends StatelessWidget {
             ),
             const SizedBox(height: 22),
 
+            // 초기 평가 결과 화면에서만 갈 수 있으면, 온보딩을 마친 사용자는
+            // 다시 찾아갈 방법이 없다. 상담이 필요해지는 시점은 가입 직후가
+            // 아니라 나중이므로 상시 진입점을 둔다.
+            MLSectionTitle('상담과 도움'),
+            Semantics(
+              identifier: 'dementia_center_card',
+              child: MLCard(
+                padding: EdgeInsets.zero,
+                child: MLListRow(
+                  icon: Icons.place_rounded, color: MLColors.care,
+                  title: '가까운 치매안심센터 찾기',
+                  subtitle: '전국 센터 안내 · 치매상담콜센터 1899-9988',
+                  onTap: () => context.push('/dementia_centers'),
+                ),
+              ),
+            ),
+            const SizedBox(height: 22),
+
             MLSectionTitle('고객센터'),
             Semantics(
               identifier: 'cs_center_card',
