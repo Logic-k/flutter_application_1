@@ -16,10 +16,14 @@
 - assertVisible: "가족 및 연결"
 
 # 고객센터 카드까지 스크롤 (merged text 직접 타깃)
+# centerElement: 마지막 카드는 플로팅 네비 알약에 가려진 채로도 계층상 '보임'이라
+# 기본 scrollUntilVisible이 거기서 멈춘다. 그러면 탭이 카드가 아니라 네비 바에
+# 떨어져 화면 전환이 일어나지 않는다. 중앙으로 올려놓고 탭한다.
 - scrollUntilVisible:
     element:
       text: "고객센터\n공지사항, FAQ, 1:1 문의"
     direction: DOWN
+    centerElement: true
 - tapOn: "고객센터\n공지사항, FAQ, 1:1 문의"
 - extendedWaitUntil:
     visible: "공지사항\n서비스 업데이트 및 안내"
