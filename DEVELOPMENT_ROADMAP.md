@@ -28,16 +28,35 @@ MemoryLink는 기능이 부족한 제품이 아니다. **이미 모은 데이터
 
 | 항목 | 결과 |
 |---|---|
-| `flutter analyze` | 에러 0 · 경고 0 · info 6 (전부 스타일 힌트) |
-| `flutter test` | **251/251 통과** (작업 전 204) |
+| `flutter analyze` | 에러 0 · 경고 0 · info 7 (전부 스타일 힌트) |
+| `flutter test` | **309/309 통과** (작업 전 204) · 2026-08-21 재실측 |
 | release AAB | 빌드 성공 65.8MB (서명됨) |
 | Maestro 게이팅 | 17 → **21 flow**로 확대 (게임화 3종 + 치매안심센터 1종 편입) |
 | 콜드 스타트 | `+15s078ms` → **`+7s252ms`** (같은 에뮬레이터, clearState 직후 `am start -W`) |
 
-> **게이팅 전체 실행은 이 개발 환경에서 완주하지 못했다.** QA 에뮬레이터가 25분짜리
-> 실행 중 세 번 종료됐다(여유 메모리 약 4GB). 개별 플로우는 통과를 확인했으나
-> 21개 연속 실행의 최종 수치는 없다. 메모리 여유가 있는 환경에서
-> `.\run_maestro_tests.ps1`를 한 번 돌려 채워야 한다.
+> **게이팅 21개 전부 통과를 확인했다(2026-08-21).** 단, 한 세션에서 연속으로가 아니라
+> 두 번에 나눠 확인했다: 러너 1차 실행에서 14개 통과(2021초), 실패 7건 중 6건은
+> 에뮬레이터가 죽은 뒤라 무효였고, 재기동 후 7개를 재실행해 7/7 통과.
+> 21개 연속 실행의 단일 수치는 아직 없다.
+>
+> 1차에서 실제로 잡힌 결함은 `profile_flow` 1건뿐이며 수정했다(`82ce265`).
+> `training_game_flow`도 통과해, '기기 재현 못 함'으로 남아 있던
+> `explicitChildNodes` 기반 "VS" Semantics 수정이 실기 검증됐다.
+>
+> **이 PC에서 QA_Device를 띄울 때 GPU 백엔드가 유일한 변수다.**
+> - `-gpu swiftshader_indirect`(+`-no-window`): 1440x3120을 CPU로 그리느라
+>   **systemui가 ANR**을 내고, 그 다이얼로그가 포커스를 잡아 첫 flow부터 실패한다.
+> - `-gpu host`: 빠르지만 **WGL 컨텍스트 오류로 에뮬레이터가 죽는다**
+>   (`error deleting WGL context! error 0x6`). 15개째에서 종료됐다.
+> - `-gpu angle_indirect`(D3D11): 안정적. **이 옵션을 쓸 것.**
+>
+> ```
+> emulator -avd QA_Device -port 5680 -no-snapshot-load -no-boot-anim -no-audio -gpu angle_indirect
+> ```
+>
+> 메모리는 Chrome·에디터를 닫지 않아도 작업 세트 트리밍
+> (SetProcessWorkingSetSize(-1,-1))으로 확보할 수 있다. QEMU 점유는
+> 헤드리스 3.47GB / GPU 가속 4.48GB.
 
 > README의 "flutter test 117 · Maestro E2E 17 flow"는 낡은 수치다.
 > 문서 간 수치가 어긋나면 발표·심사 질의응답에서 가장 먼저 신뢰를 잃는다.
