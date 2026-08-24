@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import '../../core/theme.dart';
 import '../../core/cs_service.dart';
 
 class AdminCsManagementScreen extends StatefulWidget {
@@ -110,7 +111,7 @@ class _NoticeTab extends StatelessWidget {
                     ),
                     IconButton(
                       icon: Icon(Icons.delete_outline,
-                          size: 20, color: Colors.red[400]),
+                          size: 20, color: MLColors.badText),
                       onPressed: () async {
                         final confirm = await _confirmDelete(context);
                         if (confirm) {
@@ -185,7 +186,7 @@ class _FaqTab extends StatelessWidget {
                     ),
                     IconButton(
                       icon: Icon(Icons.delete_outline,
-                          size: 20, color: Colors.red[400]),
+                          size: 20, color: MLColors.badText),
                       onPressed: () async {
                         final confirm = await _confirmDelete(context);
                         if (confirm) {
@@ -244,7 +245,7 @@ class _InquiryTab extends StatelessWidget {
             return ListTile(
               leading: Icon(
                 isAnswered ? Icons.check_circle_outline : Icons.hourglass_top,
-                color: isAnswered ? Colors.green : Colors.amber[700],
+                color: isAnswered ? MLColors.goodText : MLColors.warnText,
               ),
               title: Text(inq['title'] as String? ?? '',
                   maxLines: 1, overflow: TextOverflow.ellipsis),

@@ -98,7 +98,7 @@ class _ModelDownloadScreenState extends State<ModelDownloadScreen> {
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('취소')),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('삭제', style: TextStyle(color: Colors.red)),
+            child: const Text('삭제', style: TextStyle(color: MLColors.badText)),
           ),
         ],
       ),
@@ -130,7 +130,7 @@ class _ModelDownloadScreenState extends State<ModelDownloadScreen> {
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 color: MLColors.primarySoft,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(AppTheme.rTile),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -161,18 +161,18 @@ class _ModelDownloadScreenState extends State<ModelDownloadScreen> {
             const SizedBox(height: 24),
 
             if (_modelExists) ...[
-              _buildStatusChip(Icons.check_circle_rounded, '온디바이스 AI 활성화됨', Colors.green),
+              _buildStatusChip(Icons.check_circle_rounded, '온디바이스 AI 활성화됨', MLColors.goodText),
               const SizedBox(height: 20),
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
                   onPressed: _deleteModel,
-                  icon: const Icon(Icons.delete_outline, color: Colors.red),
-                  label: const Text('모델 삭제', style: TextStyle(color: Colors.red)),
+                  icon: const Icon(Icons.delete_outline, color: MLColors.badText),
+                  label: const Text('모델 삭제', style: TextStyle(color: MLColors.badText)),
                   style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: Colors.red),
+                    side: const BorderSide(color: MLColors.badText),
                     padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.rField)),
                   ),
                 ),
               ),
@@ -203,7 +203,7 @@ class _ModelDownloadScreenState extends State<ModelDownloadScreen> {
                   style: OutlinedButton.styleFrom(
                     foregroundColor: MLColors.primary,
                     side: const BorderSide(color: MLColors.primary),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.rField)),
                   ),
                 ),
               ),
@@ -221,7 +221,7 @@ class _ModelDownloadScreenState extends State<ModelDownloadScreen> {
                     icon: Icon(_obscureToken ? Icons.visibility_off : Icons.visibility),
                     onPressed: () => setState(() => _obscureToken = !_obscureToken),
                   ),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppTheme.rField)),
                 ),
               ),
               const SizedBox(height: 16),
@@ -232,7 +232,7 @@ class _ModelDownloadScreenState extends State<ModelDownloadScreen> {
                 LinearProgressIndicator(
                   value: _progress,
                   minHeight: 8,
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(AppTheme.rChip),
                   backgroundColor: MLColors.primarySoft,
                   valueColor: const AlwaysStoppedAnimation<Color>(MLColors.primary),
                 ),
@@ -241,10 +241,10 @@ class _ModelDownloadScreenState extends State<ModelDownloadScreen> {
                     style: const TextStyle(color: MLColors.textSoft, fontSize: 13)),
               ] else ...[
                 if (_state == _DownloadState.error) ...[
-                  _buildStatusChip(Icons.error_outline, '다운로드 실패', Colors.red),
+                  _buildStatusChip(Icons.error_outline, '다운로드 실패', MLColors.badText),
                   const SizedBox(height: 6),
                   Text(_errorMessage,
-                      style: const TextStyle(fontSize: 12, color: Colors.red, height: 1.5)),
+                      style: const TextStyle(fontSize: 12, color: MLColors.badText, height: 1.5)),
                   const SizedBox(height: 12),
                 ],
                 SizedBox(
@@ -256,7 +256,7 @@ class _ModelDownloadScreenState extends State<ModelDownloadScreen> {
                         style: TextStyle(fontWeight: FontWeight.w700)),
                     style: FilledButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.rField)),
                     ),
                   ),
                 ),
@@ -267,7 +267,7 @@ class _ModelDownloadScreenState extends State<ModelDownloadScreen> {
             const Text(
               '※ 모델은 Google Gemma 라이선스 조건에 따라 제공됩니다.\n'
               '다운로드 시 해당 약관에 동의하는 것으로 간주됩니다.',
-              style: TextStyle(fontSize: 11, color: MLColors.textFaint, height: 1.6),
+              style: TextStyle(fontSize: 11, color: MLColors.textSoft, height: 1.6),
             ),
           ],
         ),

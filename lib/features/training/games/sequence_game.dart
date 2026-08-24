@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 import 'package:provider/provider.dart';
+import '../../../core/theme.dart';
 import 'dart:math';
 import '../../../core/user_provider.dart';
 import '../../../core/services/voice_service.dart';
@@ -218,7 +219,7 @@ class _SequenceGameState extends State<SequenceGame> {
                     color: n == -1
                         ? theme.primaryColor.withValues(alpha: 0.1)
                         : theme.cardColor,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(AppTheme.rField),
                     border: Border.all(
                       color: n == -1 ? theme.primaryColor : theme.dividerColor,
                       width: 2,
@@ -269,7 +270,7 @@ class _SequenceGameState extends State<SequenceGame> {
                       : () => _checkAnswer(opt),
                   style: ElevatedButton.styleFrom(
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(AppTheme.rField),
                     ),
                     textStyle: const TextStyle(
                       fontSize: 20,

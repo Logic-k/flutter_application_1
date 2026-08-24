@@ -276,7 +276,7 @@ class _DiaryScreenState extends State<DiaryScreen> {
     return Container(
       decoration: BoxDecoration(
         color: theme.colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppTheme.rField),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       child: TextField(
@@ -305,7 +305,7 @@ class _DiaryScreenState extends State<DiaryScreen> {
             width: double.infinity,
             decoration: BoxDecoration(
               color: theme.colorScheme.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(AppTheme.rField),
             ),
             padding: const EdgeInsets.all(12),
             child: content != null && content.isNotEmpty
@@ -344,7 +344,7 @@ class _DiaryScreenState extends State<DiaryScreen> {
               icon: Icon(
                 _isListening ? Icons.mic : Icons.mic_none_outlined,
                 color: _isListening
-                    ? Colors.red
+                    ? MLColors.badText
                     : theme.colorScheme.onSurfaceVariant,
               ),
               tooltip: _isListening ? '음성 인식 중지' : '음성으로 입력',
@@ -355,7 +355,7 @@ class _DiaryScreenState extends State<DiaryScreen> {
             Text(
               '듣고 있어요...',
               style: theme.textTheme.bodySmall
-                  ?.copyWith(color: Colors.red),
+                  ?.copyWith(color: MLColors.badText),
             ),
           const Spacer(),
           FilledButton.icon(

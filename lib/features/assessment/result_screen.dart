@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import '../../core/theme.dart';
 import '../../core/user_provider.dart';
 import '../reports/models/clinical_report_data.dart' show MedicalDisclaimer;
 
@@ -16,12 +17,15 @@ class AssessmentResultScreen extends StatelessWidget {
     String feedback;
     Color scoreColor;
 
+    // 상태색은 밝기 분기 없이 goodText/warnText를 쓴다. 두 값 모두 흰 배경과
+    // 연한 틴트 위에서 AA를 넘기고, 예전 분기의 라이트 쪽 값(green.shade700
+    // 4.34:1, orange.shade800 3.6:1)은 본문 기준 4.5:1에 못 미쳤다.
     if (score < 0.3) {
       feedback = '인지 건강이 매우 양호합니다. 꾸준한 루틴으로 유지해보세요!';
-      scoreColor = theme.brightness == Brightness.light ? Colors.green.shade700 : Colors.greenAccent.shade400;
+      scoreColor = MLColors.goodText;
     } else if (score < 0.6) {
       feedback = '약간의 주의가 필요합니다. 인지 훈련 빈도를 높이는 것을 권장합니다.';
-      scoreColor = theme.brightness == Brightness.light ? Colors.orange.shade800 : Colors.orangeAccent;
+      scoreColor = MLColors.warnText;
     } else {
       feedback = '기억력 저하의 신호가 감지되었습니다. 치매안심센터 방문 상담을 권유드립니다.';
       scoreColor = theme.colorScheme.error;
@@ -61,12 +65,12 @@ class AssessmentResultScreen extends StatelessWidget {
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: theme.colorScheme.surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(AppTheme.rField),
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(Icons.info_outline, color: Colors.orange),
+                  const Icon(Icons.info_outline, color: MLColors.warnText),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(

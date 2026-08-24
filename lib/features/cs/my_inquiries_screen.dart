@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import '../../core/theme.dart';
 import '../../core/cs_service.dart';
 import '../../core/user_provider.dart';
 
@@ -42,10 +43,10 @@ class _MyInquiriesScreenState extends State<MyInquiriesScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(Icons.inbox_outlined,
-                      size: 64, color: Colors.grey[400]),
+                      size: 64, color: MLColors.textSoft),
                   const SizedBox(height: 12),
                   const Text('문의 내역이 없습니다.',
-                      style: TextStyle(color: Colors.grey)),
+                      style: TextStyle(color: MLColors.textSoft)),
                   const SizedBox(height: 8),
                   TextButton(
                     onPressed: () => context.push('/cs/inquiry_submit'),
@@ -86,7 +87,7 @@ class _MyInquiriesScreenState extends State<MyInquiriesScreen> {
                     ),
                     subtitle: Text(dateStr,
                         style: theme.textTheme.labelSmall
-                            ?.copyWith(color: Colors.grey)),
+                            ?.copyWith(color: MLColors.textSoft)),
                     trailing: _StatusChip(isAnswered: isAnswered),
                     onTap: () =>
                         context.push('/cs/inquiry_detail/${inq['id']}'),
@@ -116,9 +117,9 @@ class _StatusChip extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
         color: isAnswered
-            ? Colors.green.withValues(alpha: 0.15)
-            : Colors.amber.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(12),
+            ? MLColors.good.withValues(alpha: 0.15)
+            : MLColors.warn.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(AppTheme.rField),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -126,7 +127,7 @@ class _StatusChip extends StatelessWidget {
           Icon(
             isAnswered ? Icons.check_circle_outline : Icons.hourglass_top,
             size: 14,
-            color: isAnswered ? Colors.green[700] : Colors.amber[700],
+            color: isAnswered ? MLColors.goodText : MLColors.warnText,
           ),
           const SizedBox(width: 4),
           Text(
@@ -134,7 +135,7 @@ class _StatusChip extends StatelessWidget {
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w500,
-              color: isAnswered ? Colors.green[700] : Colors.amber[700],
+              color: isAnswered ? MLColors.goodText : MLColors.warnText,
             ),
           ),
         ],

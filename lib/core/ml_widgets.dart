@@ -59,7 +59,7 @@ class FloatingPillNav extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
             decoration: BoxDecoration(
               color: t.cardColor,
-              borderRadius: BorderRadius.circular(30),
+              borderRadius: BorderRadius.circular(AppTheme.rPill),
               border: Border.all(color: t.dividerColor),
               boxShadow: [
                 BoxShadow(color: MLColors.primary.withValues(alpha: 0.28), blurRadius: 30, offset: const Offset(0, 12)),
@@ -91,7 +91,7 @@ class FloatingPillNav extends StatelessWidget {
                       padding: EdgeInsets.symmetric(horizontal: on ? 14 : 10, vertical: 13),
                       decoration: BoxDecoration(
                         color: on ? t.colorScheme.primary : Colors.transparent,
-                        borderRadius: BorderRadius.circular(22),
+                        borderRadius: BorderRadius.circular(AppTheme.rSheet),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -240,7 +240,7 @@ class MLStatusPill extends StatelessWidget {
     padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 5),
     decoration: BoxDecoration(
       color: color.withValues(alpha: 0.12),
-      borderRadius: BorderRadius.circular(11),
+      borderRadius: BorderRadius.circular(AppTheme.rField),
       border: Border.all(color: color.withValues(alpha: 0.25)),
     ),
     child: Row(mainAxisSize: MainAxisSize.min, children: [
@@ -271,7 +271,7 @@ class MLGameCard extends StatelessWidget {
           MLIconTile(icon: icon, color: color, size: 48),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(color: t.colorScheme.onSurfaceVariant.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(11)),
+            decoration: BoxDecoration(color: t.colorScheme.onSurfaceVariant.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(AppTheme.rField)),
             child: Text('Lv.$level', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w800, color: t.colorScheme.onSurfaceVariant)),
           ),
         ]),
@@ -339,7 +339,7 @@ class MLListRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       child: Row(children: [
         Container(width: 40, height: 40,
-          decoration: BoxDecoration(color: color.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(12)),
+          decoration: BoxDecoration(color: color.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(AppTheme.rField)),
           child: Icon(icon, color: color, size: 21)),
         const SizedBox(width: 13),
         Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [

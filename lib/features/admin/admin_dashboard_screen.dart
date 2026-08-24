@@ -2,6 +2,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import '../../core/theme.dart';
 import '../../core/admin_provider.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
@@ -91,7 +92,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                         const SizedBox(height: 4),
                         Text(item.$1,
                             style: theme.textTheme.labelSmall
-                                ?.copyWith(color: Colors.grey),
+                                ?.copyWith(color: MLColors.textSoft),
                             textAlign: TextAlign.center),
                       ],
                     ),
@@ -108,7 +109,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       child: ExpansionTile(
         leading: Icon(
           Icons.warning_amber_rounded,
-          color: admin.atRiskUsers.isEmpty ? Colors.grey : Colors.red[400],
+          color: admin.atRiskUsers.isEmpty ? MLColors.textSoft : MLColors.badText,
         ),
         title: Text(
           '위험 사용자 알림 (${admin.atRiskUsers.length})',
@@ -120,17 +121,17 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 const Padding(
                   padding: EdgeInsets.all(16),
                   child: Text('위험 감지된 사용자가 없습니다.',
-                      style: TextStyle(color: Colors.grey)),
+                      style: TextStyle(color: MLColors.textSoft)),
                 ),
               ]
             : admin.atRiskUsers
                 .map((u) => ListTile(
                       leading:
-                          const Icon(Icons.person_outline, color: Colors.red),
+                          const Icon(Icons.person_outline, color: MLColors.badText),
                       title: Text(u['username'] as String? ?? ''),
                       subtitle: Text(
                           '${u['category']} ${u['delta_pct']}%',
-                          style: const TextStyle(color: Colors.red)),
+                          style: const TextStyle(color: MLColors.badText)),
                       trailing: const Icon(Icons.chevron_right),
                       onTap: () => context.push(
                           '/admin/user_detail/${u['user_id']}'),
@@ -156,7 +157,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             toY: score,
             color: theme.colorScheme.primary,
             width: 18,
-            borderRadius: BorderRadius.circular(4),
+            borderRadius: BorderRadius.circular(AppTheme.rBar),
           ),
         ],
       );
@@ -221,7 +222,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             const Padding(
               padding: EdgeInsets.all(16),
               child: Text('등록된 회원이 없습니다.',
-                  style: TextStyle(color: Colors.grey)),
+                  style: TextStyle(color: MLColors.textSoft)),
             )
           else
             ...admin.allUsers.map(

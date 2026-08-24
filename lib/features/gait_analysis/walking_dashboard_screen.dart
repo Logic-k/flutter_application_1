@@ -69,7 +69,7 @@ class _WalkingDashboardScreenState extends State<WalkingDashboardScreen> {
         title: const Text('생활습관'),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: MLColors.primary))
+          ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
               padding: const EdgeInsets.fromLTRB(
                   22, 6, 22, FloatingPillNav.contentBottomInset),
@@ -207,7 +207,7 @@ class _WalkingDashboardScreenState extends State<WalkingDashboardScreen> {
           toY: steps,
           width: 16,
           color: MLColors.primary,
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(AppTheme.rChip),
           backDrawRodData: BackgroundBarChartRodData(show: true, toY: maxY, color: MLColors.primary.withValues(alpha: 0.10)),
         ),
       ]));
@@ -227,7 +227,7 @@ class _WalkingDashboardScreenState extends State<WalkingDashboardScreen> {
             if (index < 0) index += 7;
             return Padding(
               padding: const EdgeInsets.only(top: 8),
-              child: Text(days[index], style: const TextStyle(color: MLColors.textFaint, fontSize: 12, fontWeight: FontWeight.w700)),
+              child: Text(days[index], style: const TextStyle(color: MLColors.textSoft, fontSize: 12, fontWeight: FontWeight.w700)),
             );
           },
         )),

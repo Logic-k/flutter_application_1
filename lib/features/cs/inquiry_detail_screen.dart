@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import '../../core/theme.dart';
 import '../../core/cs_service.dart';
 
 class InquiryDetailScreen extends StatelessWidget {
@@ -46,7 +47,7 @@ class InquiryDetailScreen extends StatelessWidget {
                         const SizedBox(height: 4),
                         Text(dateStr,
                             style: theme.textTheme.labelSmall
-                                ?.copyWith(color: Colors.grey)),
+                                ?.copyWith(color: MLColors.textSoft)),
                         const Divider(height: 20),
                         Text(data['body'] ?? '',
                             style: theme.textTheme.bodyMedium),
@@ -75,7 +76,7 @@ class InquiryDetailScreen extends StatelessWidget {
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: theme.colorScheme.primary.withValues(alpha: 0.07),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(AppTheme.rField),
                       border: Border.all(
                           color: theme.colorScheme.primary
                               .withValues(alpha: 0.2)),
@@ -96,7 +97,7 @@ class InquiryDetailScreen extends StatelessWidget {
                                 : '';
                           }(),
                           style: theme.textTheme.labelSmall
-                              ?.copyWith(color: Colors.grey),
+                              ?.copyWith(color: MLColors.textSoft),
                         ),
                       ],
                     ),
@@ -106,13 +107,13 @@ class InquiryDetailScreen extends StatelessWidget {
                     width: double.infinity,
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.grey[100],
-                      borderRadius: BorderRadius.circular(12),
+                      color: MLColors.surfaceAlt,
+                      borderRadius: BorderRadius.circular(AppTheme.rField),
                     ),
                     child: Text(
                       '아직 답변이 등록되지 않았습니다.\n빠른 시일 내 답변 드리겠습니다.',
                       style: theme.textTheme.bodyMedium?.copyWith(
-                          color: Colors.grey[500],
+                          color: MLColors.textSoft,
                           fontStyle: FontStyle.italic),
                     ),
                   ),

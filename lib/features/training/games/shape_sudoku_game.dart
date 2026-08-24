@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import '../../../core/theme.dart';
 import 'dart:math';
 import '../../../core/settings_provider.dart';
 import '../../../core/services/voice_service.dart';
@@ -276,7 +277,7 @@ class _ShapeSudokuGameState extends State<ShapeSudokuGame> {
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
                       color: theme.cardColor,
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(AppTheme.rPanel),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withValues(
@@ -355,13 +356,13 @@ class _ShapeSudokuGameState extends State<ShapeSudokuGame> {
                 label: '${idx + 1}번 보기, ${_symbolName(_symbols[idx])}',
                 child: InkWell(
                   onTap: _isSaving ? null : () => _checkAnswer(idx),
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(AppTheme.rTile),
                   child: Container(
                     width: btnSize,
                     height: btnSize,
                     decoration: BoxDecoration(
                       color: theme.cardColor,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(AppTheme.rTile),
                       border: Border.all(
                         color: theme.primaryColor.withValues(alpha: 0.25),
                       ),
@@ -386,7 +387,7 @@ class _ShapeSudokuGameState extends State<ShapeSudokuGame> {
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
       decoration: BoxDecoration(
         color: theme.primaryColor.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(AppTheme.rPanel),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

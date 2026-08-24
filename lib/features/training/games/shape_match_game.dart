@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../core/theme.dart';
 import 'dart:math';
 import '../../../core/user_provider.dart';
 import '../../../core/services/voice_service.dart';
@@ -236,7 +237,7 @@ class _ShapeMatchGameState extends State<ShapeMatchGame> {
                     padding: const EdgeInsets.all(40),
                     decoration: BoxDecoration(
                       color: theme.colorScheme.surfaceContainerHighest,
-                      borderRadius: BorderRadius.circular(30),
+                      borderRadius: BorderRadius.circular(AppTheme.rPill),
                     ),
                     child: Icon(
                       _targetIcon,
@@ -272,11 +273,11 @@ class _ShapeMatchGameState extends State<ShapeMatchGame> {
                     onTap: _isSaving || _isFinished
                         ? null
                         : () => _checkAnswer(_options[index]),
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(AppTheme.rPanel),
                     child: Container(
                       decoration: BoxDecoration(
                         color: theme.cardColor,
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(AppTheme.rPanel),
                         boxShadow: [
                           BoxShadow(
                             color: theme.shadowColor.withValues(

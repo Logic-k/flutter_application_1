@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../core/theme.dart';
 import 'dart:math';
 import '../../../core/user_provider.dart';
 import '../../../core/services/voice_service.dart';
@@ -193,7 +194,7 @@ class _MultiplicationGameState extends State<MultiplicationGame> {
                   ),
                   decoration: BoxDecoration(
                     color: theme.colorScheme.surfaceContainerHighest,
-                    borderRadius: BorderRadius.circular(30),
+                    borderRadius: BorderRadius.circular(AppTheme.rPill),
                   ),
                   // '×' 기호는 스크린리더가 뜻대로 읽지 못하므로 한국어 label 을 덧붙인다.
                   // 다만 자식 시맨틱스는 지우지 않는다. 화면에 보이는 수식 텍스트가
@@ -234,7 +235,7 @@ class _MultiplicationGameState extends State<MultiplicationGame> {
                     foregroundColor: theme.colorScheme.onSurface,
                     elevation: theme.brightness == Brightness.light ? 2 : 0,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(AppTheme.rPanel),
                     ),
                   ),
                   // 바깥이 아니라 버튼의 child 를 감싼다. 그래야 Key 와 탭 동작이

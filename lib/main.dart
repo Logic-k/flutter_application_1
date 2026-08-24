@@ -224,10 +224,9 @@ class _MemoryLinkAppState extends State<MemoryLinkApp> {
     if (userProvider.isLoading) {
       return MaterialApp(
         theme: AppTheme.lightTheme,
-        // 부팅 화면에도 다크 테마를 준다. 없으면 다크 모드 기기에서
-        // 흰 화면이 한 번 번쩍인 뒤 어두워진다.
+        // 다크는 의도적으로 꺼 둔 상태다. 사유는 아래 MaterialApp.router 주석 참조.
         darkTheme: AppTheme.darkTheme,
-        themeMode: ThemeMode.system,
+        themeMode: ThemeMode.light,
         debugShowCheckedModeBanner: false,
         home: const Scaffold(
           body: Center(child: CircularProgressIndicator()),
@@ -239,8 +238,20 @@ class _MemoryLinkAppState extends State<MemoryLinkApp> {
       title: 'MemoryLink',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
+      // 다크 테마는 정의만 해 두고 쓰지 않는다.
+      //
+      // ThemeMode.system이던 동안, 안드로이드 다크를 켠 사용자에게는 이 앱도
+      // 다크로 그려졌다. 그런데 화면 위젯이 MLColors.*(라이트 전용 상수)를
+      // 직접 참조해 테마를 우회하는 곳이 많아 글씨가 배경에 묻혔다.
+      // 실측 대비 — 본문 MLColors.text on dSurface 1.04:1, textSoft 2.48:1,
+      // dBg 위 본문 1.17:1. WCAG AA 최소 4.5:1의 4분의 1에도 못 미친다.
+      //
+      // 저시력 대응은 다크가 아니라 설정의 글꼴 배율(1.0/1.2/1.4배)로 한다.
+      // 재개 조건: MLColors 직접 참조를 colorScheme으로 회수한 뒤
+      // theme_contrast_test에 다크 케이스를 추가해 통과시킬 것.
+      // 그 뒤 이 한 줄만 ThemeMode.system으로 되돌리면 된다.
       darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.system,
+      themeMode: ThemeMode.light,
       routerConfig: _router,
       builder: (context, child) {
         // 시스템 글꼴 배율을 '덮어쓰지' 않고 '바닥값'으로 쓴다.

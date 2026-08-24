@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:printing/printing.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
+import '../../core/theme.dart';
 import '../../core/database_helper.dart';
 import '../../core/user_provider.dart';
 import 'clinical_report_generator.dart';
@@ -245,7 +246,7 @@ class _ClinicalReportOptionsScreenState
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppTheme.rTile),
           border: Border.all(
             color: selected
                 ? theme.colorScheme.primary
@@ -264,7 +265,7 @@ class _ClinicalReportOptionsScreenState
                 color: selected
                     ? theme.colorScheme.primaryContainer
                     : theme.colorScheme.surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(AppTheme.rField),
               ),
               child: Icon(icon,
                   color: selected
@@ -410,7 +411,7 @@ class _ClinicalReportOptionsScreenState
   }) {
     return InkWell(
       onTap: () => onChanged(!value),
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(AppTheme.rField),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
         child: Row(
@@ -495,7 +496,7 @@ class _ClinicalReportOptionsScreenState
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppTheme.rTile),
           border: Border.all(
             color: selected
                 ? theme.colorScheme.primary
@@ -560,7 +561,7 @@ class _ClinicalReportOptionsScreenState
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: theme.colorScheme.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(AppTheme.rField),
             ),
             child: Row(
               children: [

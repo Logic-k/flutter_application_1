@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import '../../core/theme.dart';
 import '../../core/user_provider.dart';
 import 'dart:async';
 import 'dart:math';
@@ -228,7 +229,7 @@ class _CognitiveTasksScreenState extends State<CognitiveTasksScreen> {
                 child: Icon(
                   isTarget ? icons.target : icons.distractor,
                   size: 60,
-                  color: Colors.teal,
+                  color: MLColors.mem,
                 ),
               ),
             );

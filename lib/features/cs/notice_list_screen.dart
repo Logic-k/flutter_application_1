@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import '../../core/theme.dart';
 import '../../core/cs_service.dart';
 
 class NoticeListScreen extends StatefulWidget {
@@ -39,10 +40,10 @@ class _NoticeListScreenState extends State<NoticeListScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.campaign_outlined, size: 64, color: Colors.grey),
+                  Icon(Icons.campaign_outlined, size: 64, color: MLColors.textSoft),
                   SizedBox(height: 12),
                   Text('등록된 공지사항이 없습니다.',
-                      style: TextStyle(color: Colors.grey)),
+                      style: TextStyle(color: MLColors.textSoft)),
                 ],
               ),
             );
@@ -66,7 +67,7 @@ class _NoticeListScreenState extends State<NoticeListScreen> {
                     : '';
                 return Card(
                   child: InkWell(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(AppTheme.rField),
                     onTap: () =>
                         context.push('/cs/notice_detail/${n['id']}'),
                     child: Padding(
@@ -82,7 +83,7 @@ class _NoticeListScreenState extends State<NoticeListScreen> {
                                       horizontal: 8, vertical: 2),
                                   decoration: BoxDecoration(
                                     color: theme.colorScheme.primary,
-                                    borderRadius: BorderRadius.circular(4),
+                                    borderRadius: BorderRadius.circular(AppTheme.rBar),
                                   ),
                                   child: const Text('고정',
                                       style: TextStyle(
@@ -107,14 +108,14 @@ class _NoticeListScreenState extends State<NoticeListScreen> {
                           Text(
                             n['body'] ?? '',
                             style: theme.textTheme.bodySmall
-                                ?.copyWith(color: Colors.grey[600]),
+                                ?.copyWith(color: MLColors.textSoft),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
                           const SizedBox(height: 8),
                           Text(dateStr,
                               style: theme.textTheme.labelSmall
-                                  ?.copyWith(color: Colors.grey)),
+                                  ?.copyWith(color: MLColors.textSoft)),
                         ],
                       ),
                     ),

@@ -45,6 +45,7 @@ import '../features/settings/model_download_screen.dart';
 import '../features/settings/settings_screen.dart';
 import '../features/health/health_input_screen.dart';
 import 'admin_provider.dart';
+import 'app_config.dart';
 import 'user_provider.dart';
 
 GoRouter createAppRouter(
@@ -72,6 +73,12 @@ GoRouter createAppRouter(
         '/dementia_centers',
       };
       final needsOnboarding = isLoggedIn && !userProvider.hasCompletedOnboarding;
+
+      // 포털이 꺼진 빌드에서는 /admin* 전체를 홈으로 되돌린다.
+      // UI에서 진입점을 숨기는 것만으로는 딥링크·`adb shell am start`를 못 막는다.
+      if (!AppConfig.isAdminPortalEnabled && loc.startsWith('/admin')) {
+        return isLoggedIn ? '/' : '/login';
+      }
 
       // 관리자 포털 가드: 미로그인 시 /admin_login으로
       if (isAdminRoute && !adminProvider.isAdminLoggedIn) {

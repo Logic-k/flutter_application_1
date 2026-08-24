@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import '../../core/theme.dart';
 import '../../core/cs_service.dart';
 
 class AdminInquiryDetailScreen extends StatefulWidget {
@@ -79,11 +80,11 @@ class _AdminInquiryDetailScreenState extends State<AdminInquiryDetailScreen> {
                         Row(
                           children: [
                             const Icon(Icons.person_outline,
-                                size: 16, color: Colors.grey),
+                                size: 16, color: MLColors.textSoft),
                             const SizedBox(width: 4),
                             Text(data['username'] as String? ?? '',
                                 style: theme.textTheme.labelMedium
-                                    ?.copyWith(color: Colors.grey)),
+                                    ?.copyWith(color: MLColors.textSoft)),
                             const Spacer(),
                             Text(
                               () {
@@ -95,7 +96,7 @@ class _AdminInquiryDetailScreenState extends State<AdminInquiryDetailScreen> {
                                     : '';
                               }(),
                               style: theme.textTheme.labelSmall
-                                  ?.copyWith(color: Colors.grey),
+                                  ?.copyWith(color: MLColors.textSoft),
                             ),
                           ],
                         ),
@@ -119,7 +120,7 @@ class _AdminInquiryDetailScreenState extends State<AdminInquiryDetailScreen> {
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: theme.colorScheme.primary.withValues(alpha: 0.07),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(AppTheme.rField),
                       border: Border.all(
                           color: theme.colorScheme.primary
                               .withValues(alpha: 0.2)),

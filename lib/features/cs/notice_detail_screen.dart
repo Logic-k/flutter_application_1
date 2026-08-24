@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import '../../core/theme.dart';
 import '../../core/cs_service.dart';
 
 class NoticeDetailScreen extends StatelessWidget {
@@ -37,7 +38,7 @@ class NoticeDetailScreen extends StatelessWidget {
                 const SizedBox(height: 8),
                 Text(dateStr,
                     style: theme.textTheme.bodySmall
-                        ?.copyWith(color: Colors.grey)),
+                        ?.copyWith(color: MLColors.textSoft)),
                 const Divider(height: 32),
                 Text(n['body'] ?? '', style: theme.textTheme.bodyMedium),
               ],

@@ -28,7 +28,7 @@ class _HeroBadge extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.18),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(AppTheme.rPanel),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -239,7 +239,7 @@ class _HomeScreenState extends State<HomeScreen> {
           if (progress != null) ...[
             const SizedBox(height: 6),
             ClipRRect(
-              borderRadius: BorderRadius.circular(4),
+              borderRadius: BorderRadius.circular(AppTheme.rBar),
               child: LinearProgressIndicator(
                 value: progress,
                 backgroundColor: Colors.white.withValues(alpha: 0.25),
@@ -280,7 +280,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
           ),
-          const Icon(Icons.arrow_forward_ios_rounded, color: MLColors.textFaint, size: 16),
+          const Icon(Icons.arrow_forward_ios_rounded, color: MLColors.textSoft, size: 16),
         ],
       ),
     );
@@ -320,7 +320,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
           ),
-          const Icon(Icons.arrow_forward_ios_rounded, color: MLColors.textFaint, size: 16),
+          const Icon(Icons.arrow_forward_ios_rounded, color: MLColors.textSoft, size: 16),
         ],
       ),
     );
@@ -363,7 +363,7 @@ class _HomeScreenState extends State<HomeScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
           color: MLColors.read.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(AppTheme.rPanel),
           border: Border.all(color: MLColors.read.withValues(alpha: 0.25)),
         ),
         child: Row(
@@ -486,7 +486,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Text(label, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
             Text(
               score > 0 ? '${score.toInt()}점' : '미측정',
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: score > 0 ? color : MLColors.textFaint),
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: score > 0 ? color : MLColors.textSoft),
             ),
           ],
         ),

@@ -1,3 +1,15 @@
+// ─────────────────────────────────────────────────────────────────────────
+// [TTA 표준 적용] TTAK.KO-12.0414 「인공지능(AI) 서비스 개인정보보호 프레임워크」
+//
+// 적용 지점: 수집 최소화와 저장 위치 통제.
+//   - 훈련 점수(training_scores), 걸음 수(daily_steps), 일기 원문(diary_entries),
+//     건강 기록(health_logs)은 단말 SQLite에만 저장한다. 클라우드에는 보호자 열람용
+//     요약 지표만 전송하며 AI 대화 원문은 서버에 축적하지 않는다.
+//   - 비밀번호는 평문으로 두지 않고 salt + SHA-256으로 해싱한다(Random.secure()).
+//   민감정보인 인지건강 데이터에 표준의 최소수집·목적제한·저장위치 통제를 적용한 것이다.
+//
+// 같은 표준의 동의 분리는 features/onboarding/consent_screen.dart 에 적용.
+// ─────────────────────────────────────────────────────────────────────────
 import 'dart:convert';
 import 'dart:math';
 import 'package:crypto/crypto.dart';
@@ -111,18 +123,6 @@ class DatabaseHelper {
         category TEXT,
         score REAL,
         created_at TEXT,
-        FOREIGN KEY (user_id) REFERENCES users (id)
-      )
-    ''');
-
-    // Checklist table
-    await db.execute('''
-      CREATE TABLE checklist (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER,
-        task_title TEXT,
-        is_checked INTEGER DEFAULT 0,
-        date TEXT,
         FOREIGN KEY (user_id) REFERENCES users (id)
       )
     ''');
@@ -679,7 +679,6 @@ class DatabaseHelper {
         'training_user_progress',
         'training_scores',
         'daily_steps',
-        'checklist',
         'health_logs',
       ]) {
         await transaction.delete(
@@ -985,45 +984,6 @@ class DatabaseHelper {
       where: 'user_id = ?',
       whereArgs: [userId],
       orderBy: 'created_at ASC',
-    );
-  }
-
-  // --- Checklist Operations ---
-  Future<void> updateChecklist(int userId, String title, bool value) async {
-    Database db = await database;
-    String date = DateTime.now().toIso8601String().split('T')[0];
-    
-    // Upsert logic
-    List<Map<String, dynamic>> existing = await db.query(
-      'checklist',
-      where: 'user_id = ? AND task_title = ? AND date = ?',
-      whereArgs: [userId, title, date],
-    );
-
-    if (existing.isNotEmpty) {
-      await db.update(
-        'checklist',
-        {'is_checked': value ? 1 : 0},
-        where: 'id = ?',
-        whereArgs: [existing.first['id']],
-      );
-    } else {
-      await db.insert('checklist', {
-        'user_id': userId,
-        'task_title': title,
-        'is_checked': value ? 1 : 0,
-        'date': date,
-      });
-    }
-  }
-
-  Future<List<Map<String, dynamic>>> getTodayChecklist(int userId) async {
-    Database db = await database;
-    String date = DateTime.now().toIso8601String().split('T')[0];
-    return await db.query(
-      'checklist',
-      where: 'user_id = ? AND date = ?',
-      whereArgs: [userId, date],
     );
   }
 

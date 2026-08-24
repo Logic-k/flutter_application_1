@@ -1,10 +1,35 @@
 // ─────────────────────────────────────────────────────────────────────────
+// [TTA 표준 적용 — 준용] TTAK.KO-08.0057
+//   「사회적 약자(정보취약계층)를 위한 무인정보 단말기 사용자 인터페이스 접근성 요구사항」
+//
+// 적용 지점: 시각 접근성 토큰.
+//   - 명도 대비: 본문·보조 텍스트를 WCAG AA(4.5:1) 이상으로 잡았다. 조작 가능한
+//     경계선(lineStrong)은 비텍스트 기준 3:1을 넘긴다. 회귀는
+//     test/unit/core/theme_contrast_test.dart 가 대비비를 실제로 계산해 차단한다.
+//   - 터치 타겟: minTapTarget 56dp. Material 권고 48dp보다 크게 잡은 것은 진전·관절
+//     가동범위 저하가 흔한 고령 사용자를 기준으로 삼았기 때문이다.
+//
+// 준용 고지: 적용 대상이 무인정보 단말기인 표준을 모바일 UI에 준용했다.
+// 같은 표준의 문자 크기·음성·촉각 설정은 core/settings_provider.dart 에 적용.
+// ─────────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────
 // theme.dart  ·  MemoryLink 리디자인 — 방향 A "라벤더 캄"  [확정본]
 // 확정값: 강조색 #6C5CE7 · 라이트 기본 · NanumGothic · 둥글기/타이포 기본 배수(1.0)
 // ─────────────────────────────────────────────────────────────────────────
 import 'package:flutter/material.dart';
 
-/// 디자인 토큰 — ColorScheme 으로 표현되지 않는 카테고리/상태 색은 여기서 가져다 씁니다.
+/// 디자인 토큰.
+///
+/// **쓰는 규칙** — 이 클래스의 값은 밝기와 무관한 의미색만 화면에서 직접 참조한다.
+/// 카테고리 강조색(calc·logic·mem·care·read·sky)과 상태색(good/warn/bad,
+/// goodText/warnText/badText), 그라디언트가 그 대상이다.
+///
+/// 반대로 **표면·텍스트·경계선**(bg·surface·surfaceAlt·line·text·textSoft와
+/// primary 계열)은 밝기에 따라 뒤집혀야 하므로 화면에서 직접 쓰지 말고
+/// `Theme.of(context).colorScheme` / `textTheme` 으로 가져온다. 위젯이 색을
+/// 직접 고르면 스킴을 바꿔도 따라오지 않는다 — 다크 모드가 대비 1.04:1로
+/// 깨져 있던 원인이 정확히 이것이었다(main.dart의 themeMode 주석 참조).
+/// 이 클래스에 남은 표면·텍스트 값은 테마 정의(_base) 자체가 쓰기 위한 원재료다.
 class MLColors {
   // Brand
   static const Color primary     = Color(0xFF6C5CE7); // 라벤더 (강조)
@@ -26,9 +51,12 @@ class MLColors {
   // 대비비는 흰 카드(#FFFFFF)와 스캐폴드 배경(#F1F0FB) 양쪽에서 WCAG AA 4.5:1을
   // 넘도록 잡았다. 이전 값(textSoft #716C8C = bg 위 4.40:1,
   // textFaint #A6A2BC = 2.18:1)은 저시력 고령 사용자에게 읽히지 않았다.
+  //
+  // 접근성 보정 과정에서 textFaint(#5F5B78)가 textSoft(#5E5978)와 채널당 1~2 차이,
+  // 대비비 5.98:1 대 6.06:1까지 붙어 버렸다. 화면에서 구분되지 않는 두 값을
+  // 두 이름으로 관리하면 한쪽만 고쳐 어긋나기 때문에 textSoft 하나로 합쳤다.
   static const Color text      = Color(0xFF241F3D);
   static const Color textSoft  = Color(0xFF5E5978); // 흰 6.06:1 / bg 5.36:1
-  static const Color textFaint = Color(0xFF5F5B78); // 흰 5.98:1 / bg 5.29:1
 
   // Category accents (게임/지표 카테고리)
   static const Color calc  = Color(0xFF6C5CE7); // 계산·판단
@@ -68,10 +96,20 @@ class AppTheme {
   // Pretendard 를 추가하려면 pubspec 에 등록 후 'Pretendard' 로 변경.
   static const String? _fontFamily = 'NanumGothic';
 
-  // 모서리 둥글기 토큰 (확정 둥글기 배수 1.0 기준)
-  static const double rCard = 26;
-  static const double rBtn  = 14;
-  static const double rTile = 16;
+  // ─── 모서리 둥글기 척도 ──────────────────────────────────────
+  //
+  // 토큰이 셋뿐이라 화면들이 BorderRadius.circular()에 숫자를 직접 넣었고,
+  // 그 결과 같은 성격의 요소가 10·11·12로 제각각이 됐다. 실제로 쓰이던 값을
+  // 용도별로 묶어 척도로 만든다. 이 척도 밖의 숫자는 쓰지 않는다.
+  static const double rBar   = 4;   // 진행 바·게이지처럼 얇은 요소
+  static const double rChip  = 8;   // 칩·태그·작은 배지
+  static const double rField = 12;  // 입력창·타일 내부 블록
+  static const double rBtn   = 14;  // 버튼
+  static const double rTile  = 16;  // 타일·아이콘 배경
+  static const double rPanel = 20;  // 패널·인라인 시트
+  static const double rSheet = 24;  // 바텀시트·큰 다이얼로그
+  static const double rCard  = 26;  // 카드 (MLCard·MLHeroCard)
+  static const double rPill  = 30;  // 완전한 알약 (하단 네비 등)
 
   /// 최소 터치 타겟 높이(dp).
   /// WCAG 2.2 SC 2.5.8은 24px를 하한으로 두고 Material은 48dp를 권고하지만,
@@ -224,8 +262,21 @@ class AppTheme {
         backgroundColor: MLColors.text,
         contentTextStyle: const TextStyle(fontFamily: _fontFamily, color: Colors.white, fontWeight: FontWeight.w600),
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(rBtn)),
       ),
+
+      // 아래 셋은 화면마다 색을 직접 지정하던 것을 테마로 끌어올린 것이다.
+      // 리스트 구분선 14곳이 `const Divider()`,
+      // 스위치 3곳이 `activeThumbColor: MLColors.primary`,
+      // 로딩 인디케이터 5곳이 `CircularProgressIndicator()`
+      // 였다. 색을 위젯이 정하면 스킴을 바꿔도 따라오지 않는다.
+      dividerTheme: DividerThemeData(color: line, space: 1, thickness: 1),
+      switchTheme: SwitchThemeData(
+        thumbColor: WidgetStateProperty.resolveWith(
+          (s) => s.contains(WidgetState.selected) ? scheme.primary : null,
+        ),
+      ),
+      progressIndicatorTheme: ProgressIndicatorThemeData(color: scheme.primary),
     );
   }
 }

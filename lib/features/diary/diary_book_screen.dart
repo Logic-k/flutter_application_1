@@ -97,11 +97,11 @@ class _DiaryCard extends StatelessWidget {
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.rBtn)),
       elevation: 0,
       color: theme.colorScheme.surfaceContainerHighest,
       child: InkWell(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(AppTheme.rBtn),
         onTap: () => Navigator.of(context).pop(),
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -115,7 +115,7 @@ class _DiaryCard extends StatelessWidget {
                         horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
                       color: MLColors.primary.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(AppTheme.rPanel),
                     ),
                     child: Text(
                       label,

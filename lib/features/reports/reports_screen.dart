@@ -6,7 +6,6 @@ import '../../core/user_provider.dart';
 import '../../core/database_helper.dart';
 import '../../core/ml_widgets.dart';
 import '../../core/theme.dart';
-import 'widgets/social_ranking_view.dart';
 import 'report_analyzer.dart';
 import '../gait_analysis/pedometer_manager.dart';
 
@@ -59,7 +58,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('주간 분석 리포트')),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: MLColors.primary))
+          ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
               padding: const EdgeInsets.fromLTRB(
                   22, 6, 22, FloatingPillNav.contentBottomInset),
@@ -69,8 +68,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
                   const Text('나의 인지 건강 일기', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900)),
                   const SizedBox(height: 20),
                   _buildBrainAgeCard(user),
-                  const SizedBox(height: 24),
-                  SocialRankingView(userScore: user.memoryScore, categoryName: '기억력'),
                   const SizedBox(height: 24),
                   _buildChartCard(),
                   const SizedBox(height: 24),
@@ -214,7 +211,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: ['월', '화', '수', '목', '금', '토', '일']
-                .map((d) => Text(d, style: const TextStyle(fontSize: 12, color: MLColors.textFaint, fontWeight: FontWeight.w700)))
+                .map((d) => Text(d, style: const TextStyle(fontSize: 12, color: MLColors.textSoft, fontWeight: FontWeight.w700)))
                 .toList(),
           ),
         ],

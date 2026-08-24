@@ -4,6 +4,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../core/theme.dart';
 import '../../core/user_provider.dart';
 import '../../core/services/guardian_sync_service.dart';
 import '../gait_analysis/pedometer_manager.dart';
@@ -71,7 +72,7 @@ class _GuardianLinkScreenState extends State<GuardianLinkScreen> {
           content: Text(
             result.success ? '보호자 대시보드가 업데이트되었습니다.' : '동기화 실패: ${result.error}',
           ),
-          backgroundColor: result.success ? Colors.green.shade700 : Colors.red.shade700,
+          backgroundColor: result.success ? MLColors.goodText : MLColors.badText,
           duration: const Duration(seconds: 3),
         ),
       );
@@ -128,18 +129,18 @@ class _GuardianLinkScreenState extends State<GuardianLinkScreen> {
                 margin: const EdgeInsets.only(bottom: 16),
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
-                  color: Colors.red.shade800.withValues(alpha: 0.15),
-                  border: Border.all(color: Colors.red.shade700),
-                  borderRadius: BorderRadius.circular(12),
+                  color: MLColors.bad.withValues(alpha: 0.15),
+                  border: Border.all(color: MLColors.badText),
+                  borderRadius: BorderRadius.circular(AppTheme.rField),
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.warning_amber_rounded, color: Colors.red.shade400, size: 22),
+                    Icon(Icons.warning_amber_rounded, color: MLColors.badText, size: 22),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
                         '활동량 이상 감지 — 보호자 대시보드에 경고가 표시됩니다.',
-                        style: TextStyle(color: Colors.red.shade300, fontSize: 13),
+                        style: TextStyle(color: MLColors.badText, fontSize: 13),
                       ),
                     ),
                   ],
@@ -152,7 +153,7 @@ class _GuardianLinkScreenState extends State<GuardianLinkScreen> {
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: theme.colorScheme.surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(AppTheme.rTile),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -194,7 +195,7 @@ class _GuardianLinkScreenState extends State<GuardianLinkScreen> {
                         foregroundColor: theme.colorScheme.onPrimary,
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(AppTheme.rField),
                         ),
                       ),
                     ),
@@ -211,7 +212,7 @@ class _GuardianLinkScreenState extends State<GuardianLinkScreen> {
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(24),
+                  borderRadius: BorderRadius.circular(AppTheme.rSheet),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(
@@ -241,7 +242,7 @@ class _GuardianLinkScreenState extends State<GuardianLinkScreen> {
                       '보호자 스마트폰으로 스캔',
                       style: TextStyle(
                         fontSize: 12,
-                        color: Colors.grey.shade600,
+                        color: MLColors.textSoft,
                       ),
                     ),
                   ],
@@ -260,7 +261,7 @@ class _GuardianLinkScreenState extends State<GuardianLinkScreen> {
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 color: theme.colorScheme.surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(AppTheme.rTile),
               ),
               child: const Column(
                 children: [
@@ -342,7 +343,7 @@ class _GuardianLinkScreenState extends State<GuardianLinkScreen> {
                   foregroundColor: theme.colorScheme.onPrimary,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(AppTheme.rField),
                   ),
                 ),
               ),

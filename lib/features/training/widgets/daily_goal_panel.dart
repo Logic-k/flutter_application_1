@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/theme.dart';
 
 class DailyGoalPanel extends StatelessWidget {
   const DailyGoalPanel({
@@ -39,7 +40,7 @@ class DailyGoalPanel extends StatelessWidget {
         decoration: BoxDecoration(
           color: theme.colorScheme.surface,
           border: Border.all(color: theme.colorScheme.outlineVariant),
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(AppTheme.rChip),
         ),
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -66,7 +67,7 @@ class DailyGoalPanel extends StatelessWidget {
               const SizedBox(height: 12),
               ExcludeSemantics(
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(4),
+                  borderRadius: BorderRadius.circular(AppTheme.rBar),
                   child: LinearProgressIndicator(
                     value: progress,
                     minHeight: 10,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import '../../core/theme.dart';
 import '../../core/user_provider.dart';
 
 class AssessmentScreen extends StatefulWidget {
@@ -86,7 +87,7 @@ class _AssessmentScreenState extends State<AssessmentScreen> {
                               onPressed: () => _onAnswer(1),
                               style: OutlinedButton.styleFrom(
                                 padding: const EdgeInsets.symmetric(vertical: 24),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.rTile)),
                               ),
                               child: const Text('예', style: TextStyle(fontSize: 18)),
                             ),
@@ -97,7 +98,7 @@ class _AssessmentScreenState extends State<AssessmentScreen> {
                               onPressed: () => _onAnswer(0),
                               style: OutlinedButton.styleFrom(
                                 padding: const EdgeInsets.symmetric(vertical: 24),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.rTile)),
                               ),
                               child: const Text('아니오', style: TextStyle(fontSize: 18)),
                             ),

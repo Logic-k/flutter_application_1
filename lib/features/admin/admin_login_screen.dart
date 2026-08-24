@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import '../../core/theme.dart';
 import '../../core/admin_provider.dart';
 
 class AdminLoginScreen extends StatefulWidget {
@@ -59,7 +60,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                 const SizedBox(height: 8),
                 Text('MemoryLink 운영자 전용',
                     style: theme.textTheme.bodyMedium
-                        ?.copyWith(color: Colors.grey)),
+                        ?.copyWith(color: MLColors.textSoft)),
                 const SizedBox(height: 40),
                 TextField(
                   controller: _codeController,

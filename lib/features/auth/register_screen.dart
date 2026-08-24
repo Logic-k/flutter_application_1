@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import '../../core/theme.dart';
 import '../../core/user_provider.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -202,7 +203,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(
                           color: theme.colorScheme.secondaryContainer,
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(AppTheme.rChip),
                         ),
                         child: Text(
                           '나중에 입력해도 됩니다',
@@ -268,7 +269,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   onPressed: _handleRegister,
                   style: ElevatedButton.styleFrom(
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16)),
+                        borderRadius: BorderRadius.circular(AppTheme.rTile)),
                     elevation: 0,
                   ),
                   child: const Text('가입 완료',
@@ -296,7 +297,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               color: isSelected
                   ? theme.colorScheme.primary
                   : theme.colorScheme.surface,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(AppTheme.rField),
               border: Border.all(
                 color: isSelected
                     ? theme.colorScheme.primary

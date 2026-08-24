@@ -306,7 +306,7 @@ class _UnavailableView extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(18, 24, 18, 32),
       children: [
         const Icon(Icons.location_off_rounded,
-            size: 56, color: MLColors.textFaint),
+            size: 56, color: MLColors.textSoft),
         const SizedBox(height: 16),
         const Text(
           '센터 목록을 불러오지 못했습니다',
@@ -327,7 +327,7 @@ class _UnavailableView extends StatelessWidget {
             soft: true,
             child: Text(
               message!,
-              style: const TextStyle(fontSize: 13, color: MLColors.textFaint),
+              style: const TextStyle(fontSize: 13, color: MLColors.textSoft),
             ),
           ),
         ],

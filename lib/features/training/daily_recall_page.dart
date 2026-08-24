@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../core/theme.dart';
 
 import 'application/training_attempt_input.dart';
 import 'application/training_completion_ui.dart';
@@ -124,7 +125,7 @@ class _DailyRecallPageState extends State<DailyRecallPage> {
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
               color: theme.primaryColor.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(AppTheme.rPanel),
               border: Border.all(
                 color: theme.primaryColor.withValues(alpha: 0.2),
               ),
@@ -155,7 +156,7 @@ class _DailyRecallPageState extends State<DailyRecallPage> {
             decoration: InputDecoration(
               hintText: '여기에 내용을 적어주세요...',
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(AppTheme.rTile),
               ),
               fillColor: theme.cardColor,
               filled: true,
@@ -175,7 +176,7 @@ class _DailyRecallPageState extends State<DailyRecallPage> {
                 backgroundColor: theme.primaryColor,
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(AppTheme.rTile),
                 ),
               ),
               child: _isSaving

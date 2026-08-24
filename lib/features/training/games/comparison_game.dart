@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../core/theme.dart';
 import 'dart:math';
 import '../../../core/user_provider.dart';
 import '../../../core/services/voice_service.dart';
@@ -235,13 +236,13 @@ class _ComparisonGameState extends State<ComparisonGame> {
       child: InkWell(
         key: Key('comparison-answer-${isLeft ? 'left' : 'right'}'),
         onTap: enabled ? () => _checkAnswer(isLeft) : null,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(AppTheme.rPanel),
         child: Container(
           height: 180,
           alignment: Alignment.center,
           decoration: BoxDecoration(
             color: theme.cardColor,
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(AppTheme.rPanel),
             boxShadow: [
               BoxShadow(
                 color: theme.shadowColor.withValues(

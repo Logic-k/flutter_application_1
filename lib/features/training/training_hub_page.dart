@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import '../../core/theme.dart';
 
 import '../../core/ml_widgets.dart';
 import 'application/training_completion_ui.dart';
@@ -136,7 +137,7 @@ class _LoadError extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Material(
     color: Theme.of(context).colorScheme.errorContainer,
-    borderRadius: BorderRadius.circular(8),
+    borderRadius: BorderRadius.circular(AppTheme.rChip),
     child: Padding(
       padding: const EdgeInsets.all(12),
       child: Row(

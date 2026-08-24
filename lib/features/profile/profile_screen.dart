@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../core/version_label.dart';
 import '../../core/user_provider.dart';
 import '../../core/ml_widgets.dart';
 import '../../core/theme.dart';
@@ -17,7 +18,7 @@ class ProfileScreen extends StatelessWidget {
     final user = userProvider.currentUser;
 
     if (user == null) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator(color: MLColors.primary)));
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     return Scaffold(
@@ -105,12 +106,7 @@ class ProfileScreen extends StatelessWidget {
             ),
             const SizedBox(height: 32),
 
-            Center(
-              child: GestureDetector(
-                onLongPress: () => context.push('/admin_login'),
-                child: const Text('MemoryLink v1.0.0', style: TextStyle(fontSize: 12, color: MLColors.textFaint)),
-              ),
-            ),
+            const MLVersionLabel(),
           ],
         ),
       ),
@@ -134,7 +130,7 @@ class ProfileScreen extends StatelessWidget {
                 width: 72, height: 72,
                 decoration: BoxDecoration(
                   color: MLColors.primarySoft,
-                  borderRadius: BorderRadius.circular(24),
+                  borderRadius: BorderRadius.circular(AppTheme.rSheet),
                   image: hasImage ? DecorationImage(image: FileImage(File(imagePath)), fit: BoxFit.cover) : null,
                 ),
                 child: hasImage ? null : const Icon(Icons.person_rounded, size: 36, color: MLColors.primary),
@@ -176,17 +172,17 @@ class ProfileScreen extends StatelessWidget {
       padding: EdgeInsets.zero,
       child: Column(children: [
         MLListRow(icon: Icons.calendar_today_rounded, color: MLColors.calc, title: '나이', trailing: Text('${up.age ?? "-"} 세', style: const TextStyle(fontWeight: FontWeight.w700))),
-        Divider(height: 1, color: MLColors.line),
+        const Divider(),
         MLListRow(icon: Icons.monitor_weight_rounded, color: MLColors.mem, title: '몸무게', trailing: Text('${up.weight ?? "-"} kg', style: const TextStyle(fontWeight: FontWeight.w700))),
-        Divider(height: 1, color: MLColors.line),
+        const Divider(),
         MLListRow(icon: Icons.bloodtype_rounded, color: MLColors.bad, title: '혈액형', trailing: Text(up.bloodType ?? '미설정', style: const TextStyle(fontWeight: FontWeight.w700))),
-        Divider(height: 1, color: MLColors.line),
+        const Divider(),
         MLListRow(icon: Icons.medical_services_rounded, color: MLColors.warn, title: '복용 약물', trailing: Text(up.medications ?? '없음', style: const TextStyle(fontWeight: FontWeight.w700))),
-        Divider(height: 1, color: MLColors.line),
+        const Divider(),
         MLListRow(icon: Icons.notifications_active_rounded, color: MLColors.sky, title: '비상 연락처', trailing: Text(up.emergencyContact ?? '미설정', style: const TextStyle(fontWeight: FontWeight.w700))),
-        Divider(height: 1, color: MLColors.line),
+        const Divider(),
         MLListRow(icon: Icons.mic_off_rounded, color: MLColors.textSoft, title: '음성 진단', subtitle: '정확도 개선을 위해 현재 사용 중지', onTap: () => context.push('/voice_assessment')),
-        Divider(height: 1, color: MLColors.line),
+        const Divider(),
         MLListRow(icon: Icons.health_and_safety_rounded, color: MLColors.primary, title: '건강 기록', subtitle: '수면·혈압·식이 기록 및 추세', onTap: () => context.push('/health_input')),
       ]),
     );

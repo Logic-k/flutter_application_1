@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import '../../../core/theme.dart';
 import '../../../core/settings_provider.dart';
 import '../../../core/services/voice_service.dart';
 import '../application/training_attempt_input.dart';
@@ -221,7 +222,7 @@ class _CategorizationGameState extends State<CategorizationGame> {
       SnackBar(
         content: Text(message),
         backgroundColor: isCorrect
-            ? Colors.green.shade600
+            ? MLColors.goodText
             : theme.colorScheme.error,
         duration: const Duration(milliseconds: 600),
       ),
@@ -264,7 +265,7 @@ class _CategorizationGameState extends State<CategorizationGame> {
               padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 22),
               decoration: BoxDecoration(
                 color: theme.primaryColor.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(24),
+                borderRadius: BorderRadius.circular(AppTheme.rSheet),
                 border: Border.all(
                   color: theme.primaryColor.withValues(alpha: 0.25),
                   width: 2,
@@ -312,7 +313,7 @@ class _CategorizationGameState extends State<CategorizationGame> {
                           width: 2,
                         ),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(AppTheme.rTile),
                         ),
                       ),
                       child: Text(
@@ -339,10 +340,10 @@ class _CategorizationGameState extends State<CategorizationGame> {
         ? '중급 (Lv.$level)'
         : '고급 (Lv.$level)';
     final color = level <= 3
-        ? Colors.green
+        ? MLColors.goodText
         : level <= 6
-        ? Colors.orange
-        : Colors.red;
+        ? MLColors.warnText
+        : MLColors.badText;
     // 난이도는 배지 색(초록/주황/빨강)으로도 구분되지만 색은 스크린리더에 전달되지 않는다.
     // 그래서 "현재 난이도"라는 맥락을 붙인 label로 의미를 보강한다.
     // 배지 안 Text의 시맨틱스는 그대로 살려 둔다. 화면에 보이는 등급 문구는
@@ -353,7 +354,7 @@ class _CategorizationGameState extends State<CategorizationGame> {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
         decoration: BoxDecoration(
           color: color.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(AppTheme.rPanel),
           border: Border.all(color: color.withValues(alpha: 0.3)),
         ),
         child: Row(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/theme.dart';
 
 class TrainingProgressHeader extends StatelessWidget {
   const TrainingProgressHeader({
@@ -31,7 +32,7 @@ class TrainingProgressHeader extends StatelessWidget {
         decoration: BoxDecoration(
           color: theme.colorScheme.surface,
           border: Border.all(color: theme.colorScheme.outlineVariant),
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(AppTheme.rChip),
         ),
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -56,7 +57,7 @@ class TrainingProgressHeader extends StatelessWidget {
               const SizedBox(height: 14),
               ExcludeSemantics(
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(4),
+                  borderRadius: BorderRadius.circular(AppTheme.rBar),
                   child: LinearProgressIndicator(
                     value: progress,
                     minHeight: 10,

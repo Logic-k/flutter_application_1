@@ -42,7 +42,6 @@ void main() {
     const textTokens = <String, Color>{
       'text': MLColors.text,
       'textSoft': MLColors.textSoft,
-      'textFaint': MLColors.textFaint,
     };
 
     for (final token in textTokens.entries) {

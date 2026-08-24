@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:provider/provider.dart';
+import '../../../core/theme.dart';
 import '../application/training_attempt_input.dart';
 import '../application/training_completion_ui.dart';
 import '../widgets/game_template.dart';
@@ -287,7 +288,7 @@ class _SentenceReadingGameState extends State<SentenceReadingGame> {
                     padding: const EdgeInsets.all(32),
                     decoration: BoxDecoration(
                       color: theme.cardColor,
-                      borderRadius: BorderRadius.circular(24),
+                      borderRadius: BorderRadius.circular(AppTheme.rSheet),
                       border: Border.all(
                         color: theme.primaryColor.withValues(alpha: 0.2),
                       ),
@@ -348,7 +349,7 @@ class _SentenceReadingGameState extends State<SentenceReadingGame> {
               onTap: _isSaving ? null : _listen,
               child: CircleAvatar(
                 radius: 40,
-                backgroundColor: _isListening ? Colors.red : theme.primaryColor,
+                backgroundColor: _isListening ? MLColors.badText : theme.primaryColor,
                 child: Icon(
                   _isListening ? Icons.stop : Icons.mic,
                   color: Colors.white,

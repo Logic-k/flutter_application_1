@@ -114,7 +114,7 @@ class _HealthInputScreenState extends State<HealthInputScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('건강 기록')),
       body: _loading
-          ? const Center(child: CircularProgressIndicator(color: MLColors.primary))
+          ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
               padding: const EdgeInsets.fromLTRB(22, 8, 22, 40),
               child: Column(
@@ -157,7 +157,7 @@ class _HealthInputScreenState extends State<HealthInputScreen> {
                           style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
                       style: FilledButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.rBtn)),
                       ),
                     ),
                   ),
@@ -207,7 +207,7 @@ class _HealthInputScreenState extends State<HealthInputScreen> {
                     padding: const EdgeInsets.symmetric(vertical: 10),
                     decoration: BoxDecoration(
                       color: selected ? MLColors.primary : MLColors.primarySoft,
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(AppTheme.rField),
                     ),
                     child: Text('$level',
                         textAlign: TextAlign.center,
@@ -222,7 +222,7 @@ class _HealthInputScreenState extends State<HealthInputScreen> {
           ),
           const SizedBox(height: 4),
           const Text('1: 매우 나쁨 · 5: 매우 좋음',
-              style: TextStyle(fontSize: 12, color: MLColors.textFaint)),
+              style: TextStyle(fontSize: 12, color: MLColors.textSoft)),
         ],
       ),
     );
@@ -251,7 +251,7 @@ class _HealthInputScreenState extends State<HealthInputScreen> {
         labelText: label,
         suffixText: unit,
         isDense: true,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppTheme.rField)),
       ),
     );
   }
@@ -300,7 +300,7 @@ class _HealthInputScreenState extends State<HealthInputScreen> {
     if (withSleep.length < 2) {
       return MLCard(
         child: Row(children: const [
-          Icon(Icons.insights_rounded, color: MLColors.textFaint),
+          Icon(Icons.insights_rounded, color: MLColors.textSoft),
           SizedBox(width: 10),
           Expanded(child: Text('기록이 2일 이상 쌓이면 수면 추세 그래프가 표시됩니다.',
               style: TextStyle(color: MLColors.textSoft))),
@@ -330,7 +330,7 @@ class _HealthInputScreenState extends State<HealthInputScreen> {
             const Text('수면 시간 추세', style: TextStyle(fontWeight: FontWeight.w700)),
             const Spacer(),
             Text('평균 ${avgSleep.toStringAsFixed(1)}시간',
-                style: const TextStyle(fontSize: 12, color: MLColors.textFaint)),
+                style: const TextStyle(fontSize: 12, color: MLColors.textSoft)),
           ]),
           const SizedBox(height: 12),
           SizedBox(

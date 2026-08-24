@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import '../../core/theme.dart';
 import '../../core/user_provider.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -69,11 +70,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
     return InkWell(
       onTap: () => setState(() => _selectedGoal = goal),
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(AppTheme.rTile),
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppTheme.rTile),
           border: Border.all(
             color: isSelected ? theme.primaryColor : theme.colorScheme.outlineVariant,
             width: 2,

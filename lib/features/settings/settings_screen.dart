@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../core/version_label.dart';
 import '../../core/user_provider.dart';
 import '../training/training_progress_provider.dart';
 import '../../core/settings_provider.dart';
@@ -132,7 +133,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               padding: EdgeInsets.zero,
               child: Column(children: [
                 _fontSizeRow(settings),
-                Divider(height: 1, color: MLColors.line),
+                const Divider(),
                 MLListRow(
                   icon: Icons.record_voice_over_rounded, color: MLColors.mem,
                   title: '음성 안내',
@@ -140,10 +141,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   trailing: Switch(
                     value: settings.voiceGuidanceEnabled,
                     onChanged: (v) => context.read<SettingsProvider>().setVoiceGuidance(v),
-                    activeThumbColor: MLColors.primary,
                   ),
                 ),
-                Divider(height: 1, color: MLColors.line),
+                const Divider(),
                 MLListRow(
                   icon: Icons.vibration_rounded, color: MLColors.logic,
                   title: '진동 피드백',
@@ -151,7 +151,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   trailing: Switch(
                     value: settings.hapticFeedbackEnabled,
                     onChanged: (v) => context.read<SettingsProvider>().setHapticFeedback(v),
-                    activeThumbColor: MLColors.primary,
                   ),
                 ),
               ]),
@@ -169,7 +168,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 trailing: Switch(
                   value: _reminderEnabled,
                   onChanged: _toggleReminder,
-                  activeThumbColor: MLColors.primary,
                 ),
               ),
             ),
@@ -192,7 +190,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   onTap: () => Navigator.push(context,
                       MaterialPageRoute(builder: (_) => const EditProfileScreen())),
                 ),
-                Divider(height: 1, color: MLColors.line),
+                const Divider(),
                 MLListRow(
                   icon: Icons.family_restroom_rounded, color: MLColors.sky,
                   title: '보호자 안심 연결',
@@ -213,7 +211,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   title: '개인정보 처리방침',
                   onTap: _openPrivacyPolicy,
                 ),
-                Divider(height: 1, color: MLColors.line),
+                const Divider(),
                 MLListRow(
                   icon: Icons.refresh_rounded, color: MLColors.warn, titleColor: MLColors.warn,
                   title: '측정 데이터 초기화',
@@ -234,7 +232,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   title: '앱 버전',
                   trailing: const Text('v1.0.0', style: TextStyle(color: MLColors.textSoft)),
                 ),
-                Divider(height: 1, color: MLColors.line),
+                const Divider(),
                 MLListRow(
                   icon: Icons.description_outlined, color: MLColors.textSoft,
                   title: '오픈소스 라이선스',
@@ -244,7 +242,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     applicationVersion: 'v1.0.0',
                   ),
                 ),
-                Divider(height: 1, color: MLColors.line),
+                const Divider(),
                 MLListRow(
                   icon: Icons.logout_rounded, color: MLColors.bad, titleColor: MLColors.bad,
                   title: '로그아웃',
@@ -254,13 +252,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             const SizedBox(height: 24),
 
-            Center(
-              child: GestureDetector(
-                onLongPress: () => context.push('/admin_login'),
-                child: const Text('MemoryLink v1.0.0',
-                    style: TextStyle(fontSize: 12, color: MLColors.textFaint)),
-              ),
-            ),
+            const MLVersionLabel(),
           ],
         ),
       ),
@@ -306,7 +298,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: Center(
           child: Padding(
             padding: EdgeInsets.all(8),
-            child: CircularProgressIndicator(color: MLColors.primary),
+            child: CircularProgressIndicator(),
           ),
         ),
       );
@@ -314,7 +306,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     final usingOndevice = AiChatService.isUsingLocalModel;
     final usingAi = AiChatService.isUsingAI;
-    final statusColor = usingAi ? Colors.green : MLColors.textSoft;
+    final statusColor = usingAi ? MLColors.goodText : MLColors.textSoft;
     final statusLabel = usingOndevice
         ? '온디바이스 AI 사용 중'
         : (_hasApiKey ? 'Gemini API 사용 중' : '오프라인(규칙 기반) 모드');
@@ -330,10 +322,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
             const SizedBox(width: 8),
             Expanded(child: Text(statusLabel,
                 style: TextStyle(fontWeight: FontWeight.w700, color: statusColor))),
-            Text(_providerName, style: const TextStyle(fontSize: 11, color: MLColors.textFaint)),
+            Text(_providerName, style: const TextStyle(fontSize: 11, color: MLColors.textSoft)),
           ]),
         ),
-        const Divider(height: 1, color: MLColors.line),
+        const Divider(),
 
         // Gemini API 키
         if (!usingOndevice) ...[
@@ -344,7 +336,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             trailing: _hasApiKey
                 ? TextButton(onPressed: _removeApiKey,
                     child: const Text('삭제', style: TextStyle(color: MLColors.bad)))
-                : const Icon(Icons.chevron_right_rounded, color: MLColors.textFaint),
+                : const Icon(Icons.chevron_right_rounded, color: MLColors.textSoft),
             onTap: () => setState(() => _showKeyEditor = !_showKeyEditor),
           ),
           if (_showKeyEditor)
@@ -361,7 +353,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       icon: Icon(_obscureKey ? Icons.visibility_off : Icons.visibility, size: 20),
                       onPressed: () => setState(() => _obscureKey = !_obscureKey),
                     ),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppTheme.rField)),
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -384,11 +376,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   const Padding(
                     padding: EdgeInsets.only(top: 6),
                     child: Text('빌드에 기본 키가 주입되어 있어 키 없이도 온라인 AI가 동작할 수 있습니다.',
-                        style: TextStyle(fontSize: 11, color: MLColors.textFaint)),
+                        style: TextStyle(fontSize: 11, color: MLColors.textSoft)),
                   ),
               ]),
             ),
-          const Divider(height: 1, color: MLColors.line),
+          const Divider(),
         ],
 
         // 온디바이스 모델

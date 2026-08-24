@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/theme.dart';
 import '../../core/cs_service.dart';
 
 class FaqScreen extends StatefulWidget {
@@ -35,7 +36,7 @@ class _FaqScreenState extends State<FaqScreen> {
           if (faqs.isEmpty) {
             return const Center(
               child: Text('등록된 FAQ가 없습니다.',
-                  style: TextStyle(color: Colors.grey)),
+                  style: TextStyle(color: MLColors.textSoft)),
             );
           }
 
@@ -81,7 +82,7 @@ class _FaqScreenState extends State<FaqScreen> {
                         decoration: BoxDecoration(
                           color: theme.colorScheme.primary
                               .withValues(alpha: 0.05),
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(AppTheme.rChip),
                         ),
                         child: Text(faq['answer'] ?? '',
                             style: theme.textTheme.bodyMedium),

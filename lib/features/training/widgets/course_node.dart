@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/theme.dart';
 
 enum CourseNodeStatus { available, locked, completed }
 
@@ -47,7 +48,7 @@ class CourseNode extends StatelessWidget {
       child: Material(
         color: theme.colorScheme.surface,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(AppTheme.rChip),
           side: BorderSide(color: theme.colorScheme.outlineVariant),
         ),
         clipBehavior: Clip.antiAlias,
@@ -66,7 +67,7 @@ class CourseNode extends StatelessWidget {
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
                       color: foreground.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(AppTheme.rChip),
                     ),
                     child: Icon(icon, color: foreground, size: 28),
                   ),
