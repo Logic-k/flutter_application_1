@@ -48,10 +48,10 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 24),
               Text('MemoryLink', style: TextStyle(
                 fontSize: 28, fontWeight: FontWeight.w900,
-                color: MLColors.primary, letterSpacing: 1.2,
+                color: context.scheme.primary, letterSpacing: 1.2,
               )),
               const SizedBox(height: 8),
-              const Text('당신의 소중한 기억을 잇다', style: TextStyle(color: MLColors.textSoft)),
+              Text('당신의 소중한 기억을 잇다', style: TextStyle(color: context.scheme.onSurfaceVariant)),
 
               const SizedBox(height: 56),
 

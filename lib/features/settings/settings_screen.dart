@@ -184,7 +184,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               padding: EdgeInsets.zero,
               child: Column(children: [
                 MLListRow(
-                  icon: Icons.person_outline_rounded, color: MLColors.primary,
+                  icon: Icons.person_outline_rounded, color: context.scheme.primary,
                   title: '프로필 편집',
                   subtitle: '이름, 나이, 건강 정보 수정',
                   onTap: () => Navigator.push(context,
@@ -228,13 +228,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
               padding: EdgeInsets.zero,
               child: Column(children: [
                 MLListRow(
-                  icon: Icons.info_outline_rounded, color: MLColors.textSoft,
+                  icon: Icons.info_outline_rounded, color: context.scheme.onSurfaceVariant,
                   title: '앱 버전',
-                  trailing: const Text('v1.0.0', style: TextStyle(color: MLColors.textSoft)),
+                  trailing: Text('v1.0.0', style: TextStyle(color: context.scheme.onSurfaceVariant)),
                 ),
                 const Divider(),
                 MLListRow(
-                  icon: Icons.description_outlined, color: MLColors.textSoft,
+                  icon: Icons.description_outlined, color: context.scheme.onSurfaceVariant,
                   title: '오픈소스 라이선스',
                   onTap: () => showLicensePage(
                     context: context,
@@ -306,7 +306,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     final usingOndevice = AiChatService.isUsingLocalModel;
     final usingAi = AiChatService.isUsingAI;
-    final statusColor = usingAi ? MLColors.goodText : MLColors.textSoft;
+    final statusColor = usingAi ? MLColors.goodText : context.scheme.onSurfaceVariant;
     final statusLabel = usingOndevice
         ? '온디바이스 AI 사용 중'
         : (_hasApiKey ? 'Gemini API 사용 중' : '오프라인(규칙 기반) 모드');
@@ -322,7 +322,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             const SizedBox(width: 8),
             Expanded(child: Text(statusLabel,
                 style: TextStyle(fontWeight: FontWeight.w700, color: statusColor))),
-            Text(_providerName, style: const TextStyle(fontSize: 11, color: MLColors.textSoft)),
+            Text(_providerName, style: TextStyle(fontSize: 11, color: context.scheme.onSurfaceVariant)),
           ]),
         ),
         const Divider(),
@@ -330,13 +330,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
         // Gemini API 키
         if (!usingOndevice) ...[
           MLListRow(
-            icon: Icons.key_rounded, color: MLColors.primary,
+            icon: Icons.key_rounded, color: context.scheme.primary,
             title: 'Gemini API 키',
             subtitle: _hasApiKey ? '키가 저장되어 있습니다.' : '키를 입력하면 온라인 AI 대화를 사용합니다.',
             trailing: _hasApiKey
                 ? TextButton(onPressed: _removeApiKey,
                     child: const Text('삭제', style: TextStyle(color: MLColors.bad)))
-                : const Icon(Icons.chevron_right_rounded, color: MLColors.textSoft),
+                : Icon(Icons.chevron_right_rounded, color: context.scheme.onSurfaceVariant),
             onTap: () => setState(() => _showKeyEditor = !_showKeyEditor),
           ),
           if (_showKeyEditor)
@@ -373,10 +373,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 ]),
                 if (AppConfig.geminiApiKey.isNotEmpty && !_hasApiKey)
-                  const Padding(
+                  Padding(
                     padding: EdgeInsets.only(top: 6),
                     child: Text('빌드에 기본 키가 주입되어 있어 키 없이도 온라인 AI가 동작할 수 있습니다.',
-                        style: TextStyle(fontSize: 11, color: MLColors.textSoft)),
+                        style: TextStyle(fontSize: 11, color: context.scheme.onSurfaceVariant)),
                   ),
               ]),
             ),

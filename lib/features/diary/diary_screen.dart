@@ -215,11 +215,11 @@ class _DiaryScreenState extends State<DiaryScreen> {
       ),
       calendarStyle: CalendarStyle(
         todayDecoration: BoxDecoration(
-          color: MLColors.primary,
+          color: context.scheme.primary,
           shape: BoxShape.circle,
         ),
         selectedDecoration: BoxDecoration(
-          color: MLColors.primary.withValues(alpha: 0.7),
+          color: context.scheme.primary.withValues(alpha: 0.7),
           shape: BoxShape.circle,
         ),
         todayTextStyle: const TextStyle(
@@ -249,12 +249,12 @@ class _DiaryScreenState extends State<DiaryScreen> {
           Row(
             children: [
               Icon(Icons.edit_note_rounded,
-                  size: 18, color: MLColors.primary),
+                  size: 18, color: context.scheme.primary),
               const SizedBox(width: 6),
               Text(
                 dateLabel,
                 style: theme.textTheme.labelLarge?.copyWith(
-                  color: MLColors.primary,
+                  color: context.scheme.primary,
                   fontWeight: FontWeight.w600,
                 ),
               ),

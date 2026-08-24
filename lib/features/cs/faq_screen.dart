@@ -34,9 +34,9 @@ class _FaqScreenState extends State<FaqScreen> {
           }
           final faqs = snapshot.data ?? [];
           if (faqs.isEmpty) {
-            return const Center(
+            return Center(
               child: Text('등록된 FAQ가 없습니다.',
-                  style: TextStyle(color: MLColors.textSoft)),
+                  style: TextStyle(color: context.scheme.onSurfaceVariant)),
             );
           }
 

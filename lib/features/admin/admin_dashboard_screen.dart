@@ -92,7 +92,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                         const SizedBox(height: 4),
                         Text(item.$1,
                             style: theme.textTheme.labelSmall
-                                ?.copyWith(color: MLColors.textSoft),
+                                ?.copyWith(color: context.scheme.onSurfaceVariant),
                             textAlign: TextAlign.center),
                       ],
                     ),
@@ -109,7 +109,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       child: ExpansionTile(
         leading: Icon(
           Icons.warning_amber_rounded,
-          color: admin.atRiskUsers.isEmpty ? MLColors.textSoft : MLColors.badText,
+          color: admin.atRiskUsers.isEmpty ? context.scheme.onSurfaceVariant : MLColors.badText,
         ),
         title: Text(
           '위험 사용자 알림 (${admin.atRiskUsers.length})',
@@ -118,10 +118,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         ),
         children: admin.atRiskUsers.isEmpty
             ? [
-                const Padding(
+                Padding(
                   padding: EdgeInsets.all(16),
                   child: Text('위험 감지된 사용자가 없습니다.',
-                      style: TextStyle(color: MLColors.textSoft)),
+                      style: TextStyle(color: context.scheme.onSurfaceVariant)),
                 ),
               ]
             : admin.atRiskUsers
@@ -219,10 +219,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     ?.copyWith(fontWeight: FontWeight.w600)),
           ),
           if (admin.allUsers.isEmpty)
-            const Padding(
+            Padding(
               padding: EdgeInsets.all(16),
               child: Text('등록된 회원이 없습니다.',
-                  style: TextStyle(color: MLColors.textSoft)),
+                  style: TextStyle(color: context.scheme.onSurfaceVariant)),
             )
           else
             ...admin.allUsers.map(

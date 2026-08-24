@@ -88,7 +88,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           MLSectionTitle('영역 별 인지 지표'),
-          const Text('각 게임을 통해 측정된 현재의 건강 상태입니다.', style: TextStyle(fontSize: 13, color: MLColors.textSoft)),
+          Text('각 게임을 통해 측정된 현재의 건강 상태입니다.', style: TextStyle(fontSize: 13, color: context.scheme.onSurfaceVariant)),
           const SizedBox(height: 20),
           _buildIndicatorBar('계산력', user.calculationScore / 100.0, trends['calculation']),
           _buildIndicatorBar('논리 추론', user.logicScore / 100.0, trends['logic']),
@@ -188,20 +188,20 @@ class _ReportsScreenState extends State<ReportsScreen> {
                   spots: spots,
                   isCurved: true,
                   curveSmoothness: 0.35,
-                  color: MLColors.primary,
+                  color: context.scheme.primary,
                   barWidth: 3.5,
                   isStrokeCapRound: true,
                   dotData: FlDotData(
                     show: true,
                     checkToShowDot: (s, _) => s.x == spots.last.x,
                     getDotPainter: (s, _, a, b) => FlDotCirclePainter(
-                      radius: 5, color: MLColors.primary, strokeColor: Colors.white, strokeWidth: 2.5),
+                      radius: 5, color: context.scheme.primary, strokeColor: Colors.white, strokeWidth: 2.5),
                   ),
                   belowBarData: BarAreaData(
                     show: true,
                     gradient: LinearGradient(
                       begin: Alignment.topCenter, end: Alignment.bottomCenter,
-                      colors: [MLColors.primary.withValues(alpha: 0.28), MLColors.primary.withValues(alpha: 0.0)]),
+                      colors: [context.scheme.primary.withValues(alpha: 0.28), context.scheme.primary.withValues(alpha: 0.0)]),
                   ),
                 ),
               ],
@@ -211,7 +211,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: ['월', '화', '수', '목', '금', '토', '일']
-                .map((d) => Text(d, style: const TextStyle(fontSize: 12, color: MLColors.textSoft, fontWeight: FontWeight.w700)))
+                .map((d) => Text(d, style: TextStyle(fontSize: 12, color: context.scheme.onSurfaceVariant, fontWeight: FontWeight.w700)))
                 .toList(),
           ),
         ],
@@ -227,9 +227,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(children: [
-            const Icon(Icons.auto_awesome_rounded, color: MLColors.primary, size: 22),
+            Icon(Icons.auto_awesome_rounded, color: context.scheme.primary, size: 22),
             const SizedBox(width: 10),
-            const Text('AI 분석 요약', style: TextStyle(color: MLColors.primary, fontWeight: FontWeight.w900, fontSize: 18)),
+            Text('AI 분석 요약', style: TextStyle(color: context.scheme.primary, fontWeight: FontWeight.w900, fontSize: 18)),
           ]),
           const SizedBox(height: 14),
           Text(
@@ -243,7 +243,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
             style: const TextStyle(height: 1.6, fontSize: 15),
           ),
           const SizedBox(height: 20),
-          const Divider(color: MLColors.line),
+          const Divider(),
           const SizedBox(height: 14),
           const Text('다음 주 권고 사항', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15)),
           const SizedBox(height: 10),
@@ -274,9 +274,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
           style: FilledButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
         ),
         const SizedBox(height: 8),
-        const Text(
+        Text(
           '의료진용 또는 보호자용 PDF 리포트를 생성하여 상담 시 활용하세요.',
-          style: TextStyle(fontSize: 13, color: MLColors.textSoft),
+          style: TextStyle(fontSize: 13, color: context.scheme.onSurfaceVariant),
           textAlign: TextAlign.center,
         ),
       ],

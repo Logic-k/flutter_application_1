@@ -91,6 +91,17 @@ class MLColors {
   );
 }
 
+/// 화면에서 색을 꺼내는 표준 경로.
+///
+/// `Theme.of(context).colorScheme.primary`를 매번 쓰면 삼항 연산자 한 줄에
+/// 같은 호출이 두 번 들어가 읽기 어려워진다. 짧게 쓰되 출처는 그대로
+/// 테마이므로, 스킴을 바꾸면 화면이 따라온다.
+///
+///     color: context.scheme.primary
+extension MLColorScheme on BuildContext {
+  ColorScheme get scheme => Theme.of(this).colorScheme;
+}
+
 class AppTheme {
   // NanumGothic 은 assets/fonts/ 에 이미 번들됨.
   // Pretendard 를 추가하려면 pubspec 에 등록 후 'Pretendard' 로 변경.

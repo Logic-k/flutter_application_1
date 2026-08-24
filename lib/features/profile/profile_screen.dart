@@ -85,7 +85,7 @@ class ProfileScreen extends StatelessWidget {
               child: MLCard(
                 padding: EdgeInsets.zero,
                 child: MLListRow(
-                  icon: Icons.support_agent_rounded, color: MLColors.primary,
+                  icon: Icons.support_agent_rounded, color: context.scheme.primary,
                   title: '고객센터',
                   subtitle: '공지사항, FAQ, 1:1 문의',
                   onTap: () => context.push('/cs_center'),
@@ -129,11 +129,11 @@ class ProfileScreen extends StatelessWidget {
               Container(
                 width: 72, height: 72,
                 decoration: BoxDecoration(
-                  color: MLColors.primarySoft,
+                  color: context.scheme.primaryContainer,
                   borderRadius: BorderRadius.circular(AppTheme.rSheet),
                   image: hasImage ? DecorationImage(image: FileImage(File(imagePath)), fit: BoxFit.cover) : null,
                 ),
-                child: hasImage ? null : const Icon(Icons.person_rounded, size: 36, color: MLColors.primary),
+                child: hasImage ? null : Icon(Icons.person_rounded, size: 36, color: context.scheme.primary),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -145,15 +145,15 @@ class ProfileScreen extends StatelessWidget {
                       style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
                     ),
                     const SizedBox(height: 3),
-                    Text('아이디: ${user['username'] ?? ''}', style: const TextStyle(fontSize: 13, color: MLColors.textSoft)),
+                    Text('아이디: ${user['username'] ?? ''}', style: TextStyle(fontSize: 13, color: context.scheme.onSurfaceVariant)),
                   ],
                 ),
               ),
               OutlinedButton(
                 onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const EditProfileScreen())),
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: MLColors.primary,
-                  side: const BorderSide(color: MLColors.primary),
+                  foregroundColor: context.scheme.primary,
+                  side: BorderSide(color: context.scheme.primary),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.rBtn)),
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                 ),
@@ -181,9 +181,9 @@ class ProfileScreen extends StatelessWidget {
         const Divider(),
         MLListRow(icon: Icons.notifications_active_rounded, color: MLColors.sky, title: '비상 연락처', trailing: Text(up.emergencyContact ?? '미설정', style: const TextStyle(fontWeight: FontWeight.w700))),
         const Divider(),
-        MLListRow(icon: Icons.mic_off_rounded, color: MLColors.textSoft, title: '음성 진단', subtitle: '정확도 개선을 위해 현재 사용 중지', onTap: () => context.push('/voice_assessment')),
+        MLListRow(icon: Icons.mic_off_rounded, color: context.scheme.onSurfaceVariant, title: '음성 진단', subtitle: '정확도 개선을 위해 현재 사용 중지', onTap: () => context.push('/voice_assessment')),
         const Divider(),
-        MLListRow(icon: Icons.health_and_safety_rounded, color: MLColors.primary, title: '건강 기록', subtitle: '수면·혈압·식이 기록 및 추세', onTap: () => context.push('/health_input')),
+        MLListRow(icon: Icons.health_and_safety_rounded, color: context.scheme.primary, title: '건강 기록', subtitle: '수면·혈압·식이 기록 및 추세', onTap: () => context.push('/health_input')),
       ]),
     );
   }

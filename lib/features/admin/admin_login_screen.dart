@@ -60,7 +60,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                 const SizedBox(height: 8),
                 Text('MemoryLink 운영자 전용',
                     style: theme.textTheme.bodyMedium
-                        ?.copyWith(color: MLColors.textSoft)),
+                        ?.copyWith(color: context.scheme.onSurfaceVariant)),
                 const SizedBox(height: 40),
                 TextField(
                   controller: _codeController,

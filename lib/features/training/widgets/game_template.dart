@@ -80,15 +80,15 @@ class _GameTemplateState extends State<GameTemplate> {
                         vertical: 5,
                       ),
                       decoration: BoxDecoration(
-                        color: MLColors.primarySoft,
+                        color: context.scheme.primaryContainer,
                         borderRadius: BorderRadius.circular(AppTheme.rBtn),
                       ),
                       child: Text(
                         '목표: ${targetTime.toStringAsFixed(1)}초',
-                        style: const TextStyle(
+                        style: TextStyle(
                           // primary(#6C5CE7)를 primarySoft(#ECE9FC) 위에 얹으면
                           // 4.08:1로 AA에 못 미친다. 같은 계열의 더 어두운 값을 쓴다.
-                          color: MLColors.primaryDeep,
+                          color: context.scheme.primary,
                           fontWeight: FontWeight.w800,
                           fontSize: 13.5,
                         ),
@@ -111,8 +111,8 @@ class _GameTemplateState extends State<GameTemplate> {
           // 라벤더 진행 바
           LinearProgressIndicator(
             value: progress,
-            backgroundColor: MLColors.primary.withValues(alpha: 0.10),
-            valueColor: const AlwaysStoppedAnimation<Color>(MLColors.primary),
+            backgroundColor: context.scheme.primary.withValues(alpha: 0.10),
+            valueColor: AlwaysStoppedAnimation<Color>(context.scheme.primary),
             minHeight: 6,
           ),
           Expanded(
@@ -125,13 +125,13 @@ class _GameTemplateState extends State<GameTemplate> {
                     width: double.infinity,
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: MLColors.primarySoft,
+                      color: context.scheme.primaryContainer,
                       borderRadius: BorderRadius.circular(AppTheme.rTile),
                     ),
                     child: Text(
                       objective,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(fontSize: 16, height: 1.5, fontWeight: FontWeight.w700, color: MLColors.primary),
+                      style: TextStyle(fontSize: 16, height: 1.5, fontWeight: FontWeight.w700, color: context.scheme.primary),
                     ),
                   ),
                   const SizedBox(height: 28),

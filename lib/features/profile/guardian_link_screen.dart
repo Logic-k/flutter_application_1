@@ -242,7 +242,7 @@ class _GuardianLinkScreenState extends State<GuardianLinkScreen> {
                       '보호자 스마트폰으로 스캔',
                       style: TextStyle(
                         fontSize: 12,
-                        color: MLColors.textSoft,
+                        color: context.scheme.onSurfaceVariant,
                       ),
                     ),
                   ],

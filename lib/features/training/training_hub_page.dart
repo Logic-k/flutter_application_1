@@ -119,7 +119,7 @@ class _AreaHeading extends StatelessWidget {
     padding: const EdgeInsets.only(bottom: 10),
     child: Row(
       children: [
-        Icon(Icons.route_rounded, color: Theme.of(context).colorScheme.primary),
+        Icon(Icons.route_rounded, color: context.scheme.primary),
         const SizedBox(width: 8),
         Expanded(
           child: Text('$area 과정', style: Theme.of(context).textTheme.titleLarge),
@@ -136,7 +136,7 @@ class _LoadError extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Material(
-    color: Theme.of(context).colorScheme.errorContainer,
+    color: context.scheme.errorContainer,
     borderRadius: BorderRadius.circular(AppTheme.rChip),
     child: Padding(
       padding: const EdgeInsets.all(12),

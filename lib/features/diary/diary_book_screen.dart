@@ -114,13 +114,13 @@ class _DiaryCard extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
-                      color: MLColors.primary.withValues(alpha: 0.12),
+                      color: context.scheme.primary.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(AppTheme.rPanel),
                     ),
                     child: Text(
                       label,
                       style: theme.textTheme.labelMedium?.copyWith(
-                        color: MLColors.primary,
+                        color: context.scheme.primary,
                         fontWeight: FontWeight.w600,
                       ),
                     ),

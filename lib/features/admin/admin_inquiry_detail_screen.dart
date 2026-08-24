@@ -79,12 +79,12 @@ class _AdminInquiryDetailScreenState extends State<AdminInquiryDetailScreen> {
                       children: [
                         Row(
                           children: [
-                            const Icon(Icons.person_outline,
-                                size: 16, color: MLColors.textSoft),
+                            Icon(Icons.person_outline,
+                                size: 16, color: context.scheme.onSurfaceVariant),
                             const SizedBox(width: 4),
                             Text(data['username'] as String? ?? '',
                                 style: theme.textTheme.labelMedium
-                                    ?.copyWith(color: MLColors.textSoft)),
+                                    ?.copyWith(color: context.scheme.onSurfaceVariant)),
                             const Spacer(),
                             Text(
                               () {
@@ -96,7 +96,7 @@ class _AdminInquiryDetailScreenState extends State<AdminInquiryDetailScreen> {
                                     : '';
                               }(),
                               style: theme.textTheme.labelSmall
-                                  ?.copyWith(color: MLColors.textSoft),
+                                  ?.copyWith(color: context.scheme.onSurfaceVariant),
                             ),
                           ],
                         ),

@@ -183,13 +183,13 @@ class _HealthInputScreenState extends State<HealthInputScreen> {
             const Text('수면 시간', style: TextStyle(fontWeight: FontWeight.w700)),
             const Spacer(),
             Text('${_sleepHours.toStringAsFixed(1)}시간',
-                style: const TextStyle(fontWeight: FontWeight.w800, color: MLColors.primary)),
+                style: TextStyle(fontWeight: FontWeight.w800, color: context.scheme.primary)),
           ]),
           Slider(
             value: _sleepHours,
             min: 0, max: 12, divisions: 24,
             label: '${_sleepHours.toStringAsFixed(1)}h',
-            activeColor: MLColors.primary,
+            activeColor: context.scheme.primary,
             onChanged: (v) => setState(() => _sleepHours = v),
           ),
           const SizedBox(height: 4),
@@ -206,14 +206,14 @@ class _HealthInputScreenState extends State<HealthInputScreen> {
                     margin: EdgeInsets.only(right: i < 4 ? 8 : 0),
                     padding: const EdgeInsets.symmetric(vertical: 10),
                     decoration: BoxDecoration(
-                      color: selected ? MLColors.primary : MLColors.primarySoft,
+                      color: selected ? context.scheme.primary : context.scheme.primaryContainer,
                       borderRadius: BorderRadius.circular(AppTheme.rField),
                     ),
                     child: Text('$level',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontWeight: FontWeight.w800,
-                          color: selected ? Colors.white : MLColors.primary,
+                          color: selected ? Colors.white : context.scheme.primary,
                         )),
                   ),
                 ),
@@ -221,8 +221,8 @@ class _HealthInputScreenState extends State<HealthInputScreen> {
             }),
           ),
           const SizedBox(height: 4),
-          const Text('1: 매우 나쁨 · 5: 매우 좋음',
-              style: TextStyle(fontSize: 12, color: MLColors.textSoft)),
+          Text('1: 매우 나쁨 · 5: 매우 좋음',
+              style: TextStyle(fontSize: 12, color: context.scheme.onSurfaceVariant)),
         ],
       ),
     );
@@ -262,8 +262,8 @@ class _HealthInputScreenState extends State<HealthInputScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('오늘 드신 항목을 선택하세요',
-              style: TextStyle(fontSize: 13, color: MLColors.textSoft)),
+          Text('오늘 드신 항목을 선택하세요',
+              style: TextStyle(fontSize: 13, color: context.scheme.onSurfaceVariant)),
           const SizedBox(height: 12),
           Wrap(
             spacing: 8, runSpacing: 8,
@@ -279,14 +279,14 @@ class _HealthInputScreenState extends State<HealthInputScreen> {
                     _dietChecked.remove(i);
                   }
                 }),
-                selectedColor: MLColors.primarySoft,
-                checkmarkColor: MLColors.primary,
+                selectedColor: context.scheme.primaryContainer,
+                checkmarkColor: context.scheme.primary,
               );
             }),
           ),
           const SizedBox(height: 8),
           Text('식이 점수: ${_dietChecked.length} / 5',
-              style: const TextStyle(fontWeight: FontWeight.w700, color: MLColors.primary)),
+              style: TextStyle(fontWeight: FontWeight.w700, color: context.scheme.primary)),
         ],
       ),
     );
@@ -299,11 +299,11 @@ class _HealthInputScreenState extends State<HealthInputScreen> {
         .toList();
     if (withSleep.length < 2) {
       return MLCard(
-        child: Row(children: const [
-          Icon(Icons.insights_rounded, color: MLColors.textSoft),
-          SizedBox(width: 10),
+        child: Row(children: [
+          Icon(Icons.insights_rounded, color: context.scheme.onSurfaceVariant),
+          const SizedBox(width: 10),
           Expanded(child: Text('기록이 2일 이상 쌓이면 수면 추세 그래프가 표시됩니다.',
-              style: TextStyle(color: MLColors.textSoft))),
+              style: TextStyle(color: context.scheme.onSurfaceVariant))),
         ]),
       );
     }
@@ -330,7 +330,7 @@ class _HealthInputScreenState extends State<HealthInputScreen> {
             const Text('수면 시간 추세', style: TextStyle(fontWeight: FontWeight.w700)),
             const Spacer(),
             Text('평균 ${avgSleep.toStringAsFixed(1)}시간',
-                style: const TextStyle(fontSize: 12, color: MLColors.textSoft)),
+                style: TextStyle(fontSize: 12, color: context.scheme.onSurfaceVariant)),
           ]),
           const SizedBox(height: 12),
           SizedBox(
@@ -345,7 +345,7 @@ class _HealthInputScreenState extends State<HealthInputScreen> {
                   spots: spots,
                   isCurved: true,
                   curveSmoothness: 0.35,
-                  color: MLColors.primary,
+                  color: context.scheme.primary,
                   barWidth: 3.5,
                   isStrokeCapRound: true,
                   dotData: const FlDotData(show: false),
@@ -354,8 +354,8 @@ class _HealthInputScreenState extends State<HealthInputScreen> {
                     gradient: LinearGradient(
                       begin: Alignment.topCenter, end: Alignment.bottomCenter,
                       colors: [
-                        MLColors.primary.withValues(alpha: 0.28),
-                        MLColors.primary.withValues(alpha: 0.0),
+                        context.scheme.primary.withValues(alpha: 0.28),
+                        context.scheme.primary.withValues(alpha: 0.0),
                       ],
                     ),
                   ),
@@ -387,16 +387,16 @@ class _IntroBanner extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: MLColors.primarySoft,
+        color: context.scheme.primaryContainer,
         borderRadius: BorderRadius.circular(AppTheme.rCard),
       ),
-      child: Row(children: const [
-        Icon(Icons.health_and_safety_rounded, color: MLColors.primary),
-        SizedBox(width: 10),
+      child: Row(children: [
+        Icon(Icons.health_and_safety_rounded, color: context.scheme.primary),
+        const SizedBox(width: 10),
         Expanded(
           child: Text(
             '수면·혈압·식이는 인지 건강과 밀접합니다.\n매일 기록하면 추세를 확인할 수 있어요.',
-            style: TextStyle(fontSize: 13, height: 1.5),
+            style: const TextStyle(fontSize: 13, height: 1.5),
           ),
         ),
       ]),

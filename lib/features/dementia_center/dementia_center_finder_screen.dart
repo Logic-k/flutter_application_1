@@ -131,7 +131,7 @@ class _HelplineCard extends StatelessWidget {
         children: [
           const MLIconTile(icon: Icons.support_agent_rounded, color: MLColors.care),
           const SizedBox(width: 14),
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -139,7 +139,7 @@ class _HelplineCard extends StatelessWidget {
                     style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
                 SizedBox(height: 3),
                 Text('$_helplineNumber · 24시간 상담',
-                    style: TextStyle(fontSize: 15, color: MLColors.textSoft)),
+                    style: TextStyle(fontSize: 15, color: context.scheme.onSurfaceVariant)),
               ],
             ),
           ),
@@ -178,7 +178,7 @@ class _RegionDropdown extends StatelessWidget {
           borderRadius: BorderRadius.circular(AppTheme.rTile),
         ),
       ),
-      style: const TextStyle(fontSize: 17, color: MLColors.text),
+      style: TextStyle(fontSize: 17, color: context.scheme.onSurface),
       items: [
         if (placeholder != null)
           DropdownMenuItem<String>(value: null, child: Text(placeholder!)),
@@ -204,12 +204,12 @@ class _CenterCard extends StatelessWidget {
               style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
           const SizedBox(height: 6),
           Text(center.fullAddress,
-              style: const TextStyle(
-                  fontSize: 15, color: MLColors.textSoft, height: 1.45)),
+              style: TextStyle(
+                  fontSize: 15, color: context.scheme.onSurfaceVariant, height: 1.45)),
           if (center.hasPhone) ...[
             const SizedBox(height: 4),
             Text(center.phone,
-                style: const TextStyle(fontSize: 15, color: MLColors.textSoft)),
+                style: TextStyle(fontSize: 15, color: context.scheme.onSurfaceVariant)),
           ],
           const SizedBox(height: 14),
           Row(
@@ -232,7 +232,7 @@ class _CenterCard extends StatelessWidget {
                 _ActionButton(
                   icon: Icons.language_rounded,
                   label: '홈페이지',
-                  color: MLColors.primary,
+                  color: context.scheme.primary,
                   onTap: () => _launch(context, center.homepageUri!),
                 ),
             ],
@@ -305,8 +305,8 @@ class _UnavailableView extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(18, 24, 18, 32),
       children: [
-        const Icon(Icons.location_off_rounded,
-            size: 56, color: MLColors.textSoft),
+        Icon(Icons.location_off_rounded,
+            size: 56, color: context.scheme.onSurfaceVariant),
         const SizedBox(height: 16),
         const Text(
           '센터 목록을 불러오지 못했습니다',
@@ -314,10 +314,10 @@ class _UnavailableView extends StatelessWidget {
           style: TextStyle(fontSize: 19, fontWeight: FontWeight.w800),
         ),
         const SizedBox(height: 10),
-        const Text(
+        Text(
           '아래 치매상담콜센터로 전화하시면\n가까운 센터를 안내받으실 수 있습니다.',
           textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 16, color: MLColors.textSoft, height: 1.5),
+          style: TextStyle(fontSize: 16, color: context.scheme.onSurfaceVariant, height: 1.5),
         ),
         const SizedBox(height: 22),
         const _HelplineCard(),
@@ -327,7 +327,7 @@ class _UnavailableView extends StatelessWidget {
             soft: true,
             child: Text(
               message!,
-              style: const TextStyle(fontSize: 13, color: MLColors.textSoft),
+              style: TextStyle(fontSize: 13, color: context.scheme.onSurfaceVariant),
             ),
           ),
         ],
@@ -344,12 +344,12 @@ class _SourceNotice extends StatelessWidget {
   Widget build(BuildContext context) {
     // 공공누리 표준 출처표시 문구(kogl.or.kr). 이용허락범위가 '제한 없음'이어도
     // 저작권법 제24조의2 및 공공누리 관례상 출처는 표시한다.
-    return const Text(
+    return Text(
       "본 저작물은 '국립중앙의료원'에서 작성하여 공공데이터포털로 개방한 "
       "'치매안심센터 정보'를 이용하였으며, 해당 저작물은 공공데이터포털"
       '(www.data.go.kr)에서 무료로 내려받으실 수 있습니다.\n'
       '이 화면은 위치정보를 수집하지 않습니다.',
-      style: TextStyle(fontSize: 12.5, color: MLColors.textSoft, height: 1.5),
+      style: TextStyle(fontSize: 12.5, color: context.scheme.onSurfaceVariant, height: 1.5),
     );
   }
 }

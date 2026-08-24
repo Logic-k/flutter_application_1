@@ -43,10 +43,10 @@ class _MyInquiriesScreenState extends State<MyInquiriesScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(Icons.inbox_outlined,
-                      size: 64, color: MLColors.textSoft),
+                      size: 64, color: context.scheme.onSurfaceVariant),
                   const SizedBox(height: 12),
-                  const Text('문의 내역이 없습니다.',
-                      style: TextStyle(color: MLColors.textSoft)),
+                  Text('문의 내역이 없습니다.',
+                      style: TextStyle(color: context.scheme.onSurfaceVariant)),
                   const SizedBox(height: 8),
                   TextButton(
                     onPressed: () => context.push('/cs/inquiry_submit'),
@@ -87,7 +87,7 @@ class _MyInquiriesScreenState extends State<MyInquiriesScreen> {
                     ),
                     subtitle: Text(dateStr,
                         style: theme.textTheme.labelSmall
-                            ?.copyWith(color: MLColors.textSoft)),
+                            ?.copyWith(color: context.scheme.onSurfaceVariant)),
                     trailing: _StatusChip(isAnswered: isAnswered),
                     onTap: () =>
                         context.push('/cs/inquiry_detail/${inq['id']}'),

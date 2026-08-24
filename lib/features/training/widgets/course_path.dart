@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/theme.dart';
 import 'course_node.dart';
 
 class CoursePath extends StatelessWidget {
@@ -25,7 +26,7 @@ class CoursePath extends StatelessWidget {
                 child: Container(
                   width: 2,
                   height: 20,
-                  color: Theme.of(context).colorScheme.outlineVariant,
+                  color: context.scheme.outlineVariant,
                 ),
               ),
           ],

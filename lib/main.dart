@@ -243,13 +243,23 @@ class _MemoryLinkAppState extends State<MemoryLinkApp> {
       // ThemeMode.system이던 동안, 안드로이드 다크를 켠 사용자에게는 이 앱도
       // 다크로 그려졌다. 그런데 화면 위젯이 MLColors.*(라이트 전용 상수)를
       // 직접 참조해 테마를 우회하는 곳이 많아 글씨가 배경에 묻혔다.
-      // 실측 대비 — 본문 MLColors.text on dSurface 1.04:1, textSoft 2.48:1,
-      // dBg 위 본문 1.17:1. WCAG AA 최소 4.5:1의 4분의 1에도 못 미친다.
+      // 당시 실측 — 본문 MLColors.text on dSurface 1.04:1, textSoft 2.48:1.
       //
-      // 저시력 대응은 다크가 아니라 설정의 글꼴 배율(1.0/1.2/1.4배)로 한다.
-      // 재개 조건: MLColors 직접 참조를 colorScheme으로 회수한 뒤
-      // theme_contrast_test에 다크 케이스를 추가해 통과시킬 것.
+      // 표면·텍스트·primary의 우회는 2026-08-24에 전부 회수했다(colorScheme 경유).
+      // 그래도 아직 켜지 않는 이유는 남은 게 하나 더 있어서다: 상태 문구용
+      // 토큰이 흰 배경에 맞춰 어둡게 잡혀 있어 다크에서 되레 안 읽힌다.
+      //
+      //   dSurface 위    goodText 3.10:1 · warnText 2.76:1 · badText 2.91:1
+      //   dBg 위         goodText 3.47:1 · warnText 3.09:1 · badText 3.26:1
+      //
+      // 면(good/warn/bad)과 카테고리 강조(mem·care·read·sky·logic)는 밝은 값이라
+      // 다크에서 5.9~10.6:1로 여유가 있다. 문제는 *Text 3종과 calc(3.37:1)뿐이다.
+      //
+      // 재개 조건: 위 4개에 다크 대응값을 주고(ColorScheme 분기 또는 밝은 변형),
+      // theme_contrast_test에 다크 배경 케이스를 추가해 통과시킬 것.
       // 그 뒤 이 한 줄만 ThemeMode.system으로 되돌리면 된다.
+      //
+      // 저시력 대응은 그와 별개로 설정의 글꼴 배율(1.0/1.2/1.4배)이 맡는다.
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.light,
       routerConfig: _router,

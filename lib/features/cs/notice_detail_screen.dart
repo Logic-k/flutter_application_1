@@ -38,7 +38,7 @@ class NoticeDetailScreen extends StatelessWidget {
                 const SizedBox(height: 8),
                 Text(dateStr,
                     style: theme.textTheme.bodySmall
-                        ?.copyWith(color: MLColors.textSoft)),
+                        ?.copyWith(color: context.scheme.onSurfaceVariant)),
                 const Divider(height: 32),
                 Text(n['body'] ?? '', style: theme.textTheme.bodyMedium),
               ],

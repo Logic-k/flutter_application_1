@@ -62,7 +62,7 @@ class FloatingPillNav extends StatelessWidget {
               borderRadius: BorderRadius.circular(AppTheme.rPill),
               border: Border.all(color: t.dividerColor),
               boxShadow: [
-                BoxShadow(color: MLColors.primary.withValues(alpha: 0.28), blurRadius: 30, offset: const Offset(0, 12)),
+                BoxShadow(color: context.scheme.primary.withValues(alpha: 0.28), blurRadius: 30, offset: const Offset(0, 12)),
                 BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 8),
               ],
             ),
@@ -130,7 +130,7 @@ class MLHeroCard extends StatelessWidget {
     decoration: BoxDecoration(
       gradient: MLColors.grad,
       borderRadius: BorderRadius.circular(AppTheme.rCard + 2),
-      boxShadow: [BoxShadow(color: MLColors.primary.withValues(alpha: 0.30), blurRadius: 30, offset: const Offset(0, 12))],
+      boxShadow: [BoxShadow(color: context.scheme.primary.withValues(alpha: 0.30), blurRadius: 30, offset: const Offset(0, 12))],
     ),
     child: child,
   );
@@ -316,7 +316,7 @@ class MLMetricCard extends StatelessWidget {
       Row(crossAxisAlignment: CrossAxisAlignment.baseline, textBaseline: TextBaseline.alphabetic, children: [
         Text(value, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900)),
         const SizedBox(width: 4),
-        Text(unit, style: TextStyle(fontSize: 13, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+        Text(unit, style: TextStyle(fontSize: 13, color: context.scheme.onSurfaceVariant)),
       ]),
     ]),
   );
@@ -345,9 +345,9 @@ class MLListRow extends StatelessWidget {
         Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text(title, style: TextStyle(fontSize: 15.5, fontWeight: FontWeight.w700, color: titleColor)),
           if (subtitle != null) Padding(padding: const EdgeInsets.only(top: 2),
-            child: Text(subtitle!, style: TextStyle(fontSize: 13, color: Theme.of(context).colorScheme.onSurfaceVariant))),
+            child: Text(subtitle!, style: TextStyle(fontSize: 13, color: context.scheme.onSurfaceVariant))),
         ])),
-        trailing ?? Icon(Icons.chevron_right_rounded, color: Theme.of(context).colorScheme.onSurfaceVariant),
+        trailing ?? Icon(Icons.chevron_right_rounded, color: context.scheme.onSurfaceVariant),
       ]),
     ),
   );

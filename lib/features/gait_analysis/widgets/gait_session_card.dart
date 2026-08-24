@@ -61,7 +61,7 @@ class GaitSessionCard extends StatelessWidget {
             style: TextStyle(
               fontSize: 12,
               height: 1.45,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
+              color: context.scheme.onSurfaceVariant,
             ),
           ),
         ],
@@ -77,7 +77,7 @@ class _MeasuringBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final soft = Theme.of(context).colorScheme.onSurfaceVariant;
+    final soft = context.scheme.onSurfaceVariant;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -123,7 +123,7 @@ class _IdleBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final soft = Theme.of(context).colorScheme.onSurfaceVariant;
+    final soft = context.scheme.onSurfaceVariant;
     final cv = gait.stepIntervalCv;
     final done = gait.lastSummary != null;
 

@@ -189,10 +189,16 @@ MemoryLink는 기능이 부족한 제품이 아니다. **이미 모은 데이터
   켠 사용자에게 대비 1.04:1(본문 on `dSurface`)인 화면이 그대로 나갔다. ✅ **2026-08-24 `ThemeMode.light` 고정.**
   `darkTheme` 정의는 남겨 두고 재개 조건을 `main.dart` 주석에 못박았다 — 아래 색 우회를 회수하고
   `theme_contrast_test`에 다크 케이스를 추가해 통과시킨 뒤 한 줄만 되돌리면 된다 | ✅ |
-| P1 | **색 우회 회수 — 남은 127곳.** 위젯이 `MLColors.*`(표면·텍스트·primary)를 직접 참조해 테마를 우회한다.
-  다크 복귀와 고대비 토글의 공통 전제조건. 나머지 112곳은 카테고리·상태 의미색이라 직접 참조가 정상이다(구분 규칙은 `theme.dart` 클래스 주석).
+| ~~P1~~ | ~~색 우회 회수 127곳~~ ✅ **2026-08-24 완료.** 표면·텍스트·primary를 전부 `colorScheme` 경유로 바꿨다(잔여 0).
+  표기는 `context.scheme.X`로 줄였다 — 삼항 한 줄에 `Theme.of(context).colorScheme`가 두 번 들어가 읽히지 않았다.
+  남은 `MLColors` 직접 참조 113곳은 카테고리·상태 의미색이며 직접 참조가 정상이다(구분 규칙은 `theme.dart` 클래스 주석).
   **정정**: 예전에 적힌 "Flutter `Colors.*` 339건"은 정규식이 `MLColors.*`까지 세어 과대집계한 값이다. 실제 원색은 145건이었고
-  그중 색으로 쓰인 82건은 2026-08-24에 전부 제거했다(잔여는 white·black·transparent뿐) | L |
+  그중 색으로 쓰인 82건은 같은 날 전부 제거했다(잔여는 white·black·transparent뿐) | ✅ |
+| **P1** | **다크 복귀에 남은 것 — 상태 문구 토큰 3종 + `calc`.** 색 우회를 회수했는데도 아직 못 켜는 이유는,
+  `goodText`/`warnText`/`badText`가 흰 배경 기준으로 어둡게 잡혀 있어 다크에서 되레 안 읽히기 때문이다.
+  실측 (dSurface 위): `goodText` **3.10:1** · `warnText` **2.76:1** · `badText` **2.91:1** · `calc` **3.37:1**.
+  면(`good`/`warn`/`bad`)과 카테고리 강조(`mem`·`care`·`read`·`sky`·`logic`)는 5.9~10.6:1로 여유가 있다.
+  → 네 값에 다크 대응값을 주고 `theme_contrast_test`에 다크 배경 케이스를 추가한 뒤 `main.dart` 한 줄을 되돌린다 | M |
 | ~~P2~~ | ~~하드코딩 색 66곳~~ → 2026-08-23 실측으로 정정(`Color(0x…)`는 theme.dart 밖 0건), 위 항목으로 대체 | — |
 | P2 | 음수 letterSpacing(-0.5/-0.3/-0.4), 12~13px 하드코딩 텍스트 | M |
 | P2 | `flutter_test`의 `MinimumTapTargetGuideline`·`TextContrastGuideline`을 주요 화면에 적용 | M |

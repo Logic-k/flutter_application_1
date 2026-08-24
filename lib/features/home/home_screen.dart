@@ -275,12 +275,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 const SizedBox(height: 3),
                 Text(
                   isConnected ? 'Gemini AI와 인지 대화를 시작해보세요' : 'AI와 대화로 인지 건강을 확인해보세요',
-                  style: const TextStyle(fontSize: 13, color: MLColors.textSoft),
+                  style: TextStyle(fontSize: 13, color: context.scheme.onSurfaceVariant),
                 ),
               ],
             ),
           ),
-          const Icon(Icons.arrow_forward_ios_rounded, color: MLColors.textSoft, size: 16),
+          Icon(Icons.arrow_forward_ios_rounded, color: context.scheme.onSurfaceVariant, size: 16),
         ],
       ),
     );
@@ -315,12 +315,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 const SizedBox(height: 4),
                 Text(
                   hasTodayEntry ? '오늘 일기를 작성했어요 ✨' : '오늘 하루를 기록해보세요',
-                  style: const TextStyle(color: MLColors.textSoft, fontSize: 13),
+                  style: TextStyle(color: context.scheme.onSurfaceVariant, fontSize: 13),
                 ),
               ],
             ),
           ),
-          const Icon(Icons.arrow_forward_ios_rounded, color: MLColors.textSoft, size: 16),
+          Icon(Icons.arrow_forward_ios_rounded, color: context.scheme.onSurfaceVariant, size: 16),
         ],
       ),
     );
@@ -424,7 +424,7 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 Text(title, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16)),
                 const SizedBox(height: 3),
-                Text(desc, style: const TextStyle(color: MLColors.textSoft, fontSize: 13)),
+                Text(desc, style: TextStyle(color: context.scheme.onSurfaceVariant, fontSize: 13)),
               ],
             ),
           ),
@@ -460,7 +460,7 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           MLSectionTitle(
             '두뇌 건강 분석',
-            trailing: const Icon(Icons.monitor_heart_outlined, color: MLColors.primary, size: 20),
+            trailing: Icon(Icons.monitor_heart_outlined, color: context.scheme.primary, size: 20),
           ),
           ...scores.map((s) => Padding(
             padding: const EdgeInsets.only(bottom: 14),
@@ -469,7 +469,7 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 4),
           Text(
             user.memoryScore > 0 ? '꾸준한 훈련으로 뇌 건강이 유지되고 있습니다!' : '첫 인지 훈련을 시작해보세요!',
-            style: const TextStyle(fontSize: 13, color: MLColors.primary, fontWeight: FontWeight.w600),
+            style: TextStyle(fontSize: 13, color: context.scheme.primary, fontWeight: FontWeight.w600),
           ),
         ],
       ),
@@ -486,7 +486,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Text(label, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
             Text(
               score > 0 ? '${score.toInt()}점' : '미측정',
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: score > 0 ? color : MLColors.textSoft),
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: score > 0 ? color : context.scheme.onSurfaceVariant),
             ),
           ],
         ),

@@ -36,14 +36,14 @@ class _NoticeListScreenState extends State<NoticeListScreen> {
           }
           final notices = snapshot.data ?? [];
           if (notices.isEmpty) {
-            return const Center(
+            return Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.campaign_outlined, size: 64, color: MLColors.textSoft),
+                  Icon(Icons.campaign_outlined, size: 64, color: context.scheme.onSurfaceVariant),
                   SizedBox(height: 12),
                   Text('등록된 공지사항이 없습니다.',
-                      style: TextStyle(color: MLColors.textSoft)),
+                      style: TextStyle(color: context.scheme.onSurfaceVariant)),
                 ],
               ),
             );
@@ -108,14 +108,14 @@ class _NoticeListScreenState extends State<NoticeListScreen> {
                           Text(
                             n['body'] ?? '',
                             style: theme.textTheme.bodySmall
-                                ?.copyWith(color: MLColors.textSoft),
+                                ?.copyWith(color: context.scheme.onSurfaceVariant),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
                           const SizedBox(height: 8),
                           Text(dateStr,
                               style: theme.textTheme.labelSmall
-                                  ?.copyWith(color: MLColors.textSoft)),
+                                  ?.copyWith(color: context.scheme.onSurfaceVariant)),
                         ],
                       ),
                     ),

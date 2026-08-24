@@ -47,7 +47,7 @@ class InquiryDetailScreen extends StatelessWidget {
                         const SizedBox(height: 4),
                         Text(dateStr,
                             style: theme.textTheme.labelSmall
-                                ?.copyWith(color: MLColors.textSoft)),
+                                ?.copyWith(color: context.scheme.onSurfaceVariant)),
                         const Divider(height: 20),
                         Text(data['body'] ?? '',
                             style: theme.textTheme.bodyMedium),
@@ -97,7 +97,7 @@ class InquiryDetailScreen extends StatelessWidget {
                                 : '';
                           }(),
                           style: theme.textTheme.labelSmall
-                              ?.copyWith(color: MLColors.textSoft),
+                              ?.copyWith(color: context.scheme.onSurfaceVariant),
                         ),
                       ],
                     ),
@@ -107,13 +107,13 @@ class InquiryDetailScreen extends StatelessWidget {
                     width: double.infinity,
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: MLColors.surfaceAlt,
+                      color: context.scheme.surfaceContainerHighest,
                       borderRadius: BorderRadius.circular(AppTheme.rField),
                     ),
                     child: Text(
                       '아직 답변이 등록되지 않았습니다.\n빠른 시일 내 답변 드리겠습니다.',
                       style: theme.textTheme.bodyMedium?.copyWith(
-                          color: MLColors.textSoft,
+                          color: context.scheme.onSurfaceVariant,
                           fontStyle: FontStyle.italic),
                     ),
                   ),

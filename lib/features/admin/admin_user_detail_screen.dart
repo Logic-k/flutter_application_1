@@ -92,7 +92,7 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
             SizedBox(
                 width: 80,
                 child: Text(label,
-                    style: const TextStyle(color: MLColors.textSoft, fontSize: 13))),
+                    style: TextStyle(color: context.scheme.onSurfaceVariant, fontSize: 13))),
             Text(value, style: const TextStyle(fontSize: 13)),
           ],
         ),
@@ -161,9 +161,9 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
             SizedBox(
               height: 180,
               child: bars.isEmpty
-                  ? const Center(
+                  ? Center(
                       child: Text('점수 기록이 없습니다.',
-                          style: TextStyle(color: MLColors.textSoft)))
+                          style: TextStyle(color: context.scheme.onSurfaceVariant)))
                   : LineChart(LineChartData(
                       lineBarsData: bars,
                       titlesData: const FlTitlesData(
@@ -223,9 +223,9 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
             SizedBox(
               height: 140,
               child: groups.isEmpty
-                  ? const Center(
+                  ? Center(
                       child: Text('걸음 기록이 없습니다.',
-                          style: TextStyle(color: MLColors.textSoft)))
+                          style: TextStyle(color: context.scheme.onSurfaceVariant)))
                   : BarChart(BarChartData(
                       barGroups: groups,
                       titlesData: const FlTitlesData(

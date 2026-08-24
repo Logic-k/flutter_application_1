@@ -81,7 +81,7 @@ class _WalkingDashboardScreenState extends State<WalkingDashboardScreen> {
                       children: [
                         MLIconTile(
                           icon: Icons.sensors_rounded,
-                          color: pedometer.isTracking ? MLColors.good : MLColors.textSoft,
+                          color: pedometer.isTracking ? MLColors.good : context.scheme.onSurfaceVariant,
                         ),
                         const SizedBox(width: 14),
                         Expanded(
@@ -94,7 +94,7 @@ class _WalkingDashboardScreenState extends State<WalkingDashboardScreen> {
                                 pedometer.isTracking
                                     ? '측정 중입니다. 걸음 수가 자동으로 반영됩니다.'
                                     : '스위치를 켜고 신체 활동 권한을 허용해 주세요.',
-                                style: const TextStyle(color: MLColors.textSoft, fontSize: 13),
+                                style: TextStyle(color: context.scheme.onSurfaceVariant, fontSize: 13),
                               ),
                             ],
                           ),
@@ -123,12 +123,12 @@ class _WalkingDashboardScreenState extends State<WalkingDashboardScreen> {
                           value: progress,
                           size: 194,
                           stroke: 17,
-                          color: MLColors.primary,
+                          color: context.scheme.primary,
                           center: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(Fmt.count(pedometer.todaySteps), style: const TextStyle(fontSize: 38, fontWeight: FontWeight.w900)),
-                              Text('/ ${Fmt.count(_stepGoal)} 보', style: const TextStyle(fontSize: 13, color: MLColors.textSoft, fontWeight: FontWeight.w600)),
+                              Text('/ ${Fmt.count(_stepGoal)} 보', style: TextStyle(fontSize: 13, color: context.scheme.onSurfaceVariant, fontWeight: FontWeight.w600)),
                             ],
                           ),
                         ),
@@ -206,9 +206,9 @@ class _WalkingDashboardScreenState extends State<WalkingDashboardScreen> {
         BarChartRodData(
           toY: steps,
           width: 16,
-          color: MLColors.primary,
+          color: context.scheme.primary,
           borderRadius: BorderRadius.circular(AppTheme.rChip),
-          backDrawRodData: BackgroundBarChartRodData(show: true, toY: maxY, color: MLColors.primary.withValues(alpha: 0.10)),
+          backDrawRodData: BackgroundBarChartRodData(show: true, toY: maxY, color: context.scheme.primary.withValues(alpha: 0.10)),
         ),
       ]));
     }
@@ -227,7 +227,7 @@ class _WalkingDashboardScreenState extends State<WalkingDashboardScreen> {
             if (index < 0) index += 7;
             return Padding(
               padding: const EdgeInsets.only(top: 8),
-              child: Text(days[index], style: const TextStyle(color: MLColors.textSoft, fontSize: 12, fontWeight: FontWeight.w700)),
+              child: Text(days[index], style: TextStyle(color: context.scheme.onSurfaceVariant, fontSize: 12, fontWeight: FontWeight.w700)),
             );
           },
         )),
