@@ -1,3 +1,17 @@
+// ─────────────────────────────────────────────────────────────────────────
+// [TTA 표준 적용] TTAK.KO-10.1397-Part4
+//   「IoT 기반 위급상황 개인정보 긴급조회 스마트시티 서비스 - 제4부: 데이터 모델」
+//
+// 적용 지점: 보호자 동기화 문서 스키마(syncToFirestore)와 긴급 알림(syncAnomalyAlert).
+//   - 표준의 긴급조회 데이터 모델(대상자 식별자 / 상황 발생 여부·시각 / 최소 필수 항목 /
+//     조회 주체 한정)을 Firestore 문서 필드에 매핑했다.
+//     대상자 식별자 -> ownerUid·userId, 상황 발생 여부 -> is_anomaly,
+//     상황 설명 -> anomaly_message, 최소 필수 항목 -> 활동·인지 요약,
+//     조회 주체 한정 -> _generateToken()의 암호학적 난수 16자 토큰.
+//   - 평상시에는 활동·인지 요약만 노출하고, 이상 플래그가 참일 때에만 상황 설명과
+//     비상연락처(emergency_contact)를 활성화한다. "이상 발생 시 누구에게 무엇을
+//     공개하는가"를 임의 판단이 아니라 표준으로 고정해 과잉 공개와 과소 공개를 함께 피한다.
+// ─────────────────────────────────────────────────────────────────────────
 import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
