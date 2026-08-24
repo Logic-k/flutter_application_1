@@ -1,0 +1,49 @@
+{
+  "project_info": {
+    "project_number": "000000000000",
+    "firebase_url": "https://YOUR-FIREBASE-PROJECT-ID-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "YOUR-FIREBASE-PROJECT-ID",
+    "storage_bucket": "YOUR-FIREBASE-PROJECT-ID.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:000000000000:android:00000000000000000000000",
+        "android_client_info": {
+          "package_name": "com.example.flutter_application_1"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "YOUR_ANDROID_API_KEY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:000000000000:android:00000000000000000000001",
+        "android_client_info": {
+          "package_name": "com.teammemorylink.memorylink"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "YOUR_ANDROID_API_KEY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
