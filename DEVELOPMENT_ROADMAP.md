@@ -38,8 +38,9 @@ MemoryLink는 기능이 부족한 제품이 아니다. **이미 모은 데이터
 | `flutter test` | **307 / 307 통과** |
 | 테스트 파일 | **42개** (`test/**/*_test.dart`) |
 | 통합 테스트 | **2개 파일** (`integration_test/`, 게이팅에 미포함) |
-| release AAB | 65.8MB (2026-08-24 실측) — **재측정 필요.** 2026-08-27 서체 전환으로 폰트 자산이 4.1MB(나눔고딕 2벌) → 12.8MB(Pretendard 5벌)로 늘었다 |
+| release AAB | 65.8MB → **70.2MB** (2026-08-27 실측, 서명됨). 서체 전환으로 폰트 자산이 4.1MB(나눔고딕 2벌) → 12.8MB(Pretendard 5벌)가 된 결과이며, 원자산 +8.7MB 대비 AAB 증가는 +4.4MB다(압축). Play AAB 상한 150MB 안이다 |
 | Maestro | yaml **24개** = 게이팅 **20** + 데모·스크린샷 **4** |
+| release APK | **86.6MB** (2026-08-27 실측, 서명됨. 사이드로드·검증용이며 스토어 업로드는 AAB다) |
 | 콜드 스타트 | `+15s078ms` → `+7s252ms` → **`+6s835ms`** (2026-08-27 서체 전환 후 재측정. QA_Device, `pm clear` 직후 `am start -W`, debug 빌드. 폰트 자산이 3배로 늘었어도 느려지지 않았다 — Flutter는 폰트를 첫 프레임 뒤에 지연 로드한다) |
 
 Maestro 내역: 게이팅 제외 4개는 `demo_recording_flow` · `demo_recording_v3` ·
