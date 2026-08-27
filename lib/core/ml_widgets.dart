@@ -314,7 +314,7 @@ class MLMetricCard extends StatelessWidget {
       ]),
       const SizedBox(height: 10),
       Row(crossAxisAlignment: CrossAxisAlignment.baseline, textBaseline: TextBaseline.alphabetic, children: [
-        Text(value, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900)),
+        Text(value, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800)),
         const SizedBox(width: 4),
         Text(unit, style: TextStyle(fontSize: 13, color: context.scheme.onSurfaceVariant)),
       ]),

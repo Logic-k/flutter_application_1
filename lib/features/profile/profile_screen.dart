@@ -142,7 +142,7 @@ class ProfileScreen extends StatelessWidget {
                   children: [
                     Text(
                       (user['name'] as String?)?.isNotEmpty == true ? user['name'] : user['username'] ?? '사용자',
-                      style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
+                      style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
                     ),
                     const SizedBox(height: 3),
                     Text('아이디: ${user['username'] ?? ''}', style: TextStyle(fontSize: 13, color: context.scheme.onSurfaceVariant)),

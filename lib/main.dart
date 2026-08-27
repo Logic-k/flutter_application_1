@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -128,8 +129,19 @@ Future<void> _bootstrap({required bool isEmulator}) async {
   unawaited(_prepareNotifications());
 }
 
+/// Pretendard 는 SIL Open Font License 1.1 로 배포된다. OFL 은 폰트를 포함해
+/// 배포할 때 라이선스 전문을 함께 제공할 것을 요구하므로, 앱 안의 오픈소스 고지
+/// 화면(showLicensePage)에서 볼 수 있도록 등록한다. 자산은 assets/fonts/Pretendard-OFL.txt.
+void _registerFontLicense() {
+  LicenseRegistry.addLicense(() async* {
+    final text = await rootBundle.loadString('assets/fonts/Pretendard-OFL.txt');
+    yield LicenseEntryWithLineBreaks(const ['Pretendard'], text);
+  });
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  _registerFontLicense();
   const bool isEmulator = bool.fromEnvironment(
     'IS_EMULATOR',
     defaultValue: false,

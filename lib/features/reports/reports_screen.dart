@@ -65,7 +65,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('나의 인지 건강 일기', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900)),
+                  const Text('나의 인지 건강 일기', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800)),
                   const SizedBox(height: 20),
                   _buildBrainAgeCard(user),
                   const SizedBox(height: 24),
@@ -229,7 +229,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
           Row(children: [
             Icon(Icons.auto_awesome_rounded, color: context.scheme.primary, size: 22),
             const SizedBox(width: 10),
-            Text('AI 분석 요약', style: TextStyle(color: context.scheme.primary, fontWeight: FontWeight.w900, fontSize: 18)),
+            Text('AI 분석 요약', style: TextStyle(color: context.scheme.primary, fontWeight: FontWeight.w800, fontSize: 18)),
           ]),
           const SizedBox(height: 14),
           Text(

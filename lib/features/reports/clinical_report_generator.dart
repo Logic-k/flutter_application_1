@@ -23,7 +23,7 @@ import 'models/clinical_report_data.dart';
 ///
 /// 이 리포트는 진단·선별 도구가 아니다. 앱 안에서 수행한 훈련 결과를 정리해
 /// 상담 자리에서 참고할 수 있게 만드는 것이 목적이다.
-/// 모든 pw.Text에 NanumGothic을 명시 적용하여 한글 깨짐 방지
+/// 모든 pw.Text에 Pretendard를 명시 적용하여 한글 깨짐 방지
 class ClinicalReportGenerator {
   // 색상 팔레트 (모두 불투명 – PdfColor.withOpacity 미지원)
   static const _primary = PdfColor.fromInt(0xFF006064);
@@ -44,14 +44,16 @@ class ClinicalReportGenerator {
   static pw.Font? _ttf;
   static pw.Font? _ttfBold;
 
+  // 화면과 같은 서체를 쓴다. pdf 패키지의 pw.Font.ttf() 는 TrueType 만 읽으므로
+  // 여기 넘기는 자산은 반드시 .ttf 여야 한다 (.otf 는 CFF 라 파싱에 실패한다).
   static Future<void> _loadFonts() async {
     _ttf ??= pw.Font.ttf(
-        await rootBundle.load('assets/fonts/NanumGothic-Regular.ttf'));
+        await rootBundle.load('assets/fonts/Pretendard-Regular.ttf'));
     _ttfBold ??= pw.Font.ttf(
-        await rootBundle.load('assets/fonts/NanumGothic-Bold.ttf'));
+        await rootBundle.load('assets/fonts/Pretendard-Bold.ttf'));
   }
 
-  /// 모든 텍스트에 NanumGothic을 명시 적용 (한글 깨짐 방지 핵심)
+  /// 모든 텍스트에 Pretendard를 명시 적용 (한글 깨짐 방지 핵심)
   pw.TextStyle _ts({
     double fontSize = 10,
     bool bold = false,

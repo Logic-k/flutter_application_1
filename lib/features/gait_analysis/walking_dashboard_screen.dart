@@ -127,7 +127,7 @@ class _WalkingDashboardScreenState extends State<WalkingDashboardScreen> {
                           center: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text(Fmt.count(pedometer.todaySteps), style: const TextStyle(fontSize: 38, fontWeight: FontWeight.w900)),
+                              Text(Fmt.count(pedometer.todaySteps), style: const TextStyle(fontSize: 38, fontWeight: FontWeight.w800)),
                               Text('/ ${Fmt.count(_stepGoal)} 보', style: TextStyle(fontSize: 13, color: context.scheme.onSurfaceVariant, fontWeight: FontWeight.w600)),
                             ],
                           ),

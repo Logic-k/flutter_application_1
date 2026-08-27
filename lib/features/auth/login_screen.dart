@@ -47,7 +47,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
               const SizedBox(height: 24),
               Text('MemoryLink', style: TextStyle(
-                fontSize: 28, fontWeight: FontWeight.w900,
+                fontSize: 28, fontWeight: FontWeight.w800,
                 color: context.scheme.primary, letterSpacing: 1.2,
               )),
               const SizedBox(height: 8),
@@ -87,7 +87,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 height: 58,
                 child: FilledButton(
                   onPressed: _handleLogin,
-                  child: const Text('로그인', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900)),
+                  child: const Text('로그인', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
                 ),
               ),
               const SizedBox(height: 20),

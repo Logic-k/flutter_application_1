@@ -207,7 +207,7 @@ class _MultiplicationGameState extends State<MultiplicationGame> {
                       _expression,
                       style: TextStyle(
                         fontSize: 56,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w800,
                         color: theme.colorScheme.primary,
                       ),
                     ),

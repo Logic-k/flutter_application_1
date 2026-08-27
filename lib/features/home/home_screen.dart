@@ -80,7 +80,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('MemoryLink', style: TextStyle(color: theme.colorScheme.primary, fontWeight: FontWeight.w900)),
+        title: Text('MemoryLink', style: TextStyle(color: theme.colorScheme.primary, fontWeight: FontWeight.w800)),
         actions: [
           IconButton(
             icon: const Icon(Icons.notifications_none_rounded),
@@ -159,7 +159,7 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 8),
           Text(
             '안녕하세요,\n${userProvider.currentUser?['username'] ?? '사용자'}님!',
-            style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w900, height: 1.3),
+            style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w800, height: 1.3),
           ),
           const SizedBox(height: 20),
           Container(height: 1, color: Colors.white.withValues(alpha: 0.2)),
@@ -235,7 +235,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Text(label, style: TextStyle(color: Colors.white.withValues(alpha: 0.75), fontSize: 12, fontWeight: FontWeight.w600)),
           ]),
           const SizedBox(height: 4),
-          Text(value, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w900)),
+          Text(value, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w800)),
           if (progress != null) ...[
             const SizedBox(height: 6),
             ClipRRect(
@@ -271,7 +271,7 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('AI 도우미', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900)),
+                Text('AI 도우미', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
                 const SizedBox(height: 3),
                 Text(
                   isConnected ? 'Gemini AI와 인지 대화를 시작해보세요' : 'AI와 대화로 인지 건강을 확인해보세요',
@@ -311,7 +311,7 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('오늘의 일기', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16)),
+                const Text('오늘의 일기', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
                 const SizedBox(height: 4),
                 Text(
                   hasTodayEntry ? '오늘 일기를 작성했어요 ✨' : '오늘 하루를 기록해보세요',
@@ -343,7 +343,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   Text('오늘의 걸음', style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 14, fontWeight: FontWeight.w600)),
                   Text(
                     Fmt.stepsOfGoal(pedometer.todaySteps, _stepGoal),
-                    style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w900),
+                    style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w800),
                   ),
                 ],
               ),
@@ -422,7 +422,7 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16)),
+                Text(title, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
                 const SizedBox(height: 3),
                 Text(desc, style: TextStyle(color: context.scheme.onSurfaceVariant, fontSize: 13)),
               ],
@@ -438,7 +438,7 @@ class _HomeScreenState extends State<HomeScreen> {
               minimumSize: const Size(88, AppTheme.minTapTarget),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.rBtn)),
             ),
-            child: const Text('시작', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w900)),
+            child: const Text('시작', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800)),
           ),
         ],
       ),

@@ -87,7 +87,7 @@ class _MeasuringBody extends StatelessWidget {
           children: [
             Text('${gait.steps}보 걸었어요',
                 style:
-                    const TextStyle(fontSize: 19, fontWeight: FontWeight.w900)),
+                    const TextStyle(fontSize: 19, fontWeight: FontWeight.w800)),
             Text('${(gait.sampleProgress * 100).round()}%',
                 style: TextStyle(
                     fontSize: 14, fontWeight: FontWeight.w800, color: soft)),
@@ -138,7 +138,7 @@ class _IdleBody extends StatelessWidget {
               children: [
                 Text(cv.toStringAsFixed(1),
                     style: const TextStyle(
-                        fontSize: 34, fontWeight: FontWeight.w900)),
+                        fontSize: 34, fontWeight: FontWeight.w800)),
                 const SizedBox(width: 4),
                 Text('%', style: TextStyle(fontSize: 16, color: soft)),
               ],

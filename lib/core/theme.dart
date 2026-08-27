@@ -14,7 +14,7 @@
 // ─────────────────────────────────────────────────────────────────────────
 // ─────────────────────────────────────────────────────────────────────────
 // theme.dart  ·  MemoryLink 리디자인 — 방향 A "라벤더 캄"  [확정본]
-// 확정값: 강조색 #6C5CE7 · 라이트 기본 · NanumGothic · 둥글기/타이포 기본 배수(1.0)
+// 확정값: 강조색 #6C5CE7 · 라이트 기본 · Pretendard · 둥글기/타이포 기본 배수(1.0)
 // ─────────────────────────────────────────────────────────────────────────
 import 'package:flutter/material.dart';
 
@@ -103,9 +103,15 @@ extension MLColorScheme on BuildContext {
 }
 
 class AppTheme {
-  // NanumGothic 은 assets/fonts/ 에 이미 번들됨.
-  // Pretendard 를 추가하려면 pubspec 에 등록 후 'Pretendard' 로 변경.
-  static const String? _fontFamily = 'NanumGothic';
+  // Pretendard(OFL 1.1). assets/fonts/ 에 400·500·600·700·800 다섯 벌이 번들돼 있고
+  // pubspec.yaml 이 그 굵기를 그대로 선언한다.
+  //
+  // 아래 TextTheme 이 쓰는 굵기는 반드시 그 다섯 중 하나여야 한다.
+  // 선언에 없는 굵기(예: w900)는 오류를 내지 않고 조용히 가장 가까운 것으로 바뀌므로,
+  // 코드가 선언한 위계와 화면에 그려지는 위계가 어긋난다.
+  // 나눔고딕(400/700 두 벌)을 쓰던 동안 본문 w600 과 제목 w800 이 똑같이 700 으로
+  // 그려져 위계가 크기 한 축으로 붕괴해 있었다. 그래서 서체를 바꾼 것이다.
+  static const String? _fontFamily = 'Pretendard';
 
   // ─── 모서리 둥글기 척도 ──────────────────────────────────────
   //
@@ -165,7 +171,7 @@ class AppTheme {
     final fieldBorder = isLight ? MLColors.lineStrong : const Color(0xFF7C77A0);
 
     final text = TextTheme(
-      displayLarge: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: onSurf, letterSpacing: -0.5),
+      displayLarge: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: onSurf, letterSpacing: -0.5),
       headlineSmall: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: onSurf, letterSpacing: -0.3),
       titleLarge: TextStyle(fontSize: 19, fontWeight: FontWeight.w800, color: onSurf),
       titleMedium: TextStyle(fontSize: 16.5, fontWeight: FontWeight.w800, color: onSurf),
