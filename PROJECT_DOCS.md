@@ -106,8 +106,10 @@ flutter run -d [기기ID]  ← 원하는 기기로 실행
 
 ### 2-5. Maestro QA 자동화 실행
 
+flow 개수와 통과 수치는 [DEVELOPMENT_ROADMAP.md §1 실측 기준선](DEVELOPMENT_ROADMAP.md#baseline)에 있다.
+
 ```
-# 게이팅 flow 19개 실행(helpers와 screenshot flow는 별도)
+# 게이팅 flow 전체 실행 (대상 목록의 정본은 run_maestro_tests.ps1 의 $flows)
 maestro test maestro/
 
 # 개별 flow 실행
@@ -177,7 +179,7 @@ flutter_application_1/            ← 프로젝트 최상위 폴더
 │
 ├── test/                         ← 단위/위젯 테스트
 ├── integration_test/             ← 통합 테스트
-├── maestro/                      ← Maestro QA 자동화 (게이팅 19개 + 스크린샷 1개)
+├── maestro/                      ← Maestro QA 자동화 (게이팅 + 데모·스크린샷 flow)
 ├── android/                      ← 안드로이드 플랫폼 설정
 ├── ios/                          ← iOS 플랫폼 설정
 └── pubspec.yaml                  ← 패키지 의존성 목록

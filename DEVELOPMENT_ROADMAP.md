@@ -22,17 +22,42 @@ MemoryLink는 기능이 부족한 제품이 아니다. **이미 모은 데이터
 
 ---
 
-## 1. 실측 기준선 (2026-08-14)
+<a id="baseline"></a>
+
+## 1. 실측 기준선 (2026-08-26)
 
 문서에 적힌 수치가 아니라 이 저장소에서 직접 돌린 결과다.
 
+> **이 절이 수치의 정본이다.** 다른 문서는 값을 복사하지 말고 이곳을 가리킨다.
+> 복사본은 드리프트하고, 참조는 드리프트하지 않는다. 이 저장소는 이미
+> `flutter test` 수치가 117 → 251 → 273 → 309 → 307로 갈라지는 것을 네 번 겪었다.
+
 | 항목 | 결과 |
 |---|---|
-| `flutter analyze` | 에러 0 · 경고 0 · info 7 (전부 스타일 힌트) |
-| `flutter test` | **307/307 통과** · 2026-08-24 재실측 (8/21의 309에서 −3 +1: textFaint 토큰을 textSoft로 합치며 대비 케이스 3건이 사라지고, 팔레트 가드 1건을 신설) |
-| release AAB | 빌드 성공 65.8MB (서명됨) |
-| Maestro 게이팅 | 17 → 21 → **20 flow** (2026-08-24에 `social_ranking_flow` 제거 — 검사 대상 위젯을 삭제했다) |
-| 콜드 스타트 | `+15s078ms` → **`+7s252ms`** (같은 에뮬레이터, clearState 직후 `am start -W`) |
+| `flutter analyze` | 에러 0 · 경고 0 · **info 4** (`ml_widgets.dart` 2 · `theme.dart` 1 · `shape_match_game.dart` 1, 전부 스타일 힌트) |
+| `flutter test` | **307 / 307 통과** |
+| 테스트 파일 | **42개** (`test/**/*_test.dart`) |
+| 통합 테스트 | **2개 파일** (`integration_test/`, 게이팅에 미포함) |
+| release AAB | 65.8MB (2026-08-24 실측) — **재측정 필요.** 2026-08-27 서체 전환으로 폰트 자산이 4.1MB(나눔고딕 2벌) → 12.8MB(Pretendard 5벌)로 늘었다 |
+| Maestro | yaml **24개** = 게이팅 **20** + 데모·스크린샷 **4** |
+| 콜드 스타트 | `+15s078ms` → `+7s252ms` → **`+6s835ms`** (2026-08-27 서체 전환 후 재측정. QA_Device, `pm clear` 직후 `am start -W`, debug 빌드. 폰트 자산이 3배로 늘었어도 느려지지 않았다 — Flutter는 폰트를 첫 프레임 뒤에 지연 로드한다) |
+
+Maestro 내역: 게이팅 제외 4개는 `demo_recording_flow` · `demo_recording_v3` ·
+`demo_recording_tta_2min` · `screenshot_tour_flow`이며, 통과/실패로 품질을 판정하는
+flow가 아니다. `maestro/helpers/` 2개(`login_helper` · `just_tap_confirm`)는
+다른 flow가 불러 쓰는 조각이라 flow 수에 들어가지 않는다.
+**게이팅 대상의 정본은 `run_maestro_tests.ps1`의 `$flows` 배열이다.** 위 표의 20은
+그 배열 길이를 옮긴 값이므로, 배열이 바뀌면 이곳도 함께 고친다.
+
+수치가 바뀐 경위:
+
+- `flutter test` **309 → 307** (8/24) — `textFaint` 토큰을 `textSoft`로 합치며 대비
+  케이스 3건이 사라지고 팔레트 가드 1건을 신설했다(−3 +1).
+- `flutter analyze` info **7 → 4** (8/24) — `MemoryLInkApp_Design/`을 analyzer
+  exclude에 넣었다(`analysis_options.yaml:13-19`). 빌드에 들어가지 않는 이식용
+  사본이 분석되고 있었다.
+- Maestro 게이팅 **17 → 21 → 20** — 8/24에 `social_ranking_flow`를 뺐다.
+  검사 대상이던 `SocialRankingView` 위젯 자체를 삭제했기 때문이다.
 
 > **게이팅 21개 전부 통과를 확인했다(2026-08-21).** 이후 8/24에 20개가 됐고, 20개 기준의
 > 재실행은 아직 하지 않았다.
@@ -60,8 +85,11 @@ MemoryLink는 기능이 부족한 제품이 아니다. **이미 모은 데이터
 > (SetProcessWorkingSetSize(-1,-1))으로 확보할 수 있다. QEMU 점유는
 > 헤드리스 3.47GB / GPU 가속 4.48GB.
 
-> README의 "flutter test 117 · Maestro E2E 17 flow"는 낡은 수치다.
-> 문서 간 수치가 어긋나면 발표·심사 질의응답에서 가장 먼저 신뢰를 잃는다.
+> **문서 간 수치가 어긋나면 발표·심사 질의응답에서 가장 먼저 신뢰를 잃는다.**
+> 2026-08-26에 이 경고대로 정리했다. README·PROJECT_DOCS·RELEASE_CHECKLIST는 값을
+> 복사하지 않고 위 §1을 참조한다. `SETUP.md`는 제출 zip에 동봉되어 §1에 링크가 닿지
+> 않으므로 숫자를 아예 뺐다 — 심사자는 어차피 명령을 직접 돌려 실제 값을 본다.
+> 재발은 `gen_source_zip.py`의 하드코딩 수치 가드가 막는다.
 
 ---
 

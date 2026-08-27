@@ -69,11 +69,13 @@ macOS/Windows/Linux 모두 동일합니다. iOS 프로젝트도 포함돼 있으
 ## 4. 검증 방법
 
 ```bash
-flutter analyze          # 에러 0 · 경고 0 (info 7건은 스타일 힌트)
-flutter test             # 309개 전부 통과
+flutter analyze          # 에러 0 · 경고 0 (남는 info는 전부 스타일 힌트)
+flutter test             # 전부 통과
 ```
 
-E2E는 [Maestro](https://maestro.mobile.dev) 27개 플로우가 `maestro/`에 있습니다(게이팅 대상 21개).
+E2E는 [Maestro](https://maestro.mobile.dev) 플로우가 `maestro/`에 있습니다.
+게이팅 대상 목록은 `run_maestro_tests.ps1`의 `$flows` 배열이 정본이며,
+`maestro/helpers/`는 다른 flow가 불러 쓰는 조각이라 단독 실행 대상이 아닙니다.
 
 ```bash
 maestro test maestro/login_flow.yaml

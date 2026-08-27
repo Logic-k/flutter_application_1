@@ -120,7 +120,7 @@ MemoryLink는 **기억력 저하가 걱정되는 60~80대 사용자와 그 가�
 | 📈 인지 평가 영역 | **4개** (계산·논리·기억·집중) |
 | 🎯 적응형 난이도 | **10단계** |
 | 📋 PDF 리포트 | **4페이지** |
-| 🧪 자동화 테스트 | **flutter test 251 · Maestro E2E 20 flow** |
+| 🧪 자동화 테스트 | [**실측 기준선**](DEVELOPMENT_ROADMAP.md#baseline) |
 | 📲 화면 수 | **30+** |
 
 </div>
@@ -400,15 +400,11 @@ lib/
 <details>
 <summary>🧪 QA 현황 펼치기</summary>
 
-> 2026-08-14 이 저장소에서 직접 실행해 확인한 수치다.
+실측 수치(테스트 통과 수·analyze·Maestro flow·AAB 크기)는 한 곳에서만 관리한다 —
+**[DEVELOPMENT_ROADMAP.md §1 실측 기준선](DEVELOPMENT_ROADMAP.md#baseline)**.
+여기에 값을 복사해 두면 코드보다 먼저 낡는다.
 
-| 테스트 유형 | 수량 |
-|---|---|
-| flutter test (단위·위젯) | **251개 통과** (테스트 파일 34개) |
-| flutter analyze | 에러 0 · 경고 0 (info 6) |
-| 통합 테스트 | 2개 파일 |
-| Maestro E2E flow | 게이팅 20개 + 데모·스크린샷용 3개 (yaml 23개) |
-| release AAB | 빌드 성공 65.8MB (서명됨) |
+아래 명령을 직접 돌리면 그 값을 재현할 수 있다.
 
 ```bash
 flutter analyze
