@@ -6,6 +6,7 @@
 <title>MemoryLink — 기억을 잇다, 오늘을 기록하다</title>
 <meta name="description" content="고령자 인지 건강 관리 앱 MemoryLink. 인지 훈련 7종, 걸음·생활습관 기록, AI 회상 대화, 보호자 연계, 전국 치매안심센터 찾기.">
 <link rel="icon" href="favicon.png">
+<script>document.documentElement.classList.add("js")</script>
 <link rel="apple-touch-icon" href="icons/Icon-192.png">
 <meta property="og:title" content="MemoryLink — 기억을 잇다, 오늘을 기록하다">
 <meta property="og:description" content="고령자 인지 건강 관리 앱. 인지 훈련 7종, 걸음·생활습관 기록, AI 회상 대화, 보호자 연계.">
@@ -43,7 +44,18 @@
   }
 
   *{box-sizing:border-box}
-  html{-webkit-text-size-adjust:100%}
+  html{-webkit-text-size-adjust:100%; scroll-behavior:smooth}
+
+  /* ── 모션 게이트 ─────────────────────────────────────────────────────
+     JS가 살아 있을 때만 등장 요소를 잠시 숨긴다(GSAP autoAlpha가 되살린다).
+     JS가 없거나 CDN이 실패하면 .js 클래스가 제거되어 전부 보인다.
+     움직임 줄이기 설정에서는 숨기지도, 움직이지도 않는다. */
+  .js [data-reveal]{visibility:hidden}
+  @media (prefers-reduced-motion: reduce){
+    html{scroll-behavior:auto}
+    .js [data-reveal]{visibility:visible}
+    *,*::before,*::after{transition-duration:0s !important; animation:none !important}
+  }
   body{
     margin:0; background:var(--bg); color:var(--text);
     font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",
@@ -85,11 +97,75 @@
     padding:14px 22px; border-radius:999px; font-weight:700; font-size:15px;
     text-decoration:none; border:1.5px solid transparent; min-height:52px;
   }
+  .btn{position:relative; overflow:hidden; transition:transform .1s, background .15s, box-shadow .15s}
+  .btn:active{transform:scale(.98)}
   .btn-primary{background:var(--primary); color:#fff}
-  .btn-primary:hover{background:var(--primary-deep)}
+  .btn-primary:hover{background:var(--primary-deep); box-shadow:0 10px 24px rgba(108,92,231,.28)}
+  /* 호버 시 한 번 지나가는 빛 (반복 없음) */
+  .btn-primary::after{
+    content:""; position:absolute; inset:0; left:-120%; width:60%;
+    background:linear-gradient(100deg, transparent, rgba(255,255,255,.35), transparent);
+    transform:skewX(-18deg); transition:left .6s ease;
+  }
+  .btn-primary:hover::after{left:160%}
   .btn-ghost{border-color:var(--line-strong); color:var(--text)}
   .btn-ghost:hover{background:var(--surface-alt)}
-  .hero-shot{justify-self:center; position:relative}
+
+  /* ── 진행 막대 · 상단 바 ─────────────────────────────────────────── */
+  .progress{
+    position:fixed; top:0; left:0; right:0; height:3px; z-index:60;
+    background:linear-gradient(90deg,var(--primary),var(--mem));
+    transform:scaleX(0); transform-origin:left center; pointer-events:none;
+  }
+  .topbar{
+    position:fixed; top:0; left:0; right:0; z-index:50;
+    background:color-mix(in srgb, var(--surface) 86%, transparent);
+    -webkit-backdrop-filter:saturate(1.4) blur(10px); backdrop-filter:saturate(1.4) blur(10px);
+    border-bottom:1px solid var(--line);
+    transform:translateY(-100%); opacity:0; visibility:hidden;
+    transition:transform .3s ease, opacity .3s ease, visibility 0s .3s;
+  }
+  .topbar.show{transform:none; opacity:1; visibility:visible; transition:transform .3s ease, opacity .3s ease}
+  .topbar .wrap{display:flex; align-items:center; gap:18px; min-height:56px}
+  .topbar .tb-brand{display:flex; align-items:center; gap:9px; font-weight:800; color:var(--text); text-decoration:none}
+  .topbar .tb-brand img{width:28px; height:28px; border-radius:8px}
+  .topbar nav{display:flex; gap:4px; margin-left:auto; overflow-x:auto}
+  .topbar nav a{
+    color:var(--text-soft); text-decoration:none; font-size:14px; font-weight:600;
+    padding:8px 12px; border-radius:999px; white-space:nowrap; transition:background .15s, color .15s;
+  }
+  .topbar nav a:hover{background:var(--primary-soft); color:var(--primary-deep)}
+
+  /* ── 히어로 배경 글로우 (포인터를 따라 살짝 움직인다) ───────────────── */
+  header.hero{position:relative; overflow:hidden}
+  header.hero .wrap{position:relative; z-index:1}
+  .glow{
+    position:absolute; border-radius:50%; pointer-events:none; filter:blur(48px);
+    will-change:transform;
+  }
+  .glow-a{width:560px; height:560px; left:-120px; top:-200px; background:var(--primary-soft); opacity:.9}
+  .glow-b{width:420px; height:420px; right:-80px; top:-60px; background:rgba(56,201,166,.22)}
+  .glow-c{width:360px; height:360px; left:42%; bottom:-180px; background:rgba(255,183,77,.14)}
+
+  .hero-shot{justify-self:center; position:relative; perspective:1200px}
+  .phone{position:relative; transform-style:preserve-3d; will-change:transform}
+  .hero-shot img{position:relative; z-index:1}
+
+  /* 폰 옆에 떠 있는 예시 배지 */
+  .badge{
+    position:absolute; z-index:2; display:flex; align-items:center; gap:10px;
+    background:var(--surface); border:1px solid var(--line); border-radius:14px;
+    padding:10px 14px; box-shadow:var(--shadow); font-size:13px; line-height:1.3;
+    white-space:nowrap; transform:translateZ(60px);
+  }
+  .badge b{display:block; font-size:15px; letter-spacing:-.01em}
+  .badge small{display:block; color:var(--text-soft); font-size:12px}
+  .badge .b-ico{width:34px; height:34px; border-radius:10px; display:grid; place-items:center; font-size:17px}
+  .badge-1{left:-64px; top:18%}
+  .badge-2{right:-70px; bottom:22%}
+  .badge svg{display:block}
+  @media (max-width:1100px){ .badge-1{left:-30px} .badge-2{right:-30px} }
+  @media (max-width:880px){ .badge{display:none} }
   /* 폰 목업은 1:2.17 비율이라 폭으로 잡으면 히어로가 과하게 높아진다.
      높이를 기준으로 제한해 제목이 화면 위쪽에 오도록 한다. */
   .hero-shot img{
@@ -104,7 +180,7 @@
     background:var(--surface); border:1px solid var(--line);
     border-radius:var(--radius); padding:20px 18px; box-shadow:var(--shadow);
   }
-  .stat b{display:block; font-size:27px; font-weight:800; letter-spacing:-.02em}
+  .stat b{display:block; font-size:27px; font-weight:800; letter-spacing:-.02em; font-variant-numeric:tabular-nums}
   .stat span{font-size:13px; color:var(--text-soft)}
 
   /* ── 기능 카드 ───────────────────────────────────────────────────── */
@@ -112,7 +188,16 @@
   .card{
     background:var(--surface); border:1px solid var(--line);
     border-radius:var(--radius); padding:26px 24px; box-shadow:var(--shadow);
+    transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease;
   }
+  @media (hover:hover){
+    .card:hover{
+      transform:translateY(-4px); border-color:var(--line-strong);
+      box-shadow:0 2px 4px rgba(36,31,61,.05), 0 18px 40px rgba(36,31,61,.12);
+    }
+    .card:hover .ico{transform:scale(1.08) rotate(-4deg)}
+  }
+  .card .ico{transition:transform .2s ease}
   .card .ico{
     width:44px; height:44px; border-radius:13px; display:grid; place-items:center;
     font-size:21px; margin-bottom:16px;
@@ -123,8 +208,21 @@
   .card li{margin:4px 0}
 
   /* ── 스크린샷 갤러리 ─────────────────────────────────────────────── */
-  .gallery{display:flex; gap:18px; overflow-x:auto; padding:36px 4px 12px; scroll-snap-type:x mandatory}
-  .gallery figure{margin:0; flex:0 0 auto; width:176px; scroll-snap-align:center}
+  .gallery-wrap{position:relative}
+  .gallery{display:flex; gap:18px; overflow-x:auto; padding:36px 4px 12px; scroll-snap-type:x proximity; scrollbar-width:thin}
+  .gallery figure{margin:0; flex:0 0 auto; width:176px; scroll-snap-align:center; transition:transform .2s ease}
+  @media (hover:hover){ .gallery figure:hover{transform:translateY(-6px) scale(1.03)} }
+  .gal-nav{
+    position:absolute; top:50%; transform:translateY(-50%); z-index:2;
+    width:48px; height:48px; border-radius:50%; border:1px solid var(--line);
+    background:var(--surface); color:var(--text); box-shadow:var(--shadow);
+    font-size:20px; cursor:pointer; display:grid; place-items:center;
+    transition:transform .1s, background .15s;
+  }
+  .gal-nav:hover{background:var(--primary-soft)}
+  .gal-nav:active{transform:translateY(-50%) scale(.95)}
+  .gal-prev{left:-10px} .gal-next{right:-10px}
+  .js .gal-nav{display:grid} .gal-nav{display:none}
   /* height:auto 없이 width만 주면 HTML의 height="1040" 속성이 그대로 남아
      카드가 세로로 늘어난다. 비율 유지는 auto가 있어야 동작한다. */
   .gallery img{
@@ -171,47 +269,77 @@
 </head>
 <body>
 
-<header class="hero">
+<div class="progress" aria-hidden="true"></div>
+<div class="topbar" aria-hidden="true">
   <div class="wrap">
-    <div class="brand">
+    <a class="tb-brand" href="#top"><img src="icons/Icon-192.png" alt="">MemoryLink</a>
+    <nav>
+      <a href="#features">기능</a>
+      <a href="#screens">화면</a>
+      <a href="#engineering">만든 방법</a>
+      <a href="#notice">고지</a>
+    </nav>
+  </div>
+</div>
+
+<header class="hero" id="top">
+  <div class="glow glow-a" aria-hidden="true"></div>
+  <div class="glow glow-b" aria-hidden="true"></div>
+  <div class="glow glow-c" aria-hidden="true"></div>
+  <div class="wrap">
+    <div class="brand" data-reveal>
       <img src="icons/Icon-192.png" alt="">
       <b>MemoryLink</b>
     </div>
 
     <div class="hero-grid">
       <div>
-        <h1>기억을 잇다,<br><span class="accent">오늘을 기록하다</span></h1>
-        <p class="tagline">
+        <h1><span class="l1" data-reveal>기억을 잇다,</span><br><span class="accent" data-reveal>오늘을 기록하다</span></h1>
+        <p class="tagline" data-reveal>
           기억력 변화가 걱정되는 어르신과 가족을 위한 인지 건강 관리 앱입니다.
           매일의 훈련·걸음·기록을 한곳에 모으고, 보호자와 함께 봅니다.
         </p>
         <div class="cta">
-          <a class="btn btn-primary" href="#features">기능 살펴보기</a>
-          <a class="btn btn-ghost" href="privacy.html">개인정보 처리방침</a>
+          <a class="btn btn-primary" href="#features" data-reveal>기능 살펴보기</a>
+          <a class="btn btn-ghost" href="privacy.html" data-reveal>개인정보 처리방침</a>
         </div>
       </div>
       <div class="hero-shot">
-        <img src="shots/home.webp" alt="MemoryLink 홈 화면 — 오늘의 훈련과 걸음 요약" width="480" height="1040">
+        <div class="phone" data-reveal>
+          <img src="shots/home.webp" alt="MemoryLink 홈 화면 — 오늘의 훈련과 걸음 요약" width="480" height="1040">
+          <div class="badge badge-1" data-reveal aria-hidden="true">
+            <div class="b-ico" style="background:rgba(108,92,231,.12)">🧠</div>
+            <div><b>오늘 훈련 완료</b><small>예시 · 7일 연속</small></div>
+          </div>
+          <div class="badge badge-2" data-reveal aria-hidden="true">
+            <div class="b-ico" style="background:rgba(255,183,77,.16)">🚶</div>
+            <div><b><span class="spark-num">6,240</span> 걸음</b><small>예시 · 이번 주 추이</small></div>
+            <svg width="72" height="30" viewBox="0 0 72 30" fill="none">
+              <path class="spark" d="M2 24 L14 18 L26 21 L38 12 L50 15 L62 6 L70 9"
+                    stroke="var(--mem)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </div>
       </div>
     </div>
 
     <div class="stats">
-      <div class="stat"><b>7종</b><span>인지 훈련 게임</span></div>
-      <div class="stat"><b>4개</b><span>인지 영역 추이</span></div>
-      <div class="stat"><b>256곳</b><span>전국 치매안심센터</span></div>
-      <div class="stat"><b>309개</b><span>자동화 테스트</span></div>
+      <div class="stat" data-reveal><b data-count="7" data-suffix="종">7종</b><span>인지 훈련 게임</span></div>
+      <div class="stat" data-reveal><b data-count="4" data-suffix="개">4개</b><span>인지 영역 추이</span></div>
+      <div class="stat" data-reveal><b data-count="256" data-suffix="곳">256곳</b><span>전국 치매안심센터</span></div>
+      <div class="stat" data-reveal><b data-count="309" data-suffix="개">309개</b><span>자동화 테스트</span></div>
     </div>
   </div>
 </header>
 
 <section id="features">
   <div class="wrap">
-    <div class="eyebrow">Features</div>
-    <h2>앱에 담긴 것</h2>
-    <p class="lead">아래는 모두 실제로 앱에 구현되어 동작하는 기능입니다.</p>
+    <div class="eyebrow" data-reveal>Features</div>
+    <h2 data-reveal>앱에 담긴 것</h2>
+    <p class="lead" data-reveal>아래는 모두 실제로 앱에 구현되어 동작하는 기능입니다.</p>
 
     <div class="cards">
-      <div class="card">
+      <div class="card" data-reveal>
         <div class="ico" style="background:rgba(108,92,231,.12)">🧠</div>
         <h3>인지 훈련 7종</h3>
         <p>매일 조금씩, 부담 없는 분량으로.</p>
@@ -223,7 +351,7 @@
         </ul>
       </div>
 
-      <div class="card">
+      <div class="card" data-reveal>
         <div class="ico" style="background:rgba(255,183,77,.16)">🚶</div>
         <h3>걸음과 생활습관</h3>
         <p>센서로 자동 기록되는 하루의 활동.</p>
@@ -234,7 +362,7 @@
         </ul>
       </div>
 
-      <div class="card">
+      <div class="card" data-reveal>
         <div class="ico" style="background:rgba(56,201,166,.14)">💬</div>
         <h3>AI 회상 대화</h3>
         <p>옛 기억을 함께 꺼내 보는 대화 상대.</p>
@@ -245,7 +373,7 @@
         </ul>
       </div>
 
-      <div class="card">
+      <div class="card" data-reveal>
         <div class="ico" style="background:rgba(166,107,232,.14)">📔</div>
         <h3>기억의 정원</h3>
         <p>달력 위에 쌓이는 하루하루의 기록.</p>
@@ -256,7 +384,7 @@
         </ul>
       </div>
 
-      <div class="card">
+      <div class="card" data-reveal>
         <div class="ico" style="background:rgba(90,169,240,.14)">📊</div>
         <h3>활동 리포트</h3>
         <p>변화를 숫자와 그래프로 되돌아봅니다.</p>
@@ -267,7 +395,7 @@
         </ul>
       </div>
 
-      <div class="card">
+      <div class="card" data-reveal>
         <div class="ico" style="background:rgba(255,122,162,.14)">👨‍👩‍👧</div>
         <h3>보호자 안심 연결</h3>
         <p>멀리 있어도 오늘을 확인할 수 있게.</p>
@@ -278,7 +406,7 @@
         </ul>
       </div>
 
-      <div class="card">
+      <div class="card" data-reveal>
         <div class="ico" style="background:rgba(255,107,107,.14)">📍</div>
         <h3>치매안심센터 찾기</h3>
         <p>도움이 필요할 때 가까운 곳부터.</p>
@@ -289,7 +417,7 @@
         </ul>
       </div>
 
-      <div class="card">
+      <div class="card" data-reveal>
         <div class="ico" style="background:rgba(108,92,231,.12)">♿</div>
         <h3>어르신을 위한 화면</h3>
         <p>읽기 쉽고 누르기 쉬운 것이 기본입니다.</p>
@@ -300,7 +428,7 @@
         </ul>
       </div>
 
-      <div class="card">
+      <div class="card" data-reveal>
         <div class="ico" style="background:rgba(56,201,166,.14)">🎧</div>
         <h3>고객센터</h3>
         <p>궁금한 점은 앱 안에서 바로.</p>
@@ -313,54 +441,58 @@
   </div>
 </section>
 
-<section>
+<section id="screens">
   <div class="wrap">
-    <div class="eyebrow">Screens</div>
-    <h2>화면 둘러보기</h2>
-    <p class="lead">실제 앱 화면입니다. 옆으로 넘겨 보세요.</p>
+    <div class="eyebrow" data-reveal>Screens</div>
+    <h2 data-reveal>화면 둘러보기</h2>
+    <p class="lead" data-reveal>실제 앱 화면입니다. 옆으로 넘겨 보세요.</p>
 
+    <div class="gallery-wrap">
+    <button class="gal-nav gal-prev" type="button" aria-label="이전 화면">‹</button>
+    <button class="gal-nav gal-next" type="button" aria-label="다음 화면">›</button>
     <div class="gallery">
-      <figure><img src="shots/training.webp" alt="훈련 허브 화면" width="480" height="1040"><figcaption>훈련 허브</figcaption></figure>
-      <figure><img src="shots/game.webp" alt="인지 훈련 게임 진행 화면" width="480" height="1040"><figcaption>훈련 게임</figcaption></figure>
-      <figure><img src="shots/walking.webp" alt="걸음 대시보드 화면" width="480" height="1040"><figcaption>걸음 · 생활습관</figcaption></figure>
-      <figure><img src="shots/reports.webp" alt="활동 리포트 화면" width="480" height="1040"><figcaption>활동 리포트</figcaption></figure>
-      <figure><img src="shots/report_pdf.webp" alt="PDF 리포트 미리보기 화면" width="480" height="1040"><figcaption>PDF 리포트</figcaption></figure>
-      <figure><img src="shots/ai_chat.webp" alt="AI 회상 대화 화면" width="480" height="1040"><figcaption>AI 회상 대화</figcaption></figure>
-      <figure><img src="shots/diary.webp" alt="기억의 정원 일기 화면" width="480" height="1040"><figcaption>기억의 정원</figcaption></figure>
-      <figure><img src="shots/guardian.webp" alt="보호자 연결 화면" width="480" height="1040"><figcaption>보호자 연결</figcaption></figure>
-      <figure><img src="shots/cs.webp" alt="고객센터 화면" width="480" height="1040"><figcaption>고객센터</figcaption></figure>
+      <figure data-reveal><img src="shots/training.webp" alt="훈련 허브 화면" width="480" height="1040"><figcaption>훈련 허브</figcaption></figure>
+      <figure data-reveal><img src="shots/game.webp" alt="인지 훈련 게임 진행 화면" width="480" height="1040"><figcaption>훈련 게임</figcaption></figure>
+      <figure data-reveal><img src="shots/walking.webp" alt="걸음 대시보드 화면" width="480" height="1040"><figcaption>걸음 · 생활습관</figcaption></figure>
+      <figure data-reveal><img src="shots/reports.webp" alt="활동 리포트 화면" width="480" height="1040"><figcaption>활동 리포트</figcaption></figure>
+      <figure data-reveal><img src="shots/report_pdf.webp" alt="PDF 리포트 미리보기 화면" width="480" height="1040"><figcaption>PDF 리포트</figcaption></figure>
+      <figure data-reveal><img src="shots/ai_chat.webp" alt="AI 회상 대화 화면" width="480" height="1040"><figcaption>AI 회상 대화</figcaption></figure>
+      <figure data-reveal><img src="shots/diary.webp" alt="기억의 정원 일기 화면" width="480" height="1040"><figcaption>기억의 정원</figcaption></figure>
+      <figure data-reveal><img src="shots/guardian.webp" alt="보호자 연결 화면" width="480" height="1040"><figcaption>보호자 연결</figcaption></figure>
+      <figure data-reveal><img src="shots/cs.webp" alt="고객센터 화면" width="480" height="1040"><figcaption>고객센터</figcaption></figure>
+    </div>
     </div>
   </div>
 </section>
 
-<section>
+<section id="engineering">
   <div class="wrap">
-    <div class="eyebrow">Engineering</div>
-    <h2>어떻게 만들었나</h2>
-    <p class="lead">기록을 다루는 앱이라, 만드는 방식도 검증 가능하게 두었습니다.</p>
+    <div class="eyebrow" data-reveal>Engineering</div>
+    <h2 data-reveal>어떻게 만들었나</h2>
+    <p class="lead" data-reveal>기록을 다루는 앱이라, 만드는 방식도 검증 가능하게 두었습니다.</p>
 
-    <div class="tablewrap">
+    <div class="tablewrap" data-reveal>
       <table>
         <tbody>
-          <tr><th>플랫폼</th><td>Android (minSdk 26) · Flutter 3.41.5 / Dart 3.11.3</td></tr>
-          <tr><th>구조</th><td>Provider 상태관리 · GoRouter 라우팅 · sqflite 로컬 데이터베이스</td></tr>
-          <tr><th>클라우드</th><td>Firebase 익명 인증 · Firestore · Hosting</td></tr>
-          <tr><th>AI</th><td>Google Gemini (회상 대화) · 온디바이스 음성 안내(TTS)</td></tr>
-          <tr><th>자동화 테스트</th><td>단위·위젯 테스트 309개 · Maestro E2E 21개 플로우</td></tr>
-          <tr><th>정적 분석</th><td><code>flutter analyze</code> 에러 0 · 경고 0</td></tr>
-          <tr><th>접근성</th><td>WCAG 2.2 — 대비 4.5:1 · 터치 영역 56dp · 글꼴 200% 대응</td></tr>
+          <tr data-reveal><th>플랫폼</th><td>Android (minSdk 26) · Flutter 3.41.5 / Dart 3.11.3</td></tr>
+          <tr data-reveal><th>구조</th><td>Provider 상태관리 · GoRouter 라우팅 · sqflite 로컬 데이터베이스</td></tr>
+          <tr data-reveal><th>클라우드</th><td>Firebase 익명 인증 · Firestore · Hosting</td></tr>
+          <tr data-reveal><th>AI</th><td>Google Gemini (회상 대화) · 온디바이스 음성 안내(TTS)</td></tr>
+          <tr data-reveal><th>자동화 테스트</th><td>단위·위젯 테스트 309개 · Maestro E2E 21개 플로우</td></tr>
+          <tr data-reveal><th>정적 분석</th><td><code>flutter analyze</code> 에러 0 · 경고 0</td></tr>
+          <tr data-reveal><th>접근성</th><td>WCAG 2.2 — 대비 4.5:1 · 터치 영역 56dp · 글꼴 200% 대응</td></tr>
         </tbody>
       </table>
     </div>
   </div>
 </section>
 
-<section>
+<section id="notice">
   <div class="wrap">
-    <div class="eyebrow">Notice</div>
-    <h2>꼭 읽어 주세요</h2>
+    <div class="eyebrow" data-reveal>Notice</div>
+    <h2 data-reveal>꼭 읽어 주세요</h2>
 
-    <div class="notice">
+    <div class="notice" data-reveal>
       <h3>이 앱은 진단 도구가 아닙니다</h3>
       <ul>
         <li>본 앱의 지표는 진단·선별 검사가 아니며 의료기기가 아닙니다.</li>
@@ -370,7 +502,7 @@
       </ul>
     </div>
 
-    <div class="credit">
+    <div class="credit" data-reveal>
       <p style="margin:0 0 10px">
         <b>공공데이터 출처</b> — 치매안심센터 정보는 공공데이터포털
         <a href="https://www.data.go.kr/data/15138421/fileData.do" target="_blank" rel="noopener noreferrer">국립중앙의료원_치매안심센터 정보</a>를
@@ -394,6 +526,134 @@
     <div>© 2026 MemoryLink · 팀 메모리링크</div>
   </div>
 </footer>
+
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/SplitText.min.js"></script>
+<script>
+(function(){
+  var root = document.documentElement;
+  var showAll = function(){ root.classList.remove('js'); };
+  if (!(window.gsap && window.ScrollTrigger && window.SplitText)) { showAll(); return; }
+  try {
+    gsap.registerPlugin(ScrollTrigger, SplitText);
+    var mm = gsap.matchMedia();
+
+    /* 스크롤 진행 막대 · 상단 바: 상태 표시이므로 움직임 줄이기와 무관하게 동작 */
+    gsap.to('.progress', { scaleX: 1, ease: 'none',
+      scrollTrigger: { start: 0, end: 'max', scrub: 0.3 } });
+    ScrollTrigger.create({ trigger: '.hero', start: 'bottom 60px',
+      onEnter: function(){ document.querySelector('.topbar').classList.add('show'); },
+      onLeaveBack: function(){ document.querySelector('.topbar').classList.remove('show'); } });
+
+    /* 갤러리 좌우 버튼: scrollLeft를 트윈한다 */
+    var gal = document.querySelector('.gallery');
+    var step = function(dir){
+      var w = gal.querySelector('figure').getBoundingClientRect().width + 18;
+      gsap.to(gal, { scrollLeft: gal.scrollLeft + dir * w * 2, duration: 0.45, ease: 'power2.out' });
+    };
+    document.querySelector('.gal-prev').addEventListener('click', function(){ step(-1); });
+    document.querySelector('.gal-next').addEventListener('click', function(){ step(1); });
+
+    mm.add('(prefers-reduced-motion: reduce)', function(){
+      gsap.set('[data-reveal]', { visibility: 'visible' });
+    });
+
+    mm.add('(prefers-reduced-motion: no-preference)', function(){
+      var reveal = { autoAlpha: 0, y: 18, duration: 0.5, ease: 'power2.out' };
+
+      /* ── 히어로: 한 타임라인으로 순서를 잡는다 ─────────────────────── */
+      var split = new SplitText('h1 .l1', { type: 'chars' });
+      var tl = gsap.timeline({ defaults: { ease: 'power2.out' } });
+      tl.from('.brand', { autoAlpha: 0, y: -12, duration: 0.4 })
+        .set('h1 .l1', { visibility: 'visible' })
+        .from(split.chars, { autoAlpha: 0, y: 24, rotateX: -50, duration: 0.6, stagger: 0.035, ease: 'expo.out' }, '-=0.1')
+        .fromTo('h1 .accent',
+          { visibility: 'visible', clipPath: 'inset(0 100% -10% 0)' },
+          { clipPath: 'inset(0 0% -10% 0)', duration: 0.7, ease: 'power3.inOut' }, '-=0.35')
+        .from('.tagline', reveal, '-=0.3')
+        .from('.cta .btn', { autoAlpha: 0, y: 14, duration: 0.4, stagger: 0.08 }, '-=0.3')
+        .from('.phone', { autoAlpha: 0, y: 40, rotateY: -14, duration: 0.9, ease: 'power3.out' }, 0.25)
+        .from('.badge', { autoAlpha: 0, y: 12, scale: 0.9, duration: 0.45, stagger: 0.15, ease: 'back.out(1.6)' }, '-=0.35');
+
+      /* 배지 스파크라인이 한 번 그려진다 */
+      var spark = document.querySelector('.spark');
+      if (spark) {
+        var len = spark.getTotalLength();
+        tl.fromTo(spark, { strokeDasharray: len, strokeDashoffset: len },
+                         { strokeDashoffset: 0, duration: 0.9, ease: 'power2.inOut' }, '-=0.2');
+      }
+
+      /* 지표 카운트업 */
+      tl.from('.stat', { autoAlpha: 0, y: 20, duration: 0.45, stagger: 0.08 }, '-=0.6');
+      gsap.utils.toArray('.stat b[data-count]').forEach(function(el){
+        var target = +el.dataset.count, suffix = el.dataset.suffix || '';
+        var o = { v: 0 };
+        tl.to(o, { v: target, duration: 1.1, ease: 'power2.out', snap: { v: 1 },
+          onUpdate: function(){ el.textContent = o.v + suffix; } }, '<');
+      });
+
+      /* ── 폰 목업: 포인터를 따라 살짝 기울고 글로우가 따라온다 (마우스만) ── */
+      mm.add('(hover: hover) and (pointer: fine)', function(){
+        var hero = document.querySelector('.hero');
+        var rx = gsap.quickTo('.phone', 'rotateX', { duration: 0.6, ease: 'power3' });
+        var ry = gsap.quickTo('.phone', 'rotateY', { duration: 0.6, ease: 'power3' });
+        var glows = gsap.utils.toArray('.glow').map(function(g, i){
+          return { x: gsap.quickTo(g, 'x', { duration: 1.2, ease: 'power2' }),
+                   y: gsap.quickTo(g, 'y', { duration: 1.2, ease: 'power2' }),
+                   k: (i + 1) * 14 };
+        });
+        var onMove = function(e){
+          var r = hero.getBoundingClientRect();
+          var nx = (e.clientX - r.left) / r.width - 0.5;
+          var ny = (e.clientY - r.top) / r.height - 0.5;
+          ry(nx * 10); rx(-ny * 8);
+          glows.forEach(function(g){ g.x(nx * g.k); g.y(ny * g.k); });
+        };
+        var onLeave = function(){ rx(0); ry(0); glows.forEach(function(g){ g.x(0); g.y(0); }); };
+        hero.addEventListener('pointermove', onMove);
+        hero.addEventListener('pointerleave', onLeave);
+        return function(){ hero.removeEventListener('pointermove', onMove); hero.removeEventListener('pointerleave', onLeave); };
+      });
+
+      /* ── 섹션 헤더 ─────────────────────────────────────────────────── */
+      gsap.utils.toArray('section .wrap').forEach(function(w){
+        var heads = w.querySelectorAll(':scope > .eyebrow, :scope > h2, :scope > .lead');
+        if (!heads.length) return;
+        gsap.from(heads, { autoAlpha: 0, y: 16, duration: 0.5, stagger: 0.1, ease: 'power2.out',
+          scrollTrigger: { trigger: w, start: 'top 85%' } });
+      });
+
+      /* 기능 카드: 격자 순서대로 */
+      gsap.from('.card', { autoAlpha: 0, y: 24, scale: 0.96, duration: 0.5,
+        stagger: { each: 0.07, grid: 'auto', from: 'start' }, ease: 'back.out(1.2)',
+        scrollTrigger: { trigger: '.cards', start: 'top 82%' } });
+
+      /* 갤러리: 옆에서 흘러들어온다 */
+      gsap.from('.gallery figure', { autoAlpha: 0, x: 48, duration: 0.55, stagger: 0.06, ease: 'power3.out',
+        scrollTrigger: { trigger: '.gallery', start: 'top 85%' } });
+
+      /* 표: 행이 차례로 */
+      gsap.set('.tablewrap', { visibility: 'visible' });
+      gsap.from('.tablewrap', { autoAlpha: 0, y: 16, duration: 0.5, ease: 'power2.out',
+        scrollTrigger: { trigger: '.tablewrap', start: 'top 85%' } });
+      gsap.from('.tablewrap tr', { autoAlpha: 0, x: -14, duration: 0.4, stagger: 0.06, ease: 'power2.out',
+        scrollTrigger: { trigger: '.tablewrap', start: 'top 80%' } });
+
+      /* 고지 · 출처 */
+      gsap.from('.notice', { autoAlpha: 0, x: -24, duration: 0.55, ease: 'power3.out',
+        scrollTrigger: { trigger: '.notice', start: 'top 85%' } });
+      gsap.from('.credit', { autoAlpha: 0, y: 16, duration: 0.5, ease: 'power2.out',
+        scrollTrigger: { trigger: '.credit', start: 'top 90%' } });
+
+      return function(){ split.revert(); };
+    });
+  } catch (err) {
+    showAll();
+    if (window.console) console.warn('motion disabled:', err);
+  }
+})();
+</script>
 
 </body>
 </html>
