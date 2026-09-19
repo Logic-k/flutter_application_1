@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../core/theme.dart';
+import '../../core/ml_widgets.dart';
 import '../../core/cs_service.dart';
 
 class AdminCsManagementScreen extends StatefulWidget {
@@ -81,6 +82,9 @@ class _NoticeTab extends StatelessWidget {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
+          if (snapshot.hasError) {
+            return MLErrorState(onRetry: onRefresh);
+          }
           final notices = snapshot.data ?? [];
           if (notices.isEmpty) {
             return const Center(child: Text('공지사항이 없습니다.'));
@@ -99,6 +103,7 @@ class _NoticeTab extends StatelessWidget {
                   children: [
                     IconButton(
                       icon: const Icon(Icons.edit_outlined, size: 20),
+                      tooltip: '수정',
                       onPressed: () async {
                         await context.push('/admin/notice_edit', extra: {
                           'id': n['id'],
@@ -112,6 +117,7 @@ class _NoticeTab extends StatelessWidget {
                     IconButton(
                       icon: Icon(Icons.delete_outline,
                           size: 20, color: MLColors.badText),
+                      tooltip: '삭제',
                       onPressed: () async {
                         final confirm = await _confirmDelete(context);
                         if (confirm) {
@@ -153,6 +159,9 @@ class _FaqTab extends StatelessWidget {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
+          if (snapshot.hasError) {
+            return MLErrorState(onRetry: onRefresh);
+          }
           final faqs = snapshot.data ?? [];
           if (faqs.isEmpty) {
             return const Center(child: Text('FAQ가 없습니다.'));
@@ -174,6 +183,7 @@ class _FaqTab extends StatelessWidget {
                   children: [
                     IconButton(
                       icon: const Icon(Icons.edit_outlined, size: 20),
+                      tooltip: '수정',
                       onPressed: () async {
                         await context.push('/admin/faq_edit', extra: {
                           'id': f['id'],
@@ -187,6 +197,7 @@ class _FaqTab extends StatelessWidget {
                     IconButton(
                       icon: Icon(Icons.delete_outline,
                           size: 20, color: MLColors.badText),
+                      tooltip: '삭제',
                       onPressed: () async {
                         final confirm = await _confirmDelete(context);
                         if (confirm) {
@@ -226,6 +237,9 @@ class _InquiryTab extends StatelessWidget {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
+        }
+        if (snapshot.hasError) {
+          return MLErrorState(onRetry: onRefresh);
         }
         final inquiries = snapshot.data ?? [];
         if (inquiries.isEmpty) {

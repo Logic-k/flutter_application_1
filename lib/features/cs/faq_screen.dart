@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/theme.dart';
+import '../../core/ml_widgets.dart';
 import '../../core/cs_service.dart';
 
 class FaqScreen extends StatefulWidget {
@@ -30,7 +31,11 @@ class _FaqScreenState extends State<FaqScreen> {
             return const Center(child: CircularProgressIndicator());
           }
           if (snapshot.hasError) {
-            return Center(child: Text('불러오기 실패: ${snapshot.error}'));
+            return MLErrorState(
+              onRetry: () => setState(() {
+                _future = CsService.fetchFaqs();
+              }),
+            );
           }
           final faqs = snapshot.data ?? [];
           if (faqs.isEmpty) {

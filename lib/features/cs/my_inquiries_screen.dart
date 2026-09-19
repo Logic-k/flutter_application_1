@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme.dart';
+import '../../core/ml_widgets.dart';
 import '../../core/cs_service.dart';
 import '../../core/user_provider.dart';
 
@@ -35,6 +36,13 @@ class _MyInquiriesScreenState extends State<MyInquiriesScreen> {
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
+          }
+          if (snapshot.hasError) {
+            return MLErrorState(
+              onRetry: () => setState(() {
+                _future = CsService.fetchMyInquiries(_username);
+              }),
+            );
           }
           final inquiries = snapshot.data ?? [];
           if (inquiries.isEmpty) {

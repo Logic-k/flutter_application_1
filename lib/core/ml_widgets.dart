@@ -322,6 +322,56 @@ class MLMetricCard extends StatelessWidget {
   );
 }
 
+/// 10.5) 오류 상태 뷰 (재시도 버튼 포함)
+///
+/// 네트워크·Firestore 실패를 "빈 목록"과 구분해 보여준다. 예전에는
+/// cs_service가 실패를 빈 리스트로 반환해 사용자에게는 "등록된
+/// 공지사항이 없습니다"로 위장됐고, 일부 화면은 원시 예외 문자열을
+/// 고령 사용자에게 그대로 노출했다.
+class MLErrorState extends StatelessWidget {
+  final String message;
+  final VoidCallback? onRetry;
+  const MLErrorState({
+    super.key,
+    this.message = '일시적인 문제로 불러오지 못했습니다.',
+    this.onRetry,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.cloud_off_outlined,
+                size: 56, color: context.scheme.onSurfaceVariant),
+            const SizedBox(height: 12),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 15,
+                height: 1.5,
+                color: context.scheme.onSurfaceVariant,
+              ),
+            ),
+            if (onRetry != null) ...[
+              const SizedBox(height: 16),
+              OutlinedButton.icon(
+                onPressed: onRetry,
+                icon: const Icon(Icons.refresh_rounded, size: 18),
+                label: const Text('다시 시도'),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 /// 11) 설정/링크 행 (내 정보)
 class MLListRow extends StatelessWidget {
   final IconData icon;

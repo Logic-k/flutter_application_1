@@ -1,12 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../core/theme.dart';
+import '../../core/ml_widgets.dart';
 import '../../core/cs_service.dart';
 
-class InquiryDetailScreen extends StatelessWidget {
+class InquiryDetailScreen extends StatefulWidget {
   final String inquiryId;
 
   const InquiryDetailScreen({super.key, required this.inquiryId});
+
+  @override
+  State<InquiryDetailScreen> createState() => _InquiryDetailScreenState();
+}
+
+class _InquiryDetailScreenState extends State<InquiryDetailScreen> {
+  late Future<Map<String, dynamic>?> _future;
+
+  @override
+  void initState() {
+    super.initState();
+    _future = CsService.fetchInquiryDetail(widget.inquiryId);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -14,10 +28,17 @@ class InquiryDetailScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('문의 상세')),
       body: FutureBuilder<Map<String, dynamic>?>(
-        future: CsService.fetchInquiryDetail(inquiryId),
+        future: _future,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
+          }
+          if (snapshot.hasError) {
+            return MLErrorState(
+              onRetry: () => setState(() {
+                _future = CsService.fetchInquiryDetail(widget.inquiryId);
+              }),
+            );
           }
           final data = snapshot.data;
           if (data == null) {

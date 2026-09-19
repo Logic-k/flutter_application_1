@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../core/theme.dart';
+import '../../core/ml_widgets.dart';
 import '../../core/cs_service.dart';
 
 class NoticeListScreen extends StatefulWidget {
@@ -32,7 +33,11 @@ class _NoticeListScreenState extends State<NoticeListScreen> {
             return const Center(child: CircularProgressIndicator());
           }
           if (snapshot.hasError) {
-            return Center(child: Text('불러오기 실패: ${snapshot.error}'));
+            return MLErrorState(
+              onRetry: () => setState(() {
+                _future = CsService.fetchNotices();
+              }),
+            );
           }
           final notices = snapshot.data ?? [];
           if (notices.isEmpty) {

@@ -35,8 +35,11 @@ class CsService {
       });
       return docs;
     } catch (e) {
+      // 실패를 빈 리스트로 돌려주지 않는다 — 그러면 화면이 "등록된
+      // 공지사항이 없습니다"로 실패를 위장한다. FutureBuilder의 hasError
+      // 분기가 친절한 오류+재시도를 보여주도록 예외를 그대로 올린다.
       debugPrint('fetchNotices error: $e');
-      return [];
+      rethrow;
     }
   }
 
@@ -46,8 +49,10 @@ class CsService {
       if (!doc.exists) return null;
       return _docToMap(doc);
     } catch (e) {
+      // null은 "문서가 없음"을 뜻한다. 네트워크 실패까지 null로 돌리면
+      // 화면이 "찾을 수 없습니다"로 오류를 위장하므로 구분해 올린다.
       debugPrint('fetchNoticeById error: $e');
-      return null;
+      rethrow;
     }
   }
 
@@ -67,7 +72,7 @@ class CsService {
       return docs;
     } catch (e) {
       debugPrint('fetchFaqs error: $e');
-      return [];
+      rethrow;
     }
   }
 
@@ -104,7 +109,7 @@ class CsService {
       return docs;
     } catch (e) {
       debugPrint('fetchMyInquiries error: $e');
-      return [];
+      rethrow;
     }
   }
 
@@ -129,7 +134,7 @@ class CsService {
       };
     } catch (e) {
       debugPrint('fetchInquiryDetail error: $e');
-      return null;
+      rethrow;
     }
   }
 
@@ -206,7 +211,7 @@ class CsService {
       return snapshot.docs.map(_docToMap).toList();
     } catch (e) {
       debugPrint('fetchAllInquiries error: $e');
-      return [];
+      rethrow;
     }
   }
 
