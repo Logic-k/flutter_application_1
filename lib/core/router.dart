@@ -7,6 +7,7 @@ import '../features/assessment/assessment_screen.dart';
 import '../features/assessment/cognitive_tasks_screen.dart';
 import '../features/assessment/result_screen.dart';
 import '../features/training/training_hub_page.dart';
+import '../features/training/training_history_screen.dart';
 import '../features/training/domain/training_catalog.dart';
 import '../features/training/games/comparison_game.dart';
 import '../features/training/games/sequence_game.dart';
@@ -133,6 +134,10 @@ GoRouter createAppRouter(
       GoRoute(
         path: '/training_hub',
         builder: (context, state) => const TrainingHubScreen(),
+      ),
+      GoRoute(
+        path: '/training_history',
+        builder: (context, state) => const TrainingHistoryScreen(),
       ),
       GoRoute(
         path: trainingActivityById('comparison').route,

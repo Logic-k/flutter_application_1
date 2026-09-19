@@ -76,6 +76,16 @@ class TrainingProgressProvider extends ChangeNotifier {
     await _load(userId, _generation, manageLoading: true);
   }
 
+  /// 나의 훈련 기록 화면용 — 저장된 모든 완료 시도를 돌려준다.
+  /// 저장소는 completed_at 오름차순으로 돌려주므로 화면에서 뒤집어 쓴다.
+  Future<List<TrainingAttemptRecord>> getAttempts() {
+    final userId = _userId;
+    if (userId == null) {
+      return Future.value(const <TrainingAttemptRecord>[]);
+    }
+    return _repository.getAttempts(userId);
+  }
+
   Future<TrainingCompletionResult> complete(TrainingAttemptInput input) async {
     final userId = _userId;
     if (userId == null || input.userId != userId) {

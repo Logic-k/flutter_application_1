@@ -22,7 +22,16 @@ class TrainingHubScreen extends StatelessWidget {
     final progress = context.watch<TrainingProgressProvider>();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('두뇌 트레이닝 센터')),
+      appBar: AppBar(
+        title: const Text('두뇌 트레이닝 센터'),
+        actions: [
+          IconButton(
+            tooltip: '나의 훈련 기록',
+            onPressed: () => context.push('/training_history'),
+            icon: const Icon(Icons.history_rounded),
+          ),
+        ],
+      ),
       body: RefreshIndicator(
         onRefresh: progress.refresh,
         child: SingleChildScrollView(
