@@ -84,6 +84,7 @@ class _HomeScreenState extends State<HomeScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.notifications_none_rounded),
+            tooltip: '알림',
             onPressed: () {
               showDialog(
                 context: context,
@@ -99,6 +100,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           IconButton(
             icon: const Icon(Icons.settings_outlined),
+            tooltip: '설정',
             onPressed: () => context.push('/profile'),
           ),
         ],

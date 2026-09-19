@@ -219,6 +219,7 @@ class _ModelDownloadScreenState extends State<ModelDownloadScreen> {
                   prefixIcon: const Icon(Icons.key_rounded),
                   suffixIcon: IconButton(
                     icon: Icon(_obscureToken ? Icons.visibility_off : Icons.visibility),
+                    tooltip: _obscureToken ? '토큰 표시' : '토큰 숨기기',
                     onPressed: () => setState(() => _obscureToken = !_obscureToken),
                   ),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppTheme.rField)),

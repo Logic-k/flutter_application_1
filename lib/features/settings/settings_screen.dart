@@ -351,6 +351,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     isDense: true,
                     suffixIcon: IconButton(
                       icon: Icon(_obscureKey ? Icons.visibility_off : Icons.visibility, size: 20),
+                      tooltip: _obscureKey ? 'API 키 표시' : 'API 키 숨기기',
                       onPressed: () => setState(() => _obscureKey = !_obscureKey),
                     ),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppTheme.rField)),

@@ -362,6 +362,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
           // 마이크 버튼
           IconButton(
             onPressed: _speechAvailable ? _toggleListening : null,
+            tooltip: _isListening ? '음성 인식 중지' : '음성으로 입력',
             icon: Icon(
               _isListening ? Icons.mic : Icons.mic_none_outlined,
               color: _isListening ? MLColors.badText : theme.colorScheme.onSurfaceVariant,

@@ -108,6 +108,7 @@ class _ClinicalReportOptionsScreenState
         leading: _currentStep > 0
             ? IconButton(
                 icon: const Icon(Icons.arrow_back),
+                tooltip: '이전 단계',
                 onPressed: _prevStep,
               )
             : null,
@@ -656,6 +657,7 @@ class _PdfPreviewPage extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.share),
+            tooltip: '리포트 공유',
             onPressed: () async {
               await Share.shareXFiles([XFile(file.path)],
                   text: 'MemoryLink 임상 리포트');

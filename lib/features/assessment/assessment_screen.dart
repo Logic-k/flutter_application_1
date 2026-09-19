@@ -52,6 +52,7 @@ class _AssessmentScreenState extends State<AssessmentScreen> {
         title: Text('자가 체크 (${_currentPage + 1}/${_questions.length})'),
         leading: IconButton(
           icon: const Icon(Icons.close),
+          tooltip: '닫기',
           onPressed: () => context.pop(),
         ),
       ),
