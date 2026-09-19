@@ -76,7 +76,7 @@
 > 주의: Data safety의 "수집/공유" 정의는 서버 전송 기준이다. 온디바이스 저장만 하는 항목은 "수집"에 해당하지 않을 수 있으나, 보호자 연결·AI 온라인 모드는 전송이 발생하므로 정확히 신고할 것.
 
 ### 권한 정당화(민감 권한)
-- `RECORD_AUDIO`: 음성 인지 진단
+- `RECORD_AUDIO`: 음성 받아쓰기(STT) — 일기·AI 채팅·문장 읽기 훈련의 마이크 입력. 녹음 파일은 저장·전송하지 않고 기기 음성인식 결과 텍스트만 사용한다
 - `ACTIVITY_RECOGNITION` / `health.READ_STEPS`: 보행·활동량 분석
 - `FOREGROUND_SERVICE_HEALTH`: 백그라운드 걸음 수집
 - `SCHEDULE_EXACT_ALARM`: 저녁 일기 알림 정시 발송

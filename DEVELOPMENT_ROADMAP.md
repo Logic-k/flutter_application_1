@@ -35,10 +35,10 @@ MemoryLink는 기능이 부족한 제품이 아니다. **이미 모은 데이터
 | 항목 | 결과 |
 |---|---|
 | `flutter analyze` | 에러 0 · 경고 0 · **info 4** (`ml_widgets.dart` 2 · `theme.dart` 1 · `shape_match_game.dart` 1, 전부 스타일 힌트) |
-| `flutter test` | **307 / 307 통과** |
-| 테스트 파일 | **42개** (`test/**/*_test.dart`) |
+| `flutter test` | **320 / 320 통과** |
+| 테스트 파일 | **44개** (`test/**/*_test.dart`) |
 | 통합 테스트 | **2개 파일** (`integration_test/`, 게이팅에 미포함) |
-| release AAB | 65.8MB → **70.2MB** (2026-08-27 실측, 서명됨). 서체 전환으로 폰트 자산이 4.1MB(나눔고딕 2벌) → 12.8MB(Pretendard 5벌)가 된 결과이며, 원자산 +8.7MB 대비 AAB 증가는 +4.4MB다(압축). Play AAB 상한 150MB 안이다 |
+| release AAB | 65.8MB → 70.2MB → **65.0MB** (2026-09-19 실측, 릴리스 서명됨). 70.2MB는 Pretendard 5벌(12.8MB) 전환 결과였고, 65.0MB는 미사용 의존성 6개·미사용 SVG 제거로 되돌린 수치다. Play AAB 상한 150MB 안이다 |
 | Maestro | yaml **24개** = 게이팅 **20** + 데모·스크린샷 **4** |
 | release APK | **86.6MB** (2026-08-27 실측, 서명됨. 사이드로드·검증용이며 스토어 업로드는 AAB다) |
 | 콜드 스타트 | `+15s078ms` → `+7s252ms` → **`+6s835ms`** (2026-08-27 서체 전환 후 재측정. QA_Device, `pm clear` 직후 `am start -W`, debug 빌드. 폰트 자산이 3배로 늘었어도 느려지지 않았다 — Flutter는 폰트를 첫 프레임 뒤에 지연 로드한다) |
@@ -274,8 +274,8 @@ SQLite v9에 11개 테이블이 쌓이는데 상당수가 쓰기 전용이다.
 
 | 데이터 (이미 저장 중) | 지금 | 만들 것 | 비용 |
 |---|---|---|---|
-| `training_attempts` (점수·정답수·소요시간·XP) | 오늘 활동 수 COUNT만 읽음. `getAttempts()` 호출자 0건 | **나의 훈련 기록 타임라인** — 날짜별 카드 목록, 활동별 필터 | S |
-| `training_user_progress.longest_streak`, `best_score` | Provider까지 로드되지만 **렌더링하는 위젯이 하나도 없음** | 홈 히어로 카드·프로필에 XP·레벨·연속학습 배지 | S |
+| ~~`training_attempts`~~ | ~~`getAttempts()` 호출자 0건~~ | ✅ 2026-09-19 **나의 훈련 기록** 구현 — 날짜별 카드 + 활동 필터 칩 (`training_history_screen.dart`, 허브 앱바 진입) | — |
+| ~~`training_user_progress` 배지~~ | ✅ 홈 히어로 `_buildProgressBadges` + 허브 헤더가 레벨·XP·연속·최장 기록을 렌더링 (과거 "렌더링 0건" 기록은 stale) | 숙련도 별·활동별 최고점을 카드에 더 노출 | S |
 | `health_logs` (수면·혈압·혈당·식이) | 입력 화면에서 수면 꺾은선 + 혈압 1건만 | 혈압·혈당 추세, 식이 점수 시각화 | S |
 | `health_logs` → 임상 리포트 | 위험요인 3종을 **사용자가 손으로 체크** | 자동 판정 + "최근 14일 평균 수면 6.2h / 혈압 148/92" 근거 수치 인쇄 | S |
 | `daily_active_users` | 관리자 DAU 집계 전용 | 본인 출석·연속 방문 달력 | S |
@@ -353,11 +353,11 @@ SQLite v9에 11개 테이블이 쌓이는데 상당수가 쓰기 전용이다.
 
 | 위치 | 문제 |
 |---|---|
-| `guardian_sync_service.dart` 안심 알림 | `catch (_)`로 완전히 삼킴. `pedometer_manager`는 **await조차 하지 않음** → 실패 여부를 알 방법이 없다 |
-| 이상 감지 임계값 | 두 곳에 다르게 중복 구현: PedometerManager는 "평균의 50% 미만, 시간 무관", GuardianSyncService는 "18시 이후 + 30% 미만". **같은 사용자에게 다른 판정** |
-| `cs_service.dart` | 네트워크·권한 실패를 빈 리스트로 반환 → 사용자에게 "등록된 공지사항이 없습니다"로 위장. 재시도 방법이 없다 |
+| ~~`guardian_sync_service.dart` 안심 알림~~ | ~~`catch (_)`로 완전히 삼킴. `pedometer_manager`는 **await조차 하지 않음**~~ ✅ **2026-09-19 해결.** `syncAnomalyAlert`가 `Future<bool>`을 반환하고 호출자가 await한다. 전송 실패 시 로컬 알림 문구가 "대시보드 전송 실패 — 직접 문자"로 바뀌어 사용자에게 실패가 보인다 |
+| ~~이상 감지 임계값~~ | ~~두 곳에 다르게 중복 구현~~ ✅ **2026-09-19 해결.** `StepAnomalyPolicy`(18시 이후·기준 평균 1,000보 초과·오늘 < 기준의 30%·기준선 3일+·오늘 제외)이 세 호출부의 유일 출처. `step_anomaly_policy_test.dart`가 경계를 잠근다 |
+| ~~`cs_service.dart`~~ | ~~네트워크·권한 실패를 빈 리스트로 반환 → "없습니다"로 위장~~ ✅ **2026-09-19 해결.** 읽기 메서드가 예외를 전파하고, 화면은 공용 `MLErrorState`(재시도 버튼)로 실패와 빈 상태를 구분한다 |
 | ~~`social_ranking_view.dart`~~ | ~~Firestore 실패 시 하드코딩 상수(평균 65, SD 15)로 백분위 계산~~ ✅ 2026-08-24 삭제 |
-| FutureBuilder 7개 화면 중 5개 | `hasError` 분기 없음. 나머지는 반대로 **원시 예외 문자열을 고령 사용자에게 그대로 노출**(8곳) |
+| ~~FutureBuilder 7개 화면 중 5개~~ | ~~`hasError` 분기 없음. 원시 예외 문자열 노출~~ ✅ **2026-09-19 CS 6개 화면 해결** (공지·FAQ·내 문의·공지 상세·문의 상세·관리자 CS 3탭). 나머지 FutureBuilder(`profile`의 SharedPreferences, `dementia_center_finder`)는 자체 오류 뷰가 있거나 실패 경로가 사실상 없다 |
 | ~~`admin_provider.dart`~~ | ~~관리자 코드 `'memorylink2024'`가 평문 상수, 릴리스에서도 롱프레스 진입 가능~~ ✅ **2026-08-24 차단.** 코드를 SHA-256 다이제스트 대조로 바꾸고, 릴리스는 `--dart-define=ADMIN_CODE_SHA256`을 주입한 빌드에서만 포털이 열린다. 진입점(`MLVersionLabel`)·라우터 가드·세션 플래그 세 겹으로 막았다 |
 
 ---
@@ -382,7 +382,7 @@ SQLite v9에 11개 테이블이 쌓이는데 상당수가 쓰기 전용이다.
 - `--dart-define=SEED_DEMO=true` 플래그로 데모 시드를 분리 (E2E·일반 디버그 실행에서 시드 자체를 건너뜀)
 - `timezone/data/latest_all` → `latest_10y` (전 세계 전 역사 파싱 불필요)
 - `MainNavScreen`의 `IndexedStack` 5개 탭 즉시 생성 → 방문 시 지연 생성
-- 사용처 0건 의존성 제거: `google_fonts`, `audioplayers`
+- ~~사용처 0건 의존성 제거~~ ✅ 2026-09-19 — `google_fonts`·`audioplayers` 외에 `record`·`vibration`·`lottie`·`flutter_svg`도 import 0건으로 확인해 함께 제거(전이 포함 23패키지). `assets/illustrations/brain_buddy.svg`도 참조 0건이라 번들에서 제외했다
 - **profile 빌드로 재측정** — `+15s`는 JIT 디버그 수치라 실제 배포 형태에서 다시 재야 한다
 - Baseline Profile은 **우선순위에서 내린다** (Flutter는 Dart 코드가 이미 AOT라 회수가 작다)
 
@@ -417,17 +417,17 @@ SQLite v9에 11개 테이블이 쌓이는데 상당수가 쓰기 전용이다.
 5. ~~AA 미달 Material 원색을 화면 색으로 쓰던 82곳~~ ✅ 2026-08-24 — 회색·빨강·초록·주황·황색이
    전부 4.5:1 미만이었다(grey 2.85:1, amber 1.62:1). 의미 토큰으로 교체하고
    `test/unit/core/palette_guard_test.dart`가 재발을 차단한다
-6. 보호자 안심 알림 실패를 사용자에게 알리기 (§7)
-7. 이상 감지 임계값 단일화 (§7)
+6. ~~보호자 안심 알림 실패를 사용자에게 알리기~~ ✅ 2026-09-19 (§7)
+7. ~~이상 감지 임계값 단일화~~ ✅ 2026-09-19 (`StepAnomalyPolicy`, §7)
 
 ### P1 — 사용성 (근거 확실, 비용 낮음)
 
-6. 게임 7종 Semantics **(진행 중)**, 아이콘 버튼 tooltip
+6. 게임 7종 Semantics **(진행 중)**, ~~아이콘 버튼 tooltip~~ ✅ tooltip은 2026-09-19에 14곳 추가 완료
 7. 상태색 텍스트 대비 치환
-8. 나의 훈련 기록 타임라인 (§4)
-9. 홈·프로필에 XP·레벨·연속학습 노출 (§4)
+8. ~~나의 훈련 기록 타임라인~~ ✅ 2026-09-19 (`training_history_screen.dart`, §4)
+9. ~~홈·프로필에 XP·레벨·연속학습 노출~~ ✅ 이미 구현됨 (`_buildProgressBadges` 홈 배지, §4 기록 정정)
 10. 임상 리포트 위험요인 자동 판정 (§4)
-11. CS·FutureBuilder 실패를 빈 상태와 분리 (§7)
+11. ~~CS·FutureBuilder 실패를 빈 상태와 분리~~ ✅ 2026-09-19 (`MLErrorState`, §7)
 12. 리포트 차트 카테고리 분리 + 실제 날짜 축 + 빈 상태 (§4)
 
 ### P2 — 차별화 (근거 대비 유리)
