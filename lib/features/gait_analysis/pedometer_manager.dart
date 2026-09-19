@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../core/database_helper.dart';
 import '../../core/user_provider.dart';
 import '../../core/services/guardian_sync_service.dart';
+import '../../core/services/step_anomaly_policy.dart';
 
 /// 만보기 매니저 (상태 관리)
 /// 
@@ -180,25 +181,24 @@ class PedometerManager with ChangeNotifier, WidgetsBindingObserver {
   static const _guardianNotificationId = 999;
   final _localNotifications = FlutterLocalNotificationsPlugin();
 
-  /// 최근 활동량 대비 급격한 감소 감지 (50% 이하 하락 시)
+  /// 최근 활동량 대비 급격한 감소 감지.
+  ///
+  /// 판정 기준은 [StepAnomalyPolicy]가 유일한 출처다 — 예전에는 이 함수만
+  /// "평균의 50% 미만·시간 무관"으로 따로 판정해, 보호자 동기화 경로
+  /// (18시 이후·30% 미만)와 같은 사용자에게 다른 결론을 내렸다.
   Future<void> _checkStepAnomaly() async {
     final summary = await getWeeklySummary();
-    // 오늘 데이터를 기준선에서 제외해야 오늘 걸음이 평균을 끌어내려
-    // 감지가 둔감해지는 것을 막는다.
-    final today = DateTime.now().toIso8601String().split('T')[0];
-    final baseline = summary
-        .where((e) => (e['date'] as String?) != today)
-        .map((e) => (e['steps'] as num).toDouble())
-        .toList();
-    if (baseline.length < 3) return;
+    final verdict = StepAnomalyPolicy.evaluate(
+      todaySteps: _todaySteps,
+      baselineSteps: StepAnomalyPolicy.baselineFromWeeklyRows(summary),
+    );
+    if (!verdict.evaluated) return;
 
-    final avgSteps = baseline.reduce((a, b) => a + b) / baseline.length;
-
-    if (avgSteps > 1000 && _todaySteps < (avgSteps * 0.5)) {
+    if (verdict.isAnomaly) {
       if (!_isAnomalyDetected) {
         _isAnomalyDetected = true;
-        debugPrint('⚠️ 활동량 급감 감지: 평균 ${avgSteps.toInt()}보 -> 현재 $_todaySteps보');
-        await _triggerGuardianAlert(avgSteps.toInt());
+        debugPrint('⚠️ 활동량 급감 감지: 평균 ${verdict.baselineAvg.toInt()}보 -> 현재 $_todaySteps보');
+        await _triggerGuardianAlert(verdict.baselineAvg.toInt());
       }
     } else {
       _isAnomalyDetected = false;
@@ -214,8 +214,10 @@ class PedometerManager with ChangeNotifier, WidgetsBindingObserver {
     final userName = (user['username'] as String?) ?? '사용자';
     final emergencyContact = _userProvider.emergencyContact;
 
-    // 1. Firestore에 이상 감지 상태 저장 (보호자 웹 대시보드에 경고 표시)
-    GuardianSyncService().syncAnomalyAlert(
+    // 1. Firestore에 이상 감지 상태 저장 (보호자 웹 대시보드에 경고 표시).
+    //    await로 성공 여부를 받는다 — 전송 실패를 삼키면 보호자는
+    //    아무 일 없다고 믿게 되므로, 실패 시 알림 문구로 사용자에게 알린다.
+    final syncOk = await GuardianSyncService().syncAnomalyAlert(
       userId: userId,
       userName: userName,
       todaySteps: _todaySteps,
@@ -240,7 +242,10 @@ class PedometerManager with ChangeNotifier, WidgetsBindingObserver {
     await _localNotifications.show(
       id: _guardianNotificationId,
       title: '활동량 이상 감지',
-      body: '평소보다 활동량이 크게 줄었습니다. 탭하여 보호자에게 문자를 보내세요.',
+      body: syncOk
+          ? '평소보다 활동량이 크게 줄었습니다. 탭하여 보호자에게 문자를 보내세요.'
+          : '평소보다 활동량이 크게 줄었습니다. 보호자 대시보드 전송에 실패했으니 '
+              '탭하여 보호자에게 직접 문자를 보내세요.',
       notificationDetails: NotificationDetails(
         android: AndroidNotificationDetails(
           _guardianChannelId,

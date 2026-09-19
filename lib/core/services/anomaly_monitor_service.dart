@@ -1,4 +1,5 @@
 import '../database_helper.dart';
+import 'step_anomaly_policy.dart';
 
 class AnomalyMonitorService {
   final DatabaseHelper _dbHelper;
@@ -8,31 +9,27 @@ class AnomalyMonitorService {
 
   /// 최근 보행 데이터 급락 감지
   /// [clock]: 테스트에서 시간을 제어할 때 주입. 기본값은 DateTime.now
+  ///
+  /// 판정 기준은 [StepAnomalyPolicy]가 유일한 출처다. 예전에는 이 함수가
+  /// 오늘 걸음을 기준선 평균에 포함시켰다 — 오늘 값이 평균을 끌어내려
+  /// PedometerManager·GuardianSyncService와 다른 판정이 나왔다.
   Future<Map<String, dynamic>> checkActivityAnomaly(
       int userId, int currentSteps, {DateTime Function()? clock}) async {
     final recentData = await _dbHelper.getWeeklySteps(userId);
-
-    if (recentData.length < 3) {
-      return {"isAnomaly": false, "avg_steps": 0, "current_steps": currentSteps};
-    }
-
-    final stepsList =
-        recentData.map((e) => (e['steps'] as num).toDouble()).toList();
-    final avgSteps = stepsList.reduce((a, b) => a + b) / stepsList.length;
-
     final now = (clock ?? DateTime.now)();
-    bool isAnomaly = false;
-    String message = '';
-
-    if (now.hour >= 18 && avgSteps > 1000 && currentSteps < avgSteps * 0.3) {
-      isAnomaly = true;
-      message = '오늘 평소보다 활동량이 매우 적습니다. 건강 상태를 확인해보세요.';
-    }
+    final verdict = StepAnomalyPolicy.evaluate(
+      todaySteps: currentSteps,
+      baselineSteps:
+          StepAnomalyPolicy.baselineFromWeeklyRows(recentData, now: now),
+      now: now,
+    );
 
     return {
-      "isAnomaly": isAnomaly,
-      "message": message,
-      "avg_steps": avgSteps,
+      "isAnomaly": verdict.isAnomaly,
+      "message": verdict.isAnomaly
+          ? '오늘 평소보다 활동량이 매우 적습니다. 건강 상태를 확인해보세요.'
+          : '',
+      "avg_steps": verdict.baselineAvg,
       "current_steps": currentSteps,
     };
   }
