@@ -109,4 +109,28 @@ void main() {
       expect(portingGuide, contains('현재 상태'));
     }
   });
+
+  // flutterfx_widgets 는 pub 패키지가 아니라 복사-붙여넣기 카탈로그이고 저장소 루트에
+  // LICENSE 파일이 없다. 출처를 헤더와 고지 문서 두 곳에 남겨야 한다
+  // (docs/plans/07_FLUTTERFX_MOTION_UPGRADE.md §3 복사 규약).
+  test('lib/core/fx 복사본은 헤더에 flutterfx 출처·MIT를 남기고 고지 문서에 등록된다', () {
+    final notices = _readDocument(root, 'THIRD_PARTY_NOTICES.md');
+    final fxDir = Directory(
+      '${root.path}${Platform.pathSeparator}lib${Platform.pathSeparator}core${Platform.pathSeparator}fx',
+    );
+    expect(fxDir.existsSync(), isTrue);
+    final files = fxDir
+        .listSync()
+        .whereType<File>()
+        .where((f) => f.path.endsWith('.dart'))
+        .toList();
+    expect(files, isNotEmpty);
+    for (final file in files) {
+      final header = file.readAsLinesSync().take(4).join('\n');
+      final name = file.uri.pathSegments.last;
+      expect(header, contains('flutterfx/flutterfx_widgets'), reason: name);
+      expect(header, contains('MIT'), reason: name);
+      expect(notices, contains('lib/core/fx/$name'), reason: name);
+    }
+  });
 }

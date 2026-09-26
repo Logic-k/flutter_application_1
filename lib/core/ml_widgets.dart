@@ -3,6 +3,9 @@
 // 데이터/로직은 그대로 두고 "보이는 부분"만 이 위젯들로 감싸면 됩니다.
 // ─────────────────────────────────────────────────────────────────────────
 import 'package:flutter/material.dart';
+import 'motion/app_motion.dart';
+import 'motion/motion_settings.dart';
+import 'motion/pressable_scale.dart';
 import 'theme.dart';
 
 /// 1) 떠 있는 알약형 하단 네비게이션 (Peacock 스타일)
@@ -76,11 +79,12 @@ class FloatingPillNav extends StatelessWidget {
                   button: true,
                   selected: on,
                   excludeSemantics: true,
-                  child: GestureDetector(
+                  child: PressableScale(
+                    child: GestureDetector(
                     behavior: HitTestBehavior.opaque,
                     onTap: () => onTap(i),
                     child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
+                      duration: AppMotion.enter,
                       // 주 내비게이션이다. 예전 padding 9 + icon 22 = 40dp로는
                       // 고령 사용자의 오탭이 잦아 vertical을 13으로 올려 48dp를 만든다.
                       //
@@ -107,6 +111,7 @@ class FloatingPillNav extends StatelessWidget {
                         ],
                       ),
                     ),
+                  ),
                   ),
                 );
               }),
@@ -157,7 +162,10 @@ class MLCard extends StatelessWidget {
       child: child,
     );
     if (onTap == null) return card;
-    return InkWell(borderRadius: BorderRadius.circular(AppTheme.rCard), onTap: onTap, child: card);
+    // DESIGN.md §4 눌림 피드백. 리플만으로는 고령 사용자가 눌림을 확신하지 못한다.
+    return PressableScale(
+      child: InkWell(borderRadius: BorderRadius.circular(AppTheme.rCard), onTap: onTap, child: card),
+    );
   }
 }
 
@@ -190,6 +198,17 @@ class MLSectionTitle extends StatelessWidget {
   );
 }
 
+/// 값이 바뀌면 200ms 동안 이전 값에서 새 값으로 보간한다(07 계획 F-05).
+/// 처음 그릴 때는 begin 이 없어 곧바로 현재 값이다 — 0에서 차오르는 연출은
+/// "값 없음"과 "0"을 헷갈리게 하므로 하지 않는다(DESIGN.md §6.4).
+Widget _animatedValue(BuildContext context, double value, Widget Function(double v) builder) =>
+    TweenAnimationBuilder<double>(
+      tween: Tween<double>(end: value),
+      duration: MotionSettings.reduceOf(context) ? Duration.zero : AppMotion.enter,
+      curve: Curves.easeOutCubic,
+      builder: (context, v, _) => builder(v),
+    );
+
 /// 6) 진행 바
 class MLProgressBar extends StatelessWidget {
   final double value; // 0..1
@@ -199,12 +218,12 @@ class MLProgressBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) => ClipRRect(
     borderRadius: BorderRadius.circular(height),
-    child: LinearProgressIndicator(
-      value: value.clamp(0.03, 1.0),
+    child: _animatedValue(context, value.clamp(0.03, 1.0), (v) => LinearProgressIndicator(
+      value: v,
       minHeight: height,
       backgroundColor: color.withValues(alpha: 0.14),
       valueColor: AlwaysStoppedAnimation<Color>(color),
-    ),
+    )),
   );
 }
 
@@ -222,9 +241,9 @@ class MLRing extends StatelessWidget {
     child: Stack(alignment: Alignment.center, children: [
       SizedBox(width: size, height: size, child: CircularProgressIndicator(
         value: 1, strokeWidth: stroke, color: color.withValues(alpha: 0.14))),
-      SizedBox(width: size, height: size, child: CircularProgressIndicator(
-        value: value.clamp(0, 1), strokeWidth: stroke, strokeCap: StrokeCap.round,
-        backgroundColor: Colors.transparent, valueColor: AlwaysStoppedAnimation<Color>(color))),
+      SizedBox(width: size, height: size, child: _animatedValue(context, value.clamp(0, 1).toDouble(), (v) => CircularProgressIndicator(
+        value: v, strokeWidth: stroke, strokeCap: StrokeCap.round,
+        backgroundColor: Colors.transparent, valueColor: AlwaysStoppedAnimation<Color>(color)))),
       if (center != null) center!,
     ]),
   );
@@ -246,9 +265,19 @@ class MLStatusPill extends StatelessWidget {
     child: Row(mainAxisSize: MainAxisSize.min, children: [
       Container(width: 8, height: 8, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
       const SizedBox(width: 6),
-      Text(label, style: TextStyle(color: color, fontSize: 13, fontWeight: FontWeight.w800)),
+      Text(label, style: TextStyle(color: _textColor, fontSize: 13, fontWeight: FontWeight.w800)),
     ]),
   );
+
+  /// 점·테두리는 받은 색 그대로, 글자는 읽히는 색으로.
+  /// 신호등 면 색(good/warn/bad)을 12% 틴트 위 글자로 쓰면 1.7~2.5:1 이었다.
+  /// 그 밖의 색은 같은 색상에서 명도만 낮춘다(sky → 4.5:1 이상).
+  Color get _textColor {
+    if (color == MLColors.good) return MLColors.goodText;
+    if (color == MLColors.warn) return MLColors.warnText;
+    if (color == MLColors.bad) return MLColors.badText;
+    return HSLColor.fromColor(color).withLightness(0.33).toColor();
+  }
 }
 
 /// 9) 게임 카드 (트레이닝 센터 그리드)
@@ -283,7 +312,7 @@ class MLGameCard extends StatelessWidget {
         Row(children: [
           Expanded(child: MLProgressBar(value: level / 10, color: color, height: 6)),
           const SizedBox(width: 8),
-          Text('${level * 10}%', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w800, color: color)),
+          Text('${level * 10}%', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: color)),
         ]),
       ]),
     );

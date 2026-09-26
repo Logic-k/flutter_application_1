@@ -39,3 +39,23 @@
     visible: "내 정보"
     timeout: 5000
 - assertVisible: "내 정보"
+
+# 설정 → 화면 및 접근성: 07 계획 F-01 토글 2종(효과음·움직임 줄이기)이 보여야 한다.
+- scrollUntilVisible:
+    element:
+      text: "설정
+글자 크기, 알림, AI, 개인정보, 로그아웃"
+    direction: DOWN
+    centerElement: true
+- tapOn: "설정
+글자 크기, 알림, AI, 개인정보, 로그아웃"
+- extendedWaitUntil:
+    visible: "화면 및 접근성"
+    timeout: 5000
+- scrollUntilVisible:
+    element:
+      text: "(?s).*움직임 줄이기.*"
+    direction: DOWN
+    centerElement: true
+- assertVisible: "(?s).*효과음.*"
+- assertVisible: "(?s).*움직임 줄이기.*"

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_application_1/core/motion/burst_particles.dart';
 import 'package:flutter_application_1/features/training/widgets/course_node.dart';
 import 'package:flutter_application_1/features/training/widgets/course_path.dart';
 import 'package:flutter_application_1/features/training/widgets/daily_goal_panel.dart';
@@ -137,6 +138,8 @@ void main() {
         ),
       ),
     );
+    // XP 카운트업·별 점등이 끝난 뒤의 배치를 본다.
+    await tester.pumpAndSettle();
 
     final labels = <String>[
       '차분하게 끝까지 해냈어요.',
@@ -154,5 +157,34 @@ void main() {
       greaterThanOrEqualTo(48),
     );
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('결과 시트는 축하 순간에만 이유 문구와 컨페티를 1회 보여준다', (tester) async {
+    Widget sheet({required bool celebrate}) => _subject(
+      TrainingResultSheet(
+        encouragement: '오늘도 한 과정을 완주했어요.',
+        xpEarned: 30,
+        todayCompletedActivities: 3,
+        todayGoalActivities: 3,
+        masteryStars: 3,
+        celebrate: celebrate,
+        highlight: celebrate ? '오늘 목표를 모두 채웠어요' : null,
+        onContinue: () {},
+      ),
+    );
+
+    await tester.pumpWidget(sheet(celebrate: true));
+    await tester.pump();
+    expect(find.text('오늘 목표를 모두 채웠어요'), findsOneWidget);
+    expect(find.byType(BurstParticles), findsOneWidget);
+    // 2.5초 안에 끝나는 1회성 효과여야 한다(KWCAG 자동재생 3초).
+    await tester.pumpAndSettle();
+    expect(find.text('+30 XP'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+
+    await tester.pumpWidget(sheet(celebrate: false));
+    await tester.pumpAndSettle();
+    expect(find.byType(BurstParticles), findsNothing);
+    expect(find.text('오늘 목표를 모두 채웠어요'), findsNothing);
   });
 }

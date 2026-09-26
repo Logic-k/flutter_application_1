@@ -7,6 +7,7 @@ import '../../../core/services/voice_service.dart';
 import '../application/training_attempt_input.dart';
 import '../application/training_completion_ui.dart';
 import '../widgets/adaptive_answer_grid.dart';
+import '../../../core/motion/game_feedback.dart';
 import '../widgets/game_template.dart';
 import '../difficulty_provider.dart';
 import '../training_progress_provider.dart';
@@ -19,6 +20,15 @@ class MultiplicationGame extends StatefulWidget {
 }
 
 class _MultiplicationGameState extends State<MultiplicationGame> {
+  // 정답·오답 신호. GameTemplate 이 햅틱·효과음·배지·파티클을 한 곳에서 처리한다.
+  final _feedback = GameFeedbackController();
+
+  @override
+  void dispose() {
+    _feedback.dispose();
+    super.dispose();
+  }
+
   final Random _random = Random();
   int _currentStep = 1;
   final int _totalSteps = 10;
@@ -108,6 +118,8 @@ class _MultiplicationGameState extends State<MultiplicationGame> {
 
     // _generateProblem() 이 _answer 를 덮어쓰기 전에 결과 문구를 만들어 둔다.
     _feedbackLabel = isCorrect ? '정답입니다. ' : '틀렸습니다. 정답은 $_answer 이었습니다. ';
+    // 오답이면 정답을 배지에 함께 보여 준다. 틀린 순간이 곧 배우는 순간이다.
+    isCorrect ? _feedback.correct() : _feedback.wrong('아쉬워요 · 정답은 $_answer');
 
     context.read<DifficultyProvider>().updatePerformance(
       GameCategory.calculation,
@@ -174,6 +186,8 @@ class _MultiplicationGameState extends State<MultiplicationGame> {
     final theme = Theme.of(context);
 
     return GameTemplate(
+      feedback: _feedback,
+      activityId: 'multiplication',
       title: '구구단 맞추기',
       objective: '가운데 수식의 정답을 아래에서 선택하세요.',
       currentStep: _currentStep,

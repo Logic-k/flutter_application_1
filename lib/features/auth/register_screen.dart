@@ -208,7 +208,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         child: Text(
                           '나중에 입력해도 됩니다',
                           style: TextStyle(
-                            fontSize: 11,
+                            fontSize: 12,
                             color: theme.colorScheme.onSecondaryContainer,
                           ),
                         ),

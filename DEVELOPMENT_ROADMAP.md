@@ -41,7 +41,7 @@ MemoryLink는 기능이 부족한 제품이 아니다. **이미 모은 데이터
 | release AAB | 65.8MB → 70.2MB → **65.0MB** (2026-09-19 실측, 릴리스 서명됨). 70.2MB는 Pretendard 5벌(12.8MB) 전환 결과였고, 65.0MB는 미사용 의존성 6개·미사용 SVG 제거로 되돌린 수치다. Play AAB 상한 150MB 안이다 |
 | Maestro | yaml **24개** = 게이팅 **20** + 데모·스크린샷 **4** |
 | release APK | **86.6MB** (2026-08-27 실측, 서명됨. 사이드로드·검증용이며 스토어 업로드는 AAB다) |
-| 콜드 스타트 | `+15s078ms` → `+7s252ms` → **`+6s835ms`** (2026-08-27 서체 전환 후 재측정. QA_Device, `pm clear` 직후 `am start -W`, debug 빌드. 폰트 자산이 3배로 늘었어도 느려지지 않았다 — Flutter는 폰트를 첫 프레임 뒤에 지연 로드한다) |
+| 콜드 스타트 | `+15s078ms` → `+7s252ms` → `+6s835ms` → **`+7s456ms`** (2026-09-20 재측정, 같은 조건. 2회차 재실행은 4.35초. 측정 조건은 아래 설명 그대로다: 2026-08-27 서체 전환 후 재측정. QA_Device, `pm clear` 직후 `am start -W`, debug 빌드. 폰트 자산이 3배로 늘었어도 느려지지 않았다 — Flutter는 폰트를 첫 프레임 뒤에 지연 로드한다) |
 
 Maestro 내역: 게이팅 제외 4개는 `demo_recording_flow` · `demo_recording_v3` ·
 `demo_recording_tta_2min` · `screenshot_tour_flow`이며, 통과/실패로 품질을 판정하는
@@ -60,9 +60,20 @@ flow가 아니다. `maestro/helpers/` 2개(`login_helper` · `just_tap_confirm`)
 - Maestro 게이팅 **17 → 21 → 20** — 8/24에 `social_ranking_flow`를 뺐다.
   검사 대상이던 `SocialRankingView` 위젯 자체를 삭제했기 때문이다.
 
-> **게이팅 21개 전부 통과를 확인했다(2026-08-21).** 이후 8/24에 20개가 됐고, 20개 기준의
-> 재실행은 아직 하지 않았다.
-> 단, 한 세션에서 연속으로가 아니라
+> **게이팅 20개 전부 통과를 확인했다(2026-09-20).** QA_Device `emulator-5680`,
+> `-gpu angle_indirect`, debug APK(`IS_EMULATOR=true`). 다만 이번에도 단일 연속 실행은
+> 아니다 — 러너가 16개째(`clinical_report_flow`)까지 전부 PASS한 뒤 프로세스가 종료돼,
+> 남은 4개(`training_progression` · `training_persistence` · `training_accessibility` ·
+> `dementia_center`)를 따로 돌려 4/4 통과했다. **20개 연속 실행의 단일 수치는 여전히 없다.**
+> 러너를 백그라운드 PowerShell 작업으로 띄우면 중간에 죽는다. 포그라운드에서 돌릴 것.
+>
+> 같은 세션에서 통합 테스트(`integration_test/`, 게이팅 외)를 처음으로 실기 실행했다.
+> `training_flow_test` 1/1 통과, `auth_flow_test` 0/3 실패 — 게이팅에 없는 사이
+> 단언이 낡아 있었다(`BottomNavigationBar`는 `FloatingPillNav`로 교체됐고 `lib/`에 0건).
+> 이 실행으로 `PedometerManager`의 권한 요청 중복 시 `PlatformException` 미처리도 드러났다.
+> 콜드 스타트는 같은 조건에서 **`+7s456ms`** (`pm clear` 직후) / 4.35초(2회차)로 회귀 없음.
+>
+> 이전 기록(2026-08-21, 21개 기준): 한 세션에서 연속으로가 아니라
 > 두 번에 나눠 확인했다: 러너 1차 실행에서 14개 통과(2021초), 실패 7건 중 6건은
 > 에뮬레이터가 죽은 뒤라 무효였고, 재기동 후 7개를 재실행해 7/7 통과.
 > 21개 연속 실행의 단일 수치는 아직 없다.

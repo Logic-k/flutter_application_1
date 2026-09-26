@@ -1,4 +1,5 @@
 import 'package:flutter_application_1/features/training/application/training_attempt_input.dart';
+import 'package:flutter_application_1/features/training/application/training_completion_result.dart';
 import 'package:flutter_application_1/features/training/application/training_completion_service.dart';
 import 'package:flutter_application_1/features/training/data/training_progress_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -51,6 +52,57 @@ void main() {
       expect(result.scoreCategory, 'calculation');
       expect(repository.legacyScores.single.score, 90);
       expect(repository.transactionCount, 1);
+    });
+
+    test('최고 점수 경신·오늘 목표 달성은 그 순간에만 축하 신호를 낸다', () async {
+      Future<TrainingCompletionResult> run(String id, String activity, double score, int min) =>
+          service.complete(
+            _scoredAttempt(
+              id: id,
+              activityId: activity,
+              completedAt: now.add(Duration(minutes: min)),
+              score: score,
+            ),
+          );
+
+      final first = await run('a1', 'comparison', 70, 0);
+      expect(first.isNewBest, isFalse, reason: '첫 완료는 비교할 기록이 없다');
+      expect(first.shouldCelebrate, isFalse);
+
+      final better = await run('a2', 'comparison', 90, 1);
+      expect(better.isNewBest, isTrue);
+
+      final second = await run('a3', 'multiplication', 80, 2);
+      expect(second.isDailyGoalJustMet, isFalse);
+      final third = await run('a4', 'sequence', 80, 3);
+      expect(third.isDailyGoalJustMet, isTrue);
+      final again = await run('a5', 'sequence', 60, 4);
+      expect(again.isDailyGoalJustMet, isFalse, reason: '이미 채운 목표');
+      expect(again.shouldCelebrate, isFalse);
+    });
+
+    test('어제에 이어 오늘 첫 훈련이면 연속 학습 연장 신호를 낸다', () async {
+      repository.progress[1] = const TrainingUserProgressRecord(
+        userId: 1,
+        totalXp: 10,
+        currentStreak: 1,
+        longestStreak: 1,
+        lastTrainingDate: '2026-07-22',
+        updatedAt: '2026-07-22T00:00:00.000Z',
+      );
+
+      final result = await service.complete(
+        _scoredAttempt(
+          id: 'streak-1',
+          activityId: 'comparison',
+          completedAt: now,
+          score: 50,
+        ),
+      );
+
+      expect(result.currentStreak, 2);
+      expect(result.isStreakExtended, isTrue);
+      expect(result.shouldCelebrate, isTrue);
     });
 
     test('같은 attempt ID 재전송은 쓰기와 XP를 반복하지 않는다', () async {

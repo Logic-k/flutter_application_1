@@ -142,7 +142,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                   const SizedBox(width: 8),
                   Text(
                     '${trend > 0 ? '↑' : '↓'} ${trend.abs().toStringAsFixed(1)}%',
-                    style: TextStyle(fontSize: 11, color: trend > 0 ? MLColors.good : MLColors.bad, fontWeight: FontWeight.w800),
+                    style: TextStyle(fontSize: 12, color: trend > 0 ? MLColors.goodText : MLColors.badText, fontWeight: FontWeight.w800),
                   ),
                 ],
               ]),

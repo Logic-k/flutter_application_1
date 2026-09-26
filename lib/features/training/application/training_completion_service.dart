@@ -66,6 +66,9 @@ class TrainingCompletionService {
         localDate: localDate,
       );
 
+      // "오늘 목표를 막 채웠는가"는 이번 기록을 넣기 전 값과 비교해야 알 수 있다.
+      final todayDistinctBefore = await transaction
+          .getDistinctCompletedActivityCount(input.userId, localDate);
       final wasInserted = await transaction.insertAttempt(attempt);
       if (!wasInserted) {
         final existing = await transaction.getAttempt(input.attemptId);
@@ -159,6 +162,15 @@ class TrainingCompletionService {
         newlyUnlockedActivityIds: Set.unmodifiable(newlyUnlocked),
         isDuplicate: false,
         scoreCategory: activity.scoreCategory,
+        isNewBest: switch ((input.score, previousActivityProgress?.bestScore)) {
+          (final double score?, final double previousBest?) =>
+            score > previousBest,
+          _ => false,
+        },
+        isStreakExtended: streak.didChange && streak.currentStreak >= 2,
+        isDailyGoalJustMet:
+            todayDistinctBefore < dailyActivityGoal &&
+            todayDistinct >= dailyActivityGoal,
       );
     });
   }

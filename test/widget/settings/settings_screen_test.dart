@@ -39,6 +39,14 @@ void main() {
     );
   });
 
+  testWidgets('SettingsScreen: 효과음·움직임 줄이기 토글이 접근성 카드에 있다', (tester) async {
+    await pump(tester);
+
+    expect(find.text('효과음'), findsOneWidget);
+    expect(find.text('움직임 줄이기'), findsOneWidget);
+    expect(find.byType(Switch), findsNWidgets(5));
+  });
+
   testWidgets('SettingsScreen: 개인정보 처리방침·로그아웃 행이 존재한다', (tester) async {
     await pump(tester);
 

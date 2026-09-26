@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import '../../core/motion/pressable_scale.dart';
 import '../../core/theme.dart';
 import '../../core/user_provider.dart';
 
@@ -68,7 +69,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     final isSelected = _selectedGoal == goal;
     final theme = Theme.of(context);
 
-    return InkWell(
+    return PressableScale(
+      child: InkWell(
       onTap: () => setState(() => _selectedGoal = goal),
       borderRadius: BorderRadius.circular(AppTheme.rTile),
       child: Container(
@@ -98,6 +100,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             if (isSelected) Icon(Icons.check_circle, color: theme.primaryColor),
           ],
         ),
+      ),
       ),
     );
   }

@@ -153,7 +153,7 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
                             width: 12, height: 12, color: e.value),
                         const SizedBox(width: 4),
                         Text(_catLabel(e.key),
-                            style: const TextStyle(fontSize: 11)),
+                            style: const TextStyle(fontSize: 12)),
                       ]))
                   .toList(),
             ),

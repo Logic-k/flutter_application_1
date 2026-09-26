@@ -15,6 +15,7 @@
 // ─────────────────────────────────────────────────────────────────────────
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'services/sound_service.dart';
 import 'services/voice_service.dart';
 
 enum AppFontSize {
@@ -27,10 +28,17 @@ class SettingsProvider extends ChangeNotifier {
   AppFontSize _fontSize = AppFontSize.normal;
   bool _voiceGuidanceEnabled = true;
   bool _hapticFeedbackEnabled = true;
+  // 움직임 줄이기: 기본 꺼짐. 플랫폼 신호(Android 애니메이션 제거·iOS 동작 줄이기)와
+  // OR 로 합쳐지므로(core/motion/motion_settings.dart) 켜는 쪽으로만 작용한다.
+  bool _reduceMotion = false;
+  // 효과음: 기본 켜짐(07 계획 §7 결정 1 권장안). 각 소리는 300ms 이내.
+  bool _soundEffectsEnabled = true;
 
   AppFontSize get fontSize => _fontSize;
   bool get voiceGuidanceEnabled => _voiceGuidanceEnabled;
   bool get hapticFeedbackEnabled => _hapticFeedbackEnabled;
+  bool get reduceMotion => _reduceMotion;
+  bool get soundEffectsEnabled => _soundEffectsEnabled;
   
   double get textScaleFactor {
     switch (_fontSize) {
@@ -50,7 +58,10 @@ class SettingsProvider extends ChangeNotifier {
     _fontSize = AppFontSize.values[fontSizeIndex];
     _voiceGuidanceEnabled = prefs.getBool('voice_guidance') ?? true;
     _hapticFeedbackEnabled = prefs.getBool('haptic_feedback') ?? true;
+    _reduceMotion = prefs.getBool('reduce_motion') ?? false;
+    _soundEffectsEnabled = prefs.getBool('sound_effects') ?? true;
     VoiceService.voiceEnabled = _voiceGuidanceEnabled;
+    SoundService.soundEnabled = _soundEffectsEnabled;
     notifyListeners();
   }
 
@@ -74,6 +85,21 @@ class SettingsProvider extends ChangeNotifier {
     _hapticFeedbackEnabled = enabled;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('haptic_feedback', enabled);
+    notifyListeners();
+  }
+
+  Future<void> setReduceMotion(bool enabled) async {
+    _reduceMotion = enabled;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('reduce_motion', enabled);
+    notifyListeners();
+  }
+
+  Future<void> setSoundEffects(bool enabled) async {
+    _soundEffectsEnabled = enabled;
+    SoundService.soundEnabled = enabled;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('sound_effects', enabled);
     notifyListeners();
   }
 }

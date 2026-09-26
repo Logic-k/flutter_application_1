@@ -50,6 +50,8 @@ Future<void> showTrainingCompletionResult(
       masteryStars: result.masteryStars,
       bestScore: result.bestScore?.round(),
       unlockedActivityName: unlockedName,
+      celebrate: result.shouldCelebrate,
+      highlight: _highlightFor(result),
       onContinue: () => Navigator.of(sheetContext).pop(),
     ),
   );
@@ -66,6 +68,32 @@ String trainingActivityName(String activityId) => switch (activityId) {
   'daily_recall' => '일상 회상 훈련',
   _ => throw ArgumentError.value(activityId, 'activityId', 'Unknown activity'),
 };
+
+/// 활동 아이콘. 허브 코스 노드와 게임 화면 목표 카드가 같은 아이콘을 쓴다.
+IconData trainingActivityIcon(String activityId) => switch (activityId) {
+  'comparison' => Icons.compare_arrows_rounded,
+  'multiplication' => Icons.grid_3x3_rounded,
+  'sequence' => Icons.reorder_rounded,
+  'categorization' => Icons.category_rounded,
+  'shape_sudoku' => Icons.extension_rounded,
+  'shape_match' => Icons.auto_awesome_motion_rounded,
+  'sentence_reading' => Icons.record_voice_over_rounded,
+  'daily_recall' => Icons.favorite_rounded,
+  _ => Icons.psychology_rounded,
+};
+
+/// 허브 → 게임 화면으로 아이콘이 이어지는 공유 요소 전환(Hero)의 태그.
+/// 같은 화면에 같은 태그가 둘이면 Hero 가 예외를 던지므로 활동당 하나만 만든다.
+String trainingActivityHeroTag(String activityId) =>
+    'training-activity-$activityId';
+
+/// 왜 축하하는지 글로 말한다. 컨페티만 터지면 무엇을 해냈는지 알 수 없다.
+String? _highlightFor(TrainingCompletionResult result) {
+  if (result.isNewBest) return '최고 기록을 넘었어요';
+  if (result.isDailyGoalJustMet) return '오늘 목표를 모두 채웠어요';
+  if (result.isStreakExtended) return '${result.currentStreak}일 연속 학습 중이에요';
+  return null;
+}
 
 String _encouragementFor(TrainingCompletionResult result) {
   if (result.attempt.score == null) {

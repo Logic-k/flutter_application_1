@@ -153,6 +153,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     onChanged: (v) => context.read<SettingsProvider>().setHapticFeedback(v),
                   ),
                 ),
+                const Divider(),
+                MLListRow(
+                  icon: Icons.music_note_rounded, color: MLColors.sky,
+                  title: '효과음',
+                  subtitle: '정답·오답·완료를 짧은 소리로 알립니다.',
+                  trailing: Switch(
+                    value: settings.soundEffectsEnabled,
+                    onChanged: (v) => context.read<SettingsProvider>().setSoundEffects(v),
+                  ),
+                ),
+                const Divider(),
+                MLListRow(
+                  icon: Icons.motion_photos_off_rounded, color: MLColors.mem,
+                  title: '움직임 줄이기',
+                  subtitle: '화면 효과와 애니메이션을 최소화합니다.',
+                  trailing: Switch(
+                    value: settings.reduceMotion,
+                    onChanged: (v) => context.read<SettingsProvider>().setReduceMotion(v),
+                  ),
+                ),
               ]),
             ),
             const SizedBox(height: 22),
@@ -322,7 +342,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             const SizedBox(width: 8),
             Expanded(child: Text(statusLabel,
                 style: TextStyle(fontWeight: FontWeight.w700, color: statusColor))),
-            Text(_providerName, style: TextStyle(fontSize: 11, color: context.scheme.onSurfaceVariant)),
+            Text(_providerName, style: TextStyle(fontSize: 12, color: context.scheme.onSurfaceVariant)),
           ]),
         ),
         const Divider(),
@@ -335,7 +355,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             subtitle: _hasApiKey ? '키가 저장되어 있습니다.' : '키를 입력하면 온라인 AI 대화를 사용합니다.',
             trailing: _hasApiKey
                 ? TextButton(onPressed: _removeApiKey,
-                    child: const Text('삭제', style: TextStyle(color: MLColors.bad)))
+                    child: const Text('삭제', style: TextStyle(color: MLColors.badText)))
                 : Icon(Icons.chevron_right_rounded, color: context.scheme.onSurfaceVariant),
             onTap: () => setState(() => _showKeyEditor = !_showKeyEditor),
           ),
@@ -377,7 +397,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   Padding(
                     padding: EdgeInsets.only(top: 6),
                     child: Text('빌드에 기본 키가 주입되어 있어 키 없이도 온라인 AI가 동작할 수 있습니다.',
-                        style: TextStyle(fontSize: 11, color: context.scheme.onSurfaceVariant)),
+                        style: TextStyle(fontSize: 12, color: context.scheme.onSurfaceVariant)),
                   ),
               ]),
             ),
@@ -462,7 +482,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     )
                   : const Text(
                       '초기화',
-                      style: TextStyle(color: MLColors.warn),
+                      style: TextStyle(color: MLColors.warnText),
                     ),
             ),
           ],
@@ -485,7 +505,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               userProvider.logout();
               context.go('/login');
             },
-            child: const Text('로그아웃', style: TextStyle(color: MLColors.bad)),
+            child: const Text('로그아웃', style: TextStyle(color: MLColors.badText)),
           ),
         ],
       ),

@@ -9,8 +9,16 @@ appId: com.teammemorylink.memorylink
 - extendedWaitUntil:
     visible: "VS"
     timeout: 10000
+# 07 계획 F-02: 답을 누르면 색 + 아이콘 + 문구 배지가 1.7초 동안 뜬다.
+# 첫 문항만 배지를 확인하고(좌측 카드가 정답인지는 무작위라 둘 중 하나), 나머지는 기존대로 푼다.
+# tapOn 은 기본적으로 화면이 멈출 때까지 기다려 그사이 배지가 사라지므로 대기를 줄인다.
+- tapOn:
+    point: "25%,55%"
+    waitToSettleTimeoutMs: 300
+- assertVisible: "(정답입니다|아쉬워요, 오답입니다)"
+- waitForAnimationToEnd
 - repeat:
-    times: 10
+    times: 9
     commands:
       - tapOn:
           point: "25%,55%"

@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme.dart';
 import 'dart:math';
-import '../../../core/settings_provider.dart';
 import '../../../core/services/voice_service.dart';
 import '../application/training_attempt_input.dart';
 import '../application/training_completion_ui.dart';
+import '../../../core/motion/game_feedback.dart';
 import '../widgets/game_template.dart';
 import '../difficulty_provider.dart';
 import '../training_progress_provider.dart';
@@ -20,6 +19,15 @@ class ShapeSudokuGame extends StatefulWidget {
 }
 
 class _ShapeSudokuGameState extends State<ShapeSudokuGame> {
+  // 정답·오답 신호. GameTemplate 이 햅틱·효과음·배지·파티클을 한 곳에서 처리한다.
+  final _feedback = GameFeedbackController();
+
+  @override
+  void dispose() {
+    _feedback.dispose();
+    super.dispose();
+  }
+
   final Random _random = Random();
   final Stopwatch _stopwatch = Stopwatch();
   int _currentStep = 1;
@@ -132,15 +140,15 @@ class _ShapeSudokuGameState extends State<ShapeSudokuGame> {
     final reactionTime = _stopwatch.elapsedMilliseconds / 1000.0;
 
     final isCorrect = selectedIdx == _correctSymbolIdx;
-    final haptic = context.read<SettingsProvider>().hapticFeedbackEnabled;
-    if (isCorrect) {
-      _score++;
-      if (haptic) HapticFeedback.mediumImpact();
-    } else {
-      if (haptic) HapticFeedback.heavyImpact();
-    }
+    if (isCorrect) _score++;
+    // 햅틱·효과음·배지는 GameTemplate 이 설정을 보고 한 번에 낸다.
+    isCorrect
+        ? _feedback.correct()
+        : _feedback.wrong(
+            '아쉬워요 · 정답은 ${_symbolName(_symbols[_correctSymbolIdx])}',
+          );
 
-    // 정답/오답이 진동으로만 전달되고 화면에는 아무 표시 없이 다음 문항으로 넘어간다.
+    // 배지는 초점을 받지 않고 곧바로 다음 문항으로 넘어간다.
     // 시각·촉각 외의 경로가 없으면 스크린리더 사용자는 결과를 알 수 없다(WCAG 1.4.1).
     SemanticsService.sendAnnouncement(
       View.of(context),
@@ -225,6 +233,8 @@ class _ShapeSudokuGameState extends State<ShapeSudokuGame> {
     final btnIconSize = _gridSize == 3 ? 34.0 : 28.0;
 
     return GameTemplate(
+      feedback: _feedback,
+      activityId: 'shape_sudoku',
       title: '그림 스도쿠',
       objective: '가로, 세로에 겹치지 않게\n물음표(?)에 들어올 알맞은 그림을 찾으세요.',
       currentStep: _currentStep,

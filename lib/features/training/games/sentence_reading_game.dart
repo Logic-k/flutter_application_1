@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../../core/theme.dart';
 import '../application/training_attempt_input.dart';
 import '../application/training_completion_ui.dart';
+import '../../../core/motion/game_feedback.dart';
 import '../widgets/game_template.dart';
 import '../difficulty_provider.dart';
 import '../training_progress_provider.dart';
@@ -66,6 +67,15 @@ class SentenceReadingGame extends StatefulWidget {
 }
 
 class _SentenceReadingGameState extends State<SentenceReadingGame> {
+  // 정답·오답 신호. GameTemplate 이 햅틱·효과음·배지·파티클을 한 곳에서 처리한다.
+  final _feedback = GameFeedbackController();
+
+  @override
+  void dispose() {
+    _feedback.dispose();
+    super.dispose();
+  }
+
   final stt.SpeechToText _speech = stt.SpeechToText();
   bool _isListening = false;
   String _text = '';
@@ -146,6 +156,7 @@ class _SentenceReadingGameState extends State<SentenceReadingGame> {
       _sentenceScores.add(score);
       _attempts = 0;
       _lastFeedback = '정답입니다. 잘 읽으셨어요.';
+      _feedback.correct('잘 읽으셨어요');
       context.read<DifficultyProvider>().updatePerformance(
         GameCategory.perception,
         true,
@@ -161,9 +172,7 @@ class _SentenceReadingGameState extends State<SentenceReadingGame> {
         GameCategory.perception,
         false,
       );
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('괜찮아요, 다음 문장으로 넘어갈게요.')));
+      _feedback.wrong('괜찮아요, 다음 문장으로 넘어갈게요');
       _nextStep();
     } else {
       // 재시도 분기는 화면이 그대로라 다시 그리지 않는데, 그러면 liveRegion이
@@ -172,9 +181,7 @@ class _SentenceReadingGameState extends State<SentenceReadingGame> {
         _attempts++;
         _lastFeedback = '조금 달라요. 한 번 더 읽어주세요.';
       });
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('다시 한번 명확하게 읽어주세요.')));
+      _feedback.wrong('한 번 더 또박또박 읽어주세요');
     }
   }
 
@@ -261,6 +268,8 @@ class _SentenceReadingGameState extends State<SentenceReadingGame> {
     final theme = Theme.of(context);
 
     return GameTemplate(
+      feedback: _feedback,
+      activityId: 'sentence_reading',
       title: '문장 소리 내어 읽기',
       objective: '화면에 보이는 문장을 또박또박 읽어주세요.\n언어 자극을 통해 뇌를 활성화합니다.',
       currentStep: _currentStep,

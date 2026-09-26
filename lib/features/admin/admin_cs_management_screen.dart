@@ -175,7 +175,7 @@ class _FaqTab extends StatelessWidget {
               return ListTile(
                 leading: Chip(
                     label: Text(f['category'] as String? ?? '',
-                        style: const TextStyle(fontSize: 11))),
+                        style: const TextStyle(fontSize: 12))),
                 title: Text(f['question'] as String? ?? '',
                     maxLines: 1, overflow: TextOverflow.ellipsis),
                 trailing: Row(

@@ -139,6 +139,9 @@ class AppTheme {
       brightness: Brightness.light,
       primary: MLColors.primary,
       onPrimary: Colors.white,
+      // 연보라 면(primaryContainer) 위 글자. 시드가 만드는 기본값을 쓰면 화면들이
+      // primary 를 대신 얹어 3.77:1 로 AA 에 못 미쳤다(게임 목표 카드). 4.96:1.
+      onPrimaryContainer: MLColors.primaryDeep,
       secondary: MLColors.mem,
       surface: MLColors.surface,
       surfaceContainerHighest: MLColors.surfaceAlt,

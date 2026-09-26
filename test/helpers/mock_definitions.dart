@@ -38,4 +38,8 @@ class FakeSettingsProvider extends SettingsProvider {
   Future<void> setVoiceGuidance(bool enabled) async {}
   @override
   Future<void> setHapticFeedback(bool enabled) async {}
+  @override
+  Future<void> setReduceMotion(bool enabled) async {}
+  @override
+  Future<void> setSoundEffects(bool enabled) async {}
 }

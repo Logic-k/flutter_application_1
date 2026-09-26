@@ -7,6 +7,7 @@ import '../../../core/services/voice_service.dart';
 import '../application/training_attempt_input.dart';
 import '../application/training_completion_ui.dart';
 import '../widgets/adaptive_answer_grid.dart';
+import '../../../core/motion/game_feedback.dart';
 import '../widgets/game_template.dart';
 import '../difficulty_provider.dart';
 import '../training_progress_provider.dart';
@@ -47,6 +48,15 @@ class ShapeMatchGame extends StatefulWidget {
 }
 
 class _ShapeMatchGameState extends State<ShapeMatchGame> {
+  // 정답·오답 신호. GameTemplate 이 햅틱·효과음·배지·파티클을 한 곳에서 처리한다.
+  final _feedback = GameFeedbackController();
+
+  @override
+  void dispose() {
+    _feedback.dispose();
+    super.dispose();
+  }
+
   final Random _random = Random();
   int _currentStep = 1;
   final int _totalSteps = 10;
@@ -136,6 +146,9 @@ class _ShapeMatchGameState extends State<ShapeMatchGame> {
     _lastResultMessage = isCorrect
         ? '정답입니다.'
         : '아쉽지만 오답입니다. 정답은 ${_shapeName(_targetIcon)}였습니다.';
+    isCorrect
+        ? _feedback.correct()
+        : _feedback.wrong('아쉬워요 · 정답은 ${_shapeName(_targetIcon)}');
 
     context.read<DifficultyProvider>().updatePerformance(
       GameCategory.perception,
@@ -214,6 +227,8 @@ class _ShapeMatchGameState extends State<ShapeMatchGame> {
     ].join(' ');
 
     return GameTemplate(
+      feedback: _feedback,
+      activityId: 'shape_match',
       title: '같은 모양 찾기',
       objective: '상단에 제시된 도형과 똑같은 모양을 아래에서 찾으세요.',
       currentStep: _currentStep,

@@ -268,7 +268,7 @@ class _ModelDownloadScreenState extends State<ModelDownloadScreen> {
             Text(
               '※ 모델은 Google Gemma 라이선스 조건에 따라 제공됩니다.\n'
               '다운로드 시 해당 약관에 동의하는 것으로 간주됩니다.',
-              style: TextStyle(fontSize: 11, color: context.scheme.onSurfaceVariant, height: 1.6),
+              style: TextStyle(fontSize: 12, color: context.scheme.onSurfaceVariant, height: 1.6),
             ),
           ],
         ),

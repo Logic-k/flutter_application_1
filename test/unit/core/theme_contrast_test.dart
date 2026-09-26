@@ -111,6 +111,20 @@ void main() {
       expect(ratio, greaterThanOrEqualTo(_aaNonText));
     });
   });
+
+  group('연보라 면 위 글자', () {
+    // 게임 목표 카드·목표 시간 배지·결과 축하 칩. primary 를 얹으면 3.77:1 이었다.
+    test('onPrimaryContainer 는 primaryContainer 위에서 4.5:1 을 넘는다', () {
+      final scheme = AppTheme.lightTheme.colorScheme;
+      final ratio = contrastRatio(
+        scheme.onPrimaryContainer,
+        scheme.primaryContainer,
+      );
+      expect(ratio, greaterThanOrEqualTo(_aaText),
+          reason: '${_hex(scheme.onPrimaryContainer)} on '
+              '${_hex(scheme.primaryContainer)} = ${ratio.toStringAsFixed(2)}:1');
+    });
+  });
 }
 
 String _hex(Color c) {

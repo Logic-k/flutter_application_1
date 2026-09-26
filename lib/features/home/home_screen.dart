@@ -7,6 +7,7 @@ import '../diary/diary_provider.dart';
 import '../../core/ai/ai_chat_service.dart';
 import '../../core/user_provider.dart';
 import '../../core/formatters.dart';
+import '../../core/motion/fade_slide_in.dart';
 import '../../core/ml_widgets.dart';
 import '../../core/theme.dart';
 import '../training/training_progress_provider.dart';
@@ -70,6 +71,9 @@ class _HomeScreenState extends State<HomeScreen> {
     await context.read<DiaryProvider>().loadMonth(userId, DateTime.now());
   }
 
+  Widget _enter(int index, Widget child) =>
+      FadeSlideIn(playKey: 'home', index: index, child: child);
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -108,34 +112,40 @@ class _HomeScreenState extends State<HomeScreen> {
       body: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(
             22, 6, 22, FloatingPillNav.contentBottomInset),
+        // 카드들이 40ms 간격으로 아래에서 올라온다. 앱 실행 후 첫 진입에만.
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildHeaderCard(
+            _enter(0, _buildHeaderCard(
               context,
               userProvider,
               pedometer,
               trainingProgress,
               todayStr,
-            ),
+            )),
             const SizedBox(height: 20),
-            _buildAiAssistantCard(context),
+            _enter(1, _buildAiAssistantCard(context)),
             const SizedBox(height: 20),
-            _buildMemoryGardenCard(context, userProvider, pedometer),
+            _enter(2, _buildMemoryGardenCard(context, userProvider, pedometer)),
             const SizedBox(height: 20),
-            _buildWalkingMiniCard(context, pedometer),
+            _enter(3, _buildWalkingMiniCard(context, pedometer)),
             const SizedBox(height: 20),
-            _buildTrainingMotivationChip(),
-            MLSectionTitle(
-              '오늘의 추천 훈련',
-              trailing: TextButton(
-                onPressed: () => context.push('/training_hub'),
-                child: const Text('전체보기'),
-              ),
-            ),
-            _buildRecommendedTraining(context),
+            _enter(4, Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildTrainingMotivationChip(),
+                MLSectionTitle(
+                  '오늘의 추천 훈련',
+                  trailing: TextButton(
+                    onPressed: () => context.push('/training_hub'),
+                    child: const Text('전체보기'),
+                  ),
+                ),
+                _buildRecommendedTraining(context),
+              ],
+            )),
             const SizedBox(height: 20),
-            _buildBrainHealthCard(context, userProvider),
+            _enter(5, _buildBrainHealthCard(context, userProvider)),
           ],
         ),
       ),
@@ -373,7 +383,8 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             const Icon(Icons.flag_rounded, color: MLColors.read, size: 18),
             const SizedBox(width: 6),
-            const Text('오늘 2개 훈련이 준비되어 있어요!', style: TextStyle(color: MLColors.read, fontWeight: FontWeight.w700, fontSize: 14)),
+            // 앰버 면 위 앰버 글자는 1.7:1 이었다. 글자는 같은 계열의 글자 전용 토큰으로.
+            const Text('오늘 2개 훈련이 준비되어 있어요!', style: TextStyle(color: MLColors.warnText, fontWeight: FontWeight.w700, fontSize: 14)),
           ],
         ),
       ),
@@ -432,8 +443,9 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           FilledButton(
             onPressed: onTap,
+            // 버튼은 강조색 하나로(DESIGN.md §5). 카테고리색은 왼쪽 아이콘 타일만 쓴다.
+            // 논리 카테고리색(#A66BE8) 위 흰 글자는 3.57:1 이었다.
             style: FilledButton.styleFrom(
-              backgroundColor: color,
               padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
               // 훈련으로 들어가는 주 진입 버튼이다. 40dp는 진전이 있는 고령
               // 사용자에게 오탭을 유발한다.
@@ -450,10 +462,12 @@ class _HomeScreenState extends State<HomeScreen> {
   // ─── 두뇌 건강 분석 카드 ──────────────────────────────────────
   Widget _buildBrainHealthCard(BuildContext context, UserProvider user) {
     final scores = [
-      (label: '기억력', score: user.memoryScore, color: MLColors.mem),
-      (label: '집중력', score: user.attentionScore, color: MLColors.sky),
-      (label: '계산력', score: user.calculationScore, color: MLColors.calc),
-      (label: '논리력', score: user.logicScore, color: MLColors.logic),
+      // 막대마다 라벨이 있으므로 색으로 구분할 필요가 없다. 예전 민트·하늘·보라·연보라
+      // 4색은 청색 계열 3개를 나란히 둬 DESIGN.md §2.4(고령 청색 감별 저하)에 걸렸다.
+      (label: '기억력', score: user.memoryScore, color: context.scheme.primary),
+      (label: '집중력', score: user.attentionScore, color: context.scheme.primary),
+      (label: '계산력', score: user.calculationScore, color: context.scheme.primary),
+      (label: '논리력', score: user.logicScore, color: context.scheme.primary),
     ];
 
     return MLCard(

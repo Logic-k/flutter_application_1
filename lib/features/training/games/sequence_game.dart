@@ -7,6 +7,7 @@ import '../../../core/user_provider.dart';
 import '../../../core/services/voice_service.dart';
 import '../application/training_attempt_input.dart';
 import '../application/training_completion_ui.dart';
+import '../../../core/motion/game_feedback.dart';
 import '../widgets/game_template.dart';
 import '../difficulty_provider.dart';
 import '../training_progress_provider.dart';
@@ -19,6 +20,15 @@ class SequenceGame extends StatefulWidget {
 }
 
 class _SequenceGameState extends State<SequenceGame> {
+  // 정답·오답 신호. GameTemplate 이 햅틱·효과음·배지·파티클을 한 곳에서 처리한다.
+  final _feedback = GameFeedbackController();
+
+  @override
+  void dispose() {
+    _feedback.dispose();
+    super.dispose();
+  }
+
   final Random _random = Random();
   int _currentStep = 1;
   final int _totalSteps = 5;
@@ -105,8 +115,8 @@ class _SequenceGameState extends State<SequenceGame> {
         '숫자 순서는 ${parts.join(', ')}. 빈칸에 들어갈 숫자를 보기에서 고르세요.';
   }
 
-  /// 이 게임은 정답 여부를 화면에 따로 표시하지 않고 곧바로 다음 문항으로 넘어간다.
-  /// 스크린리더 사용자는 화면 전환을 눈으로 확인할 수 없어 맞았는지조차 알 수 없으므로,
+  /// 정답 배지는 초점을 받지 않고 곧바로 다음 문항으로 넘어간다.
+  /// 스크린리더 사용자는 배지를 볼 수 없어 맞았는지조차 알 수 없으므로,
   /// 결과를 소리(청각 경로)로 따로 알린다. (WCAG 1.4.1 — 시각 단독 전달 금지)
   void _announceResult(bool isCorrect) {
     SemanticsService.sendAnnouncement(
@@ -122,6 +132,9 @@ class _SequenceGameState extends State<SequenceGame> {
     bool isCorrect = (selected == _correctAnswer);
     if (isCorrect) _score++;
     _announceResult(isCorrect);
+    isCorrect
+        ? _feedback.correct()
+        : _feedback.wrong('아쉬워요 · 정답은 $_correctAnswer');
 
     context.read<DifficultyProvider>().updatePerformance(
       GameCategory.logic,
@@ -188,6 +201,8 @@ class _SequenceGameState extends State<SequenceGame> {
     final theme = Theme.of(context);
 
     return GameTemplate(
+      feedback: _feedback,
+      activityId: 'sequence',
       title: '규칙 찾아보기',
       objective: '물음표(?)에 들어갈 알맞은 숫자를 고르세요.',
       currentStep: _currentStep,

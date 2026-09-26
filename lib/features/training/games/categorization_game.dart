@@ -1,13 +1,12 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme.dart';
-import '../../../core/settings_provider.dart';
 import '../../../core/services/voice_service.dart';
 import '../application/training_attempt_input.dart';
 import '../application/training_completion_ui.dart';
+import '../../../core/motion/game_feedback.dart';
 import '../widgets/game_template.dart';
 import '../difficulty_provider.dart';
 import '../training_progress_provider.dart';
@@ -20,6 +19,15 @@ class CategorizationGame extends StatefulWidget {
 }
 
 class _CategorizationGameState extends State<CategorizationGame> {
+  // 정답·오답 신호. GameTemplate 이 햅틱·효과음·배지·파티클을 한 곳에서 처리한다.
+  final _feedback = GameFeedbackController();
+
+  @override
+  void dispose() {
+    _feedback.dispose();
+    super.dispose();
+  }
+
   static const int _totalSteps = 10;
 
   // 문제 풀 — [단어, 정답카테고리, 오답1, 오답2, 오답3]
@@ -133,13 +141,7 @@ class _CategorizationGameState extends State<CategorizationGame> {
     _waitingNext = true;
 
     final isCorrect = selected == _questions[_currentStep - 1]['answer'];
-    final haptic = context.read<SettingsProvider>().hapticFeedbackEnabled;
-    if (isCorrect) {
-      _score++;
-      if (haptic) HapticFeedback.mediumImpact();
-    } else {
-      if (haptic) HapticFeedback.heavyImpact();
-    }
+    if (isCorrect) _score++;
 
     context.read<DifficultyProvider>().updatePerformance(
       GameCategory.logic,
@@ -206,27 +208,17 @@ class _CategorizationGameState extends State<CategorizationGame> {
   }
 
   void _showFeedback(bool isCorrect) {
-    final theme = Theme.of(context);
     final message = isCorrect ? '정답입니다!' : '아쉽네요. 다음 문제를 풀어보세요.';
 
-    // 정오답이 스낵바 배경색(초록/빨강)으로만 구분되면 색을 못 보는 사용자는 결과를 알 수 없다.
-    // 스낵바는 짧게 떴다 사라져 포커스를 받지 못하므로, 스크린리더에 직접 낭독을 요청해
-    // 청각 경로를 따로 만든다(WCAG 1.4.1).
+    // 배지는 색 + 아이콘 + 문구로 보이지만 짧게 떴다 사라져 포커스를 받지 못한다.
+    // 스크린리더에 직접 낭독을 요청해 청각 경로를 따로 만든다(WCAG 1.4.1).
     SemanticsService.sendAnnouncement(
       View.of(context),
       message,
       Directionality.of(context),
     );
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: isCorrect
-            ? MLColors.goodText
-            : theme.colorScheme.error,
-        duration: const Duration(milliseconds: 600),
-      ),
-    );
+    isCorrect ? _feedback.correct(message) : _feedback.wrong(message);
   }
 
   @override
@@ -238,6 +230,8 @@ class _CategorizationGameState extends State<CategorizationGame> {
     );
 
     return GameTemplate(
+      feedback: _feedback,
+      activityId: 'categorization',
       title: '범주화 훈련',
       objective: '제시된 단어가 어느 분류에 속하는지 선택하세요.',
       currentStep: _currentStep,

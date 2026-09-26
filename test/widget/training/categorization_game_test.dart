@@ -128,7 +128,7 @@ void main() {
     expect(options, contains(_categoryOf[word]));
   });
 
-  testWidgets('CategorizationGame: 올바른 답을 탭하면 정답 SnackBar를 표시한다', (
+  testWidgets('CategorizationGame: 올바른 답을 탭하면 정답 배지를 표시한다', (
     tester,
   ) async {
     await tester.pumpWidget(subject());
@@ -139,12 +139,12 @@ void main() {
 
     expect(find.text('정답입니다!'), findsOneWidget);
 
-    // 다음 문제 딜레이(700ms) 및 SnackBar 타이머 소진
+    // 다음 문제 딜레이(700ms) 및 배지 표시 시간 소진
     await tester.pump(const Duration(milliseconds: 800));
     await tester.pumpAndSettle();
   });
 
-  testWidgets('CategorizationGame: 틀린 답을 탭하면 오답 SnackBar를 표시한다', (
+  testWidgets('CategorizationGame: 틀린 답을 탭하면 오답 배지를 표시한다', (
     tester,
   ) async {
     await tester.pumpWidget(subject());

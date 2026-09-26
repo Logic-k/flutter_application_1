@@ -170,5 +170,7 @@ appId: com.teammemorylink.memorylink
     timeout: 2500
 - assertVisible: "글자 크기"
 - assertVisible: ".*음성 안내.*"
+- assertVisible: ".*효과음.*"
+- assertVisible: ".*움직임 줄이기.*"
 - waitForAnimationToEnd:
     timeout: 2500

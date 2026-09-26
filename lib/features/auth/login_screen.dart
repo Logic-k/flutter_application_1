@@ -77,7 +77,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   padding: const EdgeInsets.only(top: 12),
                   child: Text(
                     '아이디 또는 비밀번호가 올바르지 않습니다.',
-                    style: const TextStyle(color: MLColors.bad, fontSize: 13, fontWeight: FontWeight.w600),
+                    style: const TextStyle(color: MLColors.badText, fontSize: 13, fontWeight: FontWeight.w600),
                   ),
                 ),
 

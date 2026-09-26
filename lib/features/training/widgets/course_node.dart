@@ -12,6 +12,7 @@ class CourseNode extends StatelessWidget {
     required this.status,
     required this.masteryStars,
     this.onTap,
+    this.heroTag,
   }) : assert(masteryStars >= 0 && masteryStars <= 3);
 
   final String title;
@@ -20,6 +21,9 @@ class CourseNode extends StatelessWidget {
   final CourseNodeStatus status;
   final int masteryStars;
   final VoidCallback? onTap;
+
+  /// 게임 화면 목표 카드의 아이콘으로 이어지는 Hero 태그. 없으면 전환 없이 그린다.
+  final Object? heroTag;
 
   String get _statusText => switch (status) {
     CourseNodeStatus.available => '도전 가능',
@@ -61,15 +65,17 @@ class CourseNode extends StatelessWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Container(
-                    width: 52,
-                    height: 52,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: foreground.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(AppTheme.rChip),
+                  _heroWrap(
+                    Container(
+                      width: 52,
+                      height: 52,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: foreground.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(AppTheme.rChip),
+                      ),
+                      child: Icon(icon, color: foreground, size: 28),
                     ),
-                    child: Icon(icon, color: foreground, size: 28),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -114,5 +120,12 @@ class CourseNode extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Widget _heroWrap(Widget child) {
+    final tag = heroTag;
+    // 잠긴 노드는 게임으로 가지 않으므로 전환도 없다.
+    if (tag == null || status == CourseNodeStatus.locked) return child;
+    return Hero(tag: tag, child: child);
   }
 }

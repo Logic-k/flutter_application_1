@@ -101,7 +101,8 @@ class TrainingHubScreen extends StatelessWidget {
       key: Key('course-node-${activity.id}'),
       title: trainingActivityName(activity.id),
       description: _descriptionFor(activity.id),
-      icon: _iconFor(activity.id),
+      icon: trainingActivityIcon(activity.id),
+      heroTag: trainingActivityHeroTag(activity.id),
       status: status,
       masteryStars: activityProgress?.masteryStars ?? 0,
       onTap: () {
@@ -188,16 +189,4 @@ String _descriptionFor(String activityId) => switch (activityId) {
   'sentence_reading' => '문장을 소리 내어 또박또박 읽어요.',
   'daily_recall' => '오늘의 기억을 편안하게 떠올려요.',
   _ => '',
-};
-
-IconData _iconFor(String activityId) => switch (activityId) {
-  'comparison' => Icons.compare_arrows_rounded,
-  'multiplication' => Icons.grid_3x3_rounded,
-  'sequence' => Icons.reorder_rounded,
-  'categorization' => Icons.category_rounded,
-  'shape_sudoku' => Icons.extension_rounded,
-  'shape_match' => Icons.auto_awesome_motion_rounded,
-  'sentence_reading' => Icons.record_voice_over_rounded,
-  'daily_recall' => Icons.favorite_rounded,
-  _ => Icons.psychology_rounded,
 };

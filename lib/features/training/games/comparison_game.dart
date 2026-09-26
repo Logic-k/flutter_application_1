@@ -6,6 +6,7 @@ import '../../../core/user_provider.dart';
 import '../../../core/services/voice_service.dart';
 import '../application/training_attempt_input.dart';
 import '../application/training_completion_ui.dart';
+import '../../../core/motion/game_feedback.dart';
 import '../widgets/game_template.dart';
 import '../difficulty_provider.dart';
 import '../training_progress_provider.dart';
@@ -18,6 +19,15 @@ class ComparisonGame extends StatefulWidget {
 }
 
 class _ComparisonGameState extends State<ComparisonGame> {
+  // 정답·오답 신호. GameTemplate 이 햅틱·효과음·배지·파티클을 한 곳에서 처리한다.
+  final _feedback = GameFeedbackController();
+
+  @override
+  void dispose() {
+    _feedback.dispose();
+    super.dispose();
+  }
+
   final Random _random = Random();
   int _currentStep = 1;
   final int _totalSteps = 10;
@@ -34,9 +44,9 @@ class _ComparisonGameState extends State<ComparisonGame> {
   late int _rightVal;
   bool _isInitialized = false;
 
-  // 이 게임은 정답/오답을 화면에 따로 표시하지 않고 곧바로 다음 문항으로 넘어간다.
-  // 시각적 단서조차 없으므로(WCAG 1.4.1) 직전 결과를 문항 라이브 리전 앞에 붙여
-  // 스크린리더가 "정답입니다. 문제 4번..." 형태로 함께 읽도록 보관한다.
+  // 화면에는 GameTemplate 의 배지가 잠깐 뜨지만 초점을 받지 않는다.
+  // 직전 결과를 문항 라이브 리전 앞에 붙여 스크린리더가
+  // "정답입니다. 문제 4번..." 형태로 함께 읽도록 보관한다(WCAG 1.4.1).
   String? _lastAnswerFeedback;
 
   @override
@@ -86,6 +96,7 @@ class _ComparisonGameState extends State<ComparisonGame> {
         (leftSelected && _leftVal > _rightVal) ||
         (!leftSelected && _rightVal > _leftVal);
     if (isCorrect) _score++;
+    isCorrect ? _feedback.correct() : _feedback.wrong();
 
     context.read<DifficultyProvider>().updatePerformance(
       GameCategory.calculation,
@@ -173,6 +184,8 @@ class _ComparisonGameState extends State<ComparisonGame> {
     final theme = Theme.of(context);
 
     return GameTemplate(
+      feedback: _feedback,
+      activityId: 'comparison',
       title: '누가 큰가요?',
       objective: '더 큰 숫자를 가진 쪽을 터치하세요.',
       currentStep: _currentStep,

@@ -184,7 +184,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                         showTitles: true,
                         getTitlesWidget: (value, _) => Text(
                           labels[value.toInt()],
-                          style: const TextStyle(fontSize: 10),
+                          style: const TextStyle(fontSize: 12),
                         ),
                       ),
                     ),

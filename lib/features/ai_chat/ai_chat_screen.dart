@@ -519,7 +519,7 @@ class _ApiKeyDialogState extends State<_ApiKeyDialog> {
           const SizedBox(height: 8),
           Text(
             'Google AI Studio에서 무료로 발급받을 수 있습니다.',
-            style: TextStyle(fontSize: 11, color: theme.colorScheme.onSurfaceVariant),
+            style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurfaceVariant),
           ),
         ],
       ),

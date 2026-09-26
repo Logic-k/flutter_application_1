@@ -93,7 +93,7 @@ class _NoticeListScreenState extends State<NoticeListScreen> {
                                   child: const Text('고정',
                                       style: TextStyle(
                                           color: Colors.white,
-                                          fontSize: 11,
+                                          fontSize: 12,
                                           fontWeight: FontWeight.w600)),
                                 ),
                                 const SizedBox(width: 8),

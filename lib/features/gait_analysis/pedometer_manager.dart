@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/services.dart' show PlatformException;
 import 'package:flutter/widgets.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -23,6 +24,12 @@ class PedometerManager with ChangeNotifier, WidgetsBindingObserver {
   bool _isTracking = false;
   StreamSubscription<Map<String, dynamic>?>? _stepUpdates;
   late final Future<void> _initialization;
+
+  /// 진행 중인 권한 요청. 앱 시작 시 자동 요청과 사용자의 토글 조작이 겹치면
+  /// permission_handler가 "A request for permissions is already running"
+  /// PlatformException을 던진다. 두 번째 호출은 새로 요청하지 않고
+  /// 진행 중인 요청의 결과를 함께 기다린다.
+  Future<Map<Permission, PermissionStatus>>? _pendingPermissionRequest;
 
   int get todaySteps => _todaySteps;
   double get todayCalories => _todayCalories;
@@ -269,15 +276,36 @@ class PedometerManager with ChangeNotifier, WidgetsBindingObserver {
     }
   }
 
+  /// 추적에 필요한 권한을 요청한다. 이미 요청이 떠 있으면 그 결과를 재사용한다.
+  ///
+  /// 알림 권한은 포그라운드 서비스 알림 노출용이며, 보행 측정 자체를
+  /// 차단하는 권한이 아니다. 신체 활동 권한만 필수로 판정한다.
+  Future<Map<Permission, PermissionStatus>> _requestTrackingPermissions() async {
+    final pending = _pendingPermissionRequest;
+    if (pending != null) return pending;
+
+    final request = [
+      Permission.activityRecognition,
+      Permission.notification,
+    ].request();
+    _pendingPermissionRequest = request;
+    try {
+      return await request;
+    } on PlatformException catch (e) {
+      // 플러그인 밖에서 뜬 다른 권한 팝업과 겹치는 경우까지는 막을 수 없다.
+      // 예외를 올리면 토글 콜백이 잡지 않아 그대로 터지므로, 거부로 간주해
+      // 추적을 켜지 않고 끝낸다.
+      debugPrint('권한 요청 실패: ${e.message}');
+      return const {};
+    } finally {
+      _pendingPermissionRequest = null;
+    }
+  }
+
   /// 추적 시작 (백그라운드 서비스 실행)
   Future<void> toggleTracking(bool enabled) async {
     if (enabled) {
-      // 알림 권한은 포그라운드 서비스 알림 노출용이며, 보행 측정 자체를
-      // 차단하는 권한이 아니다. 신체 활동 권한만 필수로 판정한다.
-      Map<Permission, PermissionStatus> statuses = await [
-        Permission.activityRecognition,
-        Permission.notification,
-      ].request();
+      final statuses = await _requestTrackingPermissions();
 
       if (statuses[Permission.activityRecognition] != PermissionStatus.granted) {
         debugPrint('필수 신체 활동 권한이 거부되었습니다.');
