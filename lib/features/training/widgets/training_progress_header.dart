@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/ml_widgets.dart';
 import '../../../core/theme.dart';
 
 class TrainingProgressHeader extends StatelessWidget {
@@ -51,7 +52,17 @@ class TrainingProgressHeader extends StatelessWidget {
                   Expanded(
                     child: Text('레벨 $level', style: theme.textTheme.titleLarge),
                   ),
-                  Text('총 $totalXp XP', style: theme.textTheme.bodyMedium),
+                  // 훈련을 마치고 돌아오면 이전 XP 에서 새 XP 로 올라간다(08 계획 G-04).
+                  MLCountUp(
+                    value: totalXp,
+                    semanticsLabel: '총 $totalXp XP',
+                    builder: (context, xp) => Text(
+                      '총 $xp XP',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                      ),
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 14),

@@ -1,7 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/core/motion/app_motion.dart';
 import 'package:flutter_application_1/core/motion/pressable_scale.dart';
+import 'package:flutter_application_1/core/settings_provider.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:provider/provider.dart';
+
+import '../../helpers/mock_definitions.dart';
+
+class _FadeOnlySettings extends FakeSettingsProvider {
+  @override
+  bool get reduceMotion => true;
+}
+
+double _renderedOpacity(WidgetTester tester) =>
+    tester.widget<AnimatedOpacity>(find.byType(AnimatedOpacity)).opacity;
 
 double _renderedScale(WidgetTester tester) {
   final transform = tester.widget<Transform>(
@@ -62,5 +74,24 @@ void main() {
     await tester.tap(find.byKey(const Key('target')));
     await tester.pumpAndSettle();
     expect(taps, 1);
+  });
+
+  testWidgets('fadeOnly면 크기는 그대로 두고 불투명도로 눌림을 알린다', (tester) async {
+    await tester.pumpWidget(
+      ChangeNotifierProvider<SettingsProvider>.value(
+        value: _FadeOnlySettings(),
+        child: _subject(),
+      ),
+    );
+
+    final gesture = await tester.startGesture(tester.getCenter(find.byKey(const Key('target'))));
+    await tester.pump();
+    await tester.pump(AppMotion.press);
+    expect(_renderedScale(tester), closeTo(1.0, 1e-6));
+    expect(_renderedOpacity(tester), AppMotion.pressOpacity);
+
+    await gesture.up();
+    await tester.pumpAndSettle();
+    expect(_renderedOpacity(tester), 1.0);
   });
 }

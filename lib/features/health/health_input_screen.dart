@@ -335,14 +335,20 @@ class _HealthInputScreenState extends State<HealthInputScreen> {
           const SizedBox(height: 12),
           SizedBox(
             height: 160,
-            child: LineChart(LineChartData(
+            // 첫 진입에 선이 바닥에서 올라오고, 저장 뒤 새 기록은 이전 선에서 이어서 바뀐다.
+            child: MLChart(
+              playKey: 'health_sleep_chart',
+              builder: (context, entered, duration, curve) => LineChart(
+              duration: duration,
+              curve: curve,
+              LineChartData(
               minY: 0, maxY: 12,
               gridData: const FlGridData(show: false),
               titlesData: const FlTitlesData(show: false),
               borderData: FlBorderData(show: false),
               lineBarsData: [
                 LineChartBarData(
-                  spots: spots,
+                  spots: entered ? spots : [for (final s in spots) FlSpot(s.x, 0)],
                   isCurved: true,
                   curveSmoothness: 0.35,
                   color: context.scheme.primary,
@@ -362,6 +368,7 @@ class _HealthInputScreenState extends State<HealthInputScreen> {
                 ),
               ],
             )),
+            ),
           ),
           if (latestBp.isNotEmpty) ...[
             const Divider(height: 24),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/ml_widgets.dart';
 import '../../../core/theme.dart';
 
 class DailyGoalPanel extends StatelessWidget {
@@ -85,10 +86,14 @@ class DailyGoalPanel extends StatelessWidget {
                   ),
                   const SizedBox(width: 6),
                   Expanded(
-                    child: Text(
-                      '$streakDays일 연속 학습 중',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w800,
+                    // 연속 기록이 늘어난 날 이전 값에서 올라간다.
+                    child: MLCountUp(
+                      value: streakDays,
+                      builder: (context, days) => Text(
+                        '$days일 연속 학습 중',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
                     ),
                   ),

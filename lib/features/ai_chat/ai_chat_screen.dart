@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import '../../core/theme.dart';
+import '../../core/motion/app_motion.dart';
+import '../../core/motion/motion_settings.dart';
 import '../../core/ai/ai_chat_service.dart';
 import '../../core/ai/ai_key_service.dart';
 import '../../core/local_ai_service.dart';
@@ -71,11 +73,17 @@ class _AiChatScreenState extends State<AiChatScreen> {
     setState(() => _messages.add(msg));
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
-        _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-        );
+        final target = _scrollController.position.maxScrollExtent;
+        // 움직임 줄이기면 스크롤 이동 애니메이션 없이 바로 새 메시지로 간다.
+        if (MotionSettings.reduceOf(context, listen: false)) {
+          _scrollController.jumpTo(target);
+        } else {
+          _scrollController.animateTo(
+            target,
+            duration: AppMotion.route,
+            curve: Curves.easeOut,
+          );
+        }
       }
     });
   }

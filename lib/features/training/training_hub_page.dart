@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../core/theme.dart';
 
 import '../../core/ml_widgets.dart';
+import '../../core/motion/staggered_column.dart';
 import 'application/training_completion_ui.dart';
 import 'domain/training_activity.dart';
 import 'domain/training_catalog.dart';
@@ -38,8 +39,9 @@ class TrainingHubScreen extends StatelessWidget {
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.fromLTRB(
               20, 8, 20, FloatingPillNav.contentBottomInset),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+          // 레벨 → 오늘 목표 → 코스 순으로 들어온다(08 계획 G-04, 탭을 처음 열 때 1회).
+          child: StaggeredColumn(
+            playKey: 'training_hub',
             children: [
               TrainingProgressHeader(
                 level: progress.level,
@@ -47,35 +49,46 @@ class TrainingHubScreen extends StatelessWidget {
                 xpInCurrentLevel: progress.totalXp % xpPerLevel,
                 xpForNextLevel: xpPerLevel,
               ),
-              const SizedBox(height: 12),
-              DailyGoalPanel(
-                completedActivities: progress.todayDistinctActivityCount,
-                goalActivities: dailyActivityGoal,
-                streakDays: progress.currentStreak,
-              ),
-              if (progress.error != null) ...[
-                const SizedBox(height: 12),
-                _LoadError(onRetry: progress.refresh),
-              ],
-              const SizedBox(height: 24),
-              if (progress.isLoading)
-                const Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(32),
-                    child: CircularProgressIndicator(),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const SizedBox(height: 12),
+                  DailyGoalPanel(
+                    completedActivities: progress.todayDistinctActivityCount,
+                    goalActivities: dailyActivityGoal,
+                    streakDays: progress.currentStreak,
                   ),
-                )
-              else
-                for (final entry in _activitiesByArea.entries) ...[
-                  _AreaHeading(entry.key),
-                  CoursePath(
-                    nodes: [
-                      for (final activity in entry.value)
-                        _courseNode(context, progress, activity),
-                    ],
-                  ),
+                  if (progress.error != null) ...[
+                    const SizedBox(height: 12),
+                    _LoadError(onRetry: progress.refresh),
+                  ],
                   const SizedBox(height: 24),
                 ],
+              ),
+              // 코스를 불러오는 동안은 코스 노드 모양의 자리를 그린다(08 계획 G-05).
+              MLLoadSwitcher(
+                loading: progress.isLoading,
+                skeleton: const MLSkeletonList(
+                  count: 3,
+                  shrinkWrap: true,
+                  padding: EdgeInsets.zero,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    for (final entry in _activitiesByArea.entries) ...[
+                      _AreaHeading(entry.key),
+                      CoursePath(
+                        nodes: [
+                          for (final activity in entry.value)
+                            _courseNode(context, progress, activity),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+                    ],
+                  ],
+                ),
+              ),
             ],
           ),
         ),

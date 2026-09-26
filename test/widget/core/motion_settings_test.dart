@@ -75,4 +75,54 @@ void main() {
     await tester.pumpWidget(MaterialApp(home: _probe((v) => result = v)));
     expect(result, isFalse);
   });
+
+  // 08 계획 G-01 — 세 신호(Android 애니메이션 제거 · iOS 동작 줄이기 · 앱 설정) 8조합.
+  // Android 제거는 OS 전체를 끈 것이라 none, 나머지 둘은 페이드를 남기는 fadeOnly.
+  const cases = <(bool, bool, bool, MotionLevel)>[
+    (false, false, false, MotionLevel.full),
+    (false, false, true, MotionLevel.fadeOnly),
+    (false, true, false, MotionLevel.fadeOnly),
+    (false, true, true, MotionLevel.fadeOnly),
+    (true, false, false, MotionLevel.none),
+    (true, false, true, MotionLevel.none),
+    (true, true, false, MotionLevel.none),
+    (true, true, true, MotionLevel.none),
+  ];
+  for (final (disable, iosReduce, app, expected) in cases) {
+    testWidgets(
+      'levelOf: 애니메이션 제거=$disable · iOS 동작 줄이기=$iosReduce · 앱 설정=$app → ${expected.name}',
+      (tester) async {
+        if (iosReduce) {
+          tester.platformDispatcher.accessibilityFeaturesTestValue =
+              const FakeAccessibilityFeatures(reduceMotion: true);
+          addTearDown(
+            tester.platformDispatcher.clearAccessibilityFeaturesTestValue,
+          );
+        }
+        MotionLevel? level;
+        bool? reduce;
+        await tester.pumpWidget(
+          MediaQuery(
+            data: MediaQueryData(disableAnimations: disable),
+            child: Directionality(
+              textDirection: TextDirection.ltr,
+              child: ChangeNotifierProvider<SettingsProvider>.value(
+                value: _ReduceMotionSettings(app),
+                child: Builder(
+                  builder: (context) {
+                    level = MotionSettings.levelOf(context);
+                    reduce = MotionSettings.reduceOf(context);
+                    return const SizedBox.shrink();
+                  },
+                ),
+              ),
+            ),
+          ),
+        );
+        expect(level, expected);
+        // 기존 호출부의 reduceOf 는 "full 이 아님"과 같다.
+        expect(reduce, expected != MotionLevel.full);
+      },
+    );
+  }
 }

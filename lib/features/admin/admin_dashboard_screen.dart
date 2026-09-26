@@ -2,6 +2,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import '../../core/ml_widgets.dart';
 import '../../core/theme.dart';
 import '../../core/admin_provider.dart';
 
@@ -175,7 +176,12 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             const SizedBox(height: 16),
             SizedBox(
               height: 180,
-              child: BarChart(
+              // 관리자 화면은 진입 연출 없이 축소 모션 규칙만 따른다(08 계획 G-04).
+              child: MLChart(
+                playKey: 'admin_category_chart',
+                builder: (context, _, duration, curve) => BarChart(
+                duration: duration,
+                curve: curve,
                 BarChartData(
                   barGroups: groups,
                   titlesData: FlTitlesData(
@@ -198,6 +204,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   borderData: FlBorderData(show: false),
                   gridData: const FlGridData(show: false),
                 ),
+              ),
               ),
             ),
           ],

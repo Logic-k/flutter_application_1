@@ -1,5 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import '../../core/ml_widgets.dart';
 import '../../core/theme.dart';
 import '../../core/database_helper.dart';
 
@@ -164,7 +165,13 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
                   ? Center(
                       child: Text('점수 기록이 없습니다.',
                           style: TextStyle(color: context.scheme.onSurfaceVariant)))
-                  : LineChart(LineChartData(
+                  // 관리자 화면은 진입 연출 없이 축소 모션 규칙만 따른다(08 계획 G-04).
+                  : MLChart(
+                      playKey: 'admin_user_score_chart',
+                      builder: (context, _, duration, curve) => LineChart(
+                      duration: duration,
+                      curve: curve,
+                      LineChartData(
                       lineBarsData: bars,
                       titlesData: const FlTitlesData(
                         bottomTitles: AxisTitles(
@@ -179,6 +186,7 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
                       borderData: FlBorderData(show: false),
                       gridData: const FlGridData(show: false),
                     )),
+                    ),
             ),
           ],
         ),
@@ -226,7 +234,12 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
                   ? Center(
                       child: Text('걸음 기록이 없습니다.',
                           style: TextStyle(color: context.scheme.onSurfaceVariant)))
-                  : BarChart(BarChartData(
+                  : MLChart(
+                      playKey: 'admin_user_steps_chart',
+                      builder: (context, _, duration, curve) => BarChart(
+                      duration: duration,
+                      curve: curve,
+                      BarChartData(
                       barGroups: groups,
                       titlesData: const FlTitlesData(
                         bottomTitles: AxisTitles(
@@ -241,6 +254,7 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
                       borderData: FlBorderData(show: false),
                       gridData: const FlGridData(show: false),
                     )),
+                    ),
             ),
           ],
         ),

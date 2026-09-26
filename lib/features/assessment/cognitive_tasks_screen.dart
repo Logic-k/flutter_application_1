@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme.dart';
+import '../../core/motion/app_motion.dart';
 import '../../core/user_provider.dart';
 import 'dart:async';
 import 'dart:math';
@@ -139,10 +140,12 @@ class _CognitiveTasksScreenState extends State<CognitiveTasksScreen> {
                   if (n == 8) {
                     _onDistracterComplete();
                   } else {
+                    // 모션이 아니라 읽을 시간이다. 예전 800ms 는 고령 사용자가 한 줄을
+                    // 다 읽기 전에 사라졌다 — 게임 오답 배지와 같은 머묾 시간을 쓴다.
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         content: Text('다시 한번 계산해 보세요.'),
-                        duration: Duration(milliseconds: 800),
+                        duration: AppMotion.feedbackHold,
                       ),
                     );
                   }

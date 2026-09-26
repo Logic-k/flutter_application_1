@@ -180,7 +180,9 @@ class _GameTemplateState extends State<GameTemplate>
     final child = widget.child;
 
     final progress = currentStep / totalSteps;
-    final reduce = MotionSettings.reduceOf(context);
+    final level = MotionSettings.levelOf(context);
+    // 이동·확대·파티클은 full 에서만. 배지 페이드는 불투명도 변화라 fadeOnly 에서도 남긴다.
+    final reduce = level != MotionLevel.full;
     final shown = _shown;
 
     return Scaffold(
@@ -308,7 +310,9 @@ class _GameTemplateState extends State<GameTemplate>
               child: IgnorePointer(
                 child: Center(
                   child: FadeTransition(
-                    opacity: reduce ? kAlwaysCompleteAnimation : _badgeOpacity,
+                    opacity: level == MotionLevel.none
+                        ? kAlwaysCompleteAnimation
+                        : _badgeOpacity,
                     child: _FeedbackBadge(
                       key: ValueKey('game-feedback-${shown.serial}'),
                       event: shown,

@@ -12,6 +12,19 @@ void main() {
     expect(AppMotion.pressScale, 0.98);
   });
 
+  test('스태거·안무 상한·스프링 토큰은 08 계획 G-01 값이다', () {
+    expect(AppMotion.stagger.inMilliseconds, 60);
+    expect(AppMotion.choreographyMax.inMilliseconds, 400);
+    // 한 묶음 4개(enter + stagger×3)가 상한 안에 들어가야 한다.
+    expect(AppMotion.enter + AppMotion.stagger * 3, lessThanOrEqualTo(AppMotion.choreographyMax));
+    expect(AppMotion.spring.stiffness, 380);
+    expect(AppMotion.spring.mass, 1);
+    // 불투명도 눌림은 알아볼 만큼 흐리되 글자는 읽혀야 한다.
+    expect(AppMotion.pressOpacity, inInclusiveRange(0.6, 0.85));
+    // 다음 문항 지연은 배지 머묾보다 짧아야 풀이를 막지 않는다.
+    expect(AppMotion.nextQuestionDelay, lessThan(AppMotion.feedbackHold));
+  });
+
   test('MLSpringOutCurve는 0에서 시작해 1로 끝나고 오버슈트가 5%를 넘지 않는다', () {
     const curve = MLSpringOutCurve();
     expect(curve.transform(0), 0);

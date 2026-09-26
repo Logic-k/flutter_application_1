@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme.dart';
+import '../../core/motion/app_motion.dart';
+import '../../core/motion/motion_settings.dart';
 import '../../core/user_provider.dart';
 
 class AssessmentScreen extends StatefulWidget {
@@ -34,10 +36,14 @@ class _AssessmentScreenState extends State<AssessmentScreen> {
     context.read<UserProvider>().setSurveyAnswer(_currentPage, answer);
     
     if (_currentPage < _questions.length - 1) {
-      _pageController.nextPage(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
+      if (MotionSettings.reduceOf(context, listen: false)) {
+        _pageController.jumpToPage(_currentPage + 1);
+      } else {
+        _pageController.nextPage(
+          duration: AppMotion.route,
+          curve: Curves.easeInOut,
+        );
+      }
     } else {
       context.push('/cognitive_tasks');
     }

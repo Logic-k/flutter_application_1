@@ -135,6 +135,35 @@
 - **글자 색은 글자 전용 토큰으로.** 신호등 면 색(`good`·`warn`·`bad`·`read`)을 글자에 쓰면 1.5~2.8:1이다.
   글자는 `goodText`·`warnText`·`badText`, 연보라 면 위 글자는 `onPrimaryContainer`(4.96:1)를 쓴다.
 
+### 4.1 모션 3단과 진입 안무 (2026-09-25, `docs/plans/08_MOTION_SYSTEM_GLOBAL.md` 트랙 G)
+
+- **축소 모션은 3단이다** — `MotionSettings.levelOf(context)` → `MotionLevel`.
+  | 단계 | 신호 | 그리는 것 |
+  |---|---|---|
+  | `full` | 기본 | 전부 |
+  | `fadeOnly` | iOS "동작 줄이기" 또는 앱 설정 "움직임 줄이기" | 150ms 이하 페이드·색 전환만. 이동·확대·파티클·흔들림·스태거 없음. 눌림은 축소 대신 불투명도(`pressOpacity` 0.72) |
+  | `none` | Android "애니메이션 제거" | 없음. 첫 프레임부터 최종 상태 |
+
+  근거: WCAG 2.3.3의 "motion animation" 정의는 크기·형태·위치를 바꾸지 않는 불투명도 변화를 제외한다.
+  정답·오답 배지의 페이드까지 끄면 인지 피드백이 약해진다. 새 애니메이션은 세 단계를 모두 분기하고 테스트한다.
+- **화면 진입은 `StaggeredColumn` 하나로.** 자식 i는 `stagger`(60ms)×i 늦게 시작해 `enter`(200ms) 동안
+  8px 올라오며 나타난다. **한 화면 안무 전체는 400ms를 넘지 않는다**(`choreographyMax`) — 그래서 한 묶음은
+  최대 4개이고, 더 많으면 가까운 요소끼리 묶는다. 목록은 `StaggerScope`+`StaggerItem`, 네 번째부터는 함께 나온다.
+  `stagger` 60ms는 4단 값이 아니라 **간격**이다(각 요소는 여전히 200ms 동안 움직인다).
+- **진입 모션은 앱 실행당 한 번**(`playKey`). 탭 재진입·스크롤 복귀·필터 변경에서는 다시 움직이지 않는다.
+  숨은 탭은 처음 보이는 순간 재생된다(`MainNavScreen`이 숨은 탭의 `TickerMode`를 끈다).
+- **차트는 기준선에서 자란다**(`MLChart`) — 첫 프레임은 실제 최솟값(또는 0) 기준선, 다음 프레임에 실데이터로
+  `enter` 동안 보간한다. 곡선은 오버슈트 없는 `easeOutCubic`이다. 스프링은 값을 잠깐 과장한다.
+- **숫자는 바뀔 때만 올라간다**(`MLCountUp`). 누적 XP·연속 학습처럼 변하지 않은 값을 0부터 세면 "방금 얻은 것"으로
+  읽힌다. 첫 진입 카운트업은 "오늘 쌓인 양"(오늘 걸음)에만 쓴다. `null`은 세지 않는다(§6.4).
+- **스켈레톤은 정적이다**(`MLSkeleton`·`MLSkeletonCard`·`MLSkeletonList`). 반짝임(shimmer)은 반복 애니메이션이라
+  쓰지 않는다. 로딩→내용은 `MLLoadSwitcher`가 `fade`로 크로스페이드한다. 제출 버튼 속 작은 스피너는 예외다.
+- **페이지 전환은 덮지 않는다.** `CustomTransitionPage`·`pageTransitionsTheme`는 Android 예측형 뒤로가기의
+  "당겼다 취소" 기능을 없앤다. 자체 전환은 뒤로가기 대상이 아닌 곳(스플래시→로그인 로고 이동, 결과 시트)에만.
+- **세 번째 예외 — 다음 문항 지연** `nextQuestionDelay` 700ms: 보기를 누른 뒤 색 변화를 확인할 시간이다.
+  움직임이 아니고, 문항 전체가 바뀌는 게임(분류하기)만 쓴다.
+- 화면 코드의 `Duration(milliseconds:)` 직접 사용은 `test/unit/core/motion_token_guard_test.dart`가 막는다.
+
 ---
 
 ## 5. 색 규칙
@@ -206,7 +235,7 @@
 - [ ] 원색 직접 사용 0건 (`palette_guard_test.dart`)
 - [ ] 색 없이도 정보가 전달됨 (흑백으로 봐도 읽히는가)
 - [ ] 네 가지 상태(빈/로딩/실패/정상)가 전부 존재
-- [ ] 새 모션이 4단 값 중 하나
+- [ ] 새 모션이 4단 값 중 하나, 진입 안무 400ms 이하, `MotionLevel` 3단 분기와 테스트 있음
 - [ ] `flutter test` 통과, 관련 Maestro flow 통과
 
 ---

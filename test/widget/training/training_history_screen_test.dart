@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/core/ml_widgets.dart';
 import 'package:flutter_application_1/features/training/data/training_progress_repository.dart';
 import 'package:flutter_application_1/features/training/training_history_screen.dart';
 import 'package:flutter_application_1/features/training/training_progress_provider.dart';
@@ -124,5 +127,21 @@ void main() {
     await tester.tap(find.text('다시 시도'));
     await tester.pumpAndSettle();
     expect(find.text('누가 큰가요?'), findsOneWidget);
+  });
+
+  testWidgets('불러오는 동안 스피너 대신 기록 행 모양의 스켈레톤을 그린다(08 계획 G-05)', (
+    tester,
+  ) async {
+    final pending = Completer<List<TrainingAttemptRecord>>();
+    when(() => progress.getAttempts()).thenAnswer((_) => pending.future);
+    await tester.pumpWidget(_buildSubject(progress));
+
+    expect(find.byType(CircularProgressIndicator), findsNothing);
+    expect(find.byType(MLSkeletonCard), findsWidgets);
+
+    pending.complete([_attempt(id: 'a1')]);
+    await tester.pumpAndSettle();
+    expect(find.byType(MLSkeletonCard), findsNothing);
+    expect(find.text('+12 XP'), findsOneWidget);
   });
 }

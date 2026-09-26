@@ -7,7 +7,7 @@ import '../diary/diary_provider.dart';
 import '../../core/ai/ai_chat_service.dart';
 import '../../core/user_provider.dart';
 import '../../core/formatters.dart';
-import '../../core/motion/fade_slide_in.dart';
+import '../../core/motion/staggered_column.dart';
 import '../../core/ml_widgets.dart';
 import '../../core/theme.dart';
 import '../training/training_progress_provider.dart';
@@ -71,9 +71,6 @@ class _HomeScreenState extends State<HomeScreen> {
     await context.read<DiaryProvider>().loadMonth(userId, DateTime.now());
   }
 
-  Widget _enter(int index, Widget child) =>
-      FadeSlideIn(playKey: 'home', index: index, child: child);
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -112,27 +109,36 @@ class _HomeScreenState extends State<HomeScreen> {
       body: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(
             22, 6, 22, FloatingPillNav.contentBottomInset),
-        // 카드들이 40ms 간격으로 아래에서 올라온다. 앱 실행 후 첫 진입에만.
-        child: Column(
+        // 인사 카드 → AI 비서 → 기억 정원·걷기 → 추천 훈련·뇌 건강 순으로 60ms 간격으로
+        // 아래에서 올라온다(총 380ms). 앱 실행 후 첫 진입에만(08 계획 G-04).
+        child: StaggeredColumn(
+          playKey: 'home',
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _enter(0, _buildHeaderCard(
+            _buildHeaderCard(
               context,
               userProvider,
               pedometer,
               trainingProgress,
               todayStr,
-            )),
-            const SizedBox(height: 20),
-            _enter(1, _buildAiAssistantCard(context)),
-            const SizedBox(height: 20),
-            _enter(2, _buildMemoryGardenCard(context, userProvider, pedometer)),
-            const SizedBox(height: 20),
-            _enter(3, _buildWalkingMiniCard(context, pedometer)),
-            const SizedBox(height: 20),
-            _enter(4, Column(
+            ),
+            Padding(
+              padding: const EdgeInsets.only(top: 20),
+              child: _buildAiAssistantCard(context),
+            ),
+            Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                const SizedBox(height: 20),
+                _buildMemoryGardenCard(context, userProvider, pedometer),
+                const SizedBox(height: 20),
+                _buildWalkingMiniCard(context, pedometer),
+              ],
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 20),
                 _buildTrainingMotivationChip(),
                 MLSectionTitle(
                   '오늘의 추천 훈련',
@@ -142,10 +148,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 _buildRecommendedTraining(context),
+                const SizedBox(height: 20),
+                _buildBrainHealthCard(context, userProvider),
               ],
-            )),
-            const SizedBox(height: 20),
-            _enter(5, _buildBrainHealthCard(context, userProvider)),
+            ),
           ],
         ),
       ),

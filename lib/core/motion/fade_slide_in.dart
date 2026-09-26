@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 
 import 'app_motion.dart';
+import 'motion_play_log.dart';
 import 'motion_settings.dart';
 
 /// 화면에 처음 들어올 때 아래에서 8px 올라오며 나타난다(07 계획 F-04).
@@ -10,8 +11,11 @@ import 'motion_settings.dart';
 ///   총 시간이 400ms 를 넘지 않게 하려는 상한이다.
 /// - 같은 [playKey] 는 앱 실행 동안 한 번만 재생한다. 탭을 오갈 때마다 다시 움직이면
 ///   "무엇이 바뀌었나"를 매번 다시 읽게 만든다.
-/// - Timer 를 쓰지 않고 컨트롤러 하나의 [Interval] 로 지연을 만든다. 축소 모션이면
-///   처음부터 최종 상태다.
+/// - Timer 를 쓰지 않고 컨트롤러 하나의 [Interval] 로 지연을 만든다.
+/// - [MotionLevel.fadeOnly] 면 이동·지연 없이 [AppMotion.fade] 동안 페이드만,
+///   [MotionLevel.none] 이면 처음부터 최종 상태다.
+///
+/// 여러 요소를 순서대로 들일 때는 `StaggeredColumn` 을 쓴다(08 계획 G-02).
 class FadeSlideIn extends StatefulWidget {
   const FadeSlideIn({
     super.key,
@@ -28,12 +32,6 @@ class FadeSlideIn extends StatefulWidget {
   static const int maxStaggered = 4;
   static const double offsetDp = 8;
 
-  static final Set<String> _played = <String>{};
-
-  /// 테스트에서 재생 기록을 비운다.
-  @visibleForTesting
-  static void resetPlayed() => _played.clear();
-
   @override
   State<FadeSlideIn> createState() => _FadeSlideInState();
 }
@@ -43,19 +41,9 @@ class _FadeSlideInState extends State<FadeSlideIn>
   late final int _delayMs =
       FadeSlideIn.stagger.inMilliseconds *
       widget.index.clamp(0, FadeSlideIn.maxStaggered);
-  late final AnimationController _controller = AnimationController(
-    vsync: this,
-    duration: AppMotion.enter + Duration(milliseconds: _delayMs),
-  );
-  late final Animation<double> _t = _controller.drive(
-    CurveTween(
-      curve: Interval(
-        _delayMs / _controller.duration!.inMilliseconds,
-        1,
-        curve: Curves.easeOutCubic,
-      ),
-    ),
-  );
+  late final AnimationController _controller = AnimationController(vsync: this);
+  Animation<double> _t = kAlwaysCompleteAnimation;
+  bool _slide = true;
   bool _decided = false;
 
   @override
@@ -64,11 +52,28 @@ class _FadeSlideInState extends State<FadeSlideIn>
     if (_decided) return;
     _decided = true;
     final key = '${widget.playKey}#${widget.index}';
-    if (MotionSettings.reduceOf(context) || FadeSlideIn._played.contains(key)) {
+    final level = MotionSettings.levelOf(context, listen: false);
+    if (level == MotionLevel.none || MotionPlayLog.hasPlayed(key)) {
       _controller.value = 1;
       return;
     }
-    FadeSlideIn._played.add(key);
+    MotionPlayLog.markPlayed(key);
+    if (level == MotionLevel.fadeOnly) {
+      _slide = false;
+      _controller.duration = AppMotion.fade;
+      _t = _controller.drive(CurveTween(curve: Curves.easeOut));
+    } else {
+      _controller.duration = AppMotion.enter + Duration(milliseconds: _delayMs);
+      _t = _controller.drive(
+        CurveTween(
+          curve: Interval(
+            _delayMs / _controller.duration!.inMilliseconds,
+            1,
+            curve: Curves.easeOutCubic,
+          ),
+        ),
+      );
+    }
     _controller.forward();
   }
 
@@ -86,7 +91,7 @@ class _FadeSlideInState extends State<FadeSlideIn>
       builder: (context, child) => Opacity(
         opacity: _t.value,
         child: Transform.translate(
-          offset: Offset(0, FadeSlideIn.offsetDp * (1 - _t.value)),
+          offset: Offset(0, _slide ? FadeSlideIn.offsetDp * (1 - _t.value) : 0),
           child: child,
         ),
       ),

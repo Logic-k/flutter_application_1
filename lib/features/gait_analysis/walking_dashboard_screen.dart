@@ -7,6 +7,7 @@ import 'pedometer_manager.dart';
 import 'widgets/gait_session_card.dart';
 import '../../core/formatters.dart';
 import '../../core/ml_widgets.dart';
+import '../../core/motion/staggered_column.dart';
 import '../../core/theme.dart';
 
 /// 하루 걸음 목표. 홈 화면(`home_screen.dart`)과 같은 값을 쓴다.
@@ -68,14 +69,20 @@ class _WalkingDashboardScreenState extends State<WalkingDashboardScreen> {
       appBar: AppBar(
         title: const Text('생활습관'),
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
+      body: MLLoadSwitcher(
+        loading: _isLoading,
+        skeleton: _buildSkeleton(),
+        child: SingleChildScrollView(
               padding: const EdgeInsets.fromLTRB(
                   22, 6, 22, FloatingPillNav.contentBottomInset),
-              child: Column(
+              // 측정 상태 → 오늘 걸음 → 성과 → 주간 추이 순(08 계획 G-04). 탭을 처음 열 때 1회.
+              child: StaggeredColumn(
+                playKey: 'walking_dashboard',
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                   MLCard(
                     child: Row(
                       children: [
@@ -110,10 +117,13 @@ class _WalkingDashboardScreenState extends State<WalkingDashboardScreen> {
                   const SizedBox(height: 20),
 
                   const GaitSessionCard(),
-                  const SizedBox(height: 20),
+                    ],
+                  ),
 
                   // 1. 원형 게이지
-                  MLCard(
+                  Padding(
+                    padding: const EdgeInsets.only(top: 20),
+                    child: MLCard(
                     child: SizedBox(
                       width: double.infinity,
                       child: Column(
@@ -127,7 +137,20 @@ class _WalkingDashboardScreenState extends State<WalkingDashboardScreen> {
                           center: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text(Fmt.count(pedometer.todaySteps), style: const TextStyle(fontSize: 38, fontWeight: FontWeight.w800)),
+                              // 첫 진입에 0 에서 오늘 걸음까지 올라간다(움직임 줄이기면 즉시).
+                              MLCountUp(
+                                value: pedometer.todaySteps,
+                                playKey: 'walking_today_steps',
+                                semanticsLabel: '${Fmt.count(pedometer.todaySteps)} 걸음',
+                                builder: (context, v) => Text(
+                                  Fmt.count(v),
+                                  style: const TextStyle(
+                                    fontSize: 38,
+                                    fontWeight: FontWeight.w800,
+                                    fontFeatures: [FontFeature.tabularFigures()],
+                                  ),
+                                ),
+                              ),
                               Text('/ ${Fmt.count(_stepGoal)} 보', style: TextStyle(fontSize: 13, color: context.scheme.onSurfaceVariant, fontWeight: FontWeight.w600)),
                             ],
                           ),
@@ -138,9 +161,13 @@ class _WalkingDashboardScreenState extends State<WalkingDashboardScreen> {
                     ),
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  ),
 
                   // 2. 오늘의 성과 그리드 (MLMetricCard × 4)
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                  const SizedBox(height: 20),
                   MLSectionTitle('오늘의 성과'),
                   GridView.count(
                     shrinkWrap: true,
@@ -156,20 +183,57 @@ class _WalkingDashboardScreenState extends State<WalkingDashboardScreen> {
                       MLMetricCard(icon: Icons.timer_rounded, color: MLColors.good, label: '활동 시간', value: activityMinutes.toString(), unit: '분'),
                     ],
                   ),
-                  const SizedBox(height: 24),
+                    ],
+                  ),
 
                   // 4. 주간 기록 차트
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                  const SizedBox(height: 24),
                   MLSectionTitle('주간 활동 추이'),
                   MLCard(
                     padding: const EdgeInsets.all(16),
                     child: SizedBox(
                       height: 200,
-                      child: BarChart(_buildWeeklyBarChart()),
+                      // 첫 진입에 막대가 바닥에서 자란다. 움직임 줄이기면 처음부터 실제 값.
+                      child: MLChart(
+                        playKey: 'walking_weekly_chart',
+                        builder: (context, entered, duration, curve) => BarChart(
+                          _buildWeeklyBarChart(entered: entered),
+                          duration: duration,
+                          curve: curve,
+                        ),
+                      ),
                     ),
+                  ),
+                    ],
                   ),
                 ],
               ),
             ),
+      ),
+    );
+  }
+
+  /// 불러오는 동안 실제 배치(측정 카드 → 게이지 카드 → 성과 그리드)를 닮은 자리.
+  Widget _buildSkeleton() {
+    return Semantics(
+      label: '걸음 기록을 불러오는 중',
+      excludeSemantics: true,
+      child: const Padding(
+        padding: EdgeInsets.fromLTRB(22, 6, 22, 0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            MLSkeletonCard(lines: 1),
+            SizedBox(height: 20),
+            MLSkeletonCard(lines: 1),
+            SizedBox(height: 20),
+            MLSkeletonCard(lines: 3, leading: false, height: 260),
+          ],
+        ),
+      ),
     );
   }
 
@@ -179,7 +243,8 @@ class _WalkingDashboardScreenState extends State<WalkingDashboardScreen> {
     return MLStatusPill(label: status, color: color);
   }
 
-  BarChartData _buildWeeklyBarChart() {
+  /// [entered] 가 false 면 같은 축에 높이 0 인 막대를 그린다(MLChart 진입 기준선).
+  BarChartData _buildWeeklyBarChart({bool entered = true}) {
     final stepMap = <String, int>{};
     for (var row in _weeklyData) {
       stepMap[row['date'] as String] = (row['steps'] ?? 0) as int;
@@ -204,7 +269,7 @@ class _WalkingDashboardScreenState extends State<WalkingDashboardScreen> {
       final steps = (stepMap[dayKey] ?? 0).toDouble();
       groups.add(BarChartGroupData(x: 6 - i, barRods: [
         BarChartRodData(
-          toY: steps,
+          toY: entered ? steps : 0,
           width: 16,
           color: context.scheme.primary,
           borderRadius: BorderRadius.circular(AppTheme.rChip),

@@ -54,18 +54,21 @@ class _TrainingResultSheetState extends State<TrainingResultSheet>
     duration: AppMotion.celebrateMax,
   );
   bool _started = false;
+  MotionLevel _level = MotionLevel.full;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (_started) return;
     _started = true;
-    if (MotionSettings.reduceOf(context)) {
+    _level = MotionSettings.levelOf(context, listen: false);
+    if (_level == MotionLevel.none) {
       _stars.value = 1;
       return;
     }
+    // fadeOnly 는 별이 커지지 않고 순서대로 밝아지기만 한다(불투명도 변화). 컨페티 없음.
     _stars.forward();
-    if (widget.celebrate) _confetti.forward();
+    if (widget.celebrate && _level == MotionLevel.full) _confetti.forward();
   }
 
   @override
@@ -111,6 +114,7 @@ class _TrainingResultSheetState extends State<TrainingResultSheet>
                     child: _MasteryStars(
                       stars: widget.masteryStars,
                       progress: _stars,
+                      scaleIn: _level == MotionLevel.full,
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -195,10 +199,17 @@ class _TrainingResultSheetState extends State<TrainingResultSheet>
 
 /// 별 3개. 얻은 별은 채워지고 순서대로 켜진다. 못 얻은 별은 윤곽만 남는다.
 class _MasteryStars extends StatelessWidget {
-  const _MasteryStars({required this.stars, required this.progress});
+  const _MasteryStars({
+    required this.stars,
+    required this.progress,
+    this.scaleIn = true,
+  });
 
   final int stars;
   final Animation<double> progress;
+
+  /// false 면 크기 대신 불투명도로 켜진다(움직임 줄이기).
+  final bool scaleIn;
 
   @override
   Widget build(BuildContext context) {
@@ -223,11 +234,14 @@ class _MasteryStars extends StatelessWidget {
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 4),
           child: ScaleTransition(
-            scale: earned ? scale : kAlwaysCompleteAnimation,
-            child: Icon(
-              earned ? Icons.star_rounded : Icons.star_outline_rounded,
-              size: 38,
-              color: earned ? MLColors.read : muted,
+            scale: earned && scaleIn ? scale : kAlwaysCompleteAnimation,
+            child: FadeTransition(
+              opacity: earned && !scaleIn ? scale : kAlwaysCompleteAnimation,
+              child: Icon(
+                earned ? Icons.star_rounded : Icons.star_outline_rounded,
+                size: 38,
+                color: earned ? MLColors.read : muted,
+              ),
             ),
           ),
         );

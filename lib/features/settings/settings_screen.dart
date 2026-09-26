@@ -8,6 +8,7 @@ import '../../core/user_provider.dart';
 import '../training/training_progress_provider.dart';
 import '../../core/settings_provider.dart';
 import '../../core/ml_widgets.dart';
+import '../../core/motion/staggered_column.dart';
 import '../../core/theme.dart';
 import '../../core/app_config.dart';
 import '../../core/ai/ai_key_service.dart';
@@ -124,9 +125,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
       appBar: AppBar(title: const Text('설정')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(22, 6, 22, 40),
-        child: Column(
+        // 섹션 묶음이 60ms 간격으로 들어온다(08 계획 G-04, 첫 진입 1회).
+        child: StaggeredColumn(
+          playKey: 'settings',
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
             // ─── 화면 / 접근성 ───
             MLSectionTitle('화면 및 접근성'),
             MLCard(
@@ -167,7 +173,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 MLListRow(
                   icon: Icons.motion_photos_off_rounded, color: MLColors.mem,
                   title: '움직임 줄이기',
-                  subtitle: '화면 효과와 애니메이션을 최소화합니다.',
+                  // 켜면 이동·확대 효과를 끄고 부드러운 흐려짐만 남긴다(MotionLevel.fadeOnly).
+                  subtitle: '움직이는 효과를 끄고 부드러운 전환만 남깁니다.',
                   trailing: Switch(
                     value: settings.reduceMotion,
                     onChanged: (v) => context.read<SettingsProvider>().setReduceMotion(v),
@@ -175,6 +182,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               ]),
             ),
+              ],
+            ),
+
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
             const SizedBox(height: 22),
 
             // ─── 알림 ───
@@ -196,6 +209,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
             // ─── AI ───
             MLSectionTitle('AI 대화'),
             _buildAiCard(),
+              ],
+            ),
+
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
             const SizedBox(height: 22),
 
             // ─── 계정 ───
@@ -233,13 +252,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 const Divider(),
                 MLListRow(
-                  icon: Icons.refresh_rounded, color: MLColors.warn, titleColor: MLColors.warn,
+                  icon: Icons.refresh_rounded, color: MLColors.warn, titleColor: MLColors.warnText,
                   title: '측정 데이터 초기화',
                   subtitle: '인지 점수 및 기록만 삭제됩니다. (계정 유지)',
                   onTap: () => _showResetDialog(userProvider),
                 ),
               ]),
             ),
+              ],
+            ),
+
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
             const SizedBox(height: 22),
 
             // ─── 정보 ───
@@ -264,7 +289,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 const Divider(),
                 MLListRow(
-                  icon: Icons.logout_rounded, color: MLColors.bad, titleColor: MLColors.bad,
+                  icon: Icons.logout_rounded, color: MLColors.bad, titleColor: MLColors.badText,
                   title: '로그아웃',
                   onTap: () => _confirmLogout(userProvider),
                 ),
@@ -273,6 +298,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             const SizedBox(height: 24),
 
             const MLVersionLabel(),
+              ],
+            ),
           ],
         ),
       ),
@@ -314,13 +341,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
   // ─── AI 카드 ─────────────────────────────────────────────────
   Widget _buildAiCard() {
     if (_loadingAi) {
-      return const MLCard(
-        child: Center(
-          child: Padding(
-            padding: EdgeInsets.all(8),
-            child: CircularProgressIndicator(),
-          ),
-        ),
+      // AI 카드 모양(상태 행 + 설명 두 줄)의 자리(08 계획 G-05).
+      return Semantics(
+        label: 'AI 설정을 불러오는 중',
+        excludeSemantics: true,
+        child: const MLSkeletonCard(lines: 2),
       );
     }
 

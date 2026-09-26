@@ -5,6 +5,9 @@ import 'package:table_calendar/table_calendar.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import '../../core/theme.dart';
+import '../../core/ml_widgets.dart';
+import '../../core/motion/app_motion.dart';
+import '../../core/motion/motion_settings.dart';
 import '../../core/user_provider.dart';
 import 'diary_provider.dart';
 
@@ -172,13 +175,34 @@ class _DiaryScreenState extends State<DiaryScreen> {
           ),
         ],
       ),
-      body: !_loaded
-          ? const Center(child: CircularProgressIndicator())
-          : Column(
+      // 불러오는 동안은 달력 + 입력 칸 모양의 자리를 그리고, 도착하면 크로스페이드(08 계획 G-05).
+      // 입력 칸이 Expanded 라 스태거는 걸지 않는다.
+      body: MLLoadSwitcher(
+          loading: !_loaded,
+          skeleton: Semantics(
+            label: '일기를 불러오는 중',
+            excludeSemantics: true,
+            child: const Padding(
+              padding: EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  MLSkeleton(height: 300, radius: AppTheme.rCard),
+                  SizedBox(height: 20),
+                  MLSkeleton(width: 140, height: 18),
+                  SizedBox(height: 12),
+                  MLSkeleton(height: 120, radius: AppTheme.rField),
+                ],
+              ),
+            ),
+          ),
+          child: Column(
               children: [
                 // 키보드가 열리면 캘린더를 애니메이션으로 접음
                 AnimatedSize(
-                  duration: const Duration(milliseconds: 200),
+                  duration: MotionSettings.reduceOf(context)
+                      ? Duration.zero
+                      : AppMotion.enter,
                   curve: Curves.easeInOut,
                   child: SizedBox(
                     height: keyboardOpen ? 0 : null,
@@ -193,6 +217,7 @@ class _DiaryScreenState extends State<DiaryScreen> {
                 ),
               ],
             ),
+      ),
     );
   }
 

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme.dart';
+import '../../../core/motion/app_motion.dart';
 import '../../../core/services/voice_service.dart';
 import '../application/training_attempt_input.dart';
 import '../application/training_completion_ui.dart';
@@ -150,7 +151,7 @@ class _CategorizationGameState extends State<CategorizationGame> {
 
     _showFeedback(isCorrect);
 
-    Future.delayed(const Duration(milliseconds: 700), () {
+    Future.delayed(AppMotion.nextQuestionDelay, () {
       if (!mounted) return;
       if (_currentStep < _totalSteps) {
         setState(() {

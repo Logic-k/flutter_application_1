@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Android 12+ (Dark Mode setting is on). 시스템 SplashScreen 이 windowBackground 대신
+         아래 두 속성을 쓴다. 앱이 라이트 고정이라 다크 모드에서도 같은 색·아이콘이다.
+         values-night 가 values-v31 보다 우선하므로 night-v31 에도 같은 값을 둔다. -->
+    <style name="LaunchTheme" parent="@android:style/Theme.Black.NoTitleBar">
+        <item name="android:windowBackground">@drawable/launch_background</item>
+        <item name="android:windowSplashScreenBackground">@color/splash_background</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/splash_icon</item>
+    </style>
+    <style name="NormalTheme" parent="@android:style/Theme.Black.NoTitleBar">
+        <item name="android:windowBackground">?android:colorBackground</item>
+    </style>
+</resources>

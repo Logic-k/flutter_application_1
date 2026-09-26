@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/core/ml_widgets.dart';
 import 'package:flutter_application_1/features/training/data/training_progress_repository.dart';
 import 'package:flutter_application_1/features/training/domain/training_catalog.dart';
 import 'package:flutter_application_1/features/training/training_hub_page.dart';
@@ -121,5 +122,18 @@ void main() {
     await tester.pump();
 
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('코스를 불러오는 동안 스피너 대신 스켈레톤을 그린다(08 계획 G-05)', (
+    tester,
+  ) async {
+    when(() => progress.isLoading).thenReturn(true);
+    await tester.pumpWidget(_buildSubject(progress));
+    await tester.pump();
+
+    expect(find.byType(CircularProgressIndicator), findsNothing);
+    expect(find.byType(MLSkeletonCard), findsWidgets);
+    expect(find.byKey(Key('course-node-${trainingCatalog.first.id}')), findsNothing);
+    await tester.pumpAndSettle();
   });
 }

@@ -4,6 +4,7 @@
 // ─────────────────────────────────────────────────────────────────────────
 import 'package:flutter/material.dart';
 import 'motion/app_motion.dart';
+import 'motion/motion_play_log.dart';
 import 'motion/motion_settings.dart';
 import 'motion/pressable_scale.dart';
 import 'theme.dart';
@@ -428,6 +429,233 @@ class MLListRow extends StatelessWidget {
         ])),
         trailing ?? Icon(Icons.chevron_right_rounded, color: context.scheme.onSurfaceVariant),
       ]),
+    ),
+  );
+}
+
+/// 12) 차트 진입 애니메이션 (08 계획 G-04)
+///
+/// fl_chart 차트는 두 데이터 상태 사이만 보간하고 첫 빌드 진입 애니메이션이 없다.
+/// 그래서 첫 프레임은 기준선(0값) 데이터로 그리고, 다음 프레임에 실데이터로 바꿔
+/// 차트가 자라나게 한다. [builder] 는 `entered == false` 면 y 를 0 으로 둔 데이터를,
+/// 받은 `duration`·`curve` 는 fl_chart 생성자의 `duration`·`curve` 에 그대로 넣는다.
+///
+/// - 곡선은 오버슈트 없는 easeOutCubic 이다. 스프링은 값이 실제보다 잠깐 커 보이게
+///   만들어 데이터를 과장한다.
+/// - 같은 [playKey] 는 앱 실행 동안 한 번만 자라난다. 숨은 탭(TickerMode 꺼짐)은
+///   처음 보이는 순간까지 기다린다.
+/// - 움직임 줄이기(fadeOnly·none)면 처음부터 실데이터이고 이후 데이터 변경도
+///   보간 없이 바뀐다(fl_chart 기본 150ms linear 보간까지 끈다).
+/// - 값 없음(null)은 builder 가 0 이 아니라 빈 상태로 그려야 한다(DESIGN.md §6.4).
+class MLChart extends StatefulWidget {
+  const MLChart({super.key, required this.playKey, required this.builder});
+
+  final String playKey;
+  final Widget Function(BuildContext context, bool entered, Duration duration, Curve curve) builder;
+
+  @override
+  State<MLChart> createState() => _MLChartState();
+}
+
+class _MLChartState extends State<MLChart> {
+  bool _entered = true;
+  bool _decided = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_decided) return;
+    final level = MotionSettings.levelOf(context, listen: false);
+    if (level != MotionLevel.full || MotionPlayLog.hasPlayed(widget.playKey)) {
+      _decided = true;
+      return;
+    }
+    // 숨은 탭에서는 기준선으로 기다렸다가, 보이는 순간 자라난다.
+    _entered = false;
+    if (!TickerMode.valuesOf(context).enabled) return;
+    _decided = true;
+    MotionPlayLog.markPlayed(widget.playKey);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) setState(() => _entered = true);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final full = MotionSettings.levelOf(context) == MotionLevel.full;
+    return widget.builder(
+      context,
+      _entered,
+      full ? AppMotion.enter : Duration.zero,
+      Curves.easeOutCubic,
+    );
+  }
+}
+
+/// 13) 숫자 카운트업 (08 계획 G-04)
+///
+/// 값이 바뀌면 이전 값에서 새 값으로 [AppMotion.enter] 동안 올라간다(훈련 뒤 XP·연속 학습).
+/// [playKey] 를 주면 화면 첫 진입에 한 번 0 에서 올라간다 — 오늘 걸음처럼 "오늘 쌓인 양"
+/// 에만 쓴다. 누적 XP 처럼 변하지 않은 값을 0 부터 세면 방금 얻은 것처럼 읽힌다.
+/// 움직임 줄이기면 즉시 최종 값이다.
+/// 글자가 매 프레임 바뀌므로 스크린리더에는 [semanticsLabel] 로 최종 값만 준다.
+/// null 은 카운트업하지 않는다 — 호출부가 "측정 못 함"을 따로 그린다(DESIGN.md §6.4).
+class MLCountUp extends StatefulWidget {
+  const MLCountUp({
+    super.key,
+    required this.value,
+    required this.builder,
+    this.playKey,
+    this.semanticsLabel,
+  });
+
+  final int value;
+  final String? playKey;
+  final Widget Function(BuildContext context, int value) builder;
+  final String? semanticsLabel;
+
+  @override
+  State<MLCountUp> createState() => _MLCountUpState();
+}
+
+class _MLCountUpState extends State<MLCountUp> {
+  int? _from;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_from != null) return;
+    final key = widget.playKey;
+    if (key == null) {
+      _from = widget.value;
+      return;
+    }
+    if (!TickerMode.valuesOf(context).enabled) return; // 숨은 탭은 보일 때 정한다.
+    final level = MotionSettings.levelOf(context, listen: false);
+    if (level != MotionLevel.full || MotionPlayLog.hasPlayed(key)) {
+      _from = widget.value;
+    } else {
+      MotionPlayLog.markPlayed(key);
+      _from = 0;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final full = MotionSettings.levelOf(context) == MotionLevel.full;
+    final counter = TweenAnimationBuilder<int>(
+      tween: IntTween(begin: _from ?? widget.value, end: widget.value),
+      duration: full ? AppMotion.enter : Duration.zero,
+      curve: Curves.easeOutCubic,
+      builder: (context, v, _) => widget.builder(context, v),
+    );
+    final label = widget.semanticsLabel;
+    if (label == null) return counter;
+    return Semantics(label: label, excludeSemantics: true, child: counter);
+  }
+}
+
+/// 14) 스켈레톤 블록 (08 계획 G-05, DESIGN.md §4 "레이아웃 모양을 닮은 스켈레톤")
+///
+/// 정적 블록이다. 반짝임(shimmer)은 반복 애니메이션이라 쓰지 않는다(KWCAG 자동재생).
+/// 색은 장식용 경계선(`dividerColor`)이라 흰 카드 위에서 보이고 대비 요건이 없다.
+class MLSkeleton extends StatelessWidget {
+  final double? width;
+  final double height;
+  final double radius;
+  const MLSkeleton({super.key, this.width, this.height = 14, this.radius = AppTheme.rChip});
+  @override
+  Widget build(BuildContext context) => Container(
+    width: width, height: height,
+    decoration: BoxDecoration(
+      color: Theme.of(context).dividerColor,
+      borderRadius: BorderRadius.circular(radius),
+    ),
+  );
+}
+
+/// 카드 한 장 모양의 스켈레톤: 아이콘 타일 + 제목 줄 + 보조 줄.
+/// [lines] 는 보조 줄 수, [leading] 이 false 면 아이콘 자리를 비운다.
+class MLSkeletonCard extends StatelessWidget {
+  final int lines;
+  final bool leading;
+  final double? height;
+  const MLSkeletonCard({super.key, this.lines = 1, this.leading = true, this.height});
+  @override
+  Widget build(BuildContext context) {
+    final t = Theme.of(context);
+    return Container(
+      height: height,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: t.cardColor,
+        borderRadius: BorderRadius.circular(AppTheme.rCard),
+        border: Border.all(color: t.dividerColor),
+      ),
+      child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        if (leading) ...[
+          const MLSkeleton(width: 44, height: 44, radius: AppTheme.rTile),
+          const SizedBox(width: 14),
+        ],
+        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          const FractionallySizedBox(widthFactor: 0.55, child: MLSkeleton(height: 16)),
+          for (var i = 0; i < lines; i++) ...[
+            const SizedBox(height: 10),
+            FractionallySizedBox(widthFactor: i.isEven ? 0.9 : 0.7, child: const MLSkeleton(height: 12)),
+          ],
+        ])),
+      ]),
+    );
+  }
+}
+
+/// 목록 로딩 자리. 실제 목록과 같은 간격으로 카드 [count] 장을 그린다.
+/// 스크린리더에는 블록 대신 "불러오는 중" 한 번만 읽힌다.
+/// 다른 스크롤 뷰 안에 넣을 때는 [shrinkWrap] 을 true 로 준다.
+class MLSkeletonList extends StatelessWidget {
+  final int count;
+  final int lines;
+  final bool leading;
+  final EdgeInsetsGeometry padding;
+  final double spacing;
+  const MLSkeletonList({
+    super.key,
+    this.count = 4,
+    this.lines = 1,
+    this.leading = true,
+    this.padding = const EdgeInsets.all(20),
+    this.spacing = 12,
+    this.shrinkWrap = false,
+  });
+  final bool shrinkWrap;
+  @override
+  Widget build(BuildContext context) => Semantics(
+    label: '불러오는 중',
+    excludeSemantics: true,
+    child: ListView.separated(
+      padding: padding,
+      shrinkWrap: shrinkWrap,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: count,
+      separatorBuilder: (_, _) => SizedBox(height: spacing),
+      itemBuilder: (_, _) => MLSkeletonCard(lines: lines, leading: leading),
+    ),
+  );
+}
+
+/// 로딩(스켈레톤) → 내용 전환. 움직임 줄이기에서도 크로스페이드는 남기고
+/// (불투명도 변화), 애니메이션 제거(none)면 바로 바꾼다.
+class MLLoadSwitcher extends StatelessWidget {
+  final bool loading;
+  final Widget skeleton;
+  final Widget child;
+  const MLLoadSwitcher({super.key, required this.loading, required this.skeleton, required this.child});
+  @override
+  Widget build(BuildContext context) => AnimatedSwitcher(
+    duration: MotionSettings.levelOf(context) == MotionLevel.none ? Duration.zero : AppMotion.fade,
+    child: KeyedSubtree(
+      key: ValueKey<bool>(loading),
+      child: loading ? skeleton : child,
     ),
   );
 }

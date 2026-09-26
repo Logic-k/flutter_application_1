@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/theme.dart';
 import '../../core/ml_widgets.dart';
+import '../../core/motion/staggered_column.dart';
 import '../../core/cs_service.dart';
 
 class FaqScreen extends StatefulWidget {
@@ -26,10 +27,12 @@ class _FaqScreenState extends State<FaqScreen> {
       appBar: AppBar(title: const Text('자주 묻는 질문')),
       body: FutureBuilder<List<Map<String, dynamic>>>(
         future: _future,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
+        // 질문 행 모양의 스켈레톤.
+        // 로딩 → 내용은 크로스페이드(08 계획 G-05).
+        builder: (context, snapshot) => MLLoadSwitcher(
+          loading: snapshot.connectionState == ConnectionState.waiting,
+          skeleton: const MLSkeletonList(count: 6, leading: false, padding: EdgeInsets.all(20), spacing: 10),
+          child: Builder(builder: (context) {
           if (snapshot.hasError) {
             return MLErrorState(
               onRetry: () => setState(() {
@@ -59,10 +62,18 @@ class _FaqScreenState extends State<FaqScreen> {
               return (ai == -1 ? 99 : ai).compareTo(bi == -1 ? 99 : bi);
             });
 
-          return ListView(
+          // 카테고리 묶음이 순서대로 들어온다(첫 진입 1회).
+          return StaggerScope(
+            playKey: 'faq_list',
+            child: ListView(
             padding: const EdgeInsets.symmetric(vertical: 8),
             children: [
-              for (final cat in sortedKeys) ...[
+              for (final (i, cat) in sortedKeys.indexed)
+                StaggerItem(
+                  index: i,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
                 Padding(
                   padding:
                       const EdgeInsets.fromLTRB(20, 20, 20, 8),
@@ -95,10 +106,14 @@ class _FaqScreenState extends State<FaqScreen> {
                     ],
                   ),
                 ),
-              ],
+                    ],
+                  ),
+                ),
             ],
+            ),
           );
-        },
+        }),
+        ),
       ),
     );
   }

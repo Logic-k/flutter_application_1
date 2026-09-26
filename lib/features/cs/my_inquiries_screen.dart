@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme.dart';
 import '../../core/ml_widgets.dart';
+import '../../core/motion/staggered_column.dart';
 import '../../core/cs_service.dart';
 import '../../core/user_provider.dart';
 
@@ -33,10 +34,12 @@ class _MyInquiriesScreenState extends State<MyInquiriesScreen> {
       appBar: AppBar(title: const Text('내 문의 내역')),
       body: FutureBuilder<List<Map<String, dynamic>>>(
         future: _future,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
+        // 문의 카드 모양(제목 + 날짜)의 스켈레톤.
+        // 로딩 → 내용은 크로스페이드(08 계획 G-05).
+        builder: (context, snapshot) => MLLoadSwitcher(
+          loading: snapshot.connectionState == ConnectionState.waiting,
+          skeleton: const MLSkeletonList(count: 4, leading: false, padding: EdgeInsets.all(16), spacing: 8),
+          child: Builder(builder: (context) {
           if (snapshot.hasError) {
             return MLErrorState(
               onRetry: () => setState(() {
@@ -70,7 +73,9 @@ class _MyInquiriesScreenState extends State<MyInquiriesScreen> {
                 _future = CsService.fetchMyInquiries(_username);
               });
             },
-            child: ListView.separated(
+            child: StaggerScope(
+              playKey: 'my_inquiries',
+              child: ListView.separated(
               padding: const EdgeInsets.all(16),
               itemCount: inquiries.length,
               separatorBuilder: (_, _) => const SizedBox(height: 8),
@@ -82,7 +87,9 @@ class _MyInquiriesScreenState extends State<MyInquiriesScreen> {
                 final dateStr = createdAt != null
                     ? DateFormat('yyyy.MM.dd', 'ko_KR').format(createdAt)
                     : '';
-                return Card(
+                return StaggerItem(
+                  index: index,
+                  child: Card(
                   child: ListTile(
                     contentPadding: const EdgeInsets.symmetric(
                         horizontal: 16, vertical: 8),
@@ -100,11 +107,14 @@ class _MyInquiriesScreenState extends State<MyInquiriesScreen> {
                     onTap: () =>
                         context.push('/cs/inquiry_detail/${inq['id']}'),
                   ),
+                  ),
                 );
               },
             ),
+            ),
           );
-        },
+        }),
+        ),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push('/cs/inquiry_submit'),

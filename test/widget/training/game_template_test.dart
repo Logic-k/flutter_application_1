@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/core/motion/app_motion.dart';
 import 'package:flutter_application_1/core/motion/burst_particles.dart';
 import 'package:flutter_application_1/core/motion/game_feedback.dart';
 import 'package:flutter_application_1/core/settings_provider.dart';
@@ -18,6 +19,7 @@ Widget _subject({
   GameCategory? adaptiveCategory,
   GameFeedbackController? feedback,
   bool reduceMotion = false,
+  bool disableAnimations = false,
   String? activityId,
 }) {
   final settings = _MockSettingsProvider();
@@ -34,7 +36,10 @@ Widget _subject({
     ],
     child: MaterialApp(
       home: MediaQuery(
-        data: MediaQueryData(textScaler: TextScaler.linear(textScale)),
+        data: MediaQueryData(
+          textScaler: TextScaler.linear(textScale),
+          disableAnimations: disableAnimations,
+        ),
         child: GameTemplate(
           title: '테스트 훈련',
           objective: '테스트 목표',
@@ -123,7 +128,16 @@ void main() {
     await tester.pumpAndSettle();
   });
 
-  testWidgets('움직임 줄이기면 배지가 첫 프레임부터 완전히 보이고 파티클이 없다', (
+  double badgeOpacity(WidgetTester tester, String text) => tester
+      .widget<FadeTransition>(
+        find
+            .ancestor(of: find.text(text), matching: find.byType(FadeTransition))
+            .first,
+      )
+      .opacity
+      .value;
+
+  testWidgets('앱 설정 움직임 줄이기(fadeOnly)면 배지는 150ms 페이드만 하고 파티클이 없다', (
     tester,
   ) async {
     final feedback = GameFeedbackController();
@@ -132,16 +146,43 @@ void main() {
 
     feedback.correct('정답입니다');
     await tester.pump();
+    // 불투명도 변화는 WCAG 2.3.3 의 모션이 아니라 남긴다(08 계획 §2.4).
+    expect(badgeOpacity(tester, '정답입니다'), lessThan(1));
+    expect(find.byType(BurstParticles), findsNothing);
 
-    final fade = tester.widget<FadeTransition>(
+    await tester.pump(AppMotion.fade);
+    expect(badgeOpacity(tester, '정답입니다'), 1);
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets('fadeOnly 에서 오답이어도 놀이 영역이 흔들리지 않는다', (tester) async {
+    final feedback = GameFeedbackController();
+    addTearDown(feedback.dispose);
+    await tester.pumpWidget(_subject(feedback: feedback, reduceMotion: true));
+
+    feedback.wrong('오답입니다');
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 40));
+    final shake = tester.widget<Transform>(
       find
-          .ancestor(
-            of: find.text('정답입니다'),
-            matching: find.byType(FadeTransition),
-          )
+          .ancestor(of: find.text('게임 내용'), matching: find.byType(Transform))
           .first,
     );
-    expect(fade.opacity.value, 1);
+    expect(shake.transform.getTranslation().x, 0);
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets('Android 애니메이션 제거(none)면 배지가 첫 프레임부터 완전히 보이고 파티클이 없다', (
+    tester,
+  ) async {
+    final feedback = GameFeedbackController();
+    addTearDown(feedback.dispose);
+    await tester.pumpWidget(_subject(feedback: feedback, disableAnimations: true));
+
+    feedback.correct('정답입니다');
+    await tester.pump();
+
+    expect(badgeOpacity(tester, '정답입니다'), 1);
     expect(find.byType(BurstParticles), findsNothing);
     await tester.pumpAndSettle();
   });

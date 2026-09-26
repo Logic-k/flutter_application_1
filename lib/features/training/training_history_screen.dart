@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../core/formatters.dart';
 import '../../core/ml_widgets.dart';
+import '../../core/motion/staggered_column.dart';
 import '../../core/theme.dart';
 import 'application/training_completion_ui.dart';
 import 'data/training_progress_repository.dart';
@@ -41,10 +42,12 @@ class _TrainingHistoryScreenState extends State<TrainingHistoryScreen> {
       appBar: AppBar(title: const Text('나의 훈련 기록')),
       body: FutureBuilder<List<TrainingAttemptRecord>>(
         future: _future,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
+        // 기록 행 모양(아이콘 + 활동명 + 점수 줄)의 스켈레톤.
+        // 로딩 → 내용은 크로스페이드(08 계획 G-05).
+        builder: (context, snapshot) => MLLoadSwitcher(
+          loading: snapshot.connectionState == ConnectionState.waiting,
+          skeleton: const MLSkeletonList(count: 4, lines: 1, padding: EdgeInsets.fromLTRB(16, 20, 16, 24)),
+          child: Builder(builder: (context) {
           if (snapshot.hasError) {
             return MLErrorState(onRetry: _reload);
           }
@@ -107,13 +110,18 @@ class _TrainingHistoryScreenState extends State<TrainingHistoryScreen> {
                   ),
                 ),
               Expanded(
-                child: ListView.builder(
+                // 최근 날짜 묶음부터 60ms 간격으로 들어온다(첫 진입 1회).
+                child: StaggerScope(
+                  playKey: 'training_history',
+                  child: ListView.builder(
                   padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
                   itemCount: dates.length,
                   itemBuilder: (context, i) {
                     final date = dates[i];
                     final dayAttempts = grouped[date]!;
-                    return Column(
+                    return StaggerItem(
+                      index: i,
+                      child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Padding(
@@ -128,13 +136,16 @@ class _TrainingHistoryScreenState extends State<TrainingHistoryScreen> {
                         ),
                         for (final a in dayAttempts) _AttemptTile(attempt: a),
                       ],
+                    ),
                     );
                   },
+                ),
                 ),
               ),
             ],
           );
-        },
+        }),
+        ),
       ),
     );
   }

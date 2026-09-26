@@ -4,6 +4,8 @@ import 'package:printing/printing.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../core/theme.dart';
+import '../../core/motion/app_motion.dart';
+import '../../core/motion/motion_settings.dart';
 import '../../core/database_helper.dart';
 import '../../core/user_provider.dart';
 import 'clinical_report_generator.dart';
@@ -34,25 +36,30 @@ class _ClinicalReportOptionsScreenState
     super.dispose();
   }
 
+  /// 단계 이동. 움직임 줄이기면 슬라이드 없이 바로 바꾼다.
+  void _goToStep() {
+    if (MotionSettings.reduceOf(context, listen: false)) {
+      _pageController.jumpToPage(_currentStep);
+    } else {
+      _pageController.animateToPage(
+        _currentStep,
+        duration: AppMotion.route,
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
   void _nextStep() {
     if (_currentStep < 3) {
       setState(() => _currentStep++);
-      _pageController.animateToPage(
-        _currentStep,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
+      _goToStep();
     }
   }
 
   void _prevStep() {
     if (_currentStep > 0) {
       setState(() => _currentStep--);
-      _pageController.animateToPage(
-        _currentStep,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
+      _goToStep();
     }
   }
 
@@ -244,7 +251,7 @@ class _ClinicalReportOptionsScreenState
     return GestureDetector(
       onTap: () => setState(() => _selectedType = type),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
+        duration: AppMotion.fade,
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(AppTheme.rTile),
@@ -494,7 +501,7 @@ class _ClinicalReportOptionsScreenState
     return GestureDetector(
       onTap: () => setState(() => _caregiverPresent = value),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
+        duration: AppMotion.fade,
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(AppTheme.rTile),
