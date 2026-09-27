@@ -39,7 +39,12 @@ class SettingsProvider extends ChangeNotifier {
   bool get hapticFeedbackEnabled => _hapticFeedbackEnabled;
   bool get reduceMotion => _reduceMotion;
   bool get soundEffectsEnabled => _soundEffectsEnabled;
-  
+
+  // 저장된 설정을 다 읽었는가. 오프닝은 이 값이 true 가 된 뒤에 모션 단계를 정한다
+  // — 먼저 정하면 "움직임 줄이기"를 켠 사용자도 첫 순간 전체 모션을 보게 된다.
+  bool _isLoaded = false;
+  bool get isLoaded => _isLoaded;
+
   double get textScaleFactor {
     switch (_fontSize) {
       case AppFontSize.normal: return 1.0;
@@ -62,6 +67,7 @@ class SettingsProvider extends ChangeNotifier {
     _soundEffectsEnabled = prefs.getBool('sound_effects') ?? true;
     VoiceService.voiceEnabled = _voiceGuidanceEnabled;
     SoundService.soundEnabled = _soundEffectsEnabled;
+    _isLoaded = true;
     notifyListeners();
   }
 

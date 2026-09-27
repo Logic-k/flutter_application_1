@@ -30,6 +30,7 @@ import 'features/training/training_progress_provider.dart';
 import 'core/database_helper.dart';
 import 'core/settings_provider.dart';
 import 'core/admin_provider.dart';
+import 'features/opening/memory_opening.dart';
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
@@ -233,6 +234,16 @@ class _MemoryLinkAppState extends State<MemoryLinkApp> {
     final userProvider = context.watch<UserProvider>();
     final settings = context.watch<SettingsProvider>();
 
+    // 콜드 스타트 오프닝(DESIGN.md §4.1 네 번째 예외). 로그인 확인과 겹쳐 흐르고,
+    // 확인이 늦으면 정지 화면에서 기다리므로 아래 로딩 스피너는 보이지 않는다.
+    return MemoryOpening(
+      start: settings.isLoaded,
+      ready: !userProvider.isLoading,
+      child: _buildApp(userProvider, settings),
+    );
+  }
+
+  Widget _buildApp(UserProvider userProvider, SettingsProvider settings) {
     if (userProvider.isLoading) {
       return MaterialApp(
         theme: AppTheme.lightTheme,

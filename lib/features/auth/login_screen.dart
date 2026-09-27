@@ -11,6 +11,10 @@ import '../../core/motion/staggered_column.dart';
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
+  /// 스플래시 → 로그인 로고 이동의 재생 기록 키. 오프닝(`MemoryOpening`)이 먼저
+  /// 로고를 보여 주면 이 키를 재생된 것으로 표시해 이동을 건너뛴다.
+  static const String splashPlayKey = 'login_splash';
+
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
@@ -28,7 +32,6 @@ class _LoginScreenState extends State<LoginScreen>
   // 뒤로가기 대상이 아닌 화면 내부 전환이라 CustomTransitionPage 를 쓰지 않는다.
   // 앱 실행당 1회, 움직임 줄이기(fadeOnly·none)면 하지 않는다.
   static const double _logoSize = 110;
-  static const String _splashPlayKey = 'login_splash';
   final _logoKey = GlobalKey();
   final _stackKey = GlobalKey();
   late final AnimationController _flight;
@@ -48,10 +51,10 @@ class _LoginScreenState extends State<LoginScreen>
     if (_decided) return;
     _decided = true;
     if (MotionSettings.levelOf(context, listen: false) != MotionLevel.full ||
-        MotionPlayLog.hasPlayed(_splashPlayKey)) {
+        MotionPlayLog.hasPlayed(LoginScreen.splashPlayKey)) {
       return;
     }
-    MotionPlayLog.markPlayed(_splashPlayKey);
+    MotionPlayLog.markPlayed(LoginScreen.splashPlayKey);
     _flying = true;
     WidgetsBinding.instance.addPostFrameCallback((_) => _startFlight());
   }

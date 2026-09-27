@@ -78,6 +78,13 @@ class MLColors {
   static const Color warnText = Color(0xFF8A5A00); // 흰 6.05:1
   static const Color badText  = Color(0xFFC62828); // 흰 5.62:1
 
+  // 앱 아이콘(assets/icon/app_icon.png)에서 뽑은 로고 색. 오프닝이 로고를 벡터로 다시 그릴 때만 쓴다.
+  static const Color logoNavy     = Color(0xFF3C5A8C); // 바탕 그라데이션 왼쪽 위
+  static const Color logoNavyDeep = Color(0xFF1F2D4D); // 바탕 그라데이션 오른쪽 아래
+  static const Color logoFacetTop  = Color(0xFFD7E3F8); // 오른쪽 윗면(왼쪽 윗면은 흰색)
+  static const Color logoFacetSide = Color(0xFF9FB8E6); // 양 옆면
+  static const Color logoFacetFold = Color(0xFF6F8FC4); // 가운데 접힌 면
+
   // Dark mode surfaces
   static const Color dBg         = Color(0xFF15131F);
   static const Color dSurface    = Color(0xFF211D30);

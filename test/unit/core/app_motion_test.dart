@@ -9,6 +9,8 @@ void main() {
     expect(AppMotion.enter.inMilliseconds, 200);
     expect(AppMotion.route.inMilliseconds, 300);
     expect(AppMotion.celebrateMax.inMilliseconds, lessThan(3000));
+    // 오프닝은 축하 효과와 같은 자동재생 상한 안에서 끝난다(DESIGN.md §4.1 네 번째 예외).
+    expect(AppMotion.opening, lessThanOrEqualTo(AppMotion.celebrateMax));
     expect(AppMotion.pressScale, 0.98);
   });
 
