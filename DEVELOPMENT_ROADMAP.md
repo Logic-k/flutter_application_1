@@ -60,6 +60,11 @@ flow가 아니다. `maestro/helpers/` 2개(`login_helper` · `just_tap_confirm`)
 - Maestro 게이팅 **17 → 21 → 20** — 8/24에 `social_ranking_flow`를 뺐다.
   검사 대상이던 `SocialRankingView` 위젯 자체를 삭제했기 때문이다.
 
+> **게이팅 21개 전부 통과(2026-09-27, 커밋 `b949c8c` 오프닝 반영).** QA_Device `emulator-5680`,
+> `-gpu angle_indirect`, debug APK(`IS_EMULATOR=true`). 한 세션에서 4~5개씩 나눠 포그라운드로 21개를
+> 모두 돌렸고 20개는 첫 시도에 통과했다. `opening_flow`만 1회 멈췄다 — 건너뛰기 단계의 "오프닝 보임" 대기가
+> 자동 로그인이 빨라 오프닝이 먼저 걷히면 60초 내내 걸리는 타이밍 문제여서 그 대기를 선택으로 바꾸고 재실행해 통과했다.
+>
 > **게이팅 20개 전부 통과를 확인했다(2026-09-20).** QA_Device `emulator-5680`,
 > `-gpu angle_indirect`, debug APK(`IS_EMULATOR=true`). 다만 이번에도 단일 연속 실행은
 > 아니다 — 러너가 16개째(`clinical_report_flow`)까지 전부 PASS한 뒤 프로세스가 종료돼,
