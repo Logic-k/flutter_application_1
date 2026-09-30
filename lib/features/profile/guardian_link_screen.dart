@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../core/theme.dart';
+import '../../core/share_origin.dart';
 import '../../core/user_provider.dart';
 import '../../core/services/guardian_sync_service.dart';
 import '../gait_analysis/pedometer_manager.dart';
@@ -325,25 +326,29 @@ class _GuardianLinkScreenState extends State<GuardianLinkScreen> {
             const SizedBox(height: 16),
 
             // 링크 공유 버튼
+            // iPad·iOS 26은 공유 시트를 팝오버로 띄우므로 버튼 위치를 기준으로 넘긴다.
             SizedBox(
               width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: _dashboardUrl.isEmpty
-                    ? null
-                    : () {
-                        Share.share(
-                          '어르신의 건강 상태를 확인할 수 있는 안심 링크입니다.\n$_dashboardUrl',
-                          subject: 'MemoryLink 보호자 안심 연결',
-                        );
-                      },
-                icon: const Icon(Icons.share),
-                label: const Text('링크 공유하기 (카톡 등)'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: theme.colorScheme.primary,
-                  foregroundColor: theme.colorScheme.onPrimary,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppTheme.rField),
+              child: Builder(
+                builder: (buttonContext) => ElevatedButton.icon(
+                  onPressed: _dashboardUrl.isEmpty
+                      ? null
+                      : () {
+                          Share.share(
+                            '어르신의 건강 상태를 확인할 수 있는 안심 링크입니다.\n$_dashboardUrl',
+                            subject: 'MemoryLink 보호자 안심 연결',
+                            sharePositionOrigin: shareOriginOf(buttonContext),
+                          );
+                        },
+                  icon: const Icon(Icons.share),
+                  label: const Text('링크 공유하기 (카톡 등)'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: theme.colorScheme.primary,
+                    foregroundColor: theme.colorScheme.onPrimary,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppTheme.rField),
+                    ),
                   ),
                 ),
               ),

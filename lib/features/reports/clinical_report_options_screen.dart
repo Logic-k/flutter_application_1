@@ -7,6 +7,7 @@ import '../../core/theme.dart';
 import '../../core/motion/app_motion.dart';
 import '../../core/motion/motion_settings.dart';
 import '../../core/database_helper.dart';
+import '../../core/share_origin.dart';
 import '../../core/user_provider.dart';
 import 'clinical_report_generator.dart';
 import 'models/clinical_report_data.dart';
@@ -63,7 +64,12 @@ class _ClinicalReportOptionsScreenState
     }
   }
 
-  Future<void> _generateAndShare({bool preview = false}) async {
+  /// [shareOrigin]은 탭한 버튼의 위치다. 생성 중에는 버튼이 스피너로 바뀌어
+  /// 트리에서 사라지므로, 호출하는 쪽에서 탭 직후 계산해 넘긴다.
+  Future<void> _generateAndShare({
+    bool preview = false,
+    Rect? shareOrigin,
+  }) async {
     if (_selectedType == null) return;
     setState(() => _isGenerating = true);
 
@@ -94,6 +100,7 @@ class _ClinicalReportOptionsScreenState
         await Share.shareXFiles(
           [XFile(file.path)],
           text: 'MemoryLink 임상 리포트',
+          sharePositionOrigin: shareOrigin,
         );
       }
     } catch (e) {
@@ -603,12 +610,17 @@ class _ClinicalReportOptionsScreenState
               children: [
                 SizedBox(
                   width: double.infinity,
-                  child: FilledButton.icon(
-                    onPressed: () => _generateAndShare(preview: false),
-                    icon: const Icon(Icons.share),
-                    label: const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 4),
-                      child: Text('PDF 생성 및 공유하기'),
+                  child: Builder(
+                    builder: (buttonContext) => FilledButton.icon(
+                      onPressed: () => _generateAndShare(
+                        preview: false,
+                        shareOrigin: shareOriginOf(buttonContext),
+                      ),
+                      icon: const Icon(Icons.share),
+                      label: const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 4),
+                        child: Text('PDF 생성 및 공유하기'),
+                      ),
                     ),
                   ),
                 ),
@@ -662,13 +674,18 @@ class _PdfPreviewPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('리포트 미리보기'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.share),
-            tooltip: '리포트 공유',
-            onPressed: () async {
-              await Share.shareXFiles([XFile(file.path)],
-                  text: 'MemoryLink 임상 리포트');
-            },
+          Builder(
+            builder: (buttonContext) => IconButton(
+              icon: const Icon(Icons.share),
+              tooltip: '리포트 공유',
+              onPressed: () async {
+                await Share.shareXFiles(
+                  [XFile(file.path)],
+                  text: 'MemoryLink 임상 리포트',
+                  sharePositionOrigin: shareOriginOf(buttonContext),
+                );
+              },
+            ),
           ),
         ],
       ),

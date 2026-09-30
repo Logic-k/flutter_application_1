@@ -76,6 +76,25 @@
 	<string>걸음 수와 건강 데이터를 읽어 보행 분석에 활용합니다.</string>
 	<key>NSHealthUpdateUsageDescription</key>
 	<string>측정된 걸음 수와 건강 지표를 기록합니다.</string>
+	<!-- 프로필 사진 변경(image_picker): 카메라 촬영·앨범 선택. 없으면 카메라 선택 시 앱이 종료되고
+	     App Store Connect 업로드 시 ITMS-90683(목적 문자열 누락)으로 거절된다. -->
+	<key>NSCameraUsageDescription</key>
+	<string>프로필 사진을 촬영하기 위해 카메라에 접근합니다.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>프로필 사진으로 사용할 사진을 앨범에서 선택합니다.</string>
+	<!-- canLaunchUrl()은 여기에 선언한 스킴만 true를 돌려준다(url_launcher iOS 요구사항).
+	     없으면 보호자 전화·문자 버튼과 이상 알림의 문자 보내기가 아무 동작도 하지 않는다. -->
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>tel</string>
+		<string>sms</string>
+	</array>
+	<!-- 앱이 지원하는 언어(한국어). App Store의 언어 표기와 앱 안에서 뜨는 iOS 기본 UI의
+	     언어 선택 기준이 된다. -->
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>ko</string>
+	</array>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>fetch</string>

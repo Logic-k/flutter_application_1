@@ -22,14 +22,21 @@ import 'step_anomaly_policy.dart';
 
 class GuardianSyncService {
   final DatabaseHelper _db;
-  final FirebaseFirestore _firestore;
+  final FirebaseFirestore? _firestoreOverride;
 
   static const _tokenPrefKey = 'guardian_token_';
   static const _hostingBase = 'https://memorylink-7af26.web.app';
 
   GuardianSyncService({DatabaseHelper? db, FirebaseFirestore? firestore})
       : _db = db ?? DatabaseHelper(),
-        _firestore = firestore ?? FirebaseFirestore.instance;
+        _firestoreOverride = firestore;
+
+  /// Firebase 초기화에 실패한 로컬 전용 모드(예: iOS에 GoogleService-Info.plist가
+  /// 없을 때)에서는 `FirebaseFirestore.instance`가 `[core/no-app]`을 던진다.
+  /// 생성자에서 접근하면 보호자 화면이 열리지 않고 이상 알림도 사용자에게 뜨지 않으므로,
+  /// 실제 전송 시점(각 메서드의 try 안)에서만 접근해 '전송 실패'로 보고되게 한다.
+  FirebaseFirestore get _firestore =>
+      _firestoreOverride ?? FirebaseFirestore.instance;
 
   String guardianUrl(String token) => '$_hostingBase/guardian.html?token=$token';
 

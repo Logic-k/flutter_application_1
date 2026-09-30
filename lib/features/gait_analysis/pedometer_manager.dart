@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart' show defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/services.dart' show PlatformException;
 import 'package:flutter/widgets.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
@@ -35,6 +36,19 @@ class PedometerManager with ChangeNotifier, WidgetsBindingObserver {
   double get todayCalories => _todayCalories;
   double get todayDistance => _todayDistance;
   bool get isTracking => _isTracking;
+
+  /// 걸음 측정에 필요한 신체 활동 권한.
+  ///
+  /// Android는 ACTIVITY_RECOGNITION(`Permission.activityRecognition`)이다.
+  /// iOS에는 이 권한이 없어 permission_handler가 항상 거부(요청하면 영구 거부)로
+  /// 응답하므로, iOS에서 이 값을 쓰면 스위치가 절대 켜지지 않는다.
+  /// iOS의 걸음 권한은 CoreMotion '동작 및 피트니스'이고 permission_handler에서는
+  /// `Permission.sensors`로 매핑된다 (ios/Podfile의 PERMISSION_SENSORS=1이 활성화).
+  @visibleForTesting
+  static Permission get activityPermission =>
+      defaultTargetPlatform == TargetPlatform.iOS
+          ? Permission.sensors
+          : Permission.activityRecognition;
 
   PedometerManager(this._userProvider) {
     _userProvider.addListener(_onUserChanged);
@@ -92,7 +106,7 @@ class PedometerManager with ChangeNotifier, WidgetsBindingObserver {
 
   /// 권한이 이미 있을 때만 조용히 추적 재개 (권한 팝업 없이)
   Future<void> _resumeTrackingIfPermitted() async {
-    final activityStatus = await Permission.activityRecognition.status;
+    final activityStatus = await activityPermission.status;
     if (activityStatus.isGranted) {
       await _startServiceDirectly();
     } else {
@@ -124,7 +138,7 @@ class PedometerManager with ChangeNotifier, WidgetsBindingObserver {
 
     if (_isTracking) {
       // 앱 시작 시 추적이 켜져있다면 권한부터 확인
-      final activityStatus = await Permission.activityRecognition.status;
+      final activityStatus = await activityPermission.status;
       
       if (activityStatus.isGranted) {
         await _startServiceDirectly();
@@ -285,7 +299,7 @@ class PedometerManager with ChangeNotifier, WidgetsBindingObserver {
     if (pending != null) return pending;
 
     final request = [
-      Permission.activityRecognition,
+      activityPermission,
       Permission.notification,
     ].request();
     _pendingPermissionRequest = request;
@@ -307,7 +321,7 @@ class PedometerManager with ChangeNotifier, WidgetsBindingObserver {
     if (enabled) {
       final statuses = await _requestTrackingPermissions();
 
-      if (statuses[Permission.activityRecognition] != PermissionStatus.granted) {
+      if (statuses[activityPermission] != PermissionStatus.granted) {
         debugPrint('필수 신체 활동 권한이 거부되었습니다.');
         _isTracking = false;
         notifyListeners();
