@@ -33,6 +33,10 @@ abstract final class AppMotion {
   /// 1회성 축하 효과 상한(KWCAG 자동재생 3초 제한 안쪽).
   static const Duration celebrateMax = Duration(milliseconds: 2500);
 
+  /// 콜드 스타트 오프닝 전체 길이(DESIGN.md §4.1 네 번째 예외). [celebrateMax] 안쪽이고,
+  /// 로딩이 늦으면 중간 정지 화면에서 기다리므로 실제로는 로딩과 겹쳐 흐른다.
+  static const Duration opening = Duration(milliseconds: 2400);
+
   /// 정답 순간의 1회성 파티클. 축하 효과 범주라 [celebrateMax] 안쪽이면 된다.
   static const Duration burst = Duration(milliseconds: 600);
 

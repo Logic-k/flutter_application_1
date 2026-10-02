@@ -200,7 +200,7 @@ class DatabaseHelper {
     final int minjunId = await db.insert('users', _withHashedPassword({
       'username': 'kim_minjun',
       'name': '김민준',
-      'password': 'demo1234',
+      'password': 'ci-demo-only-20261002',
       'goal': 'prevention',
       'age': 68,
       'weight': 63.0,
@@ -319,7 +319,7 @@ class DatabaseHelper {
     final int sonjaId = await db.insert('users', _withHashedPassword({
       'username': 'park_sonja',
       'name': '박순자',
-      'password': 'demo1234',
+      'password': 'ci-demo-only-20261002',
       'goal': 'concern',
       'age': 76,
       'weight': 56.0,

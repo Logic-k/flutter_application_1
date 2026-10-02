@@ -165,7 +165,7 @@ void main() {
     // When
     final userId = await helper.insertUser({
       'username': 'new-user',
-      'password': 'secret',
+      'password': 'migration-fixture-password',
     }, initialUnlockActivityIds: _initialActivityIds);
     final repository = SqliteTrainingProgressRepository(helper);
 
@@ -187,11 +187,11 @@ void main() {
       final helper = DatabaseHelper();
       final firstUser = await helper.insertUser({
         'username': 'first',
-        'password': 'secret',
+        'password': 'migration-fixture-password',
       }, initialUnlockActivityIds: _initialActivityIds);
       final secondUser = await helper.insertUser({
         'username': 'second',
-        'password': 'secret',
+        'password': 'migration-fixture-password',
       }, initialUnlockActivityIds: _initialActivityIds);
       final repository = SqliteTrainingProgressRepository(helper);
       const attempt = TrainingAttemptRecord(
@@ -254,7 +254,7 @@ void main() {
     final helper = DatabaseHelper();
     final userId = await helper.insertUser({
       'username': 'rollback',
-      'password': 'secret',
+      'password': 'migration-fixture-password',
     }, initialUnlockActivityIds: _initialActivityIds);
     final repository = SqliteTrainingProgressRepository(helper);
     final invalidAttempt = TrainingAttemptRecord(
@@ -329,7 +329,7 @@ void main() {
       final helper = DatabaseHelper();
       final userId = await helper.insertUser({
         'username': 'reset',
-        'password': 'secret',
+        'password': 'migration-fixture-password',
       }, initialUnlockActivityIds: _initialActivityIds);
       final repository = SqliteTrainingProgressRepository(helper);
       await repository.transaction((transaction) async {

@@ -49,10 +49,14 @@ import 'admin_provider.dart';
 import 'app_config.dart';
 import 'user_provider.dart';
 
+/// [adminPortalEnabled]는 테스트 seam이다. 생략하면 예전처럼 redirect마다
+/// [AppConfig.isAdminPortalEnabled]를 읽는다. 일반 테스트는 `kReleaseMode`가
+/// false라 포털이 항상 켜져 있어서, 포털이 꺼진 릴리스 빌드의 가드를 재현하려면 필요하다.
 GoRouter createAppRouter(
   UserProvider userProvider,
-  AdminProvider adminProvider,
-) {
+  AdminProvider adminProvider, {
+  bool? adminPortalEnabled,
+}) {
   return GoRouter(
     initialLocation: '/login',
     refreshListenable: Listenable.merge([userProvider, adminProvider]),
@@ -77,7 +81,9 @@ GoRouter createAppRouter(
 
       // 포털이 꺼진 빌드에서는 /admin* 전체를 홈으로 되돌린다.
       // UI에서 진입점을 숨기는 것만으로는 딥링크·`adb shell am start`를 못 막는다.
-      if (!AppConfig.isAdminPortalEnabled && loc.startsWith('/admin')) {
+      final portalEnabled =
+          adminPortalEnabled ?? AppConfig.isAdminPortalEnabled;
+      if (!portalEnabled && loc.startsWith('/admin')) {
         return isLoggedIn ? '/' : '/login';
       }
 

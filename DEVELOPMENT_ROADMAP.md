@@ -39,7 +39,7 @@ MemoryLink는 기능이 부족한 제품이 아니다. **이미 모은 데이터
 | 테스트 파일 | **44개** (`test/**/*_test.dart`) |
 | 통합 테스트 | **2개 파일** (`integration_test/`, 게이팅에 미포함) |
 | release AAB | 65.8MB → 70.2MB → **65.0MB** (2026-09-19 실측, 릴리스 서명됨). 70.2MB는 Pretendard 5벌(12.8MB) 전환 결과였고, 65.0MB는 미사용 의존성 6개·미사용 SVG 제거로 되돌린 수치다. Play AAB 상한 150MB 안이다 |
-| Maestro | yaml **24개** = 게이팅 **20** + 데모·스크린샷 **4** |
+| Maestro | 게이팅 **21** (2026-09-27 `opening_flow` 추가 — 20 → 21) + 데모·스크린샷 **4** |
 | release APK | **86.6MB** (2026-08-27 실측, 서명됨. 사이드로드·검증용이며 스토어 업로드는 AAB다) |
 | 콜드 스타트 | `+15s078ms` → `+7s252ms` → `+6s835ms` → **`+7s456ms`** (2026-09-20 재측정, 같은 조건. 2회차 재실행은 4.35초. 측정 조건은 아래 설명 그대로다: 2026-08-27 서체 전환 후 재측정. QA_Device, `pm clear` 직후 `am start -W`, debug 빌드. 폰트 자산이 3배로 늘었어도 느려지지 않았다 — Flutter는 폰트를 첫 프레임 뒤에 지연 로드한다) |
 
@@ -47,7 +47,7 @@ Maestro 내역: 게이팅 제외 4개는 `demo_recording_flow` · `demo_recordin
 `demo_recording_tta_2min` · `screenshot_tour_flow`이며, 통과/실패로 품질을 판정하는
 flow가 아니다. `maestro/helpers/` 2개(`login_helper` · `just_tap_confirm`)는
 다른 flow가 불러 쓰는 조각이라 flow 수에 들어가지 않는다.
-**게이팅 대상의 정본은 `run_maestro_tests.ps1`의 `$flows` 배열이다.** 위 표의 20은
+**게이팅 대상의 정본은 `run_maestro_tests.ps1`의 `$flows` 배열이다.** 위 표의 21은
 그 배열 길이를 옮긴 값이므로, 배열이 바뀌면 이곳도 함께 고친다.
 
 수치가 바뀐 경위:
@@ -60,6 +60,11 @@ flow가 아니다. `maestro/helpers/` 2개(`login_helper` · `just_tap_confirm`)
 - Maestro 게이팅 **17 → 21 → 20** — 8/24에 `social_ranking_flow`를 뺐다.
   검사 대상이던 `SocialRankingView` 위젯 자체를 삭제했기 때문이다.
 
+> **게이팅 21개 전부 통과(2026-09-27, 커밋 `b949c8c` 오프닝 반영).** QA_Device `emulator-5680`,
+> `-gpu angle_indirect`, debug APK(`IS_EMULATOR=true`). 한 세션에서 4~5개씩 나눠 포그라운드로 21개를
+> 모두 돌렸고 20개는 첫 시도에 통과했다. `opening_flow`만 1회 멈췄다 — 건너뛰기 단계의 "오프닝 보임" 대기가
+> 자동 로그인이 빨라 오프닝이 먼저 걷히면 60초 내내 걸리는 타이밍 문제여서 그 대기를 선택으로 바꾸고 재실행해 통과했다.
+>
 > **게이팅 20개 전부 통과를 확인했다(2026-09-20).** QA_Device `emulator-5680`,
 > `-gpu angle_indirect`, debug APK(`IS_EMULATOR=true`). 다만 이번에도 단일 연속 실행은
 > 아니다 — 러너가 16개째(`clinical_report_flow`)까지 전부 PASS한 뒤 프로세스가 종료돼,

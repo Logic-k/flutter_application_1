@@ -24,16 +24,27 @@ class LocalAIService {
   /// 발화 텍스트 분석
   Future<Map<String, dynamic>> analyzeText({
     required String text,
-    required double ttr,
-    required double wpm,
+    required double? ttr,
+    required double? wpm,
     required int totalWords,
-    int durationSeconds = 30,
+    double? durationSeconds,
   }) async {
-    if (text.trim().isEmpty) {
+    final hasText = text.trim().isNotEmpty && totalWords > 0;
+    final validTtr = ttr != null && ttr.isFinite && ttr >= 0 && ttr <= 1;
+    if (!hasText || !validTtr || wpm == null || !wpm.isFinite || wpm <= 0 ||
+        durationSeconds == null || !durationSeconds.isFinite || durationSeconds <= 0) {
       return {
-        'cognitive_score': 0.0,
-        'risk_score': 1.0,
-        'analysis': '발화 내용이 없습니다.',
+        'is_available': false,
+        'cognitive_score': null,
+        'risk_score': null,
+        'analysis': [
+          if (hasText && validTtr) '어휘 다양성(TTR): ${(ttr * 100).toStringAsFixed(1)}% (텍스트 기준)',
+          if (hasText) '텍스트 분량: $totalWords개 공백 토큰',
+          if (!hasText) '분석할 대화 내용이 없습니다.',
+          '발화 속도(WPM): 측정 불가',
+          '휴지 비율: 측정 불가',
+          '유효한 음성 지표가 없어 종합 점수를 산출하거나 저장하지 않습니다.',
+        ].join('\n'),
         'model': 'MemoryLink-Rules-v2',
         'is_local': true,
       };
@@ -41,10 +52,6 @@ class LocalAIService {
 
     final features = _extractFeatures(
       text: text,
-      ttr: ttr,
-      wpm: wpm,
-      totalWords: totalWords,
-      durationSeconds: durationSeconds,
     );
 
     return _analyze(features, ttr, wpm, totalWords);
@@ -52,10 +59,6 @@ class LocalAIService {
 
   _FeatureSet _extractFeatures({
     required String text,
-    required double ttr,
-    required double wpm,
-    required int totalWords,
-    required int durationSeconds,
   }) {
     final words = text.split(RegExp(r'\s+')).where((w) => w.isNotEmpty).toList();
 
@@ -104,7 +107,7 @@ class LocalAIService {
     // 어휘 다양성 (40점)
     final double ttrScore = (ttr / 0.6 * 40).clamp(0, 40);
 
-    // 발화 속도 (25점) — 한국어 정상 범위 80~160 wpm
+    // 발화 속도 (25점) — 기존 내부 기준, 임상적 정상 범위는 미검증
     double speedScore;
     if (wpm >= 80 && wpm <= 160) {
       speedScore = 25.0;
@@ -132,6 +135,7 @@ class LocalAIService {
     final riskScore = (f.riskHits * 0.15).clamp(0.0, 0.6);
 
     return {
+      'is_available': true,
       'cognitive_score': cognitiveScore,
       'risk_score': riskScore,
       'analysis': _buildDetail(f, ttr, wpm, totalWords),

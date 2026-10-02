@@ -33,7 +33,7 @@ macOS/Windows/Linux 모두 동일합니다. iOS 프로젝트도 포함돼 있으
 
 | 구분 | 아이디 | 비밀번호 |
 |---|---|---|
-| 데모 사용자 | `kim_minjun` | `demo1234` |
+| 데모 사용자 | `kim_minjun` | `ci-demo-only-20261002` |
 | 자동화 테스트용 관리자 | `admin` | `admin` |
 
 > 보안상 `release` 빌드에서는 두 계정이 시드되지 않습니다

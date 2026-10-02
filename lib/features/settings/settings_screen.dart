@@ -298,6 +298,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
             const SizedBox(height: 24),
 
             const MLVersionLabel(),
+            const SizedBox(height: 10),
+            // 한이음 성과등록 사사문구. 앱 정보화면 표기가 지원 조건이다.
+            Text(
+              '본 애플리케이션은 과학기술정보통신부 대학디지털교육역량강화사업의 '
+              '지원을 통해 수행한 한이음 드림업 프로젝트 결과물입니다.',
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
               ],
             ),
           ],

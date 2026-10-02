@@ -54,6 +54,12 @@ void main() {
     expect(find.text('로그아웃'), findsOneWidget);
   });
 
+  testWidgets('SettingsScreen: 정보 영역에 한이음 사사문구가 표시된다', (tester) async {
+    await pump(tester);
+
+    expect(find.textContaining('과학기술정보통신부 대학디지털교육역량강화사업'), findsOneWidget);
+  });
+
   testWidgets('초기화 성공 후에만 완료 메시지를 표시하고 진행 상태를 갱신한다', (
     tester,
   ) async {

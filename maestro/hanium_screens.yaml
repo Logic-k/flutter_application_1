@@ -20,7 +20,7 @@ appId: com.teammemorylink.memorylink
 - inputText: "kim_minjun"
 - tapOn: "비밀번호"
 - eraseText: 30
-- inputText: "demo1234"
+- inputText: "ci-demo-only-20261002"
 - hideKeyboard
 - tapOn: "로그인"
 - extendedWaitUntil:

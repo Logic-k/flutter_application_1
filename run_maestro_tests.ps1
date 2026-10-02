@@ -44,7 +44,9 @@ $flows = @(
     "maestro/training_progression_flow.yaml",
     "maestro/training_persistence_flow.yaml",
     "maestro/training_accessibility_flow.yaml",
-    "maestro/dementia_center_flow.yaml"
+    "maestro/dementia_center_flow.yaml",
+    # 콜드 스타트 오프닝(2026-09-27). 가리는 동안 입력 칸을 숨기는지·건너뛰기·자동 로그인 대기.
+    "maestro/opening_flow.yaml"
 )
 # 게이팅 제외: demo_recording_flow / demo_recording_v3 / demo_recording_tta_2min /
 # screenshot_tour_flow

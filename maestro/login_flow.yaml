@@ -23,7 +23,7 @@ appId: com.teammemorylink.memorylink
 # 4. 비밀번호 입력
 - hideKeyboard
 - tapOn: "비밀번호"
-- inputText: "demo1234"
+- inputText: "ci-demo-only-20261002"
 
 # 5. 로그인 버튼 탭
 - hideKeyboard

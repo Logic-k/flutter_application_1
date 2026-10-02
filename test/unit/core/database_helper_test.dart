@@ -27,14 +27,14 @@ void main() {
     test('insertUser + getUser: 올바른 자격증명으로 사용자를 조회한다', () async {
       await db.insertUser({
         'username': 'testuser1',
-        'password': 'pass123',
+        'password': 'fixture-password-1',
         'goal': 'prevention',
         'age': 65,
         'weight': 70.0,
         'has_completed_onboarding': 0,
         'pedometer_enabled': 0,
       });
-      final user = await db.getUser('testuser1', 'pass123');
+      final user = await db.getUser('testuser1', 'fixture-password-1');
       expect(user, isNotNull);
       expect(user!['username'], 'testuser1');
     });
@@ -42,7 +42,7 @@ void main() {
     test('getUser: 잘못된 비밀번호면 null을 반환한다', () async {
       await db.insertUser({
         'username': 'testuser2',
-        'password': 'correct',
+        'password': 'fixture-correct-password',
         'goal': 'concern',
         'age': 60,
         'weight': 60.0,
@@ -76,14 +76,14 @@ void main() {
     test('비밀번호는 평문으로 저장되지 않고 해시로 검증된다', () async {
       await db.insertUser({
         'username': 'hashuser',
-        'password': 'secret123',
+        'password': 'fixture-hashed-password',
         'goal': 'prevention',
         'age': 65,
         'weight': 70.0,
         'has_completed_onboarding': 0,
         'pedometer_enabled': 0,
       });
-      final user = await db.getUser('hashuser', 'secret123');
+      final user = await db.getUser('hashuser', 'fixture-hashed-password');
       expect(user, isNotNull);
       expect(user!['password'], isNull, reason: '평문 비밀번호가 저장되면 안 된다');
       expect(user['password_hash'], isNotNull);
