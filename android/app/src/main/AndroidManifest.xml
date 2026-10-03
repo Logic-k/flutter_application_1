@@ -51,16 +51,10 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
-            <!-- 보호자 QR 딥링크: memorylink-7af26.web.app/guardian.html?token=... -->
-            <intent-filter android:autoVerify="true">
-                <action android:name="android.intent.action.VIEW"/>
-                <category android:name="android.intent.category.DEFAULT"/>
-                <category android:name="android.intent.category.BROWSABLE"/>
-                <data
-                    android:scheme="https"
-                    android:host="memorylink-7af26.web.app"
-                    android:pathPrefix="/guardian.html"/>
-            </intent-filter>
+            <!-- 보호자 링크(memorylink-7af26.web.app/guardian.html)는 브라우저 전용이다.
+                 앱에는 이 주소를 여는 화면이 없으므로 App Link intent-filter를 두지 않는다
+                 (LAUNCH_AUDIT P0-13). 앱 안 보호자 화면을 만들 때만 경로·토큰 검증과
+                 Play 앱 서명 지문을 넣은 assetlinks.json을 함께 추가한다. -->
         </activity>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
