@@ -473,6 +473,14 @@ flutter build apk
 
 **2026 캡스톤 디자인 프로젝트** · 팀 MemoryLink
 
+### 2026-10-03 격리 QA 인계
+
+보호자 연결은 성공한 동기화의 시각과 실패 상태를 구분한다. Firebase 비가용 상황에서는 로컬 탐색을 유지하며, 정상 동기화 payload에서 긴급 연락처를 제외하고 이상 알림의 연락 기능을 보존한다. 기존 정상 문서의 번호는 소유자가 정상 재동기화를 성공하기 전까지 공개 REST 응답에 남을 수 있다.
+
+부팅 자동 시작을 명시적으로 끄고, OFF·계정 전환·늦은 권한 응답·dispose 경계를 합성 SDK 채널에서 검증한다. 실제 재부팅·OS 서비스 종료·업데이트 후 앱 실행 전 상태는 전용 합성 단말에서 별도 검증해야 한다. Guardian 웹과 Firestore 규칙의 로컬 수정은 운영 배포를 의미하지 않는다.
+
+`flutter analyze --no-pub --no-fatal-infos`, `flutter test --no-pub --reporter expanded`, `flutter build apk --debug --no-pub`의 실행 결과는 별도 QA 로그를 따른다. 기존 skip 2건은 통과로 세지 않는다. release 설정의 debug 서명 폴백도 정식 배포 서명으로 간주하지 않는다. 링크 만료·회전·해지 정책은 이번에 임의로 정하지 않았다.
+
 [![Contact](https://img.shields.io/badge/Contact-teammemorylink@gmail.com-6C5CE7?style=flat-square&logo=gmail&logoColor=white)](mailto:teammemorylink@gmail.com)
 
 </div>

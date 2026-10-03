@@ -10,14 +10,15 @@ import '../../core/services/guardian_sync_service.dart';
 import '../gait_analysis/pedometer_manager.dart';
 
 class GuardianLinkScreen extends StatefulWidget {
-  const GuardianLinkScreen({super.key});
+  const GuardianLinkScreen({super.key, this.syncService});
+  final GuardianSyncService? syncService;
 
   @override
   State<GuardianLinkScreen> createState() => _GuardianLinkScreenState();
 }
 
 class _GuardianLinkScreenState extends State<GuardianLinkScreen> {
-  final _syncService = GuardianSyncService();
+  late final GuardianSyncService _syncService;
 
   String _dashboardUrl = '';
   bool _isSyncing = false;
@@ -28,6 +29,7 @@ class _GuardianLinkScreenState extends State<GuardianLinkScreen> {
   @override
   void initState() {
     super.initState();
+    _syncService = widget.syncService ?? GuardianSyncService();
     _initToken();
   }
 
@@ -43,6 +45,7 @@ class _GuardianLinkScreenState extends State<GuardianLinkScreen> {
   }
 
   Future<void> _syncNow() async {
+    if (_isSyncing) return;
     final user = context.read<UserProvider>();
     final pedometer = context.read<PedometerManager>();
     final userId = user.currentUser?['id'] ?? 0;
@@ -50,17 +53,22 @@ class _GuardianLinkScreenState extends State<GuardianLinkScreen> {
 
     setState(() => _isSyncing = true);
 
-    final result = await _syncService.syncToFirestore(
-      userId: userId as int,
-      userName: userName,
-      todaySteps: pedometer.todaySteps,
-      emergencyContact: user.emergencyContact,
-    );
+    GuardianSyncResult result;
+    try {
+      result = await _syncService.syncToFirestore(
+        userId: userId as int,
+        userName: userName,
+        todaySteps: pedometer.todaySteps,
+        emergencyContact: user.emergencyContact,
+      );
+    } catch (_) {
+      result = const GuardianSyncResult(success: false, token: '', isAnomaly: false);
+    }
 
     if (mounted) {
       setState(() {
         _isSyncing = false;
-        _hasSynced = true;
+        _hasSynced = result.success;
         if (result.success) {
           _lastSyncTime = DateTime.now();
           _isAnomaly = result.isAnomaly;
@@ -70,7 +78,7 @@ class _GuardianLinkScreenState extends State<GuardianLinkScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            result.success ? '보호자 대시보드가 업데이트되었습니다.' : '동기화 실패: ${result.error}',
+            result.success ? '보호자 대시보드가 업데이트되었습니다.' : '동기화하지 못했습니다. 연결 상태를 확인하고 다시 시도해 주세요.',
           ),
           backgroundColor: result.success ? MLColors.goodText : MLColors.badText,
           duration: const Duration(seconds: 3),
@@ -168,11 +176,13 @@ class _GuardianLinkScreenState extends State<GuardianLinkScreen> {
                             : theme.colorScheme.onSurfaceVariant,
                       ),
                       const SizedBox(width: 8),
-                      Text(
-                        _formatLastSync(),
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: theme.colorScheme.onSurfaceVariant,
+                      Expanded(
+                        child: Text(
+                          _formatLastSync(),
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
                         ),
                       ),
                     ],

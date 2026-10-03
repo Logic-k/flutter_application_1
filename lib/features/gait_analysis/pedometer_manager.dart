@@ -16,7 +16,7 @@ import '../../core/services/step_anomaly_policy.dart';
 /// 상태를 중계하고, 동백전 스타일의 지표를 계산합니다.
 class PedometerManager with ChangeNotifier, WidgetsBindingObserver {
   final UserProvider _userProvider;
-  final _dbHelper = DatabaseHelper();
+  final DatabaseHelper _dbHelper;
   
   int _todaySteps = 0;
   double _todayCalories = 0.0;
@@ -24,6 +24,10 @@ class PedometerManager with ChangeNotifier, WidgetsBindingObserver {
   bool _isTracking = false;
   StreamSubscription<Map<String, dynamic>?>? _stepUpdates;
   late final Future<void> _initialization;
+  int _trackingEpoch = 0;
+  bool _disposed = false;
+  int? get _currentUserId => _userProvider.currentUser?['id'] as int?;
+  bool _owns(int epoch, int? userId) => !_disposed && epoch == _trackingEpoch && userId != null && userId == _currentUserId;
 
   /// 진행 중인 권한 요청. 앱 시작 시 자동 요청과 사용자의 토글 조작이 겹치면
   /// permission_handler가 "A request for permissions is already running"
@@ -36,7 +40,7 @@ class PedometerManager with ChangeNotifier, WidgetsBindingObserver {
   double get todayDistance => _todayDistance;
   bool get isTracking => _isTracking;
 
-  PedometerManager(this._userProvider) {
+  PedometerManager(this._userProvider, {DatabaseHelper? db}) : _dbHelper = db ?? DatabaseHelper() {
     _userProvider.addListener(_onUserChanged);
     WidgetsBinding.instance.addObserver(this);
     _listenToBackgroundService();
@@ -45,6 +49,8 @@ class PedometerManager with ChangeNotifier, WidgetsBindingObserver {
 
   @override
   void dispose() {
+    _disposed = true;
+    _trackingEpoch++;
     _userProvider.removeListener(_onUserChanged);
     WidgetsBinding.instance.removeObserver(this);
     _stepUpdates?.cancel();
@@ -62,16 +68,16 @@ class PedometerManager with ChangeNotifier, WidgetsBindingObserver {
   int? _lastUserId;
 
   void _onUserChanged() {
+    if (_disposed) return;
     final userId = _userProvider.currentUser?['id'] as int?;
 
     if (userId == null) {
+      _trackingEpoch++;
       // 로그아웃: 백그라운드 추적을 중지해 다음 로그인 계정의
       // daily_steps에 걸음이 섞여 기록되는 것을 방지한다.
-      if (_lastUserId != null) {
-        _lastUserId = null;
-        FlutterBackgroundService().invoke('stopService');
-        _isTracking = false;
-      }
+      _lastUserId = null;
+      FlutterBackgroundService().invoke('stopService');
+      _isTracking = false;
       _todaySteps = 0;
       _todayCalories = 0.0;
       _todayDistance = 0.0;
@@ -82,9 +88,15 @@ class PedometerManager with ChangeNotifier, WidgetsBindingObserver {
     final userChanged = userId != _lastUserId;
     _lastUserId = userId;
     if (userChanged) {
+      _trackingEpoch++;
+      _isAnomalyDetected = false;
       // 새 계정 로그인: 해당 계정의 설정에 따라 추적 상태 재설정
       _isTracking = _userProvider.pedometerEnabled;
-      if (_isTracking) _resumeTrackingIfPermitted();
+      if (_isTracking) {
+        _resumeTrackingIfPermitted();
+      } else {
+        FlutterBackgroundService().invoke('stopService');
+      }
       notifyListeners();
     }
     _loadTodayStepsFromDB();
@@ -92,7 +104,9 @@ class PedometerManager with ChangeNotifier, WidgetsBindingObserver {
 
   /// 권한이 이미 있을 때만 조용히 추적 재개 (권한 팝업 없이)
   Future<void> _resumeTrackingIfPermitted() async {
+    final epoch = _trackingEpoch, userId = _currentUserId;
     final activityStatus = await Permission.activityRecognition.status;
+    if (!_owns(epoch, userId) || !_isTracking || !_userProvider.pedometerEnabled) return;
     if (activityStatus.isGranted) {
       await _startServiceDirectly();
     } else {
@@ -104,7 +118,9 @@ class PedometerManager with ChangeNotifier, WidgetsBindingObserver {
   Future<void> _loadTodayStepsFromDB() async {
     if (_userProvider.currentUser == null) return;
     final userId = _userProvider.currentUser!['id'] as int;
+    final epoch = _trackingEpoch;
     final todayData = await _dbHelper.getTodaySteps(userId);
+    if (!_owns(epoch, userId)) return;
     if (todayData != null) {
       _todaySteps = (todayData['steps'] as num).toInt();
       _todayCalories = (todayData['calories'] as num).toDouble();
@@ -120,11 +136,13 @@ class PedometerManager with ChangeNotifier, WidgetsBindingObserver {
 
   Future<void> _initOnStart() async {
     _lastUserId = _userProvider.currentUser?['id'] as int?;
-    _isTracking = _userProvider.pedometerEnabled;
+    _isTracking = _lastUserId != null && _userProvider.pedometerEnabled;
+    final epoch = _trackingEpoch, userId = _currentUserId;
 
     if (_isTracking) {
       // 앱 시작 시 추적이 켜져있다면 권한부터 확인
       final activityStatus = await Permission.activityRecognition.status;
+      if (!_owns(epoch, userId) || !_isTracking) return;
       
       if (activityStatus.isGranted) {
         await _startServiceDirectly();
@@ -132,13 +150,23 @@ class PedometerManager with ChangeNotifier, WidgetsBindingObserver {
         // 권한이 없다면 팝업 요청
         await toggleTracking(true);
       }
+    } else {
+      FlutterBackgroundService().invoke('stopService');
     }
   }
 
   Future<void> _startServiceDirectly() async {
+    final epoch = _trackingEpoch, userId = _currentUserId;
+    if (!_owns(epoch, userId) || !_isTracking || !_userProvider.pedometerEnabled) return;
     final service = FlutterBackgroundService();
-    if (!await service.isRunning()) {
+    final running = await service.isRunning();
+    if (!_owns(epoch, userId) || !_isTracking) return;
+    if (!running) {
       await service.startService();
+    }
+    if (!_owns(epoch, userId) || !_isTracking) {
+      if (!_isTracking || _currentUserId == null) service.invoke('stopService');
+      return;
     }
     service.invoke('request_steps');
   }
@@ -154,12 +182,14 @@ class PedometerManager with ChangeNotifier, WidgetsBindingObserver {
   /// 생활습관 탭 진입 또는 앱 복귀 시 서비스 상태와 현재 걸음 수를 동기화한다.
   Future<void> refreshTracking() async {
     await _initialization;
+    if (_disposed) return;
     await _loadTodayStepsFromDB();
     if (!_isTracking) return;
     await _resumeTrackingIfPermitted();
   }
 
   void _updateMetrics(int steps) {
+    if (_disposed || !_isTracking || !_userProvider.pedometerEnabled || _currentUserId != _lastUserId) return;
     _todaySteps = steps;
     _todayDistance = (_todaySteps * 0.7) / 1000.0;
     
@@ -194,7 +224,9 @@ class PedometerManager with ChangeNotifier, WidgetsBindingObserver {
   /// "평균의 50% 미만·시간 무관"으로 따로 판정해, 보호자 동기화 경로
   /// (18시 이후·30% 미만)와 같은 사용자에게 다른 결론을 내렸다.
   Future<void> _checkStepAnomaly() async {
+    final epoch = _trackingEpoch, userId = _currentUserId;
     final summary = await getWeeklySummary();
+    if (!_owns(epoch, userId) || !_isTracking) return;
     final verdict = StepAnomalyPolicy.evaluate(
       todaySteps: _todaySteps,
       baselineSteps: StepAnomalyPolicy.baselineFromWeeklyRows(summary),
@@ -304,8 +336,18 @@ class PedometerManager with ChangeNotifier, WidgetsBindingObserver {
 
   /// 추적 시작 (백그라운드 서비스 실행)
   Future<void> toggleTracking(bool enabled) async {
+    if (_disposed || _currentUserId == null) return;
+    final epoch = ++_trackingEpoch, userId = _currentUserId;
+    if (!enabled) {
+      _isTracking = false;
+      FlutterBackgroundService().invoke('stopService');
+      await _userProvider.setPedometerEnabled(false);
+      if (_owns(epoch, userId)) notifyListeners();
+      return;
+    }
     if (enabled) {
       final statuses = await _requestTrackingPermissions();
+      if (!_owns(epoch, userId)) return;
 
       if (statuses[Permission.activityRecognition] != PermissionStatus.granted) {
         debugPrint('필수 신체 활동 권한이 거부되었습니다.');
@@ -317,18 +359,9 @@ class PedometerManager with ChangeNotifier, WidgetsBindingObserver {
 
     _isTracking = enabled;
     await _userProvider.setPedometerEnabled(enabled);
-    
-    final service = FlutterBackgroundService();
-    if (enabled) {
-      bool isRunning = await service.isRunning();
-      if (!isRunning) {
-        await service.startService();
-      }
-      service.invoke('request_steps');
-    } else {
-      service.invoke('stopService');
-    }
-    notifyListeners();
+    if (!_owns(epoch, userId)) return;
+    await _startServiceDirectly();
+    if (_owns(epoch, userId)) notifyListeners();
   }
 
   /// 백그라운드에서 전달된 원본 데이터를 받아서 지표 계산 및 DB 저장

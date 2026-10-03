@@ -66,19 +66,19 @@ service cloud.firestore {
       // list를 열면 토큰 열거가 가능해지므로 반드시 get만 허용한다.
       allow get: if true;
       allow list: if false;
-      allow create, update: if isSignedIn()
+      allow create: if isSignedIn()
         && request.resource.data.ownerUid == request.auth.uid;
+      allow update: if isSignedIn()
+        && resource.data.ownerUid == request.auth.uid
+        && request.resource.data.ownerUid == resource.data.ownerUid;
       allow delete: if isSignedIn()
         && resource.data.ownerUid == request.auth.uid;
     }
 
-    // ── 소셜 랭킹 통계: 전 사용자 공유 EMA 집계 문서 ──────────────
-    //   GuardianSyncService._updateGlobalStats 가 score_stats 단일 문서를
-    //   merge 갱신한다. 공유 집계 특성상 서명된 클라이언트 쓰기를 허용한다.
-    //   (베타 한계 — 추후 Cloud Functions 집계로 이전 예정)
+    // ── 기존 통계 조회만 보존. 클라이언트 집계 쓰기는 허용하지 않는다. ──
     match /global_stats/score_stats {
       allow read: if isSignedIn();
-      allow write: if isSignedIn();
+      allow write: if false;
     }
 
     // ── 적응형 훈련 난이도: 본인(ownerUid) 문서만 접근 ────────────

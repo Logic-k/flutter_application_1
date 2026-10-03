@@ -130,7 +130,7 @@
     /* ── 훈련 점수 ── */
     .score-list { display: flex; flex-direction: column; gap: 12px; }
     .score-row  { display: flex; align-items: center; gap: 12px; }
-    .score-cat  { font-size: 14px; min-width: 72px; }
+  .score-cat  { font-size: 14px; flex: 0 1 72px; min-width: 0; overflow-wrap: anywhere; }
     .score-bar-wrap {
       flex: 1;
       height: 8px;
@@ -143,7 +143,7 @@
       border-radius: 4px;
       background: linear-gradient(90deg, var(--primary-dim), var(--primary));
     }
-    .score-val { font-size: 14px; font-weight: 700; min-width: 36px; text-align: right; }
+  .score-val { font-size: 14px; font-weight: 700; min-width: 62px; flex-shrink: 0; white-space: nowrap; text-align: right; }
 
     /* ── 메타 ── */
     .sync-info {
@@ -350,19 +350,27 @@
 
   function renderScores(scores) {
     const list = document.getElementById('scoreList');
-    if (!scores || scores.length === 0) return;
+    if (!Array.isArray(scores) || scores.length === 0) return;
     list.innerHTML = '';
     scores.forEach(s => {
-      const cat   = s.category || '';
-      const score = Math.round(s.score || 0);
+      const cat = typeof s?.category === 'string' ? s.category : '';
+      const score = Number.isFinite(s?.score)
+        ? Math.round(Math.min(100, Math.max(0, s.score))) : null;
       const row = document.createElement('div');
       row.className = 'score-row';
-      row.innerHTML = `
-        <span class="score-cat">${cat}</span>
-        <div class="score-bar-wrap">
-          <div class="score-bar" style="width:${score}%"></div>
-        </div>
-        <span class="score-val">${score}점</span>`;
+      const category = document.createElement('span');
+      category.className = 'score-cat';
+      category.textContent = cat;
+      const wrap = document.createElement('div');
+      wrap.className = 'score-bar-wrap';
+      const bar = document.createElement('div');
+      bar.className = 'score-bar';
+      bar.style.width = `${score ?? 0}%`;
+      wrap.appendChild(bar);
+      const value = document.createElement('span');
+      value.className = 'score-val';
+      value.textContent = score === null ? '측정 불가' : `${score}점`;
+      row.append(category, wrap, value);
       list.appendChild(row);
     });
   }
@@ -404,7 +412,7 @@
       renderScores(d.recent_scores || []);
 
       // 응급 연락
-      if (d.emergency_contact) {
+      if (d.is_anomaly === true && d.emergency_contact) {
         const btn = document.getElementById('emergencyBtn');
         btn.style.display = 'flex';
         btn.href = `tel:${d.emergency_contact}`;

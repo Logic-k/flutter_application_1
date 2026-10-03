@@ -41,6 +41,7 @@ class PedometerBackgroundService {
       androidConfiguration: AndroidConfiguration(
         onStart: onStart,
         autoStart: false, // [agency-mobile-app-builder]: 권한 획득 전에 시작되는 크래시 방지
+        autoStartOnBoot: false,
         isForegroundMode: true,
         notificationChannelId: notificationChannelId,
         initialNotificationTitle: 'MemoryLink 분석 활성',
