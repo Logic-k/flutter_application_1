@@ -189,9 +189,9 @@
 <div class="wrap">
 
   <header>
-    <div class="eyebrow">2026-10-03 설계 · 2026-10-04 구현 반영 · 기준 devin/release-hardening 작업 트리</div>
+    <div class="eyebrow">2026-10-03 설계 · 2026-10-04 구현·운영 배포·커밋 반영 · 기준 devin/release-hardening</div>
     <h1>MemoryLink 백엔드 설계</h1>
-    <p class="lede">앱이 실제로 연결된 서버는 Firebase 하나이고, 앱이 부르는 서버 코드는 없습니다. 그래서 Firestore 보안 규칙이 사실상 백엔드의 전부인데, 고친 규칙은 아직 운영에 올라가지 않았습니다. 9월에 만든 AWS EC2는 켜져 있지만 앱과 연결되지 않았고, 신청서상 10/31에 끝나는 서버입니다.</p>
+    <p class="lede">앱이 실제로 연결된 서버는 Firebase 하나이고, 앱이 부르는 서버 코드는 없습니다. 그래서 Firestore 보안 규칙이 사실상 백엔드의 전부입니다. 10/3 점검 때는 고친 규칙이 운영에 없었고, 10/4에 v2 규칙과 보호자 웹을 배포했습니다. 9월에 만든 AWS EC2는 앱과 연결되지 않았고, 쓰지 않기로 했습니다.</p>
     <nav class="toc" aria-label="목차">
       <a href="#status">10/4 구현 상태</a>
       <a href="#now">지금 구조</a>
@@ -213,24 +213,24 @@
     <div class="strip">
       <div class="fact"><span class="k">영구 백엔드</span><span class="v">Firebase · 서울</span><span class="s mono">asia-northeast3</span></div>
       <div class="fact"><span class="k">앱이 부르는 서버 코드</span><span class="v">없음</span><span class="s">Functions 없음 · EC2 미연결</span></div>
-      <div class="fact alert"><span class="k">운영 보안 규칙</span><span class="v">7/14판 추정</span><span class="s">고친 판은 미배포</span></div>
-      <div class="fact alert"><span class="k">규칙 자동 테스트</span><span class="v">0개</span><span class="s">앱 테스트는 528개</span></div>
-      <div class="fact"><span class="k">AWS EC2</span><span class="v">켜짐 · 미사용</span><span class="s">SSH만 응답 · 10/31 종료</span></div>
-      <div class="fact"><span class="k">Supabase</span><span class="v">3개 정지</span><span class="s">옛 공개 정책 SQL은 저장소에</span></div>
+      <div class="fact"><span class="k">운영 보안 규칙</span><span class="v">v2 배포됨</span><span class="s">2026-10-04</span></div>
+      <div class="fact"><span class="k">규칙 자동 테스트</span><span class="v">32개 통과</span><span class="s">앱 테스트 550개</span></div>
+      <div class="fact"><span class="k">AWS EC2</span><span class="v">사용 안 함</span><span class="s">종료는 콘솔 작업으로 남음</span></div>
+      <div class="fact"><span class="k">Supabase</span><span class="v">SQL 삭제됨</span><span class="s">test_SQL 프로젝트 삭제는 콘솔 작업</span></div>
     </div>
   </section>
 
   <section id="status">
     <h2>10/4 구현 상태</h2>
-    <p>결정: <b>무료(Spark) 요금제로 진행</b>, <b>AWS는 쓰지 않음</b>, 나머지는 추천대로. 그래서 서버 코드(Cloud Functions)가 필요한 보호자 푸시는 보류하고, 규칙과 기기·웹만으로 할 수 있는 0·1단계를 구현했습니다. 운영 배포는 아직 하지 않았습니다.</p>
+    <p>결정: <b>무료(Spark) 요금제로 진행</b>, <b>AWS는 쓰지 않음</b>, 나머지는 추천대로. 그래서 서버 코드(Cloud Functions)가 필요한 보호자 푸시는 보류하고, 규칙과 기기·웹만으로 할 수 있는 0·1단계를 구현했습니다. 10/4에 운영 Firestore 규칙과 Hosting에 배포했고, 저장소에는 두 커밋으로 남겼습니다. <code>2648d8e</code>는 외주 세션의 보안 수정, <code>051d0de</code>는 이번 백엔드 v2입니다. 푸시는 하지 않았습니다.</p>
     <div class="table-scroll">
       <table>
         <thead><tr><th>항목</th><th>상태</th><th>확인한 방법</th><th>관련 문제</th></tr></thead>
         <tbody>
-          <tr><td>보안 규칙 v2: 보호자 링크 분리·30일 만료·허용 필드, 문의 작성자 불변·크기 제한·작성자 삭제, global_stats 차단, 난이도 쓰기 종료</td><td><span class="pill ok">구현</span> <span class="pill sev-mid">미배포</span></td><td>에뮬레이터 규칙 테스트 32개 통과. 같은 테스트를 예전(7/14) 규칙에 돌리면 19개 실패</td><td class="ph">1·3·6·10</td></tr>
+          <tr><td>보안 규칙 v2: 보호자 링크 분리·30일 만료·허용 필드, 문의 작성자 불변·크기 제한·작성자 삭제, global_stats 차단, 난이도 쓰기 종료</td><td><span class="pill ok">구현</span> <span class="pill ok">배포됨</span></td><td>에뮬레이터 규칙 테스트 32개 통과. 같은 테스트를 예전(7/14) 규칙에 돌리면 19개 실패. 배포 뒤 운영에서 없는 문서 읽기가 404에서 403으로 바뀐 것을 확인</td><td class="ph">1·3·6·10</td></tr>
           <tr><td>보호자 링크 v2 앱: 128비트 토큰, 30일 슬라이딩 만료, 공유 중지·새 링크·다시 공유, 익명 uid가 바뀌면 새 링크 자동 발급, 공개 사본에서 소유자 uid·로그인 아이디·전화번호 제거</td><td><span class="pill ok">구현</span></td><td>단위·위젯 테스트, 에뮬레이터 앱 + 로컬 Firestore로 동기화·공유 중지·다시 공유 확인</td><td class="ph">3·5</td></tr>
           <tr><td>백그라운드 하트비트: 공유 중이면 1시간마다 오늘 걸음 수·마지막 소식·만료일 갱신, 같은 정책으로 저녁 이상 판정</td><td><span class="pill ok">구현</span></td><td>앱 화면을 닫은 상태에서 70초 뒤 하트비트 도착 확인(에뮬레이터)</td><td class="ph">2 일부</td></tr>
-          <tr><td>보호자 웹: 이름, 마지막 소식, 6시간 넘으면 '소식 없음', 만료·중지 안내, 응급 전화 버튼과 API 키 제거</td><td><span class="pill ok">구현</span> <span class="pill sev-mid">미배포</span></td><td>로컬 페이지가 에뮬레이터 문서를 읽어 그리는 화면, 없는 토큰 안내 화면 확인</td><td class="ph">1·2·3</td></tr>
+          <tr><td>보호자 웹: 이름, 마지막 소식, 6시간 넘으면 '소식 없음', 만료·중지 안내, 응급 전화 버튼과 API 키 제거</td><td><span class="pill ok">구현</span> <span class="pill ok">배포됨</span></td><td>운영 앱 동기화로 만든 문서를 운영 페이지가 그리는 것을 확인한 뒤, 공유 중지로 테스트 문서를 지움</td><td class="ph">1·2·3</td></tr>
           <tr><td>난이도: 기기에 저장, 예전 클라우드 문서는 Firebase 준비 뒤 한 번 옮기고 지움</td><td><span class="pill ok">구현</span></td><td>에뮬레이터에서 이전과 서버 문서 삭제 확인</td><td class="ph">10</td></tr>
           <tr><td>설정의 '서버에 저장된 내 데이터 삭제': 보호자 문서, 문의와 답변, 예전 난이도. 기기 계정이 하나면 익명 계정도</td><td><span class="pill ok">구현</span></td><td>에뮬레이터에서 보호자 문서·문의·답변 삭제 확인</td><td class="ph">8 일부</td></tr>
           <tr><td>생성형 AI 출시 빌드 기본 끄기, Gemini 키는 헤더로, wttr.in 제거</td><td><span class="pill ok">구현</span></td><td>분석·테스트 통과</td><td class="ph">4</td></tr>
@@ -241,12 +241,15 @@
       </table>
     </div>
     <p>앱 테스트는 550개 통과(기존 skip 2)이고, 분석 결과는 기존 info 4건뿐입니다. 보류한 것은 문제 2의 보호자 푸시(Blaze 필요), 문제 9의 App Check(의존성 금지 유지), 문제 8의 운영 삭제 처리 절차입니다.</p>
-    <h3>남은 일</h3>
+    <h3>콘솔 작업 결과와 남은 일</h3>
     <ol class="steps">
-      <li class="gate"><b>운영 배포 승인</b><span>규칙과 보호자 웹을 배포합니다. 배포하면 예전 보호자 링크는 모두 닫히고, 예전 버전 앱의 보호자 동기화는 실패합니다. 공개 출시 전이라 테스트 데이터만 영향받는다는 전제입니다. 롤백은 콘솔의 규칙 기록과 <code>firebase hosting:rollback</code>입니다.</span></li>
-      <li class="gate"><b>콘솔 작업</b><span>AWS EC2 종료(사무국 계정)와 <code>C:\keys</code>의 키 파일 폐기, 쓰지 않는 Supabase 프로젝트 삭제, 운영의 global_stats 문서 삭제. 안드로이드 API 키의 앱 제한(7/13 적용 기록)이 유지되는지 확인합니다.</span></li>
+      <li><b>운영 배포 완료</b><span>규칙 v2와 보호자 웹을 배포했습니다. 운영에서 앱 동기화, 토큰만으로 공개 사본 읽기, 비공개 링크 차단, 공유 중지 뒤 403을 확인했습니다. 바뀐 Hosting 파일은 보호자 웹과 삭제 안내 두 개뿐입니다. 롤백은 콘솔의 규칙 기록과 <code>firebase hosting:rollback</code>입니다.</span></li>
+      <li><b>global_stats 문서 삭제 완료</b><span>백업은 하지 못했습니다. 앱 전용 키가 앱 밖의 임시 로그인을 막아 읽을 수 없었습니다. 아무 클라이언트나 쓰던 집계값이라 복구할 가치는 낮습니다.</span></li>
+      <li><b>안드로이드 API 키 제한 확인 완료</b><span>인증 API가 앱 밖 요청을 거부합니다(API_KEY_ANDROID_APP_BLOCKED). Firestore 공개 읽기는 키를 검사하지 않아서 보호자 웹은 키 없이 동작합니다.</span></li>
+      <li class="gate"><b>남음: AWS EC2 종료</b><span>이 PC에는 AWS CLI가 없어 사무국이 준 계정으로 AWS 콘솔에서 종료해야 합니다. 종료를 확인한 뒤 <code>C:\keys</code>의 키 파일과 Tailscale IP 메모를 지우고, Tailscale 관리 화면에서 그 기기를 제거합니다.</span></li>
+      <li class="gate"><b>남음: Supabase 프로젝트 삭제</b><span>MemoryLink가 쓰던 프로젝트는 <code>test_SQL</code>입니다. 공개 GitHub 기록에 이 프로젝트의 공개용 키가 남아 있고, 예전 정책이 누구에게나 쓰기를 열어 두었습니다. 지금은 일시정지라 노출은 없지만 대시보드에서 삭제를 권합니다. 연결 도구에는 삭제 기능이 없습니다. 다른 두 프로젝트는 MemoryLink 기록에 나오지 않습니다.</span></li>
       <li><b>물리 기기 확인</b><span>하트비트의 배터리 영향, 재부팅·업데이트 뒤 동작, 백업 규칙은 에뮬레이터에서 확인하지 않았습니다.</span></li>
-      <li><b>커밋</b><span>이번 변경은 커밋하지 않았습니다. 외주 세션의 보안 수정과 같은 파일을 다시 고쳤으므로 한 묶음으로 검토해 커밋하는 것을 권합니다.</span></li>
+      <li><b>푸시</b><span>브랜치는 원격보다 네 커밋 앞서 있습니다(9/27 두 개와 이번 두 개). 각 커밋은 단독 작업 트리에서 분석·테스트를 통과했습니다. 설정 화면의 한이음 문구 변경은 별도 작업이라 커밋에서 뺐습니다.</span></li>
     </ol>
   </section>
 
@@ -808,7 +811,7 @@ match /guardian_views/{token} {   <span class="c">// 보호자가 읽는 공개 
         <li><a href="https://tailscale.com/docs/features/tailscale-funnel">Tailscale Funnel</a>: 포트를 열지 않고 공개 HTTPS 주소와 인증서를 붙입니다.</li>
       </ul>
     </div>
-    <p class="foot">작성 2026-10-03, 구현 반영 2026-10-04. 저장소 사본은 <code>docs/backend/2026-10-03_memorylink-backend-design.html</code>입니다. 수치와 상태는 이 날짜 기준이며 운영 변경 뒤에는 다시 확인해야 합니다.</p>
+    <p class="foot">작성 2026-10-03, 구현·배포·커밋 반영 2026-10-04. 저장소 사본은 <code>docs/backend/2026-10-03_memorylink-backend-design.html</code>입니다. 수치와 상태는 이 날짜 기준이며 운영 변경 뒤에는 다시 확인해야 합니다.</p>
   </section>
 
 </div>
