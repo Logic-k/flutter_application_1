@@ -378,13 +378,15 @@ class _GuardianLinkScreenState extends State<GuardianLinkScreen> {
               ),
               child: const Column(
                 children: [
+                  _InfoRow(icon: Icons.badge_outlined, text: '내 이름(전화번호·아이디는 보내지 않음)'),
+                  SizedBox(height: 12),
                   _InfoRow(icon: Icons.directions_walk, text: '오늘 걸음 수 및 주간 활동 추이'),
                   SizedBox(height: 12),
                   _InfoRow(icon: Icons.psychology, text: '인지 훈련 카테고리별 최신 점수'),
                   SizedBox(height: 12),
                   _InfoRow(icon: Icons.warning_amber, text: '활동량 이상 감지 시 경고 표시'),
                   SizedBox(height: 12),
-                  _InfoRow(icon: Icons.update, text: '마지막 소식 시각'),
+                  _InfoRow(icon: Icons.update, text: '마지막 소식 시각(걸음 측정이 켜져 있으면 1시간마다 갱신)'),
                   SizedBox(height: 12),
                   _InfoRow(icon: Icons.lock_clock, text: '30일 동안 소식이 없으면 링크가 저절로 닫힘'),
                 ],

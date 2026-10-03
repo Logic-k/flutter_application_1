@@ -1,6 +1,6 @@
 # Play Console 「앱 콘텐츠」 답안
 
-> 작성 2026-08-27 · 대상 `com.teammemorylink.memorylink` 1.0.0(1)
+> 작성 2026-08-27 · 1·8번 2026-10-04 갱신 · 대상 `com.teammemorylink.memorylink` 1.0.0(1)
 > 모든 답은 **이 저장소 코드를 읽어 확인한 사실**에 근거한다. 추정으로 채우지 않았다.
 > 실제 동작과 신고 내용이 다르면 정책 위반이므로, 코드가 바뀌면 이 문서도 함께 고친다.
 > 빌드·서명 절차는 `RELEASE_CHECKLIST.md`, 실측 수치는
@@ -21,9 +21,10 @@ Firebase Hosting이 `site/`를 서빙한다(`firebase.json`). 앱도 같은 주�
 (`lib/core/app_config.dart:44`). 랜딩 페이지의 대표 주소(`memorylink.pages.dev`)와
 혼동하지 말 것 — 그쪽은 소개 페이지다.
 
-> **알아둘 것**: 방침 문서가 "음성 녹음 및 AI 대화 입력"을 수집 항목으로 적고 있는데
-> 실제로는 둘 다 수집하지 않는다(§8 참조). 과하게 적힌 쪽이라 위반은 아니지만,
-> 프로덕션 전에 문서를 실제에 맞추는 편이 낫다.
+> **2026-10-04 v2.0**: 방침을 실제 동작(보호자 공유 v2, 익명 통계·온라인 AI 중단, 항목별 보관 기간,
+> 매일 정리 작업, 처리 위탁·국외 이전)에 맞춰 다시 썼다. 같은 글이 `site/privacy.html`과
+> `landing/privacy.html` 두 곳에 있고, `test/unit/core/privacy_policy_guard_test.dart`가 두 사본과
+> 정리 작업(`firebase-ops/retention.mjs`)의 보관 기간이 어긋나지 않게 지킨다.
 
 ---
 
@@ -82,7 +83,7 @@ Firebase Hosting이 `site/`를 서빙한다(`firebase.json`). 앱도 같은 주�
 |---|---|
 | 폭력·성적 콘텐츠·비속어·마약·도박 | 전부 **아니요** |
 | 사용자 간 소통 기능 | **아니요** — 고객센터 문의는 운영자와의 1:1이며 사용자끼리 대화하지 않는다 |
-| 사용자 위치 공유 | **아니요** — 위치 권한 자체가 없다. 날씨는 `wttr.in/Seoul` 고정 호출이다 |
+| 사용자 위치 공유 | **아니요** — 위치 권한 자체가 없다. 날씨 호출(`wttr.in`)은 2026-10-04에 코드에서 지웠다 |
 | 사용자 생성 콘텐츠 공개 | **아니요** — 일기는 기기 안에만 있고 외부로 나가지 않는다 |
 | 디지털 구매 | **아니요** |
 
@@ -118,47 +119,63 @@ Firebase Hosting이 `site/`를 서빙한다(`firebase.json`). 앱도 같은 주�
 
 ## 8. 데이터 보안
 
+> 2026-10-04 백엔드 v2 기준으로 다시 썼다. 근거는 코드와 운영 설정이다. 처리방침 v2.0과 같은 사실을 말한다.
+
 ### 기기를 떠나지 않는 것 — 신고 대상 아님
 
 | 데이터 | 확인 근거 |
 |---|---|
-| 일기 | Firestore 전송 0건, SQLite 로컬 전용 |
+| 계정(아이디·비밀번호 해시·이름·나이·성별·몸무게)·프로필 사진 | SQLite·SharedPreferences 로컬. 회원가입·로그인 서버 호출 0건 |
+| 일기 | Firestore 전송 0건, SQLite 로컬 전용. 3년 지난 일기는 저장 때 자동 삭제(`deleteOldDiaries`) |
 | 수면·혈압·혈당·식이 기록 | 전송 0건 (`database_helper.dart` 로컬 테이블) |
+| 훈련 난이도 | 2026-10 이후 SharedPreferences(`difficulty_levels_<아이디>`). 예전 서버 기록은 한 번 읽어 옮긴 뒤 서버에서 지운다 |
 | 음성 입력(STT) | 녹음 파일 저장·전송 없음. `speech_to_text`가 마이크 음성을 **기기의 음성인식기(Android SpeechRecognizer)**에 넘겨 텍스트만 앱에 돌려준다 — 사용처: 일기 받아쓰기(`diary_screen.dart`), AI 채팅 마이크(`ai_chat_screen.dart`), 문장 읽기 훈련(`sentence_reading_game.dart`). 별도 "음성 평가" 기능은 라우터가 차단 화면만 연결한다 |
-| AI 대화 내용 | 릴리스 빌드에 Gemini 키가 없어(`app_config.dart:16` 기본값 빈 문자열) 규칙 기반 로컬 응답으로 동작한다. 사용자가 설정에서 직접 키를 넣은 경우에만 외부 전송 |
+| AI 대화 내용 | 출시 빌드는 생성형 AI가 꺼져 있다(`AppConfig.isGenerativeAiEnabled` = `ENABLE_GENERATIVE_AI`, 출시 기본 false). 규칙 기반 로컬 응답만 쓰고 대화를 저장·전송하지 않는다. 키 입력·모델 다운로드 메뉴도 숨겨진다 |
 
-크래시 리포팅·애널리틱스 없음(Crashlytics·Analytics 미설치).
+크래시 리포팅·애널리틱스·광고 ID 없음(Crashlytics·Analytics 미설치, `AD_ID` 미선언).
 
 ### 수집·전송되는 것
 
-전부 **「보호자 안심 연결」을 사용자가 켰을 때만** 발생한다 → **선택사항**으로 표시.
-전송 대상은 Firestore이며, 실제 필드는 `guardian_sync_service.dart:94-107`에 있다.
+전송 대상은 Firebase(Auth·Firestore 서울 리전)다. 필드 허용 목록은 `firestore.rules`가 강제한다.
 
-| Play 카테고리 | 항목 | 실제 필드 |
-|---|---|---|
-| 개인 정보 | 이름 | `user_name` |
-| 개인 정보 | 전화번호 | `emergency_contact` |
-| 건강 및 피트니스 | 피트니스 정보 | `today_steps`, `weekly_steps_data` |
-| 앱 활동 | 앱 내 활동 | `recent_scores`, `training_difficulty` |
-| 앱 활동 | 사용자 생성 콘텐츠 | 고객센터 문의 내용 (`cs_service.dart:80`) |
-| 기기 또는 기타 ID | 기기 또는 기타 ID | Firebase 익명 인증 UID |
+| Play 데이터 유형 | 실제 값 | 언제 | 필수/선택 | 목적 |
+|---|---|---|---|---|
+| 개인 정보 > 사용자 ID | Firebase 익명 인증 UID | 인터넷 연결 상태로 앱을 열 때 자동(`AuthService.ensureSignedIn`) | **필수** | 앱 기능(서버 문서 소유 확인), 사기 방지·보안 |
+| 개인 정보 > 사용자 ID | 앱 로그인 아이디(`username`) | 고객센터 문의를 보낼 때 | 선택 | 개발자 커뮤니케이션 |
+| 개인 정보 > 이름 | 보호자 공유 표시 이름(`display_name`, 최대 20자) | 보호자 공유를 시작했을 때 | 선택 | 앱 기능 |
+| 건강 및 피트니스 > 피트니스 정보 | `today_steps`, `weekly_steps`·`weekly_dates`·`weekly_avg`, `is_anomaly`·`anomaly_message`, `last_sync`·`last_heartbeat` | 보호자 공유 중(걸음 측정이 켜져 있으면 1시간마다 백그라운드 갱신) | 선택 | 앱 기능 |
+| 건강 및 피트니스 > 건강 정보 | 인지 훈련 영역별 최근 점수(`scores`, 최대 4개) | 보호자 공유 중 | 선택 | 앱 기능 |
+| 앱 활동 > 기타 사용자 생성 콘텐츠 | 문의 제목·내용 | 고객센터 문의를 보낼 때 | 선택 | 개발자 커뮤니케이션 |
+
+**보내지 않게 된 것(예전 신고에서 빼야 함)**: 전화번호(`emergency_contact`), 로그인 아이디를 이름 대신 보내던 `user_name`,
+훈련 난이도 서버 저장, 익명 통계(`global_stats`), Gemini 대화.
 
 각 항목 공통 답변:
 
-- 수집됨 **예** / 제3자와 공유됨 **아니요** (Firebase는 처리자이지 제3자 판매·공유가 아니다)
-- 전송 중 암호화 **예** (Firestore는 HTTPS)
-- 사용자가 데이터 삭제를 요청할 수 있음 **예** (앱 내 측정 데이터 초기화)
-- 필수 여부 **선택사항**
+- 수집됨 **예** / 제3자와 공유됨 **아니요** — Firebase(Google)는 서비스 제공자다. 보호자 링크는 사용자가 직접 보내는
+  전송(user-initiated)이라 Play의 '공유'에 해당하지 않는다.
+- 전송 중 암호화 **예** (Firebase Auth·Firestore는 TLS)
+- 사용자가 데이터 삭제를 요청할 수 있음 **예** — 앱 **설정 → 서버에 저장된 내 데이터 삭제**(즉시),
+  웹 `https://memorylink-7af26.web.app/delete-account.html`(이메일, 7일 이내)
+- 임시 처리(ephemeral)만 하는가 **아니요** — 보관 기간 동안 저장한다(처리방침 3번)
 
-> **판단이 필요한 한 가지**: 훈련 점수(`recent_scores`)를 '건강 정보'로 볼지 '앱 활동'으로
-> 볼지. 이 앱은 스스로 진단·선별 도구가 아니라고 명시하므로 **앱 활동**이 일관된다.
-> 이 문서는 앱 활동으로 답한다.
+> **바뀐 판단**: 8월 답안은 훈련 점수를 '앱 활동'으로 답했다. 보호자 공유가 점수를 활동량 경고와 함께
+> 인지 건강 요약으로 보여 주므로, 감사 보고서(`docs/LAUNCH_AUDIT_2026-09-28.md` P0-08) 권고대로
+> 보수적으로 **건강 정보**로 답한다. 과하게 신고하는 쪽은 위반이 아니지만 덜 신고하는 쪽은 위반이다.
+
+> **최종 제출 전 확인**: '기기 또는 기타 ID'는 앱 코드가 다루지 않는다. Firebase Auth SDK가 보안 목적으로 처리하는
+> IP 주소·기기 정보는 [Firebase 공식 고지](https://firebase.google.com/docs/android/play-data-disclosure)와
+> 출시 AAB 병합 매니페스트의 SDK 목록을 다시 대조한 뒤 답한다.
 
 ---
 
 ## 9. 건강 앱 선언 ⚠️ — 유일하게 까다로운 항목
 
 **예, Health Connect를 사용합니다.**
+
+> ⚠️ **2026-09-28 감사(P0-09)와 충돌한다.** Android 코드에는 Health Connect 권한 요청이 0건이고
+> `health` 사용은 iOS 백그라운드 경로뿐이다. 이대로 답하면 쓰지 않는 민감 권한을 신고하게 된다.
+> 매니페스트의 `READ_STEPS`·`WRITE_STEPS`를 지울지(감사 권장) 먼저 정하고 이 절을 고친다.
 
 **근거**: `health: ^11.1.1`을 `background_service.dart:6`이 실제로 import하며,
 매니페스트가 `android.permission.health.READ_STEPS`·`WRITE_STEPS`를 선언한다
@@ -189,8 +206,8 @@ Health Connect 권한을 요청하는 앱은 **별도 선언과 Google 검토**�
   권한은 필요하다. 다만 호출 없이 권한만 병합하던 `record` 패키지는 제거했다
   (`audioplayers`·`vibration`·`google_fonts`·`lottie`·`flutter_svg`도 import 0건이라 함께 제거).
   권한 정당화 답변은 "음성 받아쓰기 입력(기기 음성인식 처리, 녹음 파일 미저장)"로 적는다.
-- **개인정보처리방침이 음성·AI 대화를 수집한다고 적고 있다.** 실제와 맞추거나
-  "현재 미사용" 단서를 다는 편이 데이터 보안 신고와 일관된다.
+- ~~**개인정보처리방침이 음성·AI 대화를 수집한다고 적고 있다.**~~ ✅ **2026-10-04 정정.**
+  방침 v2.0이 음성은 기기 음성인식 처리·녹음 미저장, AI 대화는 기기 안 규칙 응답·전송 없음으로 적는다.
 
 ---
 
