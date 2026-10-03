@@ -189,9 +189,9 @@
 <div class="wrap">
 
   <header>
-    <div class="eyebrow">2026-10-03 설계 · 2026-10-04 구현·운영 배포·커밋·푸시 반영 · 기준 devin/release-hardening</div>
+    <div class="eyebrow">2026-10-03 설계 · 2026-10-04 구현·운영 배포·매일 정리 작업·처리방침 v2.0 반영 · 기준 devin/release-hardening</div>
     <h1>MemoryLink 백엔드 설계</h1>
-    <p class="lede">앱이 실제로 연결된 서버는 Firebase 하나이고, 앱이 부르는 서버 코드는 없습니다. 그래서 Firestore 보안 규칙이 사실상 백엔드의 전부입니다. 10/3 점검 때는 고친 규칙이 운영에 없었고, 10/4에 v2 규칙과 보호자 웹을 배포했습니다. 9월에 만든 AWS EC2는 앱과 연결되지 않았고, 쓰지 않기로 했습니다.</p>
+    <p class="lede">앱이 실제로 연결된 서버는 Firebase 하나이고, 앱이 부르는 서버 코드는 없습니다. 그래서 Firestore 보안 규칙이 사실상 백엔드의 전부입니다. 10/3 점검 때는 고친 규칙이 운영에 없었고, 10/4에 v2 규칙과 보호자 웹을 배포했습니다. 9월에 만든 AWS EC2는 앱과 연결되지 않았고, 쓰지 않기로 했습니다. 무료 요금제에는 TTL 자동 삭제가 없어서, 보관 기간이 지난 데이터는 GitHub Actions 예약 작업이 매일 지웁니다.</p>
     <nav class="toc" aria-label="목차">
       <a href="#status">10/4 구현 상태</a>
       <a href="#now">지금 구조</a>
@@ -214,7 +214,8 @@
       <div class="fact"><span class="k">영구 백엔드</span><span class="v">Firebase · 서울</span><span class="s mono">asia-northeast3</span></div>
       <div class="fact"><span class="k">앱이 부르는 서버 코드</span><span class="v">없음</span><span class="s">Functions 없음 · EC2 미연결</span></div>
       <div class="fact"><span class="k">운영 보안 규칙</span><span class="v">v2 배포됨</span><span class="s">2026-10-04</span></div>
-      <div class="fact"><span class="k">규칙 자동 테스트</span><span class="v">32개 통과</span><span class="s">앱 테스트 550개</span></div>
+      <div class="fact"><span class="k">서버 자동 테스트</span><span class="v">47개 통과</span><span class="s">규칙 32 · 정리 15 · 앱 테스트 554개</span></div>
+      <div class="fact"><span class="k">만료 데이터 정리</span><span class="v">매일 03:20</span><span class="s">GitHub Actions · PR #2 합치면 시작</span></div>
       <div class="fact"><span class="k">AWS EC2</span><span class="v">사용 안 함</span><span class="s">종료는 콘솔 작업으로 남음</span></div>
       <div class="fact"><span class="k">Supabase</span><span class="v">SQL 삭제됨</span><span class="s">test_SQL 프로젝트 삭제는 콘솔 작업</span></div>
     </div>
@@ -222,6 +223,34 @@
 
   <section id="status">
     <h2>10/4 구현 상태</h2>
+    <h3>2차 (10/4 새벽): 무료 요금제 안에서 끝까지</h3>
+    <p>요청: "무료 플랜으로 할 수 있는 최대한의 좋은 퀄리티로". Firestore TTL 자동 삭제는 결제 활성화가 필요해 쓸 수 없습니다(Firebase 요금 문서). 그래서 같은 일을 GitHub Actions 예약 작업으로 대신했고, 공개 약속(처리방침·Play 신고)을 실제 동작에 맞췄습니다.</p>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>항목</th><th>상태</th><th>확인한 방법</th><th>관련 문제</th></tr></thead>
+        <tbody>
+          <tr><td>매일 정리 작업(<code>firebase-ops/retention.mjs</code>, 매일 03:20 KST): 보호자 링크는 만료 1일 뒤, 예전 공개 문서는 바로, 문의는 접수 365일, 예전 난이도는 갱신 90일, 익명 계정은 365일 미사용이고 남은 데이터가 없을 때. 필드 마스크로 소유자·시각만 읽고, 로그에는 개수만 남기고, 판정 뒤 바뀐 문서는 건너뛰고, 500건이 넘으면 중단</td><td><span class="pill ok">구현</span> <span class="pill sev-mid">PR #2 합치면 시작</span></td><td>에뮬레이터 테스트 15개(Firestore·Auth). 원격 CI에서 규칙과 합쳐 47개 통과. 예약 실행은 main에 있어야 돌아서 정리 작업만 담은 PR을 열었습니다</td><td class="ph">3·8</td></tr>
+          <tr><td>키 없는 GitHub 연결: 서비스 계정 <code>firestore-retention</code>(키 0개), 맞춤 역할(문서 읽기·삭제, 익명 계정 조회·삭제만), Workload Identity 조건(저장소 id·main·이 워크플로 파일·예약 또는 수동 실행)</td><td><span class="pill ok">설정됨</span></td><td>서비스 계정 토큰으로 운영 미리보기와 적용을 실행. 문서 만들기는 403. 검증용 임시 권한은 회수했고 정책에 남지 않은 것을 확인</td><td class="ph">8·11</td></tr>
+          <tr><td>운영 첫 정리: 예전 보호자 공개 문서 22개. 이름·전화번호가 남아 있었고, 11개는 소유자 정보가 없어 앱으로는 지울 수 없었음</td><td><span class="pill ok">삭제됨</span></td><td>다시 센 결과 보호자 문서 0개. 문의·공지·FAQ·난이도 문서와 익명 계정 수는 그대로</td><td class="ph">3·8</td></tr>
+          <tr><td>개인정보 처리방침 v2.0: 항목별 저장 위치, 1시간 갱신과 30일 닫힘, 항목별 보관 기간과 매일 정리, 처리 위탁·국외 이전(Google·GitHub), 구제 방법. 삭제 안내 페이지도 갱신</td><td><span class="pill ok">배포됨</span></td><td>공개 페이지가 저장소 파일과 바이트 단위로 같음. 두 사본과 보관 기간을 대조하는 테스트 추가</td><td class="ph">8</td></tr>
+          <tr><td>소개 사이트(<code>memorylink.pages.dev</code>)의 처리방침 사본</td><td><span class="pill sev-mid">배포 남음</span></td><td>저장소에는 반영. Cloudflare 배포가 비대화형 환경에서 API 토큰을 요구해 사용자 터미널에서 해야 함</td><td class="ph">8</td></tr>
+          <tr><td>Play 데이터 보안 답안(<code>PLAY_CONSOLE.md</code> 8번): 익명 UID는 필수, 이름·걸음 수·인지 점수·문의는 선택, 인지 점수는 건강 정보로 보수 신고</td><td><span class="pill ok">다시 씀</span></td><td>코드와 운영 설정을 대조. 9번 Health Connect 답에는 감사 P0-09와 충돌한다는 경고만 붙임</td><td class="ph">8</td></tr>
+          <tr><td>보호자 화면 안내: 이름이 보이고 전화번호·아이디는 보내지 않음, 걸음 측정이 켜져 있으면 1시간마다 갱신</td><td><span class="pill ok">구현</span></td><td>전체 테스트 통과</td><td class="ph">3</td></tr>
+          <tr><td>보호자 웹 링크를 가로채던 App Link 설정 제거(감사 P0-13)</td><td><span class="pill ok">구현</span></td><td>앱에 해당 화면이 없고 배포된 assetlinks.json이 비어 있음을 확인</td><td class="ph">—</td></tr>
+          <tr><td>Maestro 게이팅 목록을 한 파일로 합침(감사 P0-02 일부): CI가 지워진 flow를 돌고 두 flow를 빠뜨리던 문제</td><td><span class="pill ok">구현</span></td><td>목록 가드 테스트, 가짜 maestro로 21개 순회 확인. Maestro CI는 main·develop에서만 돎</td><td class="ph">—</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>커밋 <code>f9612bc</code>부터 <code>a35f75e</code>까지 다섯 개를 푸시했습니다. 커밋된 파일만 담은 작업 폴더에서 분석(기존 info 4건), 앱 테스트 437개, 규칙과 정리 47개가 통과했습니다. 미커밋 작업까지 포함하면 앱 테스트는 554개 통과(기존 skip 2)입니다.</p>
+    <h3>사용자가 정하거나 할 일</h3>
+    <ol class="steps">
+      <li class="gate"><b>PR #2 합치기</b><span>main에 정리 작업 세 파일만 올리는 PR입니다. 합치면 그날 밤부터 매일 돕니다. PR에 보이는 Flutter CI·Maestro 실패는 7월부터 이어진 main의 기존 상태입니다.</span></li>
+      <li class="gate"><b>소개 사이트 처리방침 배포</b><span>터미널에서 <code>npx wrangler pages deploy landing --project-name memorylink --branch main</code>을 실행하고, 운영(Production)으로 올라갔는지 확인합니다.</span></li>
+      <li><b>main 보호와 토큰 정리</b><span>main에 push할 수 있으면 정리 작업을 바꿔 Firestore를 읽을 수 있습니다. main 브랜치 보호를 켜고, 로컬 설정 파일에 평문으로 남은 GitHub 토큰을 폐기합니다.</span></li>
+      <li><b>이메일 삭제 요청 대체 담당자 지정</b><span>운영 절차서(<code>docs/release/DATA_DELETION_RUNBOOK.md</code>) 3번에 이름을 적습니다.</span></li>
+      <li><b>법적 검토 거리</b><span>걸음 수·인지 점수를 건강 관련 정보로 보면, 보호자 공유를 시작할 때 별도 동의 화면이 필요할 수 있습니다. 지금은 사용자가 직접 동기화를 눌러 시작하고, 화면에 보낼 항목을 보여 줍니다.</span></li>
+    </ol>
+    <h3>1차: 보호자 링크 v2와 규칙 v2</h3>
     <p>결정: <b>무료(Spark) 요금제로 진행</b>, <b>AWS는 쓰지 않음</b>, 나머지는 추천대로. 그래서 서버 코드(Cloud Functions)가 필요한 보호자 푸시는 보류하고, 규칙과 기기·웹만으로 할 수 있는 0·1단계를 구현했습니다. 10/4에 운영 Firestore 규칙과 Hosting에 배포했고, 저장소에는 두 커밋으로 남겼습니다. <code>2648d8e</code>는 외주 세션의 보안 수정, <code>051d0de</code>는 이번 백엔드 v2입니다. 10/4에 GitHub에 푸시했고, 원격 'Firestore rules' 워크플로에서 규칙 테스트 32개가 통과했습니다.</p>
     <div class="table-scroll">
       <table>
@@ -236,18 +265,18 @@
           <tr><td>생성형 AI 출시 빌드 기본 끄기, Gemini 키는 헤더로, wttr.in 제거</td><td><span class="pill ok">구현</span></td><td>분석·테스트 통과</td><td class="ph">4</td></tr>
           <tr><td>관리자 고객센터 화면은 콘솔 안내만(관리자 권한 체계가 생기면 다시 켬)</td><td><span class="pill ok">구현</span></td><td>라우터 계약 테스트 통과</td><td class="ph">7</td></tr>
           <tr><td>백업 규칙: 클라우드 백업 없음, 새 휴대폰 이전은 건강 기록 DB만(토큰·키·설정 제외)</td><td><span class="pill ok">구현</span></td><td>빌드 통과. 실제 백업·이전 동작은 기기에서 확인하지 않음</td><td class="ph">8 일부</td></tr>
-          <tr><td>목업 분석 서버·Supabase SQL 삭제, 규칙 테스트 CI 워크플로 추가</td><td><span class="pill ok">구현</span></td><td>CI 워크플로는 원격에서 아직 돌지 않음</td><td class="ph">11</td></tr>
+          <tr><td>목업 분석 서버·Supabase SQL 삭제, 규칙 테스트 CI 워크플로 추가</td><td><span class="pill ok">구현</span></td><td>원격 CI 통과(10/4, 2차에서 정리 테스트까지 47개)</td><td class="ph">11</td></tr>
         </tbody>
       </table>
     </div>
-    <p>앱 테스트는 550개 통과(기존 skip 2)이고, 분석 결과는 기존 info 4건뿐입니다. 보류한 것은 문제 2의 보호자 푸시(Blaze 필요), 문제 9의 App Check(의존성 금지 유지), 문제 8의 운영 삭제 처리 절차입니다.</p>
+    <p>앱 테스트는 550개 통과(기존 skip 2)이고, 분석 결과는 기존 info 4건뿐입니다. 보류한 것은 문제 2의 보호자 푸시(Blaze 필요)와 문제 9의 App Check(의존성 금지 유지)입니다. 문제 8의 운영 삭제 처리 절차는 2차에서 매일 정리 작업과 운영 절차서로 해결했습니다.</p>
     <h3>콘솔 작업 결과와 남은 일</h3>
     <ol class="steps">
       <li><b>운영 배포 완료</b><span>규칙 v2와 보호자 웹을 배포했습니다. 운영에서 앱 동기화, 토큰만으로 공개 사본 읽기, 비공개 링크 차단, 공유 중지 뒤 403을 확인했습니다. 바뀐 Hosting 파일은 보호자 웹과 삭제 안내 두 개뿐입니다. 롤백은 콘솔의 규칙 기록과 <code>firebase hosting:rollback</code>입니다.</span></li>
       <li><b>global_stats 문서 삭제 완료</b><span>백업은 하지 못했습니다. 앱 전용 키가 앱 밖의 임시 로그인을 막아 읽을 수 없었습니다. 아무 클라이언트나 쓰던 집계값이라 복구할 가치는 낮습니다.</span></li>
       <li><b>안드로이드 API 키 제한 확인 완료</b><span>인증 API가 앱 밖 요청을 거부합니다(API_KEY_ANDROID_APP_BLOCKED). Firestore 공개 읽기는 키를 검사하지 않아서 보호자 웹은 키 없이 동작합니다.</span></li>
-      <li class="gate"><b>남음: AWS EC2 종료</b><span>이 PC에는 AWS CLI가 없어 사무국이 준 계정으로 AWS 콘솔에서 종료해야 합니다. 종료를 확인한 뒤 <code>C:\keys</code>의 키 파일과 Tailscale IP 메모를 지우고, Tailscale 관리 화면에서 그 기기를 제거합니다.</span></li>
-      <li class="gate"><b>남음: Supabase 프로젝트 삭제</b><span>MemoryLink가 쓰던 프로젝트는 <code>test_SQL</code>입니다. 공개 GitHub 기록에 이 프로젝트의 공개용 키가 남아 있고, 예전 정책이 누구에게나 쓰기를 열어 두었습니다. 지금은 일시정지라 노출은 없지만 대시보드에서 삭제를 권합니다. 연결 도구에는 삭제 기능이 없습니다. 다른 두 프로젝트는 MemoryLink 기록에 나오지 않습니다.</span></li>
+      <li class="gate"><b>보류: AWS EC2 종료</b><span>사용자 판단으로 당장은 두기로 했습니다(10/4). 앱과 연결되지 않아 사용자 영향은 없습니다. 켜져 있는 동안 지원 예산을 쓰므로 콘솔에서 '중지'만 해 두기를 권하고, 사업 종료(10/31) 때 정리합니다. 종료하면 <code>C:\keys</code>의 키 파일과 Tailscale IP 메모를 지우고 Tailscale 관리 화면에서 그 기기를 제거합니다.</span></li>
+      <li class="gate"><b>보류: Supabase 프로젝트 삭제</b><span>MemoryLink가 쓰던 프로젝트는 <code>test_SQL</code>입니다. 일시정지 상태라 공개 GitHub 기록에 남은 공개용 키로도 접근할 수 없습니다. 다시 켜면 예전 정책 때문에 누구나 읽고 쓸 수 있으니, 켜야 할 일이 생기면 그 전에 삭제합니다. 예전 문의 기록에 실제 사람이 쓴 글이 있다면 삭제가 맞습니다. 연결 도구에는 삭제 기능이 없습니다.</span></li>
       <li><b>물리 기기 확인</b><span>하트비트의 배터리 영향, 재부팅·업데이트 뒤 동작, 백업 규칙은 에뮬레이터에서 확인하지 않았습니다.</span></li>
       <li><b>푸시 완료</b><span>9/27 커밋 두 개와 이번 커밋을 함께 올렸습니다. 각 커밋은 단독 작업 트리에서 분석·테스트를 통과했습니다. 기존 테스트·Maestro 워크플로는 main·develop에서만 돌아서 이번에는 실행되지 않았습니다. 설정 화면의 한이음 문구 변경은 별도 작업이라 커밋에서 뺐습니다.</span></li>
     </ol>
@@ -727,7 +756,7 @@ match /guardian_views/{token} {   <span class="c">// 보호자가 읽는 공개 
           <tr>
             <td><b>2. 서버 감지·푸시</b></td>
             <td>Blaze 전환 · 예산 알림</td>
-            <td>Functions(서울)가 매일 정한 시각에 침묵·이상을 판정해 보호자 웹 푸시, 만료 문서 TTL 청소, AI 프록시(유지할 때)</td>
+            <td>Functions(서울)가 매일 정한 시각에 침묵·이상을 판정해 보호자 웹 푸시, AI 프록시(유지할 때). 만료 문서 청소는 10/4에 무료 GitHub Actions로 해결해 이 단계에서 빠졌습니다</td>
             <td>예약 실행 기록, 테스트 보호자 기기의 푸시 수신, 예산 알림 수신</td>
             <td>1~2주</td>
           </tr>
@@ -757,7 +786,7 @@ match /guardian_views/{token} {   <span class="c">// 보호자가 읽는 공개 
       <table>
         <thead><tr><th>번호</th><th>결정</th><th>선택지</th><th>추천</th><th>적용한 값</th></tr></thead>
         <tbody>
-          <tr><td class="n">1</td><td>Firebase 요금제</td><td>Spark 유지 · Blaze(종량제) 전환</td><td>1단계까지 Spark. 보호자 푸시를 원하면 Blaze와 예산 알림</td><td><b>Spark 유지.</b> 2단계·TTL 보류</td></tr>
+          <tr><td class="n">1</td><td>Firebase 요금제</td><td>Spark 유지 · Blaze(종량제) 전환</td><td>1단계까지 Spark. 보호자 푸시를 원하면 Blaze와 예산 알림</td><td><b>Spark 유지.</b> 2단계 보류. TTL 대신 매일 정리 작업(GitHub Actions, 무료)</td></tr>
           <tr><td class="n">2</td><td>앱 의존성 금지 규칙</td><td>유지 · 항목별 예외</td><td>출시 전까지 유지. App Check와 음성 녹음만 따로 판단</td><td><b>유지.</b> 의존성 추가 없이 구현</td></tr>
           <tr><td class="n">3</td><td>보호자 알림 방식</td><td>당겨보기만 · 웹 푸시 · 문자(유료)</td><td>웹 푸시 + '소식 없음' 표시. 아이폰은 홈 화면에 추가한 웹앱에서만 웹 푸시를 받습니다</td><td><b>'소식 없음' 표시만.</b> 웹 푸시는 서버가 필요해 보류</td></tr>
           <tr><td class="n">4</td><td>링크 만료와 전화번호</td><td>N일 · 전화번호 없음 / 이상 시 / 동의 시</td><td>N=30일 슬라이딩. 전화번호는 이상 상태 + 별도 동의일 때만. 보호자 화면이 거는 번호가 보호자 본인 번호라면 버튼을 없앱니다</td><td><b>30일 · 전화번호 없음.</b> 앱의 '보호자 전화·문자 알림'이 같은 번호로 걸어, 비상 연락처가 보호자 본인 번호임을 확인</td></tr>
