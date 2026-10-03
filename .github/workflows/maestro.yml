@@ -53,7 +53,9 @@ jobs:
           curl -Ls "https://get.maestro.mobile.dev" | bash
           echo "$HOME/.maestro/bin" >> $GITHUB_PATH
 
-      # 에뮬레이터 실행 + APK 설치 + Maestro 테스트
+      # 에뮬레이터 실행 + APK 설치 + Maestro 게이팅
+      # 목록 정본은 maestro/gating_flows.txt(로컬 run_maestro_tests.ps1과 같은 목록).
+      # android-emulator-runner는 script를 줄마다 따로 실행하므로 반복문은 스크립트 파일에 둔다.
       - name: Run Maestro flows
         uses: reactivecircus/android-emulator-runner@v2
         with:
@@ -65,39 +67,7 @@ jobs:
           script: |
             adb install build/app/outputs/flutter-apk/app-debug.apk
 
-            passed=0; failed=0; results=""
-            for flow in \
-              maestro/login_flow.yaml \
-              maestro/login_fail_flow.yaml \
-              maestro/register_flow.yaml \
-              maestro/navigation_flow.yaml \
-              maestro/training_hub_flow.yaml \
-              maestro/training_progression_flow.yaml \
-              maestro/training_persistence_flow.yaml \
-              maestro/training_accessibility_flow.yaml \
-              maestro/profile_flow.yaml \
-              maestro/cs_center_flow.yaml \
-              maestro/reports_flow.yaml \
-              maestro/voice_assessment_flow.yaml \
-              maestro/social_ranking_flow.yaml \
-              maestro/guardian_link_flow.yaml \
-              maestro/home_detail_flow.yaml \
-              maestro/ai_chat_flow.yaml \
-              maestro/memory_garden_flow.yaml \
-              maestro/training_game_flow.yaml \
-              maestro/edit_profile_flow.yaml \
-              maestro/clinical_report_flow.yaml; do
-              echo "::group::$flow"
-              maestro test "$flow" && { passed=$((passed+1)); results="$results\nPASS: $flow"; } \
-                                  || { failed=$((failed+1)); results="$results\nFAIL: $flow"; }
-              echo "::endgroup::"
-            done
-
-            echo ""
-            echo "=============================="
-            echo "결과: PASS $passed / FAIL $failed / TOTAL $((passed+failed))"
-            printf "%b\n" "$results"
-            [ $failed -eq 0 ]
+            bash scripts/maestro_gating.sh
 
       # 스크린샷 투어 실행 (결과와 무관하게 항상)
       - name: Capture screenshots
