@@ -86,7 +86,7 @@
 - `pubspec.yaml`의 `version: <name>+<code>` 단일 소스. 예) `1.0.0+1`.
 - 스토어 업로드마다 **build number(+뒤)** 를 반드시 증가(중복 versionCode 거부됨).
 - 빌드 명령: `flutter build appbundle --release` → `build/app/outputs/bundle/release/app-release.aab`
-- 온라인 AI 사용 시: `--dart-define=GEMINI_API_KEY=<키>` (앱에 상수 주입은 추출 위험 — 가능하면 사용자 키 입력만 권장)
+- 생성형 AI(Gemini·온디바이스 모델)는 출시 빌드에서 기본으로 꺼져 있다(규칙 기반 대화만). 켜려면 `--dart-define=ENABLE_GENERATIVE_AI=true`가 필요하고, 그 전에 출시 감사 P0-10(인앱 신고·키 노출·무료 등급 약관)을 해결한다. 앱에 개발자 Gemini 키를 넣지 않는다.
 
 ## 5. 릴리스 빌드 명령 모음
 ```bash
@@ -99,8 +99,11 @@ flutter build apk --release
 # 개인정보 처리방침/보호자뷰 호스팅 배포
 flutter build web && firebase deploy --only hosting
 
-# Firestore 규칙 배포 (Auth 도입 후)
+# Firestore 규칙 배포: 에뮬레이터 규칙 테스트가 먼저 통과해야 한다 (firebase-tests/README.md)
+cd firebase-tests && npm ci && npx firebase-tools@15.19.0 emulators:exec --config ../firebase.json --project demo-memorylink --only firestore "npm test" && cd ..
+# 보호자 링크 v2 규칙은 '쓰기 거부 시 새 링크 발급' 경로가 든 앱이 먼저 나가야 한다(2026-10-04 백엔드 설계)
 firebase deploy --only firestore:rules
+firebase deploy --only hosting
 ```
 
 ## 6. 남은 제품 리스크 (출시 후 개선)

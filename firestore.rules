@@ -1,19 +1,21 @@
 rules_version = '2';
 
 // ============================================================================
-// MemoryLink Firestore 보안 규칙
+// MemoryLink Firestore 보안 규칙 (v2, 2026-10-04)
 // ============================================================================
 //
 // 전제 조건
 //   앱은 시작 시 signInAnonymously()로 익명 세션을 만든다 (AuthService).
 //   사용자 계정 자체는 로컬 SQLite이며, request.auth.uid 는 "기기(설치) 단위"
-//   식별자다. 소유권 필드(authorUid/ownerUid)는 쓰기 시 클라이언트가 기록한다.
+//   식별자다. 건강 기록의 원본은 기기에만 있고, 클라우드에는 보호자에게 보여줄
+//   최소 사본과 고객센터 문의만 둔다.
 //
-//   배포 전 Firebase 콘솔에서 Authentication > Anonymous 로그인 활성화 필수.
+//   서버 코드(Cloud Functions)가 없는 무료 요금제 구성이므로 이 규칙이 유일한
+//   서버 검사다. 바꾸면 firebase-tests/ 의 에뮬레이터 테스트를 함께 고친다.
 //
 //   관리자 쓰기(notices/faqs 등록, 문의 답변)는 Custom Claims(admin=true)가
-//   있어야 허용된다. Claims 부여 체계(Cloud Functions/Admin SDK) 도입 전까지
-//   운영 콘텐츠는 Firebase 콘솔에서 직접 등록한다.
+//   있어야 허용된다. 부여 체계가 없는 동안 운영 콘텐츠는 Firebase 콘솔에서
+//   직접 관리한다(콘솔은 규칙을 거치지 않는다).
 // ============================================================================
 
 service cloud.firestore {
@@ -24,79 +26,134 @@ service cloud.firestore {
       return request.auth != null;
     }
     function isAdmin() {
-      // Custom Claim 기반 관리자 판별 (Cloud Functions 로 부여)
+      // Custom Claim 기반 관리자 판별
       return isSignedIn() && request.auth.token.admin == true;
     }
 
-    // ── 공지사항: 로그인 사용자 읽기, 관리자만 쓰기 ───────────────
+    // ── 공지사항·FAQ: 로그인 사용자 읽기, 관리자만 쓰기 ───────────
     match /notices/{noticeId} {
       allow read: if isSignedIn();
       allow write: if isAdmin();
     }
-
-    // ── FAQ: 로그인 사용자 읽기, 관리자만 쓰기 ────────────────────
     match /faqs/{faqId} {
       allow read: if isSignedIn();
       allow write: if isAdmin();
     }
 
-    // ── 1:1 문의: 본인 생성·조회, 관리자 조회·답변 ────────────────
-    //   문서에 authorUid 필드를 저장하여 소유권을 판별한다.
+    // ── 1:1 문의: 작성자는 만들고·읽고·지울 수 있고 고칠 수는 없다 ──
+    //   상태(status)와 답변은 관리자만 바꾼다. 작성자 삭제는 '서버 데이터 삭제'용.
+    function validInquiry(d) {
+      return d.keys().hasOnly(['username', 'authorUid', 'title', 'body', 'status', 'created_at'])
+        && d.keys().hasAll(['authorUid', 'title', 'body', 'status', 'created_at'])
+        && d.authorUid == request.auth.uid
+        && d.title is string && d.title.size() > 0 && d.title.size() <= 100
+        && d.body is string && d.body.size() > 0 && d.body.size() <= 2000
+        && d.status == 'pending'
+        && d.created_at == request.time
+        && (!('username' in d) || (d.username is string && d.username.size() <= 50));
+    }
+    function isInquiryAuthor(inquiryId) {
+      return isSignedIn()
+        && get(/databases/$(database)/documents/inquiries/$(inquiryId)).data.authorUid == request.auth.uid;
+    }
     match /inquiries/{inquiryId} {
-      allow create: if isSignedIn()
-        && request.resource.data.authorUid == request.auth.uid;
-      allow read, update: if isAdmin()
+      allow create: if isSignedIn() && validInquiry(request.resource.data);
+      allow read: if isAdmin()
         || (isSignedIn() && resource.data.authorUid == request.auth.uid);
-      allow delete: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin()
+        || (isSignedIn() && resource.data.authorUid == request.auth.uid);
 
       match /replies/{replyId} {
-        allow read: if isAdmin()
-          || (isSignedIn()
-              && get(/databases/$(database)/documents/inquiries/$(inquiryId)).data.authorUid == request.auth.uid);
-        allow write: if isAdmin();
+        allow read: if isAdmin() || isInquiryAuthor(inquiryId);
+        allow create, update: if isAdmin();
+        allow delete: if isAdmin() || isInquiryAuthor(inquiryId);
       }
     }
 
-    // ── 보호자 열람 문서 ─────────────────────────────────────────
-    //   문서 ID = 암호학적 난수 토큰. 토큰을 아는 보호자만 읽을 수 있다.
-    //   (토큰 자체가 비밀 자격 증명 역할)
-    //   쓰기는 본인 앱(uid 소유)만 허용한다.
-    match /guardian_views/{token} {
-      // 토큰(문서 ID)을 알아야만 단일 문서 조회 가능 = 사실상 비밀키.
-      // list를 열면 토큰 열거가 가능해지므로 반드시 get만 허용한다.
-      allow get: if true;
+    // ── 보호자 링크 v2 ───────────────────────────────────────────
+    //   guardian_links/{token}  비공개. 소유자와 만료일만 둔다.
+    //   guardian_views/{token}  보호자가 토큰만으로 읽는 공개 사본. 소유자 정보 없음.
+    //   두 문서는 한 batch로 쓰고, 공개 사본의 소유권은 비공개 문서로 확인한다.
+    //   만료일은 동기화·하트비트가 성공할 때마다 앞으로 민다(슬라이딩 30일).
+    //   만료되면 문서는 남아도 아무도 읽지 못한다. 해지는 두 문서 삭제다.
+    function validToken(token) {
+      // 128비트 이상 무작위 토큰(base64url 22자 이상)만 허용한다.
+      return token.matches('^[A-Za-z0-9_-]{22,64}$');
+    }
+    function validExpiry(e) {
+      // 30일 슬라이딩 만료 + 기기 시계 오차 여유 1일
+      return e is timestamp && e > request.time && e <= request.time + duration.value(31, 'd');
+    }
+    function linkPath(token) {
+      return /databases/$(database)/documents/guardian_links/$(token);
+    }
+    function viewKeys() {
+      return ['schema', 'display_name', 'today_steps', 'weekly_steps', 'weekly_dates', 'weekly_avg',
+              'scores', 'is_anomaly', 'anomaly_message', 'last_sync', 'last_heartbeat', 'expiresAt'];
+    }
+    function validView(d, token) {
+      return existsAfter(linkPath(token))
+        && getAfter(linkPath(token)).data.ownerUid == request.auth.uid
+        && d.expiresAt == getAfter(linkPath(token)).data.expiresAt
+        && d.keys().hasOnly(viewKeys())
+        && d.keys().hasAll(['schema', 'today_steps', 'is_anomaly', 'expiresAt'])
+        && d.schema == 2
+        && d.today_steps is int && d.today_steps >= 0 && d.today_steps <= 100000
+        && d.is_anomaly is bool
+        && (!('display_name' in d) || (d.display_name is string && d.display_name.size() <= 20))
+        && (!('weekly_steps' in d) || (d.weekly_steps is list && d.weekly_steps.size() <= 7))
+        && (!('weekly_dates' in d) || (d.weekly_dates is list && d.weekly_dates.size() <= 7))
+        && (!('weekly_avg' in d) || (d.weekly_avg is int && d.weekly_avg >= 0 && d.weekly_avg <= 100000))
+        && (!('scores' in d) || (d.scores is list && d.scores.size() <= 4))
+        && (!('anomaly_message' in d) || (d.anomaly_message is string && d.anomaly_message.size() <= 200))
+        && (!('last_sync' in d) || d.last_sync is timestamp)
+        && (!('last_heartbeat' in d) || d.last_heartbeat is timestamp);
+    }
+
+    match /guardian_links/{token} {
+      allow get: if isSignedIn() && resource.data.ownerUid == request.auth.uid;
       allow list: if false;
       allow create: if isSignedIn()
-        && request.resource.data.ownerUid == request.auth.uid;
+        && validToken(token)
+        && request.resource.data.keys().hasOnly(['ownerUid', 'createdAt', 'expiresAt', 'schema'])
+        && request.resource.data.keys().hasAll(['ownerUid', 'createdAt', 'expiresAt', 'schema'])
+        && request.resource.data.ownerUid == request.auth.uid
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.schema == 2
+        && validExpiry(request.resource.data.expiresAt);
+      // 만료일 연장만 허용한다. 소유자는 바꿀 수 없다.
       allow update: if isSignedIn()
         && resource.data.ownerUid == request.auth.uid
-        && request.resource.data.ownerUid == resource.data.ownerUid;
-      allow delete: if isSignedIn()
-        && resource.data.ownerUid == request.auth.uid;
-    }
-
-    // ── 기존 통계 조회만 보존. 클라이언트 집계 쓰기는 허용하지 않는다. ──
-    match /global_stats/score_stats {
-      allow read: if isSignedIn();
-      allow write: if false;
-    }
-
-    // ── 적응형 훈련 난이도: 본인(ownerUid) 문서만 접근 ────────────
-    //   문서 ID = "<uid>_<username>" (DifficultyProvider._docId)
-    match /training_difficulty/{docId} {
-      // resource == null 허용: 아직 문서가 없는 최초 get이 깨끗한 NOT_FOUND로
-      // 떨어지게 한다 (없으면 permission-denied 에러가 나 클라이언트 로그 오염)
-      allow read: if isSignedIn()
-        && (resource == null || resource.data.ownerUid == request.auth.uid);
-      allow create: if isSignedIn()
-        && request.resource.data.ownerUid == request.auth.uid;
-      allow update: if isSignedIn()
-        && resource.data.ownerUid == request.auth.uid
-        && request.resource.data.ownerUid == request.auth.uid;
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['expiresAt'])
+        && validExpiry(request.resource.data.expiresAt);
       allow delete: if isSignedIn() && resource.data.ownerUid == request.auth.uid;
     }
 
-    // ── 그 외 모든 경로 기본 차단 ────────────────────────────────
+    match /guardian_views/{token} {
+      // 토큰(문서 ID)을 아는 사람만 단일 문서를 읽는다. 목록 조회는 막는다.
+      // 만료일이 없는 v1 문서와 만료된 문서는 아무도 읽지 못한다.
+      allow get: if 'expiresAt' in resource.data && resource.data.expiresAt > request.time;
+      allow list: if false;
+      allow create, update: if isSignedIn() && validToken(token) && validView(request.resource.data, token);
+      // v2: 비공개 링크의 소유자 / v1 잔존 문서: 문서 안 ownerUid의 소유자
+      allow delete: if isSignedIn() && (
+        (exists(linkPath(token)) && get(linkPath(token)).data.ownerUid == request.auth.uid)
+        || resource.data.get('ownerUid', '') == request.auth.uid);
+    }
+
+    // ── 적응형 훈련 난이도: 클라우드 저장 종료 ───────────────────
+    //   난이도는 기기(SharedPreferences)에 저장한다. 남아 있는 예전 문서는
+    //   소유자가 한 번 읽어 기기로 옮기고 지울 수만 있다.
+    match /training_difficulty/{docId} {
+      // resource == null 허용: 아직 문서가 없는 최초 get이 깨끗한 NOT_FOUND로 떨어진다.
+      allow read: if isSignedIn()
+        && (resource == null || resource.data.ownerUid == request.auth.uid);
+      allow delete: if isSignedIn() && resource.data.ownerUid == request.auth.uid;
+      allow create, update: if false;
+    }
+
+    // ── 그 외 모든 경로 기본 차단 (global_stats 포함) ─────────────
     match /{document=**} {
       allow read, write: if false;
     }

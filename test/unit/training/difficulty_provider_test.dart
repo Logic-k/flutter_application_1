@@ -1,10 +1,14 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_application_1/features/training/difficulty_provider.dart';
 
 DifficultyProvider _provider() =>
     DifficultyProvider(username: 'testuser');
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  setUp(() => SharedPreferences.setMockInitialValues({}));
+
   group('DifficultyProvider - 초기 상태', () {
     test('모든 카테고리의 초기 레벨은 1이다', () {
       final p = _provider();
@@ -87,6 +91,26 @@ void main() {
         await p.updatePerformance(GameCategory.calculation, true);
       }
       expect(p.getTargetTime(GameCategory.calculation), greaterThanOrEqualTo(2.0));
+    });
+  });
+
+  group('DifficultyProvider - 기기 저장', () {
+    test('바뀐 레벨은 기기에 저장되고 같은 아이디로 다시 불러온다', () async {
+      SharedPreferences.setMockInitialValues({});
+      final p = _provider();
+      for (var i = 0; i < 3; i++) {
+        await p.updatePerformance(GameCategory.memory, true);
+      }
+      expect(p.getLevel(GameCategory.memory), 2);
+
+      final reloaded = DifficultyProvider(username: '');
+      await reloaded.setUsername('testuser');
+      expect(reloaded.getLevel(GameCategory.memory), 2);
+      expect(reloaded.getLevel(GameCategory.logic), 1);
+
+      final other = DifficultyProvider(username: '');
+      await other.setUsername('someone-else');
+      expect(other.getLevel(GameCategory.memory), 1);
     });
   });
 }

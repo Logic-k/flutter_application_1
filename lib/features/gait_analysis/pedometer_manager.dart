@@ -81,6 +81,7 @@ class PedometerManager with ChangeNotifier, WidgetsBindingObserver {
       _todaySteps = 0;
       _todayCalories = 0.0;
       _todayDistance = 0.0;
+      unawaited(_activateGuardianHeartbeat(null));
       notifyListeners();
       return;
     }
@@ -97,9 +98,20 @@ class PedometerManager with ChangeNotifier, WidgetsBindingObserver {
       } else {
         FlutterBackgroundService().invoke('stopService');
       }
+      unawaited(_activateGuardianHeartbeat(userId));
       notifyListeners();
     }
     _loadTodayStepsFromDB();
+  }
+
+  /// 백그라운드 하트비트가 지금 로그인한 사용자의 공유 링크에만 가도록 맞춘다.
+  /// 로그아웃이면 비운다. 실패해도 걸음 측정에는 영향이 없다.
+  Future<void> _activateGuardianHeartbeat(int? userId) async {
+    try {
+      await GuardianSyncService().activateHeartbeatFor(userId);
+    } catch (e) {
+      debugPrint('[PedometerManager] 보호자 하트비트 대상 갱신 실패: $e');
+    }
   }
 
   /// 권한이 이미 있을 때만 조용히 추적 재개 (권한 팝업 없이)
@@ -250,18 +262,15 @@ class PedometerManager with ChangeNotifier, WidgetsBindingObserver {
     if (user == null) return;
 
     final userId = user['id'] as int;
-    final userName = (user['username'] as String?) ?? '사용자';
     final emergencyContact = _userProvider.emergencyContact;
 
-    // 1. Firestore에 이상 감지 상태 저장 (보호자 웹 대시보드에 경고 표시).
-    //    await로 성공 여부를 받는다 — 전송 실패를 삼키면 보호자는
-    //    아무 일 없다고 믿게 되므로, 실패 시 알림 문구로 사용자에게 알린다.
-    final syncOk = await GuardianSyncService().syncAnomalyAlert(
+    // 1. 공유 중인 보호자 공개 사본에 이상 상태를 올린다 (보호자 웹에 경고 표시).
+    //    결과를 받는다 — 전송 실패를 삼키면 보호자는 아무 일 없다고 믿게 되므로,
+    //    실패 시 알림 문구로 사용자에게 알린다. 공유 중이 아니면 보호자 문서를 만들지 않는다.
+    final alert = await GuardianSyncService().syncAnomalyAlert(
       userId: userId,
-      userName: userName,
       todaySteps: _todaySteps,
       weeklyAvg: avgSteps,
-      emergencyContact: emergencyContact,
     );
 
     // 2. 로컬 알림 채널 생성 및 알림 표시
@@ -281,9 +290,9 @@ class PedometerManager with ChangeNotifier, WidgetsBindingObserver {
     await _localNotifications.show(
       id: _guardianNotificationId,
       title: '활동량 이상 감지',
-      body: syncOk
+      body: alert != GuardianAlertResult.failed
           ? '평소보다 활동량이 크게 줄었습니다. 탭하여 보호자에게 문자를 보내세요.'
-          : '평소보다 활동량이 크게 줄었습니다. 보호자 대시보드 전송에 실패했으니 '
+          : '평소보다 활동량이 크게 줄었습니다. 보호자 화면 전송에 실패했으니 '
               '탭하여 보호자에게 직접 문자를 보내세요.',
       notificationDetails: NotificationDetails(
         android: AndroidNotificationDetails(

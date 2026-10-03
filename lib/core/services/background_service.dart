@@ -7,6 +7,7 @@ import 'package:health/health.dart';
 import 'package:pedometer/pedometer.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'guardian_heartbeat.dart';
 
 /// 상시 보행 추적 및 보행 바이오마커 수집 백그라운드 서비스
 /// 
@@ -215,7 +216,11 @@ class PedometerBackgroundService {
       }
     });
 
+    // 3. 보호자 하트비트: 공유 중이면 화면이 꺼져 있어도 1시간마다 오늘 걸음 수를 올린다.
+    GuardianHeartbeat.start(() => currentTodaySteps);
+
     service.on('stopService').listen((event) {
+      GuardianHeartbeat.stop();
       service.stopSelf();
     });
   }

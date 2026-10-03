@@ -19,18 +19,20 @@ void main() {
   setUp(() {
     SharedPreferences.setMockInitialValues({});
     sync = _Sync(); user = MockUserProvider(); pedometer = MockPedometerManager();
-    when(() => user.currentUser).thenReturn({'id': 1, 'username': 'Synthetic user'});
+    when(() => user.currentUser).thenReturn({'id': 1, 'username': 'Synthetic user', 'name': '민준'});
     when(() => user.emergencyContact).thenReturn(null);
     when(() => pedometer.todaySteps).thenReturn(5000);
-    when(() => sync.getOrCreateToken(any())).thenAnswer((_) async => 'SYNTHETICLOCAL01');
-    when(() => sync.guardianUrl(any())).thenReturn('https://example.invalid/guardian.html');
+    when(() => sync.isSharingStopped(any())).thenAnswer((_) async => false);
+    when(() => sync.getOrCreateToken(any())).thenAnswer((_) async => 'SyntheticLocalToken001');
+    when(() => sync.guardianUrl(any())).thenAnswer(
+        (call) => 'https://example.invalid/guardian.html?token=${call.positionalArguments.first}');
   });
   Future<GuardianSyncResult> Function() request = () async => const GuardianSyncResult(
     success: false, token: '', isAnomaly: false, error: 'synthetic backend details',
   );
   void stub() => when(() => sync.syncToFirestore(
-    userId: any(named: 'userId'), userName: any(named: 'userName'),
-    todaySteps: any(named: 'todaySteps'), emergencyContact: any(named: 'emergencyContact'),
+    userId: any(named: 'userId'), displayName: any(named: 'displayName'),
+    todaySteps: any(named: 'todaySteps'),
   )).thenAnswer((_) => request());
   Widget app({bool actualService = false, double scale = 1}) => MultiProvider(
     providers: [
@@ -46,6 +48,11 @@ void main() {
     await tester.ensureVisible(find.text('지금 동기화'));
     await tester.tap(find.text('지금 동기화'));
     await tester.pump();
+  }
+  Future<void> tapButton(WidgetTester tester, String label) async {
+    await tester.ensureVisible(find.text(label).first);
+    await tester.tap(find.text(label).first);
+    await tester.pumpAndSettle();
   }
   testWidgets('actual Guardian screen remains usable without Firebase', (tester) async {
     await tester.pumpWidget(app(actualService: true)); await tester.pump();
@@ -64,10 +71,10 @@ void main() {
     expect(find.textContaining('다시 시도'), findsOneWidget);
   });
   testWidgets('failed retry preserves the last successful sync time', (tester) async {
-    request = () async => const GuardianSyncResult(success: true, token: 'synthetic', isAnomaly: false); stub();
+    request = () async => const GuardianSyncResult(success: true, token: 'SyntheticLocalToken001', isAnomaly: false); stub();
     await tester.pumpWidget(app()); await tester.pump(); await click(tester);
     expect(find.byIcon(Icons.cloud_done), findsOneWidget);
-    request = () async => const GuardianSyncResult(success: false, token: '', isAnomaly: false); 
+    request = () async => const GuardianSyncResult(success: false, token: '', isAnomaly: false);
     await click(tester);
     expect(find.text('방금 전 동기화'), findsOneWidget);
     expect(find.byIcon(Icons.cloud_done), findsNothing);
@@ -96,5 +103,67 @@ void main() {
     await tester.pumpWidget(app(scale: 2)); await tester.pump();
     expect(tester.takeException(), isNull);
     expect(find.text('아직 동기화하지 않았습니다'), findsOneWidget);
+  });
+  testWidgets('sync sends the chosen name, not the login id', (tester) async {
+    request = () async => const GuardianSyncResult(success: true, token: 'SyntheticLocalToken001', isAnomaly: false); stub();
+    await tester.pumpWidget(app()); await tester.pump(); await click(tester);
+    verify(() => sync.syncToFirestore(userId: 1, displayName: '민준', todaySteps: 5000)).called(1);
+  });
+  testWidgets('a rotated link replaces the QR link and tells the user to resend it', (tester) async {
+    request = () async => const GuardianSyncResult(
+        success: true, token: 'RotatedSyntheticToken9', isAnomaly: false, rotated: true); stub();
+    await tester.pumpWidget(app()); await tester.pump(); await click(tester); await tester.pump();
+    verify(() => sync.guardianUrl('RotatedSyntheticToken9')).called(1);
+    expect(find.textContaining('새로 만들어졌습니다'), findsOneWidget);
+  });
+  testWidgets('stop sharing asks first, then shows the stopped state', (tester) async {
+    when(() => sync.stopSharing(1)).thenAnswer((_) async => true);
+    await tester.pumpWidget(app()); await tester.pump();
+    await tapButton(tester, '공유 중지');
+    expect(find.text('보호자 공유를 중지할까요?'), findsOneWidget);
+    await tester.tap(find.widgetWithText(TextButton, '공유 중지'));
+    await tester.pumpAndSettle();
+    verify(() => sync.stopSharing(1)).called(1);
+    expect(find.text('보호자 공유가 중지되어 있습니다'), findsOneWidget);
+    expect(find.text('다시 공유하기'), findsOneWidget);
+    expect(find.text('지금 동기화'), findsNothing);
+  });
+  testWidgets('cancelling the stop dialog keeps sharing', (tester) async {
+    await tester.pumpWidget(app()); await tester.pump();
+    await tapButton(tester, '공유 중지');
+    await tester.tap(find.text('취소'));
+    await tester.pumpAndSettle();
+    verifyNever(() => sync.stopSharing(any()));
+    expect(find.text('지금 동기화'), findsOneWidget);
+  });
+  testWidgets('a failed stop keeps the link and says so', (tester) async {
+    when(() => sync.stopSharing(1)).thenAnswer((_) async => false);
+    await tester.pumpWidget(app()); await tester.pump();
+    await tapButton(tester, '공유 중지');
+    await tester.tap(find.widgetWithText(TextButton, '공유 중지'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('중지하지 못했습니다'), findsOneWidget);
+    expect(find.text('지금 동기화'), findsOneWidget);
+  });
+  testWidgets('entering while stopped offers to share again', (tester) async {
+    when(() => sync.isSharingStopped(1)).thenAnswer((_) async => true);
+    when(() => sync.resumeSharing(1)).thenAnswer((_) async => 'ResumedSyntheticToken1');
+    await tester.pumpWidget(app()); await tester.pump();
+    expect(find.text('보호자 공유가 중지되어 있습니다'), findsOneWidget);
+    verifyNever(() => sync.getOrCreateToken(any()));
+    await tapButton(tester, '다시 공유하기');
+    verify(() => sync.resumeSharing(1)).called(1);
+    verify(() => sync.guardianUrl('ResumedSyntheticToken1')).called(1);
+    expect(find.text('지금 동기화'), findsOneWidget);
+  });
+  testWidgets('reissue asks first and switches to the new link', (tester) async {
+    when(() => sync.reissue(1)).thenAnswer((_) async => 'ReissuedSyntheticTok12');
+    await tester.pumpWidget(app()); await tester.pump();
+    await tapButton(tester, '새 링크 만들기');
+    expect(find.text('새 링크를 만들까요?'), findsOneWidget);
+    await tester.tap(find.widgetWithText(TextButton, '새 링크 만들기'));
+    await tester.pumpAndSettle();
+    verify(() => sync.reissue(1)).called(1);
+    verify(() => sync.guardianUrl('ReissuedSyntheticTok12')).called(1);
   });
 }

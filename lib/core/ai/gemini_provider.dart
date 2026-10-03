@@ -13,7 +13,7 @@ class GeminiProvider implements AiProviderInterface {
       '궁금한 것, 일상 이야기, 고민 상담, 정보 요청 등 무엇이든 친절하게 답변합니다. '
       '판단하거나 가르치려 하지 않고 친구처럼 공감하고 도와줍니다. '
       '답변은 3문장 이내로 간결하게 합니다. 영어 단어 사용을 자제합니다. '
-      '오늘 날짜, 요일, 시간, 날씨 정보가 아래에 제공되면 이를 활용해 정확하게 답변합니다.';
+      '오늘 날짜, 요일, 시간 정보가 아래에 제공되면 이를 활용해 정확하게 답변합니다.';
 
   static const _preferredOrder = [
     'gemini-2.0-flash-lite',
@@ -30,11 +30,13 @@ class GeminiProvider implements AiProviderInterface {
   String _workingEndpoint = '';
   String _activeModel = 'Gemini';
 
-  // 날씨 캐시 (10분 TTL)
-  String? _cachedWeather;
-  DateTime? _weatherFetchedAt;
-
   GeminiProvider(this._apiKey);
+
+  /// 키는 URL 쿼리가 아니라 헤더로 보낸다. URL은 서버·프록시 로그에 남기 쉽다.
+  static Map<String, String> _headers(String apiKey) => {
+        'Content-Type': 'application/json',
+        'x-goog-api-key': apiKey,
+      };
 
   @override
   String get providerName => _activeModel;
@@ -49,50 +51,15 @@ class GeminiProvider implements AiProviderInterface {
     return '[현재 정보] 오늘은 ${now.year}년 ${now.month}월 ${now.day}일 $weekday요일이며, 현재 시각은 $hour시 $minute분입니다.';
   }
 
-  /// wttr.in에서 날씨 조회 (API 키 불필요)
-  static Future<String?> _fetchWeather() async {
-    try {
-      // format: 날씨상태, 체감온도, 습도
-      final url = Uri.parse('https://wttr.in/Seoul?format=%C,+%f,+습도+%h&lang=ko');
-      final response = await http.get(url).timeout(const Duration(seconds: 5));
-      if (response.statusCode == 200) {
-        final raw = response.body.trim();
-        if (raw.isNotEmpty && !raw.startsWith('<')) {
-          return '[서울 날씨] $raw';
-        }
-      }
-    } catch (e) {
-      debugPrint('[GeminiProvider] 날씨 조회 실패 (무시): $e');
-    }
-    return null;
-  }
-
-  /// 날씨 캐시 (10분 유효)
-  Future<String?> _getWeatherContext() async {
-    final now = DateTime.now();
-    if (_cachedWeather != null &&
-        _weatherFetchedAt != null &&
-        now.difference(_weatherFetchedAt!).inMinutes < 10) {
-      return _cachedWeather;
-    }
-    _cachedWeather = await _fetchWeather();
-    _weatherFetchedAt = now;
-    return _cachedWeather;
-  }
-
-  /// 시간 + 날씨가 포함된 동적 시스템 프롬프트 생성
-  Future<String> _buildSystemPrompt() async {
-    final timeCtx = _buildTimeContext();
-    final weatherCtx = await _getWeatherContext();
-    final parts = [_systemPromptBase, timeCtx];
-    if (weatherCtx != null) parts.add(weatherCtx);
-    return parts.join(' ');
-  }
+  /// 시간이 포함된 동적 시스템 프롬프트.
+  /// 예전에는 wttr.in에서 서울 날씨를 받아 넣었다 — 모든 사용자에게 서울 날씨를
+  /// '지금 날씨'처럼 쓰고, 사용 시각·IP가 제3자에게 나갔다. 그래서 뺐다.
+  String _buildSystemPrompt() => '$_systemPromptBase ${_buildTimeContext()}';
 
   static Future<List<String>> listAvailableModels(String apiKey) async {
-    final url = Uri.parse('$_baseUrl/v1beta/models?key=$apiKey');
+    final url = Uri.parse('$_baseUrl/v1beta/models');
     try {
-      final response = await http.get(url).timeout(const Duration(seconds: 15));
+      final response = await http.get(url, headers: _headers(apiKey)).timeout(const Duration(seconds: 15));
       if (response.statusCode != 200) {
         debugPrint('[GeminiProvider] ListModels 실패: HTTP ${response.statusCode}: ${response.body}');
         return [];
@@ -164,8 +131,8 @@ class GeminiProvider implements AiProviderInterface {
     String userMessage,
     List<ChatMessage> history,
   ) async {
-    final url = Uri.parse('$endpoint:generateContent?key=$_apiKey');
-    final systemPrompt = await _buildSystemPrompt();
+    final url = Uri.parse('$endpoint:generateContent');
+    final systemPrompt = _buildSystemPrompt();
 
     final contents = <Map<String, dynamic>>[
       {
@@ -205,7 +172,7 @@ class GeminiProvider implements AiProviderInterface {
     final response = await http
         .post(
           url,
-          headers: {'Content-Type': 'application/json'},
+          headers: _headers(_apiKey),
           body: body,
         )
         .timeout(const Duration(seconds: 30));

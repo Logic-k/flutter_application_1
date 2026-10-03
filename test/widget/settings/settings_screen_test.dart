@@ -54,6 +54,24 @@ void main() {
     expect(find.text('로그아웃'), findsOneWidget);
   });
 
+  testWidgets('서버 데이터 삭제는 기기 기록이 남는다고 알리고 확인을 먼저 묻는다', (tester) async {
+    final user = MockUserProvider();
+    when(() => user.currentUser).thenReturn({'id': 1, 'username': 'Synthetic user'});
+    await pumpWithProviders(tester, const SettingsScreen(), userProvider: user);
+    await tester.pump();
+
+    await tester.scrollUntilVisible(find.text('서버에 저장된 내 데이터 삭제'), 300,
+        scrollable: find.byType(Scrollable).first);
+    await tester.tap(find.text('서버에 저장된 내 데이터 삭제'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('서버 데이터 삭제'), findsOneWidget);
+    expect(find.textContaining('건강 기록, 일기는 그대로 남습니다'), findsOneWidget);
+    await tester.tap(find.text('취소'));
+    await tester.pumpAndSettle();
+    expect(find.text('서버 데이터 삭제'), findsNothing);
+  });
+
   testWidgets('초기화 성공 후에만 완료 메시지를 표시하고 진행 상태를 갱신한다', (
     tester,
   ) async {

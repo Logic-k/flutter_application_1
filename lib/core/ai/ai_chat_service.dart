@@ -85,6 +85,13 @@ class AiChatService {
   }
 
   static Future<void> _applyBestProvider() async {
+    if (!AppConfig.isGenerativeAiEnabled) {
+      _provider = LocalFallbackProvider();
+      debugPrint('[AiChatService] 생성형 AI 꺼짐 → 규칙 기반(LocalFallback)만 사용');
+      _initialized = true;
+      return;
+    }
+
     // 우선순위: 온디바이스 Gemma > Gemini API > LocalFallback
     if (await ModelDownloadService.isModelReady()) {
       _provider = GemmaLocalProvider();

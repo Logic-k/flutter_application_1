@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import '../../core/app_config.dart';
 import '../../core/theme.dart';
 import '../../core/ml_widgets.dart';
 import '../../core/cs_service.dart';
@@ -24,7 +25,8 @@ class _AdminCsManagementScreenState extends State<AdminCsManagementScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
-    _refresh();
+    // 관리자 권한(Custom Claim) 부여 체계가 없으면 규칙이 읽기·쓰기를 거부한다.
+    if (AppConfig.isAdminCloudWriteEnabled) _refresh();
   }
 
   void _refresh() {
@@ -43,6 +45,20 @@ class _AdminCsManagementScreenState extends State<AdminCsManagementScreen>
 
   @override
   Widget build(BuildContext context) {
+    if (!AppConfig.isAdminCloudWriteEnabled) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('고객센터 관리')),
+        body: const Padding(
+          padding: EdgeInsets.all(24),
+          child: MLCard(
+            child: Text(
+              '공지사항·FAQ·문의 답변은 지금 Firebase 콘솔에서 관리합니다.\n'
+              '앱에서 관리하려면 관리자 권한 부여 체계를 먼저 만들어야 합니다.',
+            ),
+          ),
+        ),
+      );
+    }
     return Scaffold(
       appBar: AppBar(
         title: const Text('고객센터 관리'),

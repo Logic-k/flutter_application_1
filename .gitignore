@@ -109,3 +109,9 @@ MemoryLink/
 Claude outputs/
 .wrangler/
 .debug-journal.md
+
+# Firestore 규칙 테스트 (Node)
+firebase-tests/node_modules/
+firebase-debug.log
+firestore-debug.log
+firebase-tests/*.log

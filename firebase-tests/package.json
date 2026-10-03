@@ -1,0 +1,14 @@
+{
+  "name": "memorylink-firestore-rules-tests",
+  "private": true,
+  "type": "module",
+  "description": "Firestore 보안 규칙 허용·거부 테스트. 에뮬레이터 전용(demo- 프로젝트).",
+  "scripts": {
+    "test": "node --test --test-concurrency=1",
+    "test:emulator": "firebase emulators:exec --config ../firebase.json --project demo-memorylink --only firestore \"npm test\""
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "5.0.2",
+    "firebase": "12.19.0"
+  }
+}

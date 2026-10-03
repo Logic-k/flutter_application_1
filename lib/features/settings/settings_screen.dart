@@ -14,6 +14,7 @@ import '../../core/app_config.dart';
 import '../../core/ai/ai_key_service.dart';
 import '../../core/ai/ai_chat_service.dart';
 import '../../core/services/diary_notification_service.dart';
+import '../../core/services/cloud_data_deletion_service.dart';
 import '../../main.dart' show flutterLocalNotificationsPlugin;
 import '../profile/edit_profile_screen.dart';
 
@@ -257,6 +258,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   subtitle: '인지 점수 및 기록만 삭제됩니다. (계정 유지)',
                   onTap: () => _showResetDialog(userProvider),
                 ),
+                const Divider(),
+                MLListRow(
+                  icon: Icons.cloud_off_rounded, color: MLColors.bad, titleColor: MLColors.badText,
+                  title: '서버에 저장된 내 데이터 삭제',
+                  subtitle: '보호자 링크와 1:1 문의를 서버에서 지웁니다. (기기 기록 유지)',
+                  onTap: () => _showCloudDeleteDialog(userProvider),
+                ),
               ]),
             ),
               ],
@@ -370,6 +378,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             Text(_providerName, style: TextStyle(fontSize: 12, color: context.scheme.onSurfaceVariant)),
           ]),
         ),
+        if (AppConfig.isGenerativeAiEnabled) ...[
         const Divider(),
 
         // Gemini API 키
@@ -439,6 +448,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             if (mounted) _loadState();
           },
         ),
+        ],
       ]),
     );
   }
@@ -452,6 +462,52 @@ class _SettingsScreenState extends State<SettingsScreen> {
         const SnackBar(content: Text('개인정보 처리방침 페이지를 열 수 없습니다.')),
       );
     }
+  }
+
+  void _showCloudDeleteDialog(UserProvider userProvider) {
+    final user = userProvider.currentUser;
+    if (user == null) return;
+    var isDeleting = false;
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          title: const Text('서버 데이터 삭제'),
+          content: const Text(
+            '보호자 링크가 바로 끊기고, 보낸 1:1 문의와 답변이 서버에서 지워집니다. '
+            '이 휴대폰 안의 계정과 건강 기록, 일기는 그대로 남습니다.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: isDeleting ? null : () => Navigator.pop(ctx),
+              child: const Text('취소'),
+            ),
+            TextButton(
+              onPressed: isDeleting
+                  ? null
+                  : () async {
+                      setDialogState(() => isDeleting = true);
+                      final result = await CloudDataDeletionService().deleteFor(
+                        userId: user['id'] as int,
+                        username: (user['username'] as String?) ?? '',
+                      );
+                      if (!ctx.mounted || !mounted) return;
+                      Navigator.pop(ctx);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(result.success
+                              ? '서버에 저장된 데이터를 지웠습니다.'
+                              : '${result.failed.join(', ')}을(를) 지우지 못했습니다. '
+                                  '연결 상태를 확인하고 다시 시도해 주세요.'),
+                        ),
+                      );
+                    },
+              child: const Text('삭제', style: TextStyle(color: MLColors.badText)),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   void _showResetDialog(UserProvider userProvider) {

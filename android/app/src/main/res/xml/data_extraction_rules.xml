@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  MemoryLink 백업·기기 이전 규칙 (Android 12 이상).
+
+  클라우드 백업(구글 드라이브)에는 아무것도 올리지 않는다. 개인정보 처리방침과 삭제 안내는
+  "기록은 기기에만 있고 앱을 지우면 함께 지워진다"고 약속한다.
+
+  기기 간 이전(새 휴대폰으로 옮기기)은 건강 기록 DB만 옮긴다. 설정 저장소에는 세션 토큰,
+  보호자 링크 토큰, API 키, Firebase 익명 로그인 정보가 들어 있어 옮기지 않는다.
+  새 휴대폰에서는 다시 로그인하고 보호자 링크를 새로 만든다.
+  Android 11 이하는 매니페스트의 allowBackup="false"로 백업 전체가 꺼진다.
+-->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="root" path="."/>
+        <exclude domain="file" path="."/>
+        <exclude domain="database" path="."/>
+        <exclude domain="sharedpref" path="."/>
+        <exclude domain="external" path="."/>
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="sharedpref" path="."/>
+        <exclude domain="file" path="."/>
+        <exclude domain="external" path="."/>
+        <exclude domain="root" path="app_flutter/"/>
+    </device-transfer>
+</data-extraction-rules>
