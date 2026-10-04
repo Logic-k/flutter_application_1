@@ -33,15 +33,27 @@ $flows = @(
     "maestro/cs_center_flow.yaml",
     "maestro/reports_flow.yaml",
     "maestro/voice_assessment_flow.yaml",
-    "maestro/social_ranking_flow.yaml",
     "maestro/guardian_link_flow.yaml",
     "maestro/home_detail_flow.yaml",
     "maestro/ai_chat_flow.yaml",
     "maestro/memory_garden_flow.yaml",
     "maestro/training_game_flow.yaml",
     "maestro/edit_profile_flow.yaml",
-    "maestro/clinical_report_flow.yaml"
+    "maestro/clinical_report_flow.yaml",
+    # 인지훈련 게임화(커밋 ff9b6fb)와 함께 추가된 flow. 게이팅 목록에서 누락돼 있었다.
+    "maestro/training_progression_flow.yaml",
+    "maestro/training_persistence_flow.yaml",
+    "maestro/training_accessibility_flow.yaml",
+    "maestro/dementia_center_flow.yaml"
 )
+# 게이팅 제외: demo_recording_flow / demo_recording_v3 / demo_recording_tta_2min /
+# screenshot_tour_flow
+# (데모 영상·스크린샷 촬영용이며 통과/실패로 품질을 판정하는 flow가 아니다)
+#
+# 2026-08-24: social_ranking_flow 를 목록에서 빼고 파일도 지웠다. 검사 대상이던
+# SocialRankingView 위젯 자체를 삭제했기 때문이다 — 백분위 표기가 역전돼 있었고
+# (92점/평균 65에 "상위 96%", 한국어로는 하위 4%), Firestore 미출시라 실제로는
+# 평균 65·SD 15 상수로만 계산되는 가짜 비교값이었다. 그래서 21 → 20 flow.
 
 if ($Flow -ne "") {
     $flows = @("maestro/${Flow}.yaml")

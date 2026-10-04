@@ -4,9 +4,9 @@
 <dict>
 	<key>com.apple.developer.healthkit</key>
 	<true/>
+	<!-- 걸음 수(HKQuantityType stepCount)만 사용하므로 임상 기록(health-records)은 요청하지 않는다.
+	     쓰지 않는 Clinical Health Records 권한은 심사에서 사용처 소명을 요구받거나 거절 사유가 된다. -->
 	<key>com.apple.developer.healthkit.access</key>
-	<array>
-		<string>health-records</string>
-	</array>
+	<array/>
 </dict>
 </plist>

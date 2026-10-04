@@ -98,7 +98,7 @@ class _ModelDownloadScreenState extends State<ModelDownloadScreen> {
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('취소')),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('삭제', style: TextStyle(color: Colors.red)),
+            child: const Text('삭제', style: TextStyle(color: MLColors.badText)),
           ),
         ],
       ),
@@ -129,18 +129,18 @@ class _ModelDownloadScreenState extends State<ModelDownloadScreen> {
               width: double.infinity,
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: MLColors.primarySoft,
-                borderRadius: BorderRadius.circular(16),
+                color: context.scheme.primaryContainer,
+                borderRadius: BorderRadius.circular(AppTheme.rTile),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(children: [
-                    const Icon(Icons.memory_rounded, color: MLColors.primary, size: 28),
+                    Icon(Icons.memory_rounded, color: context.scheme.primary, size: 28),
                     const SizedBox(width: 10),
                     Text('Gemma 온디바이스 AI',
                         style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w800, color: MLColors.primary,
+                          fontWeight: FontWeight.w800, color: context.scheme.primary,
                         )),
                   ]),
                   const SizedBox(height: 12),
@@ -149,11 +149,11 @@ class _ModelDownloadScreenState extends State<ModelDownloadScreen> {
                     style: TextStyle(fontSize: 14, height: 1.6),
                   ),
                   const SizedBox(height: 8),
-                  const Text(
+                  Text(
                     '• 모델: Gemma 1.1 2B IT GPU INT4\n'
                     '• 우선순위: 온디바이스 > Gemini API > 오프라인\n'
                     '• 필요 저장공간: 약 1.5GB',
-                    style: TextStyle(fontSize: 13, color: MLColors.textSoft, height: 1.7),
+                    style: TextStyle(fontSize: 13, color: context.scheme.onSurfaceVariant, height: 1.7),
                   ),
                 ],
               ),
@@ -161,18 +161,18 @@ class _ModelDownloadScreenState extends State<ModelDownloadScreen> {
             const SizedBox(height: 24),
 
             if (_modelExists) ...[
-              _buildStatusChip(Icons.check_circle_rounded, '온디바이스 AI 활성화됨', Colors.green),
+              _buildStatusChip(Icons.check_circle_rounded, '온디바이스 AI 활성화됨', MLColors.goodText),
               const SizedBox(height: 20),
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
                   onPressed: _deleteModel,
-                  icon: const Icon(Icons.delete_outline, color: Colors.red),
-                  label: const Text('모델 삭제', style: TextStyle(color: Colors.red)),
+                  icon: const Icon(Icons.delete_outline, color: MLColors.badText),
+                  label: const Text('모델 삭제', style: TextStyle(color: MLColors.badText)),
                   style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: Colors.red),
+                    side: const BorderSide(color: MLColors.badText),
                     padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.rField)),
                   ),
                 ),
               ),
@@ -181,9 +181,9 @@ class _ModelDownloadScreenState extends State<ModelDownloadScreen> {
               Text('HuggingFace 토큰 필요',
                   style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800)),
               const SizedBox(height: 6),
-              const Text(
+              Text(
                 'Gemma 모델은 Google 이용 약관 동의 후 다운로드할 수 있습니다.\n아래 순서를 따라 토큰을 발급받으세요.',
-                style: TextStyle(fontSize: 13, color: MLColors.textSoft, height: 1.6),
+                style: TextStyle(fontSize: 13, color: context.scheme.onSurfaceVariant, height: 1.6),
               ),
               const SizedBox(height: 12),
               _buildStep('1', '아래 버튼으로 HuggingFace 약관 동의 페이지 이동'),
@@ -201,9 +201,9 @@ class _ModelDownloadScreenState extends State<ModelDownloadScreen> {
                   icon: const Icon(Icons.open_in_new, size: 16),
                   label: const Text('HuggingFace 약관 동의 페이지 열기'),
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: MLColors.primary,
-                    side: const BorderSide(color: MLColors.primary),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    foregroundColor: context.scheme.primary,
+                    side: BorderSide(color: context.scheme.primary),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.rField)),
                   ),
                 ),
               ),
@@ -219,32 +219,33 @@ class _ModelDownloadScreenState extends State<ModelDownloadScreen> {
                   prefixIcon: const Icon(Icons.key_rounded),
                   suffixIcon: IconButton(
                     icon: Icon(_obscureToken ? Icons.visibility_off : Icons.visibility),
+                    tooltip: _obscureToken ? '토큰 표시' : '토큰 숨기기',
                     onPressed: () => setState(() => _obscureToken = !_obscureToken),
                   ),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppTheme.rField)),
                 ),
               ),
               const SizedBox(height: 16),
 
               if (_state == _DownloadState.downloading) ...[
-                _buildStatusChip(Icons.download_rounded, '다운로드 중...', MLColors.primary),
+                _buildStatusChip(Icons.download_rounded, '다운로드 중...', context.scheme.primary),
                 const SizedBox(height: 12),
                 LinearProgressIndicator(
                   value: _progress,
                   minHeight: 8,
-                  borderRadius: BorderRadius.circular(8),
-                  backgroundColor: MLColors.primarySoft,
-                  valueColor: const AlwaysStoppedAnimation<Color>(MLColors.primary),
+                  borderRadius: BorderRadius.circular(AppTheme.rChip),
+                  backgroundColor: context.scheme.primaryContainer,
+                  valueColor: AlwaysStoppedAnimation<Color>(context.scheme.primary),
                 ),
                 const SizedBox(height: 6),
                 Text('${(_progress * 100).toStringAsFixed(1)}% 완료',
-                    style: const TextStyle(color: MLColors.textSoft, fontSize: 13)),
+                    style: TextStyle(color: context.scheme.onSurfaceVariant, fontSize: 13)),
               ] else ...[
                 if (_state == _DownloadState.error) ...[
-                  _buildStatusChip(Icons.error_outline, '다운로드 실패', Colors.red),
+                  _buildStatusChip(Icons.error_outline, '다운로드 실패', MLColors.badText),
                   const SizedBox(height: 6),
                   Text(_errorMessage,
-                      style: const TextStyle(fontSize: 12, color: Colors.red, height: 1.5)),
+                      style: const TextStyle(fontSize: 12, color: MLColors.badText, height: 1.5)),
                   const SizedBox(height: 12),
                 ],
                 SizedBox(
@@ -256,7 +257,7 @@ class _ModelDownloadScreenState extends State<ModelDownloadScreen> {
                         style: TextStyle(fontWeight: FontWeight.w700)),
                     style: FilledButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.rField)),
                     ),
                   ),
                 ),
@@ -264,10 +265,10 @@ class _ModelDownloadScreenState extends State<ModelDownloadScreen> {
             ],
 
             const SizedBox(height: 24),
-            const Text(
+            Text(
               '※ 모델은 Google Gemma 라이선스 조건에 따라 제공됩니다.\n'
               '다운로드 시 해당 약관에 동의하는 것으로 간주됩니다.',
-              style: TextStyle(fontSize: 11, color: MLColors.textFaint, height: 1.6),
+              style: TextStyle(fontSize: 12, color: context.scheme.onSurfaceVariant, height: 1.6),
             ),
           ],
         ),
@@ -293,9 +294,9 @@ class _ModelDownloadScreenState extends State<ModelDownloadScreen> {
             width: 22, height: 22,
             alignment: Alignment.center,
             margin: const EdgeInsets.only(right: 8, top: 1),
-            decoration: const BoxDecoration(color: MLColors.primarySoft, shape: BoxShape.circle),
+            decoration: BoxDecoration(color: context.scheme.primaryContainer, shape: BoxShape.circle),
             child: Text(number,
-                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: MLColors.primary)),
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: context.scheme.primary)),
           ),
           Expanded(child: Text(text, style: const TextStyle(fontSize: 13, height: 1.5))),
         ],

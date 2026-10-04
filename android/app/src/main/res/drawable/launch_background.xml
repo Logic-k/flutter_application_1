@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Modify this file to customize your launch splash screen -->
+<!-- Android 8~11 스플래시(08 계획 G-03). 로고는 로그인 화면 첫 프레임과 같은 크기(110dp)·
+     같은 위치(화면 중앙)·같은 모서리(26dp, splash_logo.png 에 구워 넣음)다.
+     Flutter 가 첫 프레임을 그리면 같은 자리의 로고가 제자리로 올라간다(LoginScreen). -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:drawable="@android:color/white" />
-
-    <!-- You can insert your own image assets here -->
-    <!-- <item>
-        <bitmap
-            android:gravity="center"
-            android:src="@mipmap/launch_image" />
-    </item> -->
+    <item android:drawable="@color/splash_background" />
+    <item
+        android:width="110dp"
+        android:height="110dp"
+        android:gravity="center"
+        android:drawable="@drawable/splash_logo" />
 </layer-list>

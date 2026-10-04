@@ -25,7 +25,7 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.32.0'
+          flutter-version: '3.41.5'
           channel: stable
           cache: true
 
@@ -72,6 +72,9 @@ jobs:
               maestro/register_flow.yaml \
               maestro/navigation_flow.yaml \
               maestro/training_hub_flow.yaml \
+              maestro/training_progression_flow.yaml \
+              maestro/training_persistence_flow.yaml \
+              maestro/training_accessibility_flow.yaml \
               maestro/profile_flow.yaml \
               maestro/cs_center_flow.yaml \
               maestro/reports_flow.yaml \
@@ -81,8 +84,6 @@ jobs:
               maestro/home_detail_flow.yaml \
               maestro/ai_chat_flow.yaml \
               maestro/memory_garden_flow.yaml \
-              maestro/walking_dashboard_flow.yaml \
-              maestro/precise_gait_analysis_flow.yaml \
               maestro/training_game_flow.yaml \
               maestro/edit_profile_flow.yaml \
               maestro/clinical_report_flow.yaml; do

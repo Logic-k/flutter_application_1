@@ -1,5 +1,7 @@
 import 'dart:async';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart' show defaultTargetPlatform, TargetPlatform;
+import 'package:flutter/services.dart' show PlatformException;
+import 'package:flutter/widgets.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -7,12 +9,13 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../core/database_helper.dart';
 import '../../core/user_provider.dart';
 import '../../core/services/guardian_sync_service.dart';
+import '../../core/services/step_anomaly_policy.dart';
 
 /// 만보기 매니저 (상태 관리)
 /// 
 /// [agency-mobile-app-builder]: 백그라운드 서비스와 UI 간의 
 /// 상태를 중계하고, 동백전 스타일의 지표를 계산합니다.
-class PedometerManager with ChangeNotifier {
+class PedometerManager with ChangeNotifier, WidgetsBindingObserver {
   final UserProvider _userProvider;
   final _dbHelper = DatabaseHelper();
   
@@ -20,15 +23,53 @@ class PedometerManager with ChangeNotifier {
   double _todayCalories = 0.0;
   double _todayDistance = 0.0;
   bool _isTracking = false;
+  StreamSubscription<Map<String, dynamic>?>? _stepUpdates;
+  late final Future<void> _initialization;
+
+  /// 진행 중인 권한 요청. 앱 시작 시 자동 요청과 사용자의 토글 조작이 겹치면
+  /// permission_handler가 "A request for permissions is already running"
+  /// PlatformException을 던진다. 두 번째 호출은 새로 요청하지 않고
+  /// 진행 중인 요청의 결과를 함께 기다린다.
+  Future<Map<Permission, PermissionStatus>>? _pendingPermissionRequest;
 
   int get todaySteps => _todaySteps;
   double get todayCalories => _todayCalories;
   double get todayDistance => _todayDistance;
   bool get isTracking => _isTracking;
 
+  /// 걸음 측정에 필요한 신체 활동 권한.
+  ///
+  /// Android는 ACTIVITY_RECOGNITION(`Permission.activityRecognition`)이다.
+  /// iOS에는 이 권한이 없어 permission_handler가 항상 거부(요청하면 영구 거부)로
+  /// 응답하므로, iOS에서 이 값을 쓰면 스위치가 절대 켜지지 않는다.
+  /// iOS의 걸음 권한은 CoreMotion '동작 및 피트니스'이고 permission_handler에서는
+  /// `Permission.sensors`로 매핑된다 (ios/Podfile의 PERMISSION_SENSORS=1이 활성화).
+  @visibleForTesting
+  static Permission get activityPermission =>
+      defaultTargetPlatform == TargetPlatform.iOS
+          ? Permission.sensors
+          : Permission.activityRecognition;
+
   PedometerManager(this._userProvider) {
     _userProvider.addListener(_onUserChanged);
-    _initOnStart();
+    WidgetsBinding.instance.addObserver(this);
+    _listenToBackgroundService();
+    _initialization = _initOnStart();
+  }
+
+  @override
+  void dispose() {
+    _userProvider.removeListener(_onUserChanged);
+    WidgetsBinding.instance.removeObserver(this);
+    _stepUpdates?.cancel();
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      unawaited(refreshTracking());
+    }
   }
 
   // 마지막으로 관찰한 사용자 id — 로그아웃/계정 전환 감지용
@@ -65,9 +106,8 @@ class PedometerManager with ChangeNotifier {
 
   /// 권한이 이미 있을 때만 조용히 추적 재개 (권한 팝업 없이)
   Future<void> _resumeTrackingIfPermitted() async {
-    final activityStatus = await Permission.activityRecognition.status;
-    final notificationStatus = await Permission.notification.status;
-    if (activityStatus.isGranted && notificationStatus.isGranted) {
+    final activityStatus = await activityPermission.status;
+    if (activityStatus.isGranted) {
       await _startServiceDirectly();
     } else {
       _isTracking = false;
@@ -98,17 +138,15 @@ class PedometerManager with ChangeNotifier {
 
     if (_isTracking) {
       // 앱 시작 시 추적이 켜져있다면 권한부터 확인
-      final activityStatus = await Permission.activityRecognition.status;
-      final notificationStatus = await Permission.notification.status;
+      final activityStatus = await activityPermission.status;
       
-      if (activityStatus.isGranted && notificationStatus.isGranted) {
-        _startServiceDirectly();
+      if (activityStatus.isGranted) {
+        await _startServiceDirectly();
       } else {
         // 권한이 없다면 팝업 요청
         await toggleTracking(true);
       }
     }
-    _listenToBackgroundService();
   }
 
   Future<void> _startServiceDirectly() async {
@@ -116,14 +154,23 @@ class PedometerManager with ChangeNotifier {
     if (!await service.isRunning()) {
       await service.startService();
     }
+    service.invoke('request_steps');
   }
 
   void _listenToBackgroundService() {
-    FlutterBackgroundService().on('update_steps').listen((event) {
+    _stepUpdates = FlutterBackgroundService().on('update_steps').listen((event) {
       if (event != null && event['steps'] != null) {
-        _updateMetrics(event['steps'] as int);
+        _updateMetrics((event['steps'] as num).toInt());
       }
     });
+  }
+
+  /// 생활습관 탭 진입 또는 앱 복귀 시 서비스 상태와 현재 걸음 수를 동기화한다.
+  Future<void> refreshTracking() async {
+    await _initialization;
+    await _loadTodayStepsFromDB();
+    if (!_isTracking) return;
+    await _resumeTrackingIfPermitted();
   }
 
   void _updateMetrics(int steps) {
@@ -155,25 +202,24 @@ class PedometerManager with ChangeNotifier {
   static const _guardianNotificationId = 999;
   final _localNotifications = FlutterLocalNotificationsPlugin();
 
-  /// 최근 활동량 대비 급격한 감소 감지 (50% 이하 하락 시)
+  /// 최근 활동량 대비 급격한 감소 감지.
+  ///
+  /// 판정 기준은 [StepAnomalyPolicy]가 유일한 출처다 — 예전에는 이 함수만
+  /// "평균의 50% 미만·시간 무관"으로 따로 판정해, 보호자 동기화 경로
+  /// (18시 이후·30% 미만)와 같은 사용자에게 다른 결론을 내렸다.
   Future<void> _checkStepAnomaly() async {
     final summary = await getWeeklySummary();
-    // 오늘 데이터를 기준선에서 제외해야 오늘 걸음이 평균을 끌어내려
-    // 감지가 둔감해지는 것을 막는다.
-    final today = DateTime.now().toIso8601String().split('T')[0];
-    final baseline = summary
-        .where((e) => (e['date'] as String?) != today)
-        .map((e) => (e['steps'] as num).toDouble())
-        .toList();
-    if (baseline.length < 3) return;
+    final verdict = StepAnomalyPolicy.evaluate(
+      todaySteps: _todaySteps,
+      baselineSteps: StepAnomalyPolicy.baselineFromWeeklyRows(summary),
+    );
+    if (!verdict.evaluated) return;
 
-    final avgSteps = baseline.reduce((a, b) => a + b) / baseline.length;
-
-    if (avgSteps > 1000 && _todaySteps < (avgSteps * 0.5)) {
+    if (verdict.isAnomaly) {
       if (!_isAnomalyDetected) {
         _isAnomalyDetected = true;
-        debugPrint('⚠️ 활동량 급감 감지: 평균 ${avgSteps.toInt()}보 -> 현재 $_todaySteps보');
-        await _triggerGuardianAlert(avgSteps.toInt());
+        debugPrint('⚠️ 활동량 급감 감지: 평균 ${verdict.baselineAvg.toInt()}보 -> 현재 $_todaySteps보');
+        await _triggerGuardianAlert(verdict.baselineAvg.toInt());
       }
     } else {
       _isAnomalyDetected = false;
@@ -189,8 +235,10 @@ class PedometerManager with ChangeNotifier {
     final userName = (user['username'] as String?) ?? '사용자';
     final emergencyContact = _userProvider.emergencyContact;
 
-    // 1. Firestore에 이상 감지 상태 저장 (보호자 웹 대시보드에 경고 표시)
-    GuardianSyncService().syncAnomalyAlert(
+    // 1. Firestore에 이상 감지 상태 저장 (보호자 웹 대시보드에 경고 표시).
+    //    await로 성공 여부를 받는다 — 전송 실패를 삼키면 보호자는
+    //    아무 일 없다고 믿게 되므로, 실패 시 알림 문구로 사용자에게 알린다.
+    final syncOk = await GuardianSyncService().syncAnomalyAlert(
       userId: userId,
       userName: userName,
       todaySteps: _todaySteps,
@@ -215,7 +263,10 @@ class PedometerManager with ChangeNotifier {
     await _localNotifications.show(
       id: _guardianNotificationId,
       title: '활동량 이상 감지',
-      body: '평소보다 활동량이 크게 줄었습니다. 탭하여 보호자에게 문자를 보내세요.',
+      body: syncOk
+          ? '평소보다 활동량이 크게 줄었습니다. 탭하여 보호자에게 문자를 보내세요.'
+          : '평소보다 활동량이 크게 줄었습니다. 보호자 대시보드 전송에 실패했으니 '
+              '탭하여 보호자에게 직접 문자를 보내세요.',
       notificationDetails: NotificationDetails(
         android: AndroidNotificationDetails(
           _guardianChannelId,
@@ -239,18 +290,39 @@ class PedometerManager with ChangeNotifier {
     }
   }
 
+  /// 추적에 필요한 권한을 요청한다. 이미 요청이 떠 있으면 그 결과를 재사용한다.
+  ///
+  /// 알림 권한은 포그라운드 서비스 알림 노출용이며, 보행 측정 자체를
+  /// 차단하는 권한이 아니다. 신체 활동 권한만 필수로 판정한다.
+  Future<Map<Permission, PermissionStatus>> _requestTrackingPermissions() async {
+    final pending = _pendingPermissionRequest;
+    if (pending != null) return pending;
+
+    final request = [
+      activityPermission,
+      Permission.notification,
+    ].request();
+    _pendingPermissionRequest = request;
+    try {
+      return await request;
+    } on PlatformException catch (e) {
+      // 플러그인 밖에서 뜬 다른 권한 팝업과 겹치는 경우까지는 막을 수 없다.
+      // 예외를 올리면 토글 콜백이 잡지 않아 그대로 터지므로, 거부로 간주해
+      // 추적을 켜지 않고 끝낸다.
+      debugPrint('권한 요청 실패: ${e.message}');
+      return const {};
+    } finally {
+      _pendingPermissionRequest = null;
+    }
+  }
+
   /// 추적 시작 (백그라운드 서비스 실행)
   Future<void> toggleTracking(bool enabled) async {
     if (enabled) {
-      // [agency-mobile-app-builder]: 안드로이드 13+ 대응을 위해 알림 권한도 함께 요청
-      Map<Permission, PermissionStatus> statuses = await [
-        Permission.activityRecognition,
-        Permission.notification,
-      ].request();
+      final statuses = await _requestTrackingPermissions();
 
-      if (statuses[Permission.activityRecognition] != PermissionStatus.granted ||
-          statuses[Permission.notification] != PermissionStatus.granted) {
-        debugPrint('필수 권한(보행 또는 알림)이 거부되었습니다.');
+      if (statuses[activityPermission] != PermissionStatus.granted) {
+        debugPrint('필수 신체 활동 권한이 거부되었습니다.');
         _isTracking = false;
         notifyListeners();
         return;
@@ -266,7 +338,7 @@ class PedometerManager with ChangeNotifier {
       if (!isRunning) {
         await service.startService();
       }
-      // UI 전용 스트림은 제거하고 백그라운드 이벤트(update_steps)만 사용합니다.
+      service.invoke('request_steps');
     } else {
       service.invoke('stopService');
     }

@@ -101,3 +101,11 @@ MemoryLInkApp_Design/**/*.pdf
 2026 한이음 드림업 개발보고서_MemoryLink_최종.docx
 2026년_제작설계서_MemoryLink_최종.pptx
 [[]서식2[]] 2026년_제작설계서_MemoryLink.pptx
+# 공모전 제출물 폴더 전체 — google-services.json·API 키·개인정보 포함, 공개 저장소 제외
+공모전/
+
+# 로컬 전용 작업물(개인 위키·AI 산출물 사본·Cloudflare 캐시·디버그 일지)
+MemoryLink/
+Claude outputs/
+.wrangler/
+.debug-journal.md

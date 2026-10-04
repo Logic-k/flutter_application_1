@@ -3,7 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:printing/printing.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
+import '../../core/theme.dart';
+import '../../core/motion/app_motion.dart';
+import '../../core/motion/motion_settings.dart';
 import '../../core/database_helper.dart';
+import '../../core/share_origin.dart';
 import '../../core/user_provider.dart';
 import 'clinical_report_generator.dart';
 import 'models/clinical_report_data.dart';
@@ -33,29 +37,39 @@ class _ClinicalReportOptionsScreenState
     super.dispose();
   }
 
+  /// 단계 이동. 움직임 줄이기면 슬라이드 없이 바로 바꾼다.
+  void _goToStep() {
+    if (MotionSettings.reduceOf(context, listen: false)) {
+      _pageController.jumpToPage(_currentStep);
+    } else {
+      _pageController.animateToPage(
+        _currentStep,
+        duration: AppMotion.route,
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
   void _nextStep() {
     if (_currentStep < 3) {
       setState(() => _currentStep++);
-      _pageController.animateToPage(
-        _currentStep,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
+      _goToStep();
     }
   }
 
   void _prevStep() {
     if (_currentStep > 0) {
       setState(() => _currentStep--);
-      _pageController.animateToPage(
-        _currentStep,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
+      _goToStep();
     }
   }
 
-  Future<void> _generateAndShare({bool preview = false}) async {
+  /// [shareOrigin]은 탭한 버튼의 위치다. 생성 중에는 버튼이 스피너로 바뀌어
+  /// 트리에서 사라지므로, 호출하는 쪽에서 탭 직후 계산해 넘긴다.
+  Future<void> _generateAndShare({
+    bool preview = false,
+    Rect? shareOrigin,
+  }) async {
     if (_selectedType == null) return;
     setState(() => _isGenerating = true);
 
@@ -86,6 +100,7 @@ class _ClinicalReportOptionsScreenState
         await Share.shareXFiles(
           [XFile(file.path)],
           text: 'MemoryLink 임상 리포트',
+          sharePositionOrigin: shareOrigin,
         );
       }
     } catch (e) {
@@ -107,6 +122,7 @@ class _ClinicalReportOptionsScreenState
         leading: _currentStep > 0
             ? IconButton(
                 icon: const Icon(Icons.arrow_back),
+                tooltip: '이전 단계',
                 onPressed: _prevStep,
               )
             : null,
@@ -205,7 +221,7 @@ class _ClinicalReportOptionsScreenState
             type: ReportType.doctor,
             icon: Icons.medical_services_outlined,
             title: '의료진용 리포트',
-            subtitle: '점수·추이·임상 권고사항·전문의 의뢰 기준',
+            subtitle: '영역별 점수·추이·상담 시 참고사항',
           ),
           const SizedBox(height: 16),
           _buildTypeCard(
@@ -242,10 +258,10 @@ class _ClinicalReportOptionsScreenState
     return GestureDetector(
       onTap: () => setState(() => _selectedType = type),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
+        duration: AppMotion.fade,
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppTheme.rTile),
           border: Border.all(
             color: selected
                 ? theme.colorScheme.primary
@@ -264,7 +280,7 @@ class _ClinicalReportOptionsScreenState
                 color: selected
                     ? theme.colorScheme.primaryContainer
                     : theme.colorScheme.surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(AppTheme.rField),
               ),
               child: Icon(icon,
                   color: selected
@@ -410,7 +426,7 @@ class _ClinicalReportOptionsScreenState
   }) {
     return InkWell(
       onTap: () => onChanged(!value),
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(AppTheme.rField),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
         child: Row(
@@ -492,10 +508,10 @@ class _ClinicalReportOptionsScreenState
     return GestureDetector(
       onTap: () => setState(() => _caregiverPresent = value),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
+        duration: AppMotion.fade,
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppTheme.rTile),
           border: Border.all(
             color: selected
                 ? theme.colorScheme.primary
@@ -560,7 +576,7 @@ class _ClinicalReportOptionsScreenState
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: theme.colorScheme.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(AppTheme.rField),
             ),
             child: Row(
               children: [
@@ -594,12 +610,17 @@ class _ClinicalReportOptionsScreenState
               children: [
                 SizedBox(
                   width: double.infinity,
-                  child: FilledButton.icon(
-                    onPressed: () => _generateAndShare(preview: false),
-                    icon: const Icon(Icons.share),
-                    label: const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 4),
-                      child: Text('PDF 생성 및 공유하기'),
+                  child: Builder(
+                    builder: (buttonContext) => FilledButton.icon(
+                      onPressed: () => _generateAndShare(
+                        preview: false,
+                        shareOrigin: shareOriginOf(buttonContext),
+                      ),
+                      icon: const Icon(Icons.share),
+                      label: const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 4),
+                        child: Text('PDF 생성 및 공유하기'),
+                      ),
                     ),
                   ),
                 ),
@@ -653,12 +674,18 @@ class _PdfPreviewPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('리포트 미리보기'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.share),
-            onPressed: () async {
-              await Share.shareXFiles([XFile(file.path)],
-                  text: 'MemoryLink 임상 리포트');
-            },
+          Builder(
+            builder: (buttonContext) => IconButton(
+              icon: const Icon(Icons.share),
+              tooltip: '리포트 공유',
+              onPressed: () async {
+                await Share.shareXFiles(
+                  [XFile(file.path)],
+                  text: 'MemoryLink 임상 리포트',
+                  sharePositionOrigin: shareOriginOf(buttonContext),
+                );
+              },
+            ),
           ),
         ],
       ),

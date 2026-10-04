@@ -9,6 +9,18 @@
 # packages, and plugins designed to encourage good coding practices.
 include: package:flutter_lints/flutter.yaml
 
+analyzer:
+  exclude:
+    # 리디자인 원본 보관함. flutter_port/ 아래 theme.dart·ml_widgets.dart는
+    # lib/core/로 옮기기 전의 이식용 사본이고, 그 뒤 lib 쪽만 손봐서 이미 갈라졌다.
+    # 빌드에 들어가지 않는데도 analyze 대상에 잡혀 info를 3건 만들고 있었고,
+    # 무엇보다 theme.dart를 찾다가 이쪽을 고치는 사고가 난다.
+    # 디자인 시스템의 유일한 출처는 lib/core/ 다.
+    - MemoryLInkApp_Design/**
+    # 제출용 zip 스테이징 사본. lib 전체가 복제되므로 분석에 들어가면
+    # 같은 클래스가 두 번 정의된 것처럼 보여 가짜 타입 오류가 쏟아진다.
+    - "공모전/**"
+
 linter:
   # The lint rules applied to this project can be customized in the
   # section below to disable rules from the `package:flutter_lints/flutter.yaml`

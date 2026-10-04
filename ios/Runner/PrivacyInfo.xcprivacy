@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  앱 수준 개인정보 매니페스트.
+  대부분의 플러그인은 자체 PrivacyInfo.xcprivacy를 번들로 포함하지만, 아래 두 플러그인은
+  매니페스트 없이 "사유 필요 API"를 호출한다. 정적 링크(use_frameworks! :linkage => :static)라
+  코드가 Runner 바이너리에 합쳐지므로 앱 매니페스트에서 사유를 선언한다.
+  (누락 시 App Store Connect 업로드가 ITMS-91053으로 거절된다.)
+    - flutter_background_service_ios 5.0.3 : UserDefaults (콜백 핸들 저장)      → CA92.1
+    - pedometer 4.2.0                      : ProcessInfo.systemUptime (부팅 시각 계산) → 35F9.1
+  수집 데이터 유형(NSPrivacyCollectedDataTypes)은 App Store Connect의 "앱 개인정보 보호"
+  항목과 함께 팀이 실제 수집·전송 범위를 확인해 채운다.
+-->
+<plist version="1.0">
+<dict>
+	<key>NSPrivacyTracking</key>
+	<false/>
+	<key>NSPrivacyTrackingDomains</key>
+	<array/>
+	<key>NSPrivacyAccessedAPITypes</key>
+	<array>
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryUserDefaults</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>CA92.1</string>
+			</array>
+		</dict>
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategorySystemBootTime</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>35F9.1</string>
+			</array>
+		</dict>
+	</array>
+</dict>
+</plist>

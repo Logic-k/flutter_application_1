@@ -3,9 +3,12 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../core/version_label.dart';
 import '../../core/user_provider.dart';
+import '../training/training_progress_provider.dart';
 import '../../core/settings_provider.dart';
 import '../../core/ml_widgets.dart';
+import '../../core/motion/staggered_column.dart';
 import '../../core/theme.dart';
 import '../../core/app_config.dart';
 import '../../core/ai/ai_key_service.dart';
@@ -122,16 +125,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
       appBar: AppBar(title: const Text('설정')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(22, 6, 22, 40),
-        child: Column(
+        // 섹션 묶음이 60ms 간격으로 들어온다(08 계획 G-04, 첫 진입 1회).
+        child: StaggeredColumn(
+          playKey: 'settings',
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
             // ─── 화면 / 접근성 ───
             MLSectionTitle('화면 및 접근성'),
             MLCard(
               padding: EdgeInsets.zero,
               child: Column(children: [
                 _fontSizeRow(settings),
-                Divider(height: 1, color: MLColors.line),
+                const Divider(),
                 MLListRow(
                   icon: Icons.record_voice_over_rounded, color: MLColors.mem,
                   title: '음성 안내',
@@ -139,10 +147,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   trailing: Switch(
                     value: settings.voiceGuidanceEnabled,
                     onChanged: (v) => context.read<SettingsProvider>().setVoiceGuidance(v),
-                    activeThumbColor: MLColors.primary,
                   ),
                 ),
-                Divider(height: 1, color: MLColors.line),
+                const Divider(),
                 MLListRow(
                   icon: Icons.vibration_rounded, color: MLColors.logic,
                   title: '진동 피드백',
@@ -150,11 +157,37 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   trailing: Switch(
                     value: settings.hapticFeedbackEnabled,
                     onChanged: (v) => context.read<SettingsProvider>().setHapticFeedback(v),
-                    activeThumbColor: MLColors.primary,
+                  ),
+                ),
+                const Divider(),
+                MLListRow(
+                  icon: Icons.music_note_rounded, color: MLColors.sky,
+                  title: '효과음',
+                  subtitle: '정답·오답·완료를 짧은 소리로 알립니다.',
+                  trailing: Switch(
+                    value: settings.soundEffectsEnabled,
+                    onChanged: (v) => context.read<SettingsProvider>().setSoundEffects(v),
+                  ),
+                ),
+                const Divider(),
+                MLListRow(
+                  icon: Icons.motion_photos_off_rounded, color: MLColors.mem,
+                  title: '움직임 줄이기',
+                  // 켜면 이동·확대 효과를 끄고 부드러운 흐려짐만 남긴다(MotionLevel.fadeOnly).
+                  subtitle: '움직이는 효과를 끄고 부드러운 전환만 남깁니다.',
+                  trailing: Switch(
+                    value: settings.reduceMotion,
+                    onChanged: (v) => context.read<SettingsProvider>().setReduceMotion(v),
                   ),
                 ),
               ]),
             ),
+              ],
+            ),
+
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
             const SizedBox(height: 22),
 
             // ─── 알림 ───
@@ -168,7 +201,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 trailing: Switch(
                   value: _reminderEnabled,
                   onChanged: _toggleReminder,
-                  activeThumbColor: MLColors.primary,
                 ),
               ),
             ),
@@ -177,6 +209,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
             // ─── AI ───
             MLSectionTitle('AI 대화'),
             _buildAiCard(),
+              ],
+            ),
+
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
             const SizedBox(height: 22),
 
             // ─── 계정 ───
@@ -185,13 +223,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
               padding: EdgeInsets.zero,
               child: Column(children: [
                 MLListRow(
-                  icon: Icons.person_outline_rounded, color: MLColors.primary,
+                  icon: Icons.person_outline_rounded, color: context.scheme.primary,
                   title: '프로필 편집',
                   subtitle: '이름, 나이, 건강 정보 수정',
                   onTap: () => Navigator.push(context,
                       MaterialPageRoute(builder: (_) => const EditProfileScreen())),
                 ),
-                Divider(height: 1, color: MLColors.line),
+                const Divider(),
                 MLListRow(
                   icon: Icons.family_restroom_rounded, color: MLColors.sky,
                   title: '보호자 안심 연결',
@@ -212,15 +250,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   title: '개인정보 처리방침',
                   onTap: _openPrivacyPolicy,
                 ),
-                Divider(height: 1, color: MLColors.line),
+                const Divider(),
                 MLListRow(
-                  icon: Icons.refresh_rounded, color: MLColors.warn, titleColor: MLColors.warn,
+                  icon: Icons.refresh_rounded, color: MLColors.warn, titleColor: MLColors.warnText,
                   title: '측정 데이터 초기화',
                   subtitle: '인지 점수 및 기록만 삭제됩니다. (계정 유지)',
                   onTap: () => _showResetDialog(userProvider),
                 ),
               ]),
             ),
+              ],
+            ),
+
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
             const SizedBox(height: 22),
 
             // ─── 정보 ───
@@ -229,13 +273,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
               padding: EdgeInsets.zero,
               child: Column(children: [
                 MLListRow(
-                  icon: Icons.info_outline_rounded, color: MLColors.textSoft,
+                  icon: Icons.info_outline_rounded, color: context.scheme.onSurfaceVariant,
                   title: '앱 버전',
-                  trailing: const Text('v1.0.0', style: TextStyle(color: MLColors.textSoft)),
+                  trailing: Text('v1.0.0', style: TextStyle(color: context.scheme.onSurfaceVariant)),
                 ),
-                Divider(height: 1, color: MLColors.line),
+                const Divider(),
                 MLListRow(
-                  icon: Icons.description_outlined, color: MLColors.textSoft,
+                  icon: Icons.description_outlined, color: context.scheme.onSurfaceVariant,
                   title: '오픈소스 라이선스',
                   onTap: () => showLicensePage(
                     context: context,
@@ -243,9 +287,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     applicationVersion: 'v1.0.0',
                   ),
                 ),
-                Divider(height: 1, color: MLColors.line),
+                const Divider(),
                 MLListRow(
-                  icon: Icons.logout_rounded, color: MLColors.bad, titleColor: MLColors.bad,
+                  icon: Icons.logout_rounded, color: MLColors.bad, titleColor: MLColors.badText,
                   title: '로그아웃',
                   onTap: () => _confirmLogout(userProvider),
                 ),
@@ -253,12 +297,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             const SizedBox(height: 24),
 
-            Center(
-              child: GestureDetector(
-                onLongPress: () => context.push('/admin_login'),
-                child: const Text('MemoryLink v1.0.0',
-                    style: TextStyle(fontSize: 12, color: MLColors.textFaint)),
-              ),
+            const MLVersionLabel(),
+              ],
             ),
           ],
         ),
@@ -301,19 +341,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
   // ─── AI 카드 ─────────────────────────────────────────────────
   Widget _buildAiCard() {
     if (_loadingAi) {
-      return const MLCard(
-        child: Center(
-          child: Padding(
-            padding: EdgeInsets.all(8),
-            child: CircularProgressIndicator(color: MLColors.primary),
-          ),
-        ),
+      // AI 카드 모양(상태 행 + 설명 두 줄)의 자리(08 계획 G-05).
+      return Semantics(
+        label: 'AI 설정을 불러오는 중',
+        excludeSemantics: true,
+        child: const MLSkeletonCard(lines: 2),
       );
     }
 
     final usingOndevice = AiChatService.isUsingLocalModel;
     final usingAi = AiChatService.isUsingAI;
-    final statusColor = usingAi ? Colors.green : MLColors.textSoft;
+    final statusColor = usingAi ? MLColors.goodText : context.scheme.onSurfaceVariant;
     final statusLabel = usingOndevice
         ? '온디바이스 AI 사용 중'
         : (_hasApiKey ? 'Gemini API 사용 중' : '오프라인(규칙 기반) 모드');
@@ -329,21 +367,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
             const SizedBox(width: 8),
             Expanded(child: Text(statusLabel,
                 style: TextStyle(fontWeight: FontWeight.w700, color: statusColor))),
-            Text(_providerName, style: const TextStyle(fontSize: 11, color: MLColors.textFaint)),
+            Text(_providerName, style: TextStyle(fontSize: 12, color: context.scheme.onSurfaceVariant)),
           ]),
         ),
-        const Divider(height: 1, color: MLColors.line),
+        const Divider(),
 
         // Gemini API 키
         if (!usingOndevice) ...[
           MLListRow(
-            icon: Icons.key_rounded, color: MLColors.primary,
+            icon: Icons.key_rounded, color: context.scheme.primary,
             title: 'Gemini API 키',
             subtitle: _hasApiKey ? '키가 저장되어 있습니다.' : '키를 입력하면 온라인 AI 대화를 사용합니다.',
             trailing: _hasApiKey
                 ? TextButton(onPressed: _removeApiKey,
-                    child: const Text('삭제', style: TextStyle(color: MLColors.bad)))
-                : const Icon(Icons.chevron_right_rounded, color: MLColors.textFaint),
+                    child: const Text('삭제', style: TextStyle(color: MLColors.badText)))
+                : Icon(Icons.chevron_right_rounded, color: context.scheme.onSurfaceVariant),
             onTap: () => setState(() => _showKeyEditor = !_showKeyEditor),
           ),
           if (_showKeyEditor)
@@ -358,9 +396,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     isDense: true,
                     suffixIcon: IconButton(
                       icon: Icon(_obscureKey ? Icons.visibility_off : Icons.visibility, size: 20),
+                      tooltip: _obscureKey ? 'API 키 표시' : 'API 키 숨기기',
                       onPressed: () => setState(() => _obscureKey = !_obscureKey),
                     ),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppTheme.rField)),
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -380,14 +419,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 ]),
                 if (AppConfig.geminiApiKey.isNotEmpty && !_hasApiKey)
-                  const Padding(
+                  Padding(
                     padding: EdgeInsets.only(top: 6),
                     child: Text('빌드에 기본 키가 주입되어 있어 키 없이도 온라인 AI가 동작할 수 있습니다.',
-                        style: TextStyle(fontSize: 11, color: MLColors.textFaint)),
+                        style: TextStyle(fontSize: 12, color: context.scheme.onSurfaceVariant)),
                   ),
               ]),
             ),
-          const Divider(height: 1, color: MLColors.line),
+          const Divider(),
         ],
 
         // 온디바이스 모델
@@ -416,24 +455,63 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   void _showResetDialog(UserProvider userProvider) {
+    var isResetting = false;
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('데이터 초기화'),
-        content: const Text('지금까지의 인지 훈련 점수와 활동 기록이 모두 삭제됩니다. 정말 초기화하시겠습니까? (계정은 유지됩니다)'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('취소')),
-          TextButton(
-            onPressed: () {
-              userProvider.resetMeasurementData();
-              Navigator.pop(ctx);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('데이터가 초기화되었습니다.')),
-              );
-            },
-            child: const Text('초기화', style: TextStyle(color: MLColors.warn)),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          title: const Text('데이터 초기화'),
+          content: const Text(
+            '인지 훈련 점수와 활동 기록, XP, 숙련도, 연속 학습 기록이 모두 삭제됩니다. '
+            '계정은 유지되며 시작 활동은 다시 열립니다.',
           ),
-        ],
+          actions: [
+            TextButton(
+              onPressed: isResetting ? null : () => Navigator.pop(ctx),
+              child: const Text('취소'),
+            ),
+            TextButton(
+              onPressed: isResetting
+                  ? null
+                  : () async {
+                      setDialogState(() => isResetting = true);
+                      try {
+                        await userProvider.resetMeasurementData();
+                        if (!ctx.mounted || !mounted) return;
+                        await context
+                            .read<TrainingProgressProvider>()
+                            .refresh();
+                        if (!ctx.mounted || !mounted) return;
+                        Navigator.pop(ctx);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('데이터가 초기화되었습니다.'),
+                          ),
+                        );
+                      } catch (_) {
+                        if (!ctx.mounted || !mounted) return;
+                        setDialogState(() => isResetting = false);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              '데이터를 초기화하지 못했습니다. 다시 시도해 주세요.',
+                            ),
+                          ),
+                        );
+                      }
+                    },
+              child: isResetting
+                  ? const SizedBox.square(
+                      dimension: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Text(
+                      '초기화',
+                      style: TextStyle(color: MLColors.warnText),
+                    ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -452,7 +530,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               userProvider.logout();
               context.go('/login');
             },
-            child: const Text('로그아웃', style: TextStyle(color: MLColors.bad)),
+            child: const Text('로그아웃', style: TextStyle(color: MLColors.badText)),
           ),
         ],
       ),

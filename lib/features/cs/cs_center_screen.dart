@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/theme.dart';
 
 class CsCenterScreen extends StatelessWidget {
   const CsCenterScreen({super.key});
@@ -68,7 +69,7 @@ class CsCenterScreen extends StatelessWidget {
           height: 48,
           decoration: BoxDecoration(
             color: theme.colorScheme.primary.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(AppTheme.rField),
           ),
           child: Icon(icon, color: theme.colorScheme.primary),
         ),

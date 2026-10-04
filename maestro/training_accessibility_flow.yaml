@@ -1,0 +1,32 @@
+appId: com.teammemorylink.memorylink
+---
+- runFlow: helpers/login_helper.yaml
+- tapOn: "인지훈련"
+- extendedWaitUntil:
+    visible: "두뇌 트레이닝 센터"
+    timeout: 10000
+- assertVisible: ".*레벨 1.*"
+- assertVisible: ".*다음 레벨까지 100 XP.*"
+- assertVisible: ".*0일 연속 학습 중.*"
+- scrollUntilVisible:
+    element:
+      text: ".*구구단 맞추기.*"
+    direction: DOWN
+- swipe:
+    start: "50%,80%"
+    end: "50%,45%"
+    duration: 500
+- tapOn: ".*구구단 맞추기.*"
+- assertVisible: "먼저 누가 큰가요? 활동을 한 번 완료해 보세요."
+- scrollUntilVisible:
+    element:
+      text: ".*문장 읽기 훈련.*"
+    direction: DOWN
+    visibilityPercentage: 50
+- assertVisible: ".*잠김.*"
+- scrollUntilVisible:
+    element:
+      text: ".*일상 회상 훈련.*"
+    direction: DOWN
+    visibilityPercentage: 50
+- assertVisible: ".*일상 회상 훈련.*"

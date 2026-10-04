@@ -5,9 +5,11 @@ appId: com.teammemorylink.memorylink
     clearState: true
 
 # 2. 앱 초기화 대기 (로그인 화면 TextField 등장까지)
+# clearState 직후 첫 실행은 DB 생성 + v9 마이그레이션 + 30일치 데모 시드가 모두 돌아
+# 콜드 스타트가 40초를 넘는다. helpers/login_helper.yaml과 같은 90초를 쓴다.
 - extendedWaitUntil:
     visible: "사용자 아이디"
-    timeout: 40000
+    timeout: 90000
 
 # 3. 로그인 화면 요소 확인
 - assertVisible: "사용자 아이디"

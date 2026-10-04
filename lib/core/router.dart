@@ -7,6 +7,8 @@ import '../features/assessment/assessment_screen.dart';
 import '../features/assessment/cognitive_tasks_screen.dart';
 import '../features/assessment/result_screen.dart';
 import '../features/training/training_hub_page.dart';
+import '../features/training/training_history_screen.dart';
+import '../features/training/domain/training_catalog.dart';
 import '../features/training/games/comparison_game.dart';
 import '../features/training/games/sequence_game.dart';
 import '../features/training/games/shape_sudoku_game.dart';
@@ -17,7 +19,6 @@ import '../features/training/games/sentence_reading_game.dart';
 import '../features/auth/login_screen.dart';
 import '../features/auth/register_screen.dart';
 import '../features/profile/profile_screen.dart';
-import '../features/gait_analysis/gait_screen.dart';
 import '../features/diary/diary_screen.dart';
 import '../features/diary/diary_book_screen.dart';
 import '../features/profile/guardian_link_screen.dart';
@@ -38,12 +39,14 @@ import '../features/admin/admin_notice_edit_screen.dart';
 import '../features/admin/admin_faq_edit_screen.dart';
 import '../features/admin/admin_inquiry_detail_screen.dart';
 import '../features/reports/clinical_report_options_screen.dart';
-import '../features/voice_assessment/voice_assessment_screen.dart';
+import '../features/voice_assessment/voice_assessment_blocked_screen.dart';
+import '../features/dementia_center/dementia_center_finder_screen.dart';
 import '../features/ai_chat/ai_chat_screen.dart';
 import '../features/settings/model_download_screen.dart';
 import '../features/settings/settings_screen.dart';
 import '../features/health/health_input_screen.dart';
 import 'admin_provider.dart';
+import 'app_config.dart';
 import 'user_provider.dart';
 
 GoRouter createAppRouter(
@@ -66,8 +69,17 @@ GoRouter createAppRouter(
         '/assessment',
         '/cognitive_tasks',
         '/assessment_result',
+        // 초기 평가 결과가 높게 나오면 그 자리에서 치매안심센터를 안내한다.
+        // 이 경로가 빠지면 안내 버튼이 /consent로 되돌아가 버린다.
+        '/dementia_centers',
       };
       final needsOnboarding = isLoggedIn && !userProvider.hasCompletedOnboarding;
+
+      // 포털이 꺼진 빌드에서는 /admin* 전체를 홈으로 되돌린다.
+      // UI에서 진입점을 숨기는 것만으로는 딥링크·`adb shell am start`를 못 막는다.
+      if (!AppConfig.isAdminPortalEnabled && loc.startsWith('/admin')) {
+        return isLoggedIn ? '/' : '/login';
+      }
 
       // 관리자 포털 가드: 미로그인 시 /admin_login으로
       if (isAdminRoute && !adminProvider.isAdminLoggedIn) {
@@ -124,34 +136,37 @@ GoRouter createAppRouter(
         builder: (context, state) => const TrainingHubScreen(),
       ),
       GoRoute(
-        path: '/game/comparison',
+        path: '/training_history',
+        builder: (context, state) => const TrainingHistoryScreen(),
+      ),
+      GoRoute(
+        path: trainingActivityById('comparison').route,
         builder: (context, state) => const ComparisonGame(),
       ),
       GoRoute(
-        path: '/game/sequence',
+        path: trainingActivityById('sequence').route,
         builder: (context, state) => const SequenceGame(),
       ),
       GoRoute(
-        path: '/game/sudoku',
+        path: trainingActivityById('shape_sudoku').route,
         builder: (context, state) => const ShapeSudokuGame(),
       ),
       GoRoute(
-        path: '/game/multiplication',
+        path: trainingActivityById('multiplication').route,
         builder: (context, state) => const MultiplicationGame(),
       ),
       GoRoute(
-        path: '/game/shape_match',
+        path: trainingActivityById('shape_match').route,
         builder: (context, state) => const ShapeMatchGame(),
       ),
       GoRoute(
-        path: '/game/categorization',
+        path: trainingActivityById('categorization').route,
         builder: (context, state) => const CategorizationGame(),
       ),
       GoRoute(
-        path: '/game/reading',
+        path: trainingActivityById('sentence_reading').route,
         builder: (context, state) => const SentenceReadingGame(),
       ),
-      GoRoute(path: '/gait', builder: (context, state) => const GaitScreen()),
       GoRoute(
         path: '/memory_garden',
         builder: (context, state) => const DiaryScreen(),
@@ -166,7 +181,11 @@ GoRouter createAppRouter(
       ),
       GoRoute(
         path: '/voice_assessment',
-        builder: (context, state) => const VoiceAssessmentScreen(),
+        builder: (context, state) => const VoiceAssessmentBlockedScreen(),
+      ),
+      GoRoute(
+        path: '/dementia_centers',
+        builder: (context, state) => const DementiaCenterFinderScreen(),
       ),
       GoRoute(
         path: '/ai_chat',
@@ -177,7 +196,7 @@ GoRouter createAppRouter(
         builder: (context, state) => const WalkingDashboardScreen(),
       ),
       GoRoute(
-        path: '/training/recall',
+        path: trainingActivityById('daily_recall').route,
         builder: (context, state) => const DailyRecallPage(),
       ),
       GoRoute(

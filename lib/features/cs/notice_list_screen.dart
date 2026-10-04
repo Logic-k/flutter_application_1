@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import '../../core/theme.dart';
+import '../../core/ml_widgets.dart';
+import '../../core/motion/staggered_column.dart';
 import '../../core/cs_service.dart';
 
 class NoticeListScreen extends StatefulWidget {
@@ -26,23 +29,29 @@ class _NoticeListScreenState extends State<NoticeListScreen> {
       appBar: AppBar(title: const Text('공지사항')),
       body: FutureBuilder<List<Map<String, dynamic>>>(
         future: _future,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
+        // 공지 카드 모양(제목 + 두 줄 본문)의 스켈레톤.
+        // 로딩 → 내용은 크로스페이드(08 계획 G-05).
+        builder: (context, snapshot) => MLLoadSwitcher(
+          loading: snapshot.connectionState == ConnectionState.waiting,
+          skeleton: const MLSkeletonList(count: 5, lines: 2, leading: false, padding: EdgeInsets.all(16), spacing: 8),
+          child: Builder(builder: (context) {
           if (snapshot.hasError) {
-            return Center(child: Text('불러오기 실패: ${snapshot.error}'));
+            return MLErrorState(
+              onRetry: () => setState(() {
+                _future = CsService.fetchNotices();
+              }),
+            );
           }
           final notices = snapshot.data ?? [];
           if (notices.isEmpty) {
-            return const Center(
+            return Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.campaign_outlined, size: 64, color: Colors.grey),
+                  Icon(Icons.campaign_outlined, size: 64, color: context.scheme.onSurfaceVariant),
                   SizedBox(height: 12),
                   Text('등록된 공지사항이 없습니다.',
-                      style: TextStyle(color: Colors.grey)),
+                      style: TextStyle(color: context.scheme.onSurfaceVariant)),
                 ],
               ),
             );
@@ -53,7 +62,10 @@ class _NoticeListScreenState extends State<NoticeListScreen> {
                 _future = CsService.fetchNotices();
               });
             },
-            child: ListView.separated(
+            // 위쪽 카드부터 60ms 간격으로 들어온다. 네 번째부터는 함께(400ms 상한).
+            child: StaggerScope(
+              playKey: 'notice_list',
+              child: ListView.separated(
               padding: const EdgeInsets.all(16),
               itemCount: notices.length,
               separatorBuilder: (_, _) => const SizedBox(height: 8),
@@ -64,9 +76,11 @@ class _NoticeListScreenState extends State<NoticeListScreen> {
                 final dateStr = createdAt != null
                     ? DateFormat('yyyy.MM.dd', 'ko_KR').format(createdAt)
                     : '';
-                return Card(
+                return StaggerItem(
+                  index: index,
+                  child: Card(
                   child: InkWell(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(AppTheme.rField),
                     onTap: () =>
                         context.push('/cs/notice_detail/${n['id']}'),
                     child: Padding(
@@ -82,12 +96,12 @@ class _NoticeListScreenState extends State<NoticeListScreen> {
                                       horizontal: 8, vertical: 2),
                                   decoration: BoxDecoration(
                                     color: theme.colorScheme.primary,
-                                    borderRadius: BorderRadius.circular(4),
+                                    borderRadius: BorderRadius.circular(AppTheme.rBar),
                                   ),
                                   child: const Text('고정',
                                       style: TextStyle(
                                           color: Colors.white,
-                                          fontSize: 11,
+                                          fontSize: 12,
                                           fontWeight: FontWeight.w600)),
                                 ),
                                 const SizedBox(width: 8),
@@ -107,23 +121,26 @@ class _NoticeListScreenState extends State<NoticeListScreen> {
                           Text(
                             n['body'] ?? '',
                             style: theme.textTheme.bodySmall
-                                ?.copyWith(color: Colors.grey[600]),
+                                ?.copyWith(color: context.scheme.onSurfaceVariant),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
                           const SizedBox(height: 8),
                           Text(dateStr,
                               style: theme.textTheme.labelSmall
-                                  ?.copyWith(color: Colors.grey)),
+                                  ?.copyWith(color: context.scheme.onSurfaceVariant)),
                         ],
                       ),
                     ),
                   ),
+                  ),
                 );
               },
             ),
+            ),
           );
-        },
+        }),
+        ),
       ),
     );
   }

@@ -114,6 +114,19 @@ class PedometerBackgroundService {
     int offset = prefs.getInt('pedo_offset') ?? 0;
     String baselineDate = prefs.getString('pedo_date') ?? '';
     int lastPersistedToday = prefs.getInt('pedo_last_today') ?? 0;
+    final startupDate = DateTime.now().toIso8601String().split('T')[0];
+    int currentTodaySteps =
+        baselineDate == startupDate ? lastPersistedToday : 0;
+
+    void sendCurrentSteps() {
+      service.invoke('update_steps', {
+        'steps': currentTodaySteps,
+        'timestamp': DateTime.now().toIso8601String(),
+      });
+    }
+
+    service.on('request_steps').listen((_) => sendCurrentSteps());
+    sendCurrentSteps();
 
     // 1. 만보기 스트림 구독 (센서 부재 대응)
     try {
@@ -143,6 +156,7 @@ class PedometerBackgroundService {
         }
 
         final int todaySteps = offset + (cumulative - baseline);
+        currentTodaySteps = todaySteps;
 
         // 재부팅 복구용 스냅샷 (20보마다 저장해 디스크 쓰기 최소화)
         if (todaySteps - lastPersistedToday >= 20) {
@@ -171,8 +185,8 @@ class PedometerBackgroundService {
         // 상태 업데이트 호출 (UI 반영용)
         if ((todaySteps - lastSentSteps).abs() >= 1) {
           service.invoke('update_steps', {
-            "steps": todaySteps,
-            "timestamp": DateTime.now().toIso8601String(),
+            'steps': todaySteps,
+            'timestamp': DateTime.now().toIso8601String(),
           });
           lastSentSteps = todaySteps;
         }

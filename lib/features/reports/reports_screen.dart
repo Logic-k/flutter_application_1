@@ -5,8 +5,8 @@ import 'package:provider/provider.dart';
 import '../../core/user_provider.dart';
 import '../../core/database_helper.dart';
 import '../../core/ml_widgets.dart';
+import '../../core/motion/staggered_column.dart';
 import '../../core/theme.dart';
-import 'widgets/social_ranking_view.dart';
 import 'report_analyzer.dart';
 import '../gait_analysis/pedometer_manager.dart';
 
@@ -58,27 +58,62 @@ class _ReportsScreenState extends State<ReportsScreen> {
 
     return Scaffold(
       appBar: AppBar(title: const Text('주간 분석 리포트')),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: MLColors.primary))
-          : SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(22, 6, 22, 110),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('나의 인지 건강 일기', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900)),
-                  const SizedBox(height: 20),
-                  _buildBrainAgeCard(user),
-                  const SizedBox(height: 24),
-                  SocialRankingView(userScore: user.memoryScore, categoryName: '기억력'),
-                  const SizedBox(height: 24),
-                  _buildChartCard(),
-                  const SizedBox(height: 24),
-                  _buildAISummaryCard(user),
-                  const SizedBox(height: 24),
-                  _buildActionButtons(context),
-                ],
-              ),
-            ),
+      body: MLLoadSwitcher(
+        loading: _isLoading,
+        skeleton: _buildSkeleton(),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(
+              22, 6, 22, FloatingPillNav.contentBottomInset),
+          // 제목·지표 → 점수 추이 → AI 요약 → 버튼 순(08 계획 G-04). 탭을 처음 열 때 1회.
+          child: StaggeredColumn(
+            playKey: 'reports',
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('나의 인지 건강 일기', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800)),
+                        const SizedBox(height: 20),
+                        _buildBrainAgeCard(user),
+                      ],
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 24),
+                      child: _buildChartCard(),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 24),
+                      child: _buildAISummaryCard(user),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 24),
+                      child: _buildActionButtons(context),
+                    ),
+                  ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 불러오는 동안 실제 배치(제목 → 지표 카드 → 차트 카드)를 닮은 자리를 그린다.
+  Widget _buildSkeleton() {
+    return Semantics(
+      label: '리포트를 불러오는 중',
+      excludeSemantics: true,
+      child: const Padding(
+        padding: EdgeInsets.fromLTRB(22, 6, 22, 0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            MLSkeleton(width: 190, height: 24),
+            SizedBox(height: 20),
+            MLSkeletonCard(lines: 4, leading: false),
+            SizedBox(height: 24),
+            MLSkeletonCard(lines: 3, leading: false, height: 200),
+          ],
+        ),
+      ),
     );
   }
 
@@ -90,7 +125,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           MLSectionTitle('영역 별 인지 지표'),
-          const Text('각 게임을 통해 측정된 현재의 건강 상태입니다.', style: TextStyle(fontSize: 13, color: MLColors.textSoft)),
+          Text('각 게임을 통해 측정된 현재의 건강 상태입니다.', style: TextStyle(fontSize: 13, color: context.scheme.onSurfaceVariant)),
           const SizedBox(height: 20),
           _buildIndicatorBar('계산력', user.calculationScore / 100.0, trends['calculation']),
           _buildIndicatorBar('논리 추론', user.logicScore / 100.0, trends['logic']),
@@ -144,7 +179,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                   const SizedBox(width: 8),
                   Text(
                     '${trend > 0 ? '↑' : '↓'} ${trend.abs().toStringAsFixed(1)}%',
-                    style: TextStyle(fontSize: 11, color: trend > 0 ? MLColors.good : MLColors.bad, fontWeight: FontWeight.w800),
+                    style: TextStyle(fontSize: 12, color: trend > 0 ? MLColors.goodText : MLColors.badText, fontWeight: FontWeight.w800),
                   ),
                 ],
               ]),
@@ -173,6 +208,10 @@ class _ReportsScreenState extends State<ReportsScreen> {
       }
     }
 
+    // 기준선은 실제 최솟값이다(차트가 바닥에서 올라오는 모양).
+    final lo = spots.fold<double>(spots.first.y, (m, s) => s.y < m ? s.y : m);
+    final hi = spots.fold<double>(spots.first.y, (m, s) => s.y > m ? s.y : m);
+
     return MLCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -181,39 +220,50 @@ class _ReportsScreenState extends State<ReportsScreen> {
           const SizedBox(height: 8),
           SizedBox(
             height: 200,
-            child: LineChart(LineChartData(
+            // 첫 진입에 선이 바닥에서 올라온다. 움직임 줄이기면 처음부터 실제 값.
+            child: MLChart(
+              playKey: 'reports_score_chart',
+              builder: (context, entered, duration, curve) => LineChart(
+              duration: duration,
+              curve: curve,
+              LineChartData(
               gridData: const FlGridData(show: false),
               titlesData: const FlTitlesData(show: false),
               borderData: FlBorderData(show: false),
               lineBarsData: [
                 LineChartBarData(
-                  spots: spots,
+                  spots: entered ? spots : [for (final s in spots) FlSpot(s.x, lo)],
                   isCurved: true,
                   curveSmoothness: 0.35,
-                  color: MLColors.primary,
+                  color: context.scheme.primary,
                   barWidth: 3.5,
                   isStrokeCapRound: true,
                   dotData: FlDotData(
                     show: true,
                     checkToShowDot: (s, _) => s.x == spots.last.x,
                     getDotPainter: (s, _, a, b) => FlDotCirclePainter(
-                      radius: 5, color: MLColors.primary, strokeColor: Colors.white, strokeWidth: 2.5),
+                      radius: 5, color: context.scheme.primary, strokeColor: Colors.white, strokeWidth: 2.5),
                   ),
                   belowBarData: BarAreaData(
                     show: true,
                     gradient: LinearGradient(
                       begin: Alignment.topCenter, end: Alignment.bottomCenter,
-                      colors: [MLColors.primary.withValues(alpha: 0.28), MLColors.primary.withValues(alpha: 0.0)]),
+                      colors: [context.scheme.primary.withValues(alpha: 0.28), context.scheme.primary.withValues(alpha: 0.0)]),
                   ),
                 ),
               ],
+              // 기준선 프레임에서도 축 범위가 실제 데이터와 같아야 선이 "자라난다".
+              // fl_chart 자동 범위(최솟값~최댓값)와 같은 값이라 최종 모양은 그대로다.
+              minY: hi > lo ? lo : null,
+              maxY: hi > lo ? hi : null,
             )),
+            ),
           ),
           const SizedBox(height: 12),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: ['월', '화', '수', '목', '금', '토', '일']
-                .map((d) => Text(d, style: const TextStyle(fontSize: 12, color: MLColors.textFaint, fontWeight: FontWeight.w700)))
+                .map((d) => Text(d, style: TextStyle(fontSize: 12, color: context.scheme.onSurfaceVariant, fontWeight: FontWeight.w700)))
                 .toList(),
           ),
         ],
@@ -229,9 +279,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(children: [
-            const Icon(Icons.auto_awesome_rounded, color: MLColors.primary, size: 22),
+            Icon(Icons.auto_awesome_rounded, color: context.scheme.primary, size: 22),
             const SizedBox(width: 10),
-            const Text('AI 분석 요약', style: TextStyle(color: MLColors.primary, fontWeight: FontWeight.w900, fontSize: 18)),
+            Text('AI 분석 요약', style: TextStyle(color: context.scheme.primary, fontWeight: FontWeight.w800, fontSize: 18)),
           ]),
           const SizedBox(height: 14),
           Text(
@@ -245,7 +295,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
             style: const TextStyle(height: 1.6, fontSize: 15),
           ),
           const SizedBox(height: 20),
-          const Divider(color: MLColors.line),
+          const Divider(),
           const SizedBox(height: 14),
           const Text('다음 주 권고 사항', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15)),
           const SizedBox(height: 10),
@@ -276,9 +326,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
           style: FilledButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
         ),
         const SizedBox(height: 8),
-        const Text(
+        Text(
           '의료진용 또는 보호자용 PDF 리포트를 생성하여 상담 시 활용하세요.',
-          style: TextStyle(fontSize: 13, color: MLColors.textSoft),
+          style: TextStyle(fontSize: 13, color: context.scheme.onSurfaceVariant),
           textAlign: TextAlign.center,
         ),
       ],

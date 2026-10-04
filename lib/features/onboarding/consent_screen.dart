@@ -1,3 +1,14 @@
+// ─────────────────────────────────────────────────────────────────────────
+// [TTA 표준 적용] TTAK.KO-12.0414 「인공지능(AI) 서비스 개인정보보호 프레임워크」
+//
+// 적용 지점: 동의의 분리 고지·수신.
+//   개인정보 처리 동의(_consentPersonal)와 건강정보 취급 동의(_consentHealth),
+//   보호자 공유 동의(_consentGuardian)를 하나로 묶지 않고 각각 받는다.
+//   표준의 목적 제한 원칙에 따라, 사용자가 어떤 범주의 정보가 어디에 쓰이는지
+//   구분해 판단할 수 있어야 하기 때문이다.
+//
+// 같은 표준의 저장 위치 통제는 core/database_helper.dart 에 적용.
+// ─────────────────────────────────────────────────────────────────────────
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';

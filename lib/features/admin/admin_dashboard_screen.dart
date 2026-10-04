@@ -2,6 +2,8 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import '../../core/ml_widgets.dart';
+import '../../core/theme.dart';
 import '../../core/admin_provider.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
@@ -91,7 +93,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                         const SizedBox(height: 4),
                         Text(item.$1,
                             style: theme.textTheme.labelSmall
-                                ?.copyWith(color: Colors.grey),
+                                ?.copyWith(color: context.scheme.onSurfaceVariant),
                             textAlign: TextAlign.center),
                       ],
                     ),
@@ -108,7 +110,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       child: ExpansionTile(
         leading: Icon(
           Icons.warning_amber_rounded,
-          color: admin.atRiskUsers.isEmpty ? Colors.grey : Colors.red[400],
+          color: admin.atRiskUsers.isEmpty ? context.scheme.onSurfaceVariant : MLColors.badText,
         ),
         title: Text(
           '위험 사용자 알림 (${admin.atRiskUsers.length})',
@@ -117,20 +119,20 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         ),
         children: admin.atRiskUsers.isEmpty
             ? [
-                const Padding(
+                Padding(
                   padding: EdgeInsets.all(16),
                   child: Text('위험 감지된 사용자가 없습니다.',
-                      style: TextStyle(color: Colors.grey)),
+                      style: TextStyle(color: context.scheme.onSurfaceVariant)),
                 ),
               ]
             : admin.atRiskUsers
                 .map((u) => ListTile(
                       leading:
-                          const Icon(Icons.person_outline, color: Colors.red),
+                          const Icon(Icons.person_outline, color: MLColors.badText),
                       title: Text(u['username'] as String? ?? ''),
                       subtitle: Text(
                           '${u['category']} ${u['delta_pct']}%',
-                          style: const TextStyle(color: Colors.red)),
+                          style: const TextStyle(color: MLColors.badText)),
                       trailing: const Icon(Icons.chevron_right),
                       onTap: () => context.push(
                           '/admin/user_detail/${u['user_id']}'),
@@ -156,7 +158,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             toY: score,
             color: theme.colorScheme.primary,
             width: 18,
-            borderRadius: BorderRadius.circular(4),
+            borderRadius: BorderRadius.circular(AppTheme.rBar),
           ),
         ],
       );
@@ -174,7 +176,12 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             const SizedBox(height: 16),
             SizedBox(
               height: 180,
-              child: BarChart(
+              // 관리자 화면은 진입 연출 없이 축소 모션 규칙만 따른다(08 계획 G-04).
+              child: MLChart(
+                playKey: 'admin_category_chart',
+                builder: (context, _, duration, curve) => BarChart(
+                duration: duration,
+                curve: curve,
                 BarChartData(
                   barGroups: groups,
                   titlesData: FlTitlesData(
@@ -183,7 +190,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                         showTitles: true,
                         getTitlesWidget: (value, _) => Text(
                           labels[value.toInt()],
-                          style: const TextStyle(fontSize: 10),
+                          style: const TextStyle(fontSize: 12),
                         ),
                       ),
                     ),
@@ -197,6 +204,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   borderData: FlBorderData(show: false),
                   gridData: const FlGridData(show: false),
                 ),
+              ),
               ),
             ),
           ],
@@ -218,10 +226,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     ?.copyWith(fontWeight: FontWeight.w600)),
           ),
           if (admin.allUsers.isEmpty)
-            const Padding(
+            Padding(
               padding: EdgeInsets.all(16),
               child: Text('등록된 회원이 없습니다.',
-                  style: TextStyle(color: Colors.grey)),
+                  style: TextStyle(color: context.scheme.onSurfaceVariant)),
             )
           else
             ...admin.allUsers.map(

@@ -35,8 +35,11 @@ class CsService {
       });
       return docs;
     } catch (e) {
+      // 실패를 빈 리스트로 돌려주지 않는다 — 그러면 화면이 "등록된
+      // 공지사항이 없습니다"로 실패를 위장한다. FutureBuilder의 hasError
+      // 분기가 친절한 오류+재시도를 보여주도록 예외를 그대로 올린다.
       debugPrint('fetchNotices error: $e');
-      return [];
+      rethrow;
     }
   }
 
@@ -46,8 +49,10 @@ class CsService {
       if (!doc.exists) return null;
       return _docToMap(doc);
     } catch (e) {
+      // null은 "문서가 없음"을 뜻한다. 네트워크 실패까지 null로 돌리면
+      // 화면이 "찾을 수 없습니다"로 오류를 위장하므로 구분해 올린다.
       debugPrint('fetchNoticeById error: $e');
-      return null;
+      rethrow;
     }
   }
 
@@ -67,7 +72,7 @@ class CsService {
       return docs;
     } catch (e) {
       debugPrint('fetchFaqs error: $e');
-      return [];
+      rethrow;
     }
   }
 
@@ -104,7 +109,7 @@ class CsService {
       return docs;
     } catch (e) {
       debugPrint('fetchMyInquiries error: $e');
-      return [];
+      rethrow;
     }
   }
 
@@ -129,7 +134,7 @@ class CsService {
       };
     } catch (e) {
       debugPrint('fetchInquiryDetail error: $e');
-      return null;
+      rethrow;
     }
   }
 
@@ -206,7 +211,7 @@ class CsService {
       return snapshot.docs.map(_docToMap).toList();
     } catch (e) {
       debugPrint('fetchAllInquiries error: $e');
-      return [];
+      rethrow;
     }
   }
 
@@ -325,12 +330,14 @@ class CsService {
           'category': '훈련',
           'question': '인지 점수는 어떻게 계산되나요?',
           'answer':
-              '각 게임 완료 시 정답률을 기반으로 0~100점 사이의 인지 점수가 산출됩니다.\n\n'
-              '영역별 점수 의미:\n'
-              '• 75점 이상: 정상 범위\n'
-              '• 55~74점: 경계선 (꾸준한 훈련 권장)\n'
-              '• 35~54점: 경과 관찰 (전문가 상담 고려)\n'
-              '• 34점 이하: 전문의 의뢰 권장\n\n'
+              '각 게임 완료 시 정답률을 기반으로 0~100점 사이의 점수가 산출됩니다.\n\n'
+              '영역별 점수 구간:\n'
+              '• 75점 이상: 양호\n'
+              '• 55~74점: 주의 관찰 (꾸준한 훈련 권장)\n'
+              '• 35~54점: 변화가 관찰됨\n'
+              '• 34점 이하: 보호자와 함께 치매안심센터 상담 권유\n\n'
+              '이 구간은 앱 내부 기준이며 의학적 진단이 아닙니다. '
+              '표준 검사(CIST 등)와 등가성이 검증되지 않았습니다.\n\n'
               '점수는 리포트 탭에서 추이 차트로 확인할 수 있습니다.',
           'sort_order': 1,
         },
@@ -355,7 +362,8 @@ class CsService {
               '• 카카오톡, 문자 메시지로 파일 첨부 전송\n'
               '• 이메일에 PDF 첨부\n'
               '• 병원 방문 시 스마트폰 화면으로 직접 제시\n\n'
-              '리포트에는 최근 30일 인지 점수 추이, MMSE 환산값, 보행 데이터가 포함됩니다.',
+              '리포트에는 최근 30일 인지 점수 추이, MemoryLink 인지활동 지수(0~100), '
+              '보행 데이터가 포함됩니다.',
           'sort_order': 0,
         },
         {

@@ -1,7 +1,20 @@
+// ─────────────────────────────────────────────────────────────────────────
+// [TTA 표준 적용] TTAK.KO-12.0414 「인공지능(AI) 서비스 개인정보보호 프레임워크」
+//
+// 적용 지점: 수집 최소화와 저장 위치 통제.
+//   - 훈련 점수(training_scores), 걸음 수(daily_steps), 일기 원문(diary_entries),
+//     건강 기록(health_logs)은 단말 SQLite에만 저장한다. 클라우드에는 보호자 열람용
+//     요약 지표만 전송하며 AI 대화 원문은 서버에 축적하지 않는다.
+//   - 비밀번호는 평문으로 두지 않고 salt + SHA-256으로 해싱한다(Random.secure()).
+//   민감정보인 인지건강 데이터에 표준의 최소수집·목적제한·저장위치 통제를 적용한 것이다.
+//
+// 같은 표준의 동의 분리는 features/onboarding/consent_screen.dart 에 적용.
+// ─────────────────────────────────────────────────────────────────────────
 import 'dart:convert';
 import 'dart:math';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart' show visibleForTesting, kReleaseMode;
+import 'package:flutter_application_1/features/training/domain/training_catalog.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
@@ -21,6 +34,16 @@ class DatabaseHelper {
     pathOverride = inMemoryDatabasePath;
   }
 
+  @visibleForTesting
+  static Future<void> closeForTest() async {
+    final database = _database;
+    _database = null;
+    pathOverride = null;
+    if (database != null && database.isOpen) {
+      await database.close();
+    }
+  }
+
   Future<Database> get database async {
     if (_database != null) return _database!;
     _database = await _initDatabase();
@@ -35,7 +58,8 @@ class DatabaseHelper {
     final bool isTest = pathOverride != null;
     return await openDatabase(
       path,
-      version: 8,
+      version: 9,
+      onConfigure: (db) => db.execute('PRAGMA foreign_keys = ON'),
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
       singleInstance: !isTest,
@@ -103,18 +127,6 @@ class DatabaseHelper {
       )
     ''');
 
-    // Checklist table
-    await db.execute('''
-      CREATE TABLE checklist (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER,
-        task_title TEXT,
-        is_checked INTEGER DEFAULT 0,
-        date TEXT,
-        FOREIGN KEY (user_id) REFERENCES users (id)
-      )
-    ''');
-
     // Daily steps table
     await db.execute('''
       CREATE TABLE daily_steps (
@@ -155,6 +167,7 @@ class DatabaseHelper {
 
     // FINGER 건강 기록 (수면·혈압·혈당·식이) — 하루 1건 upsert
     await db.execute(_healthLogsDdl);
+    await _createTrainingProgressSchema(db);
 
     // admin·데모 계정은 개발/데모 빌드에서만 시드한다 (릴리스 빌드 제외)
     if (!kReleaseMode) {
@@ -173,6 +186,11 @@ class DatabaseHelper {
       // 데모 계정 시드
       await _seedDemoAccounts(db);
     }
+    await _initializeExistingUsers(
+      db,
+      initialTrainingActivityIds,
+      source: 'new_user',
+    );
   }
 
   Future<void> _seedDemoAccounts(Database db) async {
@@ -373,13 +391,16 @@ class DatabaseHelper {
     DateTime now, {
     required int hour,
   }) async {
+    // 하루 4행 × 30일 = 120행이다. 개별 await면 문장마다 MethodChannel을
+    // 왕복하므로 첫 실행이 눈에 띄게 느려진다. Batch로 한 번에 넘긴다.
+    final batch = db.batch();
     for (int i = 0; i < scores.length; i++) {
       final date = now.subtract(Duration(days: scores.length - 1 - i));
       final dateStr =
           '${date.toIso8601String().split('T')[0]}T$hour:${(i % 60).toString().padLeft(2, '0')}:00.000';
       for (int c = 0; c < _scoreCategories.length; c++) {
         final raw = scores[i][c];
-        await db.insert('training_scores', {
+        batch.insert('training_scores', {
           'user_id': userId,
           'category': _scoreCategories[c],
           'score': c == 0 ? raw : raw * 10.0,
@@ -387,17 +408,19 @@ class DatabaseHelper {
         });
       }
     }
+    await batch.commit(noResult: true);
   }
 
   Future<void> _insertDailySteps(
       Database db, int userId, List<int> stepsPerDay, DateTime now) async {
+    final batch = db.batch();
     for (int i = 0; i < stepsPerDay.length; i++) {
       final dateStr = now
           .subtract(Duration(days: stepsPerDay.length - 1 - i))
           .toIso8601String()
           .split('T')[0];
       final steps = stepsPerDay[i];
-      await db.insert('daily_steps', {
+      batch.insert('daily_steps', {
         'user_id': userId,
         'steps': steps,
         'calories': (steps * 0.04).roundToDouble(),
@@ -405,6 +428,7 @@ class DatabaseHelper {
         'date': dateStr,
       });
     }
+    await batch.commit(noResult: true);
   }
 
   // FINGER 건강 기록 테이블 DDL (onCreate/onUpgrade 공용)
@@ -426,6 +450,124 @@ class DatabaseHelper {
       FOREIGN KEY (user_id) REFERENCES users (id)
     )
   ''';
+
+  static const List<String> _trainingProgressDdl = <String>[
+    '''
+      CREATE TABLE IF NOT EXISTS training_attempts (
+        id TEXT PRIMARY KEY,
+        user_id INTEGER NOT NULL,
+        activity_id TEXT NOT NULL,
+        score REAL NULL CHECK(score BETWEEN 0 AND 100),
+        correct_answers INTEGER NULL,
+        total_questions INTEGER NULL,
+        duration_ms INTEGER NULL CHECK(duration_ms >= 0),
+        xp_earned INTEGER NOT NULL CHECK(xp_earned >= 0),
+        completed_at TEXT NOT NULL,
+        local_date TEXT NOT NULL,
+        FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+      )
+    ''',
+    '''
+      CREATE INDEX IF NOT EXISTS idx_training_attempts_user_date
+      ON training_attempts (user_id, local_date)
+    ''',
+    '''
+      CREATE INDEX IF NOT EXISTS idx_training_attempts_user_activity_completed
+      ON training_attempts (user_id, activity_id, completed_at)
+    ''',
+    '''
+      CREATE TABLE IF NOT EXISTS training_user_progress (
+        user_id INTEGER PRIMARY KEY,
+        total_xp INTEGER NOT NULL DEFAULT 0 CHECK(total_xp >= 0),
+        current_streak INTEGER NOT NULL DEFAULT 0 CHECK(current_streak >= 0),
+        longest_streak INTEGER NOT NULL DEFAULT 0 CHECK(longest_streak >= 0),
+        last_training_date TEXT NULL,
+        updated_at TEXT NOT NULL,
+        FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+      )
+    ''',
+    '''
+      CREATE TABLE IF NOT EXISTS training_activity_progress (
+        user_id INTEGER NOT NULL,
+        activity_id TEXT NOT NULL,
+        best_score REAL NULL CHECK(best_score BETWEEN 0 AND 100),
+        mastery_stars INTEGER NOT NULL DEFAULT 0
+          CHECK(mastery_stars BETWEEN 0 AND 3),
+        completion_count INTEGER NOT NULL DEFAULT 0
+          CHECK(completion_count >= 0),
+        first_completed_at TEXT NULL,
+        last_completed_at TEXT NULL,
+        PRIMARY KEY (user_id, activity_id),
+        FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+      )
+    ''',
+    '''
+      CREATE TABLE IF NOT EXISTS training_unlocks (
+        user_id INTEGER NOT NULL,
+        activity_id TEXT NOT NULL,
+        unlocked_at TEXT NOT NULL,
+        source TEXT NOT NULL,
+        PRIMARY KEY (user_id, activity_id),
+        FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+      )
+    ''',
+  ];
+
+  static Future<void> _createTrainingProgressSchema(DatabaseExecutor db) async {
+    for (final ddl in _trainingProgressDdl) {
+      await db.execute(ddl);
+    }
+  }
+
+  static Future<void> _initializeTrainingProgress(
+    DatabaseExecutor db,
+    int userId,
+    Iterable<String> unlockedActivityIds, {
+    required String source,
+  }) async {
+    final now = DateTime.now().toUtc().toIso8601String();
+    await db.rawInsert(
+      '''
+      INSERT OR IGNORE INTO training_user_progress (
+        user_id,
+        total_xp,
+        current_streak,
+        longest_streak,
+        updated_at
+      ) VALUES (?, 0, 0, 0, ?)
+      ''',
+      [userId, now],
+    );
+    for (final activityId in unlockedActivityIds.toSet()) {
+      await db.rawInsert(
+        '''
+        INSERT OR IGNORE INTO training_unlocks (
+          user_id,
+          activity_id,
+          unlocked_at,
+          source
+        ) VALUES (?, ?, ?, ?)
+        ''',
+        [userId, activityId, now, source],
+      );
+    }
+  }
+
+  static Future<void> _initializeExistingUsers(
+    DatabaseExecutor db,
+    Iterable<String> unlockedActivityIds, {
+    required String source,
+  }) async {
+    final users = await db.query('users', columns: ['id']);
+    for (final user in users) {
+      await _initializeTrainingProgress(
+        db,
+        user['id'] as int,
+        unlockedActivityIds,
+        source: source,
+      );
+    }
+  }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < 2) {
@@ -514,14 +656,44 @@ class DatabaseHelper {
     if (oldVersion < 8) {
       await db.execute(_healthLogsDdl);
     }
+    if (oldVersion < 9) {
+      await _createTrainingProgressSchema(db);
+      await _initializeExistingUsers(
+        db,
+        legacyTrainingActivityIds,
+        source: 'v9_migration',
+      );
+    }
   }
 
-  Future<void> resetUserMeasurementData(int userId) async {
-    Database db = await database;
-    await db.delete('training_scores', where: 'user_id = ?', whereArgs: [userId]);
-    await db.delete('daily_steps', where: 'user_id = ?', whereArgs: [userId]);
-    await db.delete('checklist', where: 'user_id = ?', whereArgs: [userId]);
-    await db.delete('health_logs', where: 'user_id = ?', whereArgs: [userId]);
+  Future<void> resetUserMeasurementData(
+    int userId, {
+    Iterable<String> initialUnlockActivityIds = initialTrainingActivityIds,
+  }) async {
+    final db = await database;
+    await db.transaction((transaction) async {
+      for (final table in <String>[
+        'training_attempts',
+        'training_activity_progress',
+        'training_unlocks',
+        'training_user_progress',
+        'training_scores',
+        'daily_steps',
+        'health_logs',
+      ]) {
+        await transaction.delete(
+          table,
+          where: 'user_id = ?',
+          whereArgs: [userId],
+        );
+      }
+      await _initializeTrainingProgress(
+        transaction,
+        userId,
+        initialUnlockActivityIds,
+        source: 'reset',
+      );
+    });
   }
 
   // --- FINGER 건강 기록 (Health Log) Operations ---
@@ -600,10 +772,24 @@ class DatabaseHelper {
   }
 
   // --- User Operations ---
-  Future<int> insertUser(Map<String, dynamic> row) async {
-    Database db = await database;
-    // 평문 비밀번호는 저장 전 해시/솔트로 변환된다.
-    return await db.insert('users', _withHashedPassword(row));
+  Future<int> insertUser(
+    Map<String, dynamic> row, {
+    Iterable<String> initialUnlockActivityIds = initialTrainingActivityIds,
+  }) async {
+    final db = await database;
+    return db.transaction((transaction) async {
+      final userId = await transaction.insert(
+        'users',
+        _withHashedPassword(row),
+      );
+      await _initializeTrainingProgress(
+        transaction,
+        userId,
+        initialUnlockActivityIds,
+        source: 'new_user',
+      );
+      return userId;
+    });
   }
 
   /// username으로 조회 후 salt+SHA-256 해시를 검증한다.
@@ -798,45 +984,6 @@ class DatabaseHelper {
       where: 'user_id = ?',
       whereArgs: [userId],
       orderBy: 'created_at ASC',
-    );
-  }
-
-  // --- Checklist Operations ---
-  Future<void> updateChecklist(int userId, String title, bool value) async {
-    Database db = await database;
-    String date = DateTime.now().toIso8601String().split('T')[0];
-    
-    // Upsert logic
-    List<Map<String, dynamic>> existing = await db.query(
-      'checklist',
-      where: 'user_id = ? AND task_title = ? AND date = ?',
-      whereArgs: [userId, title, date],
-    );
-
-    if (existing.isNotEmpty) {
-      await db.update(
-        'checklist',
-        {'is_checked': value ? 1 : 0},
-        where: 'id = ?',
-        whereArgs: [existing.first['id']],
-      );
-    } else {
-      await db.insert('checklist', {
-        'user_id': userId,
-        'task_title': title,
-        'is_checked': value ? 1 : 0,
-        'date': date,
-      });
-    }
-  }
-
-  Future<List<Map<String, dynamic>>> getTodayChecklist(int userId) async {
-    Database db = await database;
-    String date = DateTime.now().toIso8601String().split('T')[0];
-    return await db.query(
-      'checklist',
-      where: 'user_id = ? AND date = ?',
-      whereArgs: [userId, date],
     );
   }
 

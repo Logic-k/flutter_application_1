@@ -6,9 +6,49 @@ import '../gait_analysis/pedometer_manager.dart';
 import '../diary/diary_provider.dart';
 import '../../core/ai/ai_chat_service.dart';
 import '../../core/user_provider.dart';
-import '../../core/database_helper.dart';
+import '../../core/formatters.dart';
+import '../../core/motion/staggered_column.dart';
 import '../../core/ml_widgets.dart';
 import '../../core/theme.dart';
+import '../training/training_progress_provider.dart';
+
+/// 하루 걸음 목표. 진행률 계산과 표기가 같은 값을 보게 한다.
+const int _stepGoal = 10000;
+
+/// 히어로 카드(보라 그라디언트) 위에 얹는 성취 배지.
+/// 배경이 진한 보라라 흰 글자가 충분한 대비를 갖는다.
+class _HeroBadge extends StatelessWidget {
+  final IconData icon;
+  final String text;
+
+  const _HeroBadge({required this.icon, required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.18),
+        borderRadius: BorderRadius.circular(AppTheme.rPanel),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 15, color: Colors.white),
+          const SizedBox(width: 5),
+          Text(
+            text,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -18,8 +58,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int _todayTrainingCount = 0;
-
   @override
   void initState() {
     super.initState();
@@ -31,12 +69,6 @@ class _HomeScreenState extends State<HomeScreen> {
         context.read<UserProvider>().currentUser?['id'] as int?;
     if (userId == null) return;
     await context.read<DiaryProvider>().loadMonth(userId, DateTime.now());
-    try {
-      final count = await DatabaseHelper().getTodayTrainingCount(userId);
-      if (mounted) setState(() => _todayTrainingCount = count);
-    } catch (e) {
-      debugPrint('오늘 훈련 수 로드 실패: $e');
-    }
   }
 
   @override
@@ -44,14 +76,16 @@ class _HomeScreenState extends State<HomeScreen> {
     final theme = Theme.of(context);
     final userProvider = context.watch<UserProvider>();
     final pedometer = context.watch<PedometerManager>();
+    final trainingProgress = context.watch<TrainingProgressProvider>();
     final todayStr = DateFormat('MM월 dd일 EEEE', 'ko_KR').format(DateTime.now());
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('MemoryLink', style: TextStyle(color: theme.colorScheme.primary, fontWeight: FontWeight.w900)),
+        title: Text('MemoryLink', style: TextStyle(color: theme.colorScheme.primary, fontWeight: FontWeight.w800)),
         actions: [
           IconButton(
             icon: const Icon(Icons.notifications_none_rounded),
+            tooltip: '알림',
             onPressed: () {
               showDialog(
                 context: context,
@@ -67,34 +101,57 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           IconButton(
             icon: const Icon(Icons.settings_outlined),
+            tooltip: '설정',
             onPressed: () => context.push('/profile'),
           ),
         ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(22, 6, 22, 110),
-        child: Column(
+        padding: const EdgeInsets.fromLTRB(
+            22, 6, 22, FloatingPillNav.contentBottomInset),
+        // 인사 카드 → AI 비서 → 기억 정원·걷기 → 추천 훈련·뇌 건강 순으로 60ms 간격으로
+        // 아래에서 올라온다(총 380ms). 앱 실행 후 첫 진입에만(08 계획 G-04).
+        child: StaggeredColumn(
+          playKey: 'home',
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildHeaderCard(context, userProvider, pedometer, todayStr),
-            const SizedBox(height: 20),
-            _buildAiAssistantCard(context),
-            const SizedBox(height: 20),
-            _buildMemoryGardenCard(context, userProvider, pedometer),
-            const SizedBox(height: 20),
-            _buildWalkingMiniCard(context, pedometer),
-            const SizedBox(height: 20),
-            _buildTrainingMotivationChip(),
-            MLSectionTitle(
-              '오늘의 추천 훈련',
-              trailing: TextButton(
-                onPressed: () => context.push('/training_hub'),
-                child: const Text('전체보기'),
-              ),
+            _buildHeaderCard(
+              context,
+              userProvider,
+              pedometer,
+              trainingProgress,
+              todayStr,
             ),
-            _buildRecommendedTraining(context),
-            const SizedBox(height: 20),
-            _buildBrainHealthCard(context, userProvider),
+            Padding(
+              padding: const EdgeInsets.only(top: 20),
+              child: _buildAiAssistantCard(context),
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 20),
+                _buildMemoryGardenCard(context, userProvider, pedometer),
+                const SizedBox(height: 20),
+                _buildWalkingMiniCard(context, pedometer),
+              ],
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 20),
+                _buildTrainingMotivationChip(),
+                MLSectionTitle(
+                  '오늘의 추천 훈련',
+                  trailing: TextButton(
+                    onPressed: () => context.push('/training_hub'),
+                    child: const Text('전체보기'),
+                  ),
+                ),
+                _buildRecommendedTraining(context),
+                const SizedBox(height: 20),
+                _buildBrainHealthCard(context, userProvider),
+              ],
+            ),
           ],
         ),
       ),
@@ -106,12 +163,11 @@ class _HomeScreenState extends State<HomeScreen> {
     BuildContext context,
     UserProvider userProvider,
     PedometerManager pedometer,
+    TrainingProgressProvider progress,
     String todayStr,
   ) {
-    final stepProgress = (pedometer.todaySteps / 10000).clamp(0.0, 1.0);
-    final stepsFormatted = pedometer.todaySteps
-        .toString()
-        .replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]},');
+    final todayTrainingCount = progress.todayDistinctActivityCount;
+    final stepProgress = (pedometer.todaySteps / _stepGoal).clamp(0.0, 1.0);
 
     return MLHeroCard(
       child: Column(
@@ -121,7 +177,7 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 8),
           Text(
             '안녕하세요,\n${userProvider.currentUser?['username'] ?? '사용자'}님!',
-            style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w900, height: 1.3),
+            style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w800, height: 1.3),
           ),
           const SizedBox(height: 20),
           Container(height: 1, color: Colors.white.withValues(alpha: 0.2)),
@@ -131,20 +187,57 @@ class _HomeScreenState extends State<HomeScreen> {
               Expanded(child: _buildQuickStat(
                 icon: Icons.directions_walk_rounded,
                 label: '오늘 걸음',
-                value: '$stepsFormatted보',
+                value: Fmt.steps(pedometer.todaySteps),
                 progress: stepProgress,
               )),
               Container(width: 1, height: 44, color: Colors.white.withValues(alpha: 0.2)),
               Expanded(child: _buildQuickStat(
                 icon: Icons.psychology_rounded,
                 label: '훈련 현황',
-                value: '오늘 $_todayTrainingCount개',
+                value: '오늘 $todayTrainingCount개',
                 progress: null,
               )),
             ],
           ),
+          // 레벨·연속학습은 지금까지 훈련 허브에서만 보였다. 최장 기록은 DB에
+          // 저장되고 Provider까지 올라오는데도 어느 화면에서도 그려지지 않았다.
+          // 매일 여는 화면에 있어야 계속할 이유가 된다.
+          if (!progress.isLoading) ...[
+            const SizedBox(height: 16),
+            _buildProgressBadges(progress),
+          ],
         ],
       ),
+    );
+  }
+
+  /// 히어로 카드 하단의 성취 배지 줄.
+  Widget _buildProgressBadges(TrainingProgressProvider progress) {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        _HeroBadge(
+          icon: Icons.military_tech_rounded,
+          text: '레벨 ${progress.level}',
+        ),
+        _HeroBadge(
+          icon: Icons.bolt_rounded,
+          text: '${Fmt.count(progress.totalXp)} XP',
+        ),
+        if (progress.currentStreak > 0)
+          _HeroBadge(
+            icon: Icons.local_fire_department_rounded,
+            text: '${progress.currentStreak}일 연속',
+          ),
+        // 최장 기록은 지금 기록을 넘어섰을 때만 보여준다. 같은 값을 두 번
+        // 보여주면 정보가 아니라 잡음이다.
+        if (progress.longestStreak > progress.currentStreak)
+          _HeroBadge(
+            icon: Icons.emoji_events_rounded,
+            text: '최장 ${progress.longestStreak}일',
+          ),
+      ],
     );
   }
 
@@ -160,11 +253,11 @@ class _HomeScreenState extends State<HomeScreen> {
             Text(label, style: TextStyle(color: Colors.white.withValues(alpha: 0.75), fontSize: 12, fontWeight: FontWeight.w600)),
           ]),
           const SizedBox(height: 4),
-          Text(value, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w900)),
+          Text(value, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w800)),
           if (progress != null) ...[
             const SizedBox(height: 6),
             ClipRRect(
-              borderRadius: BorderRadius.circular(4),
+              borderRadius: BorderRadius.circular(AppTheme.rBar),
               child: LinearProgressIndicator(
                 value: progress,
                 backgroundColor: Colors.white.withValues(alpha: 0.25),
@@ -196,16 +289,16 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('AI 도우미', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900)),
+                Text('AI 도우미', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
                 const SizedBox(height: 3),
                 Text(
                   isConnected ? 'Gemini AI와 인지 대화를 시작해보세요' : 'AI와 대화로 인지 건강을 확인해보세요',
-                  style: const TextStyle(fontSize: 13, color: MLColors.textSoft),
+                  style: TextStyle(fontSize: 13, color: context.scheme.onSurfaceVariant),
                 ),
               ],
             ),
           ),
-          const Icon(Icons.arrow_forward_ios_rounded, color: MLColors.textFaint, size: 16),
+          Icon(Icons.arrow_forward_ios_rounded, color: context.scheme.onSurfaceVariant, size: 16),
         ],
       ),
     );
@@ -236,16 +329,16 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('오늘의 일기', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16)),
+                const Text('오늘의 일기', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
                 const SizedBox(height: 4),
                 Text(
                   hasTodayEntry ? '오늘 일기를 작성했어요 ✨' : '오늘 하루를 기록해보세요',
-                  style: const TextStyle(color: MLColors.textSoft, fontSize: 13),
+                  style: TextStyle(color: context.scheme.onSurfaceVariant, fontSize: 13),
                 ),
               ],
             ),
           ),
-          const Icon(Icons.arrow_forward_ios_rounded, color: MLColors.textFaint, size: 16),
+          Icon(Icons.arrow_forward_ios_rounded, color: context.scheme.onSurfaceVariant, size: 16),
         ],
       ),
     );
@@ -267,8 +360,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   Text('오늘의 걸음', style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 14, fontWeight: FontWeight.w600)),
                   Text(
-                    '${pedometer.todaySteps} / 10,000 걸음',
-                    style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w900),
+                    Fmt.stepsOfGoal(pedometer.todaySteps, _stepGoal),
+                    style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w800),
                   ),
                 ],
               ),
@@ -288,7 +381,7 @@ class _HomeScreenState extends State<HomeScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
           color: MLColors.read.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(AppTheme.rPanel),
           border: Border.all(color: MLColors.read.withValues(alpha: 0.25)),
         ),
         child: Row(
@@ -296,7 +389,8 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             const Icon(Icons.flag_rounded, color: MLColors.read, size: 18),
             const SizedBox(width: 6),
-            const Text('오늘 2개 훈련이 준비되어 있어요!', style: TextStyle(color: MLColors.read, fontWeight: FontWeight.w700, fontSize: 14)),
+            // 앰버 면 위 앰버 글자는 1.7:1 이었다. 글자는 같은 계열의 글자 전용 토큰으로.
+            const Text('오늘 2개 훈련이 준비되어 있어요!', style: TextStyle(color: MLColors.warnText, fontWeight: FontWeight.w700, fontSize: 14)),
           ],
         ),
       ),
@@ -347,21 +441,24 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16)),
+                Text(title, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
                 const SizedBox(height: 3),
-                Text(desc, style: const TextStyle(color: MLColors.textSoft, fontSize: 13)),
+                Text(desc, style: TextStyle(color: context.scheme.onSurfaceVariant, fontSize: 13)),
               ],
             ),
           ),
           FilledButton(
             onPressed: onTap,
+            // 버튼은 강조색 하나로(DESIGN.md §5). 카테고리색은 왼쪽 아이콘 타일만 쓴다.
+            // 논리 카테고리색(#A66BE8) 위 흰 글자는 3.57:1 이었다.
             style: FilledButton.styleFrom(
-              backgroundColor: color,
               padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-              minimumSize: const Size(64, 40),
+              // 훈련으로 들어가는 주 진입 버튼이다. 40dp는 진전이 있는 고령
+              // 사용자에게 오탭을 유발한다.
+              minimumSize: const Size(88, AppTheme.minTapTarget),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.rBtn)),
             ),
-            child: const Text('시작', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w900)),
+            child: const Text('시작', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800)),
           ),
         ],
       ),
@@ -371,10 +468,12 @@ class _HomeScreenState extends State<HomeScreen> {
   // ─── 두뇌 건강 분석 카드 ──────────────────────────────────────
   Widget _buildBrainHealthCard(BuildContext context, UserProvider user) {
     final scores = [
-      (label: '기억력', score: user.memoryScore, color: MLColors.mem),
-      (label: '집중력', score: user.attentionScore, color: MLColors.sky),
-      (label: '계산력', score: user.calculationScore, color: MLColors.calc),
-      (label: '논리력', score: user.logicScore, color: MLColors.logic),
+      // 막대마다 라벨이 있으므로 색으로 구분할 필요가 없다. 예전 민트·하늘·보라·연보라
+      // 4색은 청색 계열 3개를 나란히 둬 DESIGN.md §2.4(고령 청색 감별 저하)에 걸렸다.
+      (label: '기억력', score: user.memoryScore, color: context.scheme.primary),
+      (label: '집중력', score: user.attentionScore, color: context.scheme.primary),
+      (label: '계산력', score: user.calculationScore, color: context.scheme.primary),
+      (label: '논리력', score: user.logicScore, color: context.scheme.primary),
     ];
 
     return MLCard(
@@ -383,7 +482,7 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           MLSectionTitle(
             '두뇌 건강 분석',
-            trailing: const Icon(Icons.monitor_heart_outlined, color: MLColors.primary, size: 20),
+            trailing: Icon(Icons.monitor_heart_outlined, color: context.scheme.primary, size: 20),
           ),
           ...scores.map((s) => Padding(
             padding: const EdgeInsets.only(bottom: 14),
@@ -392,7 +491,7 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 4),
           Text(
             user.memoryScore > 0 ? '꾸준한 훈련으로 뇌 건강이 유지되고 있습니다!' : '첫 인지 훈련을 시작해보세요!',
-            style: const TextStyle(fontSize: 13, color: MLColors.primary, fontWeight: FontWeight.w600),
+            style: TextStyle(fontSize: 13, color: context.scheme.primary, fontWeight: FontWeight.w600),
           ),
         ],
       ),
@@ -409,7 +508,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Text(label, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
             Text(
               score > 0 ? '${score.toInt()}점' : '미측정',
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: score > 0 ? color : MLColors.textFaint),
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: score > 0 ? color : context.scheme.onSurfaceVariant),
             ),
           ],
         ),

@@ -1,3 +1,14 @@
+// ─────────────────────────────────────────────────────────────────────────
+// [TTA 표준 적용] TTAK.KO-10.1497 「인공지능 시스템 신뢰성 제고를 위한 요구사항」
+//
+// 적용 지점: AI 응답 제공자의 3단 폴백 구조(_provider 교체 체계).
+//   GemmaLocalProvider(온디바이스) -> GeminiProvider(원격) -> LocalFallbackProvider(규칙기반)
+//   네트워크 단절이나 API 키 부재 상황에서도 통제된 응답을 유지해, 표준이 요구하는
+//   AI 시스템의 가용성·예측가능성을 확보한다. 초기값을 LocalFallbackProvider로 두어
+//   어떤 실패 경로에서도 응답 없는 상태가 발생하지 않는다.
+//
+// 같은 표준의 나머지 요구사항은 features/reports/clinical_report_generator.dart 에 적용.
+// ─────────────────────────────────────────────────────────────────────────
 import 'package:flutter/foundation.dart';
 import 'ai_provider_interface.dart';
 import 'ai_key_service.dart';
