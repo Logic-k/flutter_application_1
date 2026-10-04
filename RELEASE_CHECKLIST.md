@@ -53,7 +53,7 @@
 4. **키스토어 백업** — `android/memorylink-release.jks`는 `.gitignore` 처리. 분실 시 앱 업데이트 불가하므로 안전한 곳에 별도 백업. (사용자 확인 필요)
 5. **Firestore 보안 규칙 배포** — ✅ 완료 (2026-07-13). 익명 Auth 활성화 후 `firebase deploy --only firestore:rules` 실행.
    검증: guardian_views 비인증 읽기 404(정상 통과), notices 비인증 읽기 403(정상 거부).
-6. **실기기 QA** — 센서/보행 백그라운드 수집, 알림(정확 알람 권한), Health Connect, PDF 공유, 보호자 딥링크(`memorylink-7af26.web.app/guardian.html`).
+6. **실기기 QA** — 걸음 측정 백그라운드 수집과 하트비트, 일기 알림(켜기·권한 거부·재부팅 뒤 유지), 활동량 이상 알림의 문자 확인 창, PDF 공유, 보호자 링크가 브라우저로 열리는지, 계정과 모든 데이터 삭제.
 
 ## 3. 스토어 콘솔 입력 자료
 
@@ -63,24 +63,16 @@
 - 콘텐츠 등급: 전체이용가 (설문 응답으로 확정)
 - 대상 연령: 고령자 포함 전 연령
 
-### 데이터 안전(Data safety) 섹션 매핑
-| Play 콘솔 질문 | 응답 근거 |
-|---|---|
-| 개인정보 수집 여부 | 예 — 이름/나이/건강정보 |
-| 건강·피트니스 데이터 | 예 — 걸음/보행/인지점수 |
-| 음성/오디오 | 예 — 음성 진단(기기 내 처리) |
-| 데이터 암호화 전송 | 예 — HTTPS(Firebase/Gemini) |
-| 데이터 삭제 요청 수단 | 예 — 앱 내 "측정 데이터 초기화" |
-| 제3자 공유 | Google(Firebase/Gemini) 처리 위탁 명시 |
+### 데이터 안전(Data safety) 섹션
+- 정본은 `PLAY_CONSOLE.md` 8번(2026-10-04 갱신)이다. 예전 이 자리의 7월 표(음성 진단·Gemini·측정 데이터 초기화)는 지금 앱과 맞지 않아 지웠다.
 
-> 주의: Data safety의 "수집/공유" 정의는 서버 전송 기준이다. 온디바이스 저장만 하는 항목은 "수집"에 해당하지 않을 수 있으나, 보호자 연결·AI 온라인 모드는 전송이 발생하므로 정확히 신고할 것.
-
-### 권한 정당화(민감 권한)
+### 권한 정당화(민감 권한) — 2026-10-04 매니페스트 기준
 - `RECORD_AUDIO`: 음성 받아쓰기(STT) — 일기·AI 채팅·문장 읽기 훈련의 마이크 입력. 녹음 파일은 저장·전송하지 않고 기기 음성인식 결과 텍스트만 사용한다
-- `ACTIVITY_RECOGNITION` / `health.READ_STEPS`: 보행·활동량 분석
-- `FOREGROUND_SERVICE_HEALTH`: 백그라운드 걸음 수집
-- `SCHEDULE_EXACT_ALARM`: 저녁 일기 알림 정시 발송
-- `POST_NOTIFICATIONS`: 알림 표시
+- `ACTIVITY_RECOGNITION`: 사용자가 켠 걸음 측정
+- `FOREGROUND_SERVICE_HEALTH`: 사용자가 켠 동안 걸음 수를 세는 포그라운드 서비스(선언 답안은 `PLAY_CONSOLE.md` 9번)
+- `POST_NOTIFICATIONS`: 일기 알림과 걸음 측정 상시 알림. 앱을 열 때가 아니라 사용자가 켤 때 묻는다
+- `RECEIVE_BOOT_COMPLETED`: 사용자가 켠 일기 알림을 재부팅 뒤 다시 건다. 걸음 측정은 재부팅 뒤 자동으로 시작하지 않는다
+- Health Connect 권한과 `SCHEDULE_EXACT_ALARM`·`HIGH_SAMPLING_RATE_SENSORS`는 선언하지 않는다(감사 P0-09·P0-04)
 
 ## 4. 버전 관리 전략
 - `pubspec.yaml`의 `version: <name>+<code>` 단일 소스. 예) `1.0.0+1`.
@@ -88,6 +80,7 @@
 - 빌드 명령: `flutter build appbundle --release` → `build/app/outputs/bundle/release/app-release.aab`
 - release 빌드는 업로드 키(`android/key.properties`)가 없으면 멈춘다(2026-10-04, 감사 P0-14). debug 키로 서명된 "release"는 더 이상 나오지 않는다. 스토어에 올리지 않을 점검용 release가 필요하면 `flutter build appbundle --release -P allowUnsignedRelease=true`(서명 없음).
 - 온디바이스 AI(flutter_gemma)와 모델 다운로드는 2026-10-04에 지웠다. 네이티브 라이브러리가 16KB 페이지 기기에서 돌지 않았다(감사 P0-11). 출시 전 `python scripts/check_16kb.py build/app/outputs/bundle/release/app-release.aab`로 모든 .so가 16KB 정렬인지 확인한다.
+- 출시 범위는 `docs/release/ADR-001_first_release_scope.md`가 정본이다. 새 빌드를 배포할 때 처리방침 6번과 삭제 안내 페이지에 "설정 → 계정과 모든 데이터 삭제"를 추가해 Hosting·Pages에 배포한다.
 - 생성형 AI(Gemini)는 출시 빌드에서 기본으로 꺼져 있다(규칙 기반 대화만). 켜려면 `--dart-define=ENABLE_GENERATIVE_AI=true`가 필요하고, 그 전에 출시 감사 P0-10(인앱 신고·키 노출·무료 등급 약관)을 해결한다. 앱에 개발자 Gemini 키를 넣지 않는다.
 
 ## 5. 릴리스 빌드 명령 모음
@@ -98,11 +91,11 @@ flutter build appbundle --release
 # APK (사이드로드/직접 배포 테스트용)
 flutter build apk --release
 
-# 개인정보 처리방침/보호자뷰 호스팅 배포
-flutter build web && firebase deploy --only hosting
+# 개인정보 처리방침/보호자뷰 호스팅 배포 (site/ 폴더를 그대로 올린다)
+firebase deploy --only hosting
 
 # Firestore 규칙 배포: 에뮬레이터 규칙 테스트가 먼저 통과해야 한다 (firebase-tests/README.md)
-cd firebase-tests && npm ci && npx firebase-tools@15.19.0 emulators:exec --config ../firebase.json --project demo-memorylink --only firestore "npm test" && cd ..
+cd firebase-tests && npm ci && npx firebase-tools@15.19.0 emulators:exec --config ../firebase.json --project demo-memorylink --only firestore,auth "npm test" && cd ..
 # 보호자 링크 v2 규칙은 '쓰기 거부 시 새 링크 발급' 경로가 든 앱이 먼저 나가야 한다(2026-10-04 백엔드 설계)
 firebase deploy --only firestore:rules
 firebase deploy --only hosting
