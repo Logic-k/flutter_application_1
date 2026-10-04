@@ -69,6 +69,9 @@ class DifficultyProvider extends ChangeNotifier {
   // 예전에는 Firestore에 '익명 uid_아이디' 문서로 올렸지만, uid가 설치 단위라
   // 기기 간 동기화가 일어나지 않았고 재설치·오프라인에서는 레벨이 1로 돌아갔다.
   static const _prefPrefix = 'difficulty_levels_';
+
+  /// 이 기기 계정의 난이도 저장 키. 계정 삭제 때 함께 지운다.
+  static String prefKeyFor(String username) => '$_prefPrefix$username';
   static const _fieldNames = {
     GameCategory.calculation: 'calculation_level',
     GameCategory.logic: 'logic_level',

@@ -15,6 +15,8 @@ import '../../core/ai/ai_key_service.dart';
 import '../../core/ai/ai_chat_service.dart';
 import '../../core/services/diary_notification_service.dart';
 import '../../core/services/cloud_data_deletion_service.dart';
+import '../../core/services/account_deletion_service.dart';
+import '../gait_analysis/pedometer_manager.dart';
 import '../profile/edit_profile_screen.dart';
 
 /// 통합 설정 화면
@@ -24,10 +26,13 @@ import '../profile/edit_profile_screen.dart';
 ///  - 알림 (매일 저녁 일기 알림)
 ///  - AI (Gemini API 키, 개발 빌드 전용)
 ///  - 계정 (프로필 편집, 보호자 연결)
-///  - 개인정보·데이터 (처리방침, 측정 데이터 초기화)
+///  - 개인정보·데이터 (처리방침, 측정 데이터 초기화, 서버 데이터 삭제, 계정과 모든 데이터 삭제)
 ///  - 정보 (버전, 오픈소스 라이선스, 로그아웃)
 class SettingsScreen extends StatefulWidget {
-  const SettingsScreen({super.key});
+  const SettingsScreen({super.key, this.accountDeletion});
+
+  /// 테스트가 계정 삭제 서비스를 바꿔 끼울 때만 쓴다.
+  final AccountDeletionService? accountDeletion;
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
@@ -266,6 +271,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   subtitle: '보호자 링크와 1:1 문의를 서버에서 지웁니다. (기기 기록 유지)',
                   onTap: () => _showCloudDeleteDialog(userProvider),
                 ),
+                const Divider(),
+                MLListRow(
+                  icon: Icons.person_remove_rounded, color: MLColors.bad, titleColor: MLColors.badText,
+                  title: '계정과 모든 데이터 삭제',
+                  subtitle: '이 기기 계정과 기록, 서버에 남은 데이터를 모두 지웁니다. 되돌릴 수 없습니다.',
+                  onTap: () => _confirmDeleteAccount(userProvider),
+                ),
               ]),
             ),
               ],
@@ -445,6 +457,105 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('개인정보 처리방침 페이지를 열 수 없습니다.')),
       );
+    }
+  }
+
+  // ─── 계정과 모든 데이터 삭제 (LAUNCH_AUDIT P0-07) ──────────────
+  // 되돌릴 수 없으므로 두 번 확인한다. 서버 기록을 먼저 지우고, 실패하면 아무것도 지우지 않는다.
+  Future<void> _confirmDeleteAccount(UserProvider userProvider) async {
+    final user = userProvider.currentUser;
+    if (user == null) return;
+    final userId = user['id'] as int;
+    final username = (user['username'] as String?) ?? '';
+
+    final proceed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('계정과 모든 데이터를 지울까요?'),
+        content: Text(
+          '아이디 $username의 계정과 이 휴대폰에 있는 기록(훈련·걸음·일기·건강 기록·프로필 사진)을 지웁니다. '
+          '서버에 남은 보호자 링크와 1:1 문의도 함께 지웁니다.\n\n'
+          '지운 뒤에는 되돌릴 수 없고, 인터넷 연결이 필요합니다.',
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('취소')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('계속', style: TextStyle(color: MLColors.badText)),
+          ),
+        ],
+      ),
+    );
+    if (proceed != true || !mounted) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('정말 지울까요?'),
+        content: const Text('지운 계정과 기록은 다시 살릴 수 없습니다.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('취소')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('모두 삭제', style: TextStyle(color: MLColors.badText)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    PedometerManager? pedometer;
+    try {
+      pedometer = context.read<PedometerManager>();
+    } on ProviderNotFoundException {
+      pedometer = null;
+    }
+    final messenger = ScaffoldMessenger.of(context);
+    // showDialog는 기본으로 최상위 Navigator에 올리므로 닫을 때도 같은 Navigator를 쓴다.
+    final navigator = Navigator.of(context, rootNavigator: true);
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const AlertDialog(
+        content: Row(children: [
+          SizedBox(width: 24, height: 24, child: CircularProgressIndicator()),
+          SizedBox(width: 16),
+          Expanded(child: Text('지우는 중입니다…')),
+        ]),
+      ),
+    );
+
+    final result = await (widget.accountDeletion ?? AccountDeletionService()).deleteAccount(
+      userId: userId,
+      username: username,
+      stopTracking: pedometer == null ? null : () => pedometer!.toggleTracking(false),
+    );
+    navigator.pop(); // 진행 중 창
+    if (!mounted) return;
+
+    switch (result.status) {
+      case AccountDeletionStatus.deleted:
+        messenger.showSnackBar(const SnackBar(content: Text('계정과 모든 데이터를 지웠습니다.')));
+        await userProvider.logout();
+      case AccountDeletionStatus.cloudFailed:
+        await showDialog<void>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: const Text('지우지 못했습니다'),
+            content: const Text(
+              '서버에 남은 기록을 먼저 지워야 하는데 연결이 되지 않아, 아무것도 지우지 않았습니다. '
+              '인터넷 연결을 확인한 뒤 다시 시도해 주세요.\n\n'
+              '인터넷 없이 이 휴대폰의 기록을 모두 지우려면 앱을 삭제하면 됩니다.',
+            ),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('확인')),
+            ],
+          ),
+        );
+      case AccountDeletionStatus.localFailed:
+        messenger.showSnackBar(const SnackBar(
+          content: Text('서버 기록은 지웠지만 이 휴대폰의 기록을 지우지 못했습니다. 다시 시도해 주세요.'),
+        ));
     }
   }
 

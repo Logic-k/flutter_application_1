@@ -666,6 +666,28 @@ class DatabaseHelper {
     }
   }
 
+  /// 이 기기 계정과 그 계정의 기록을 모두 지운다(LAUNCH_AUDIT P0-07 '계정과 모든 데이터 삭제').
+  ///
+  /// `user_id` 열이 있는 모든 표에서 지운 뒤 users 행을 지운다. 나중에 표가 늘어도 빠지지 않게
+  /// 표 목록을 sqlite_master에서 읽는다. 한 트랜잭션이라 중간에 실패하면 아무것도 지워지지 않는다.
+  Future<void> deleteUserAccount(int userId) async {
+    final db = await database;
+    await db.transaction((txn) async {
+      final tables = await txn.rawQuery(
+        "SELECT name FROM sqlite_master WHERE type = 'table' "
+        "AND name NOT LIKE 'sqlite_%' AND name NOT IN ('android_metadata', 'users')",
+      );
+      for (final row in tables) {
+        final table = row['name'] as String;
+        final columns = await txn.rawQuery('PRAGMA table_info("$table")');
+        if (columns.any((c) => c['name'] == 'user_id')) {
+          await txn.delete(table, where: 'user_id = ?', whereArgs: [userId]);
+        }
+      }
+      await txn.delete('users', where: 'id = ?', whereArgs: [userId]);
+    });
+  }
+
   Future<void> resetUserMeasurementData(
     int userId, {
     Iterable<String> initialUnlockActivityIds = initialTrainingActivityIds,

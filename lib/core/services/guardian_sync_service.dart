@@ -297,6 +297,17 @@ class GuardianSyncService {
     return stopped && legacy;
   }
 
+  /// 계정 삭제 뒤: 이 계정의 보호자 연결 기록을 기기에서 지운다. 서버 문서는 그 전에 지운다.
+  static Future<void> forgetLocalState(SharedPreferences prefs, int userId) async {
+    final token = prefs.getString('$_tokenKey$userId');
+    for (final key in [_tokenKey, _createdKey, _stoppedKey, _legacyTokenKey]) {
+      await prefs.remove('$key$userId');
+    }
+    if (token != null && prefs.getString(heartbeatTokenKey) == token) {
+      await _clearHeartbeat(prefs);
+    }
+  }
+
   /// 로그인 사용자가 바뀌면 하트비트 대상을 그 사용자의 링크로 바꾼다(없으면 비운다).
   Future<void> activateHeartbeatFor(int? userId) async {
     final prefs = await SharedPreferences.getInstance();
