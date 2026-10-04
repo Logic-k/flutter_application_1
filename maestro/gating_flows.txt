@@ -32,3 +32,6 @@ maestro/training_accessibility_flow.yaml
 maestro/dementia_center_flow.yaml
 # 콜드 스타트 오프닝(2026-09-27). 가리는 동안 입력 칸을 숨기는지·건너뛰기·자동 로그인 대기
 maestro/opening_flow.yaml
+# 계정과 모든 데이터 삭제(2026-10-04, 감사 P0-07). 에뮬레이터 빌드는 서버에 닿지 않으므로
+# 두 번 확인과 '서버 삭제 실패 시 아무것도 지우지 않음'을 본다. 지우는 성공 경로는 위젯 테스트·실기기 QA
+maestro/account_deletion_flow.yaml
