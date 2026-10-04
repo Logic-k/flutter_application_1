@@ -118,7 +118,7 @@ class AppTheme {
   // 코드가 선언한 위계와 화면에 그려지는 위계가 어긋난다.
   // 나눔고딕(400/700 두 벌)을 쓰던 동안 본문 w600 과 제목 w800 이 똑같이 700 으로
   // 그려져 위계가 크기 한 축으로 붕괴해 있었다. 그래서 서체를 바꾼 것이다.
-  static const String? _fontFamily = 'Pretendard';
+  static const String _fontFamily = 'Pretendard';
 
   // ─── 모서리 둥글기 척도 ──────────────────────────────────────
   //

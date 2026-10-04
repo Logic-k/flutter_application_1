@@ -194,7 +194,7 @@ class MLSectionTitle extends StatelessWidget {
     padding: const EdgeInsets.only(bottom: 12, top: 2),
     child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
       Text(title, style: const TextStyle(fontSize: 18.5, fontWeight: FontWeight.w800)),
-      if (trailing != null) trailing!,
+      ?trailing,
     ]),
   );
 }
@@ -245,7 +245,7 @@ class MLRing extends StatelessWidget {
       SizedBox(width: size, height: size, child: _animatedValue(context, value.clamp(0, 1).toDouble(), (v) => CircularProgressIndicator(
         value: v, strokeWidth: stroke, strokeCap: StrokeCap.round,
         backgroundColor: Colors.transparent, valueColor: AlwaysStoppedAnimation<Color>(color)))),
-      if (center != null) center!,
+      ?center,
     ]),
   );
 }

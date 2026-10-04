@@ -220,7 +220,7 @@ class _ShapeMatchGameState extends State<ShapeMatchGame> {
     // 문항이 바뀔 때마다 문구가 달라져야 liveRegion이 다시 낭독된다.
     // 단계 번호를 앞에 두어 같은 도형이 연속으로 나와도 갱신이 감지되게 했다.
     final questionLabel = [
-      if (_lastResultMessage != null) _lastResultMessage!,
+      ?_lastResultMessage,
       '$_currentStep번 문제.',
       '제시된 도형은 ${_shapeName(_targetIcon)}입니다.',
       '아래 보기에서 같은 모양을 고르세요.',
