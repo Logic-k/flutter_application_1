@@ -30,7 +30,8 @@ appId: com.teammemorylink.memorylink
 - tapOn: "로그인"
 
 # 6. 로그인 성공 확인 (홈 화면 진입 대기 후 확인)
+# helpers/login_helper.yaml 과 같은 20초. 게이팅의 첫 flow라 설치 직후 가장 느리다(CI 6차에서 10초를 넘겼다).
 - extendedWaitUntil:
     visible: "오늘 걸음"
-    timeout: 10000
+    timeout: 20000
 - assertVisible: "오늘 걸음"
