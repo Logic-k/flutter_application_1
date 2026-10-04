@@ -7,6 +7,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_application_1/core/ml_widgets.dart';
 import 'package:flutter_application_1/main.dart' as app;
 
+import 'helpers.dart';
+
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
@@ -21,7 +23,8 @@ void main() {
 
     testWidgets('앱 시작 시 로그인 화면이 표시된다', (tester) async {
       app.main();
-      await tester.pumpAndSettle(const Duration(seconds: 5));
+      // 오프닝이 걷히고 로그인 버튼을 실제로 누를 수 있을 때까지 기다린다(helpers.dart).
+      await pumpUntil(tester, () => tappable(find.text('로그인')), description: '로그인 버튼을 누를 수 있는');
 
       // 로딩 완료 후 로그인 화면 확인
       expect(find.text('MemoryLink'), findsOneWidget);
@@ -30,21 +33,31 @@ void main() {
 
     testWidgets('admin/admin으로 로그인 후 홈 화면으로 이동한다', (tester) async {
       app.main();
-      await tester.pumpAndSettle(const Duration(seconds: 5));
+      await pumpUntil(tester, () => tappable(find.text('로그인')), description: '로그인 버튼을 누를 수 있는');
 
       // 로그인 자격증명 입력
       await tester.enterText(find.byType(TextField).first, 'admin');
       await tester.enterText(find.byType(TextField).last, 'admin');
       await tester.tap(find.text('로그인'));
-      await tester.pumpAndSettle(const Duration(seconds: 3));
+      await pumpUntil(tester, () => tappable(find.byType(FloatingPillNav)), description: '홈 하단 탭바가 보이는');
+      // 홈의 진입 안무와 첫 데이터 읽기가 끝날 때까지 둔다. 다음 테스트의 app.main()이 이 화면의
+      // 프로바이더를 정리한 뒤에 읽기가 끝나면 '정리된 DiaryProvider 사용' 오류가 난다.
+      await tester.pumpAndSettle();
 
-      // 홈 화면의 하단 탭바 확인 (BottomNavigationBar → FloatingPillNav로 교체됨)
+      // admin 은 온보딩을 마친 시드 계정이라 동의 화면이 아니라 홈('/')으로 간다.
+      // 하단 탭바에서 홈 탭이 선택된 채로 열리고, 로그인 입력 칸은 사라진다.
       expect(find.byType(FloatingPillNav), findsOneWidget);
+      final homeTab = find.descendant(
+        of: find.byType(FloatingPillNav),
+        matching: find.bySemanticsLabel('홈'),
+      );
+      expect(tester.getSemantics(homeTab), isSemantics(label: '홈', isSelected: true));
+      expect(find.text('사용자 아이디'), findsNothing);
     });
 
     testWidgets('잘못된 자격증명으로 로그인 시 에러 메시지가 표시된다', (tester) async {
       app.main();
-      await tester.pumpAndSettle(const Duration(seconds: 5));
+      await pumpUntil(tester, () => tappable(find.text('로그인')), description: '로그인 버튼을 누를 수 있는');
 
       await tester.enterText(find.byType(TextField).first, 'wronguser');
       await tester.enterText(find.byType(TextField).last, 'wrongpass');

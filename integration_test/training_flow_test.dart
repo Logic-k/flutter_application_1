@@ -4,19 +4,26 @@ import 'package:flutter_application_1/main.dart' as app;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 
+import 'helpers.dart';
+
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   testWidgets('비교 훈련 완료 후 XP가 쌓이고 구구단 과정이 열린다', (tester) async {
     app.main();
-    await tester.pumpAndSettle(const Duration(seconds: 10));
+    // 저장된 세션이 있으면 홈, 없으면 로그인 화면이 오프닝 뒤에서 나온다(helpers.dart).
+    await pumpUntil(
+      tester,
+      () => tappable(find.text('로그인')) || tappable(find.byType(FloatingPillNav)),
+      description: '로그인 화면이나 홈을 누를 수 있는',
+    );
 
     if (find.byType(TextField).evaluate().isNotEmpty) {
       expect(find.byType(TextField), findsNWidgets(2));
       await tester.enterText(find.byType(TextField).first, 'admin');
       await tester.enterText(find.byType(TextField).last, 'admin');
       await tester.tap(find.text('로그인'));
-      await tester.pumpAndSettle(const Duration(seconds: 3));
+      await pumpUntil(tester, () => tappable(find.byType(FloatingPillNav)), description: '홈 하단 탭바가 보이는');
     } else {
       expect(find.textContaining('안녕하세요'), findsOneWidget);
     }
