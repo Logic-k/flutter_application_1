@@ -125,7 +125,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           MLSectionTitle('영역 별 인지 지표'),
-          Text('각 게임을 통해 측정된 현재의 건강 상태입니다.', style: TextStyle(fontSize: 13, color: context.scheme.onSurfaceVariant)),
+          Text('각 게임의 최근 수행 기록입니다.', style: TextStyle(fontSize: 13, color: context.scheme.onSurfaceVariant)),
           const SizedBox(height: 20),
           _buildIndicatorBar('계산력', user.calculationScore / 100.0, trends['calculation']),
           _buildIndicatorBar('논리 추론', user.logicScore / 100.0, trends['logic']),
@@ -271,7 +271,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
     );
   }
 
-  // ─── AI 요약 카드 ──────────────────────────────────────────────
+  // ─── 자동 요약 카드 (규칙 기반 ReportAnalyzer, 생성형 AI 아님) ─────
   Widget _buildAISummaryCard(UserProvider user) {
     return MLCard(
       soft: true,
@@ -281,7 +281,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
           Row(children: [
             Icon(Icons.auto_awesome_rounded, color: context.scheme.primary, size: 22),
             const SizedBox(width: 10),
-            Text('AI 분석 요약', style: TextStyle(color: context.scheme.primary, fontWeight: FontWeight.w800, fontSize: 18)),
+            Text('자동 요약', style: TextStyle(color: context.scheme.primary, fontWeight: FontWeight.w800, fontSize: 18)),
           ]),
           const SizedBox(height: 14),
           Text(
