@@ -1,6 +1,6 @@
 appId: com.teammemorylink.memorylink
 ---
-# 음성 진단은 정확도 개선이 끝날 때까지 중지 상태다.
+# 말하기 기록(예전 이름 음성 진단)은 정확도 개선이 끝날 때까지 중지 상태다.
 # `/voice_assessment` 라우트는 VoiceAssessmentBlockedScreen을 띄운다
 # (lib/core/router.dart, lib/features/voice_assessment/voice_assessment_blocked_screen.dart).
 # 이 플로우는 "중지 안내가 사용자에게 정확히 보이고, 빠져나올 수 있는지"를 지킨다.
@@ -14,20 +14,20 @@ appId: com.teammemorylink.memorylink
     visible: "내 정보"
     timeout: 5000
 
-# 건강 정보 섹션 아래 음성 진단 카드까지 스크롤
+# 건강 정보 섹션 아래 말하기 기록 카드까지 스크롤
 - scrollUntilVisible:
     element:
-      text: ".*음성 진단.*"
+      text: ".*말하기 기록.*"
     direction: DOWN
     visibilityPercentage: 50
-- tapOn: ".*음성 진단.*"
+- tapOn: ".*말하기 기록.*"
 
 # 중지 안내 화면 확인
 - extendedWaitUntil:
     visible: "현재 사용할 수 없는 기능입니다"
     timeout: 5000
 - assertVisible: "현재 사용할 수 없는 기능입니다"
-- assertVisible: "정확도 개선이 완료될 때까지 음성 진단 기능을 중지합니다."
+- assertVisible: "정확도 개선이 완료될 때까지 말하기 기록 기능을 중지합니다."
 
 # 중지 화면에 녹음 진입점이 남아 있으면 안 된다
 - assertNotVisible: "녹음 시작하기"

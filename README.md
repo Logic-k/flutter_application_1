@@ -78,7 +78,7 @@ MemoryLink는 **기억력 저하가 걱정되는 60~80대 사용자와 그 가�
 
 <div align="center">
 <img src="07_reports.png" width="160" alt="주간 리포트">
-<img src="09_clinical_report.png" width="160" alt="임상 리포트">
+<img src="09_clinical_report.png" width="160" alt="활동 기록 리포트">
 <img src="10_profile.png" width="160" alt="프로필">
 <img src="12_guardian_link.png" width="160" alt="보호자 연결">
 <img src="13_voice_assessment.png" width="160" alt="음성 평가">
@@ -99,7 +99,7 @@ MemoryLink는 **기억력 저하가 걱정되는 60~80대 사용자와 그 가�
     <td align="center" width="25%"><img src="docs/demo/04_walking_lifestyle.gif" width="200" alt="만보기 · 보행 분석"><br><b>만보기 · 보행 분석</b><br><sub>걸음 측정·정밀 분석 (15초)</sub></td>
   </tr>
   <tr>
-    <td align="center" width="25%"><img src="docs/demo/05_reports.gif" width="200" alt="주간 · 임상 리포트"><br><b>주간 · 임상 리포트</b><br><sub>인지 지표·리포트 생성 (20초)</sub></td>
+    <td align="center" width="25%"><img src="docs/demo/05_reports.gif" width="200" alt="주간 · 활동 기록 리포트"><br><b>주간 · 활동 기록 리포트</b><br><sub>인지 지표·리포트 생성 (20초)</sub></td>
     <td align="center" width="25%"><img src="docs/demo/06_ai_chat.gif" width="200" alt="AI 회상 대화"><br><b>AI 회상 대화</b><br><sub>Gemini 회상 요법 챗봇 (29초)</sub></td>
     <td align="center" width="25%"><img src="docs/demo/07_memory_garden.gif" width="200" alt="기억의 정원"><br><b>기억의 정원 (일기)</b><br><sub>달력 일기 작성·모아보기 (11초)</sub></td>
     <td align="center" width="25%"><img src="docs/demo/08_guardian_safety.gif" width="200" alt="보호자 연결 · 안전"><br><b>보호자 연결 · 안전</b><br><sub>QR·대시보드·응급 전화 (21초)</sub></td>
@@ -387,7 +387,7 @@ lib/
 /memory_garden                 일기 작성
 /diary_book                    일기 조회
 /ai_chat                       AI 회상 대화
-/report_options                임상 리포트 옵션
+/report_options                활동 기록 리포트 옵션
 /profile                       프로필
 /guardian_link                 보호자 연결
 /cs_center                     CS 센터

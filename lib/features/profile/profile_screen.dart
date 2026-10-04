@@ -182,7 +182,7 @@ class ProfileScreen extends StatelessWidget {
         const Divider(),
         MLListRow(icon: Icons.notifications_active_rounded, color: MLColors.sky, title: '비상 연락처', trailing: Text(up.emergencyContact ?? '미설정', style: const TextStyle(fontWeight: FontWeight.w700))),
         const Divider(),
-        MLListRow(icon: Icons.mic_off_rounded, color: context.scheme.onSurfaceVariant, title: '음성 진단', subtitle: '정확도 개선을 위해 현재 사용 중지', onTap: () => context.push('/voice_assessment')),
+        MLListRow(icon: Icons.mic_off_rounded, color: context.scheme.onSurfaceVariant, title: '말하기 기록', subtitle: '준비 중 · 정확도 개선을 위해 현재 사용 중지', onTap: () => context.push('/voice_assessment')),
         const Divider(),
         MLListRow(icon: Icons.health_and_safety_rounded, color: context.scheme.primary, title: '건강 기록', subtitle: '수면·혈압·식이 기록 및 추세', onTap: () => context.push('/health_input')),
       ]),

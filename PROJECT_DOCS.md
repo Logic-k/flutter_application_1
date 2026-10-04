@@ -244,7 +244,7 @@ flutter_application_1/            ← 프로젝트 최상위 폴더
 | 패키지 | 버전 | 용도 |
 |--------|------|------|
 | `provider` | 6.1.5+ | 상태 관리 (화면 간 데이터 공유) |
-| `pdf` + `printing` | 3.11.1 | 임상 리포트 PDF 생성/출력 |
+| `pdf` + `printing` | 3.11.1 | 활동 기록 리포트 PDF 생성/출력 |
 | `intl` | 0.19.0 | 한국어 날짜 형식 지원 |
 | `audioplayers` | 6.6.0 | 오디오 파일 재생 |
 | `qr_flutter` | 4.1.0 | 보호자 연결용 QR 코드 생성 |
@@ -294,7 +294,7 @@ flutter_application_1/            ← 프로젝트 최상위 폴더
 | `/diary_book` | 일기 조회 (DiaryBookScreen) |
 | `/ai_chat` | AI 챗봇 (Gemini) |
 | `/voice_assessment` | 음성 평가 |
-| `/report_options` | 임상 리포트 옵션 |
+| `/report_options` | 활동 기록 리포트 옵션 |
 | `/gait` | 보행 분석 |
 | `/profile` | 프로필 |
 
@@ -571,7 +571,7 @@ SQLite의 사용자, 점수, 걸음, 체크리스트, DAU, 일기 전체를 Fire
 ### 6-10. 리포트 (reports/)
 
 - `ReportsScreen` — 주간 건강 리포트
-- `ClinicalReportOptionsScreen` — 임상 리포트 옵션 선택
+- `ClinicalReportOptionsScreen` — 활동 기록 리포트 옵션 선택
 
 **주요 섹션:**
 
@@ -582,7 +582,7 @@ SQLite의 사용자, 점수, 걸음, 체크리스트, DAU, 일기 전체를 Fire
 | 점수 차트 | 과거 평가 꺾은선 그래프 |
 | 요약/인사이트 | 저장된 점수와 활동 데이터를 바탕으로 한 결정적 규칙 계산 |
 
-**임상 리포트 (`ClinicalReportGenerator`):**
+**활동 기록 리포트 (`ClinicalReportGenerator`):**
 - 4페이지 PDF 생성 구현
 - 포함: 환자 정보, 보행 안정성, MMSE 점수, GDS 수준
 - NanumGothic 폰트 한국어 지원

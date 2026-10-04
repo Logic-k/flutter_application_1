@@ -322,12 +322,12 @@ class _ReportsScreenState extends State<ReportsScreen> {
         FilledButton.icon(
           onPressed: () => context.push('/report_options'),
           icon: const Icon(Icons.description_outlined),
-          label: const Text('임상 리포트 생성하기'),
+          label: const Text('활동 기록 리포트 생성하기'),
           style: FilledButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
         ),
         const SizedBox(height: 8),
         Text(
-          '의료진용 또는 보호자용 PDF 리포트를 생성하여 상담 시 활용하세요.',
+          '상담 참고용 또는 보호자용 PDF 리포트를 생성하여 상담 시 활용하세요.',
           style: TextStyle(fontSize: 13, color: context.scheme.onSurfaceVariant),
           textAlign: TextAlign.center,
         ),

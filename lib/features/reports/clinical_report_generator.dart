@@ -85,7 +85,7 @@ class ClinicalReportGenerator {
 
     final dateStr = DateFormat('yyyy-MM-dd').format(data.assessmentDate);
     final typeLabel =
-        data.reportType == ReportType.doctor ? '의료진용' : '보호자용';
+        data.reportType == ReportType.doctor ? '상담 참고용' : '보호자용';
 
     const margin =
         pw.EdgeInsets.symmetric(horizontal: 40, vertical: 36);
@@ -151,7 +151,7 @@ class ClinicalReportGenerator {
           _buildRiskFactorsPanel(data.riskFactors),
           pw.SizedBox(height: 18),
           _sectionTitle(data.reportType == ReportType.doctor
-              ? '임상 권고사항 (의료진용)'
+              ? '상담 시 참고 사항'
               : '가족/보호자를 위한 안내'),
           pw.SizedBox(height: 10),
           data.reportType == ReportType.doctor

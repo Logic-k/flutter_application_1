@@ -93,7 +93,7 @@ class _ClinicalReportOptionsScreenState
       } else {
         await Share.shareXFiles(
           [XFile(file.path)],
-          text: 'MemoryLink 임상 리포트',
+          text: 'MemoryLink 활동 기록 리포트',
         );
       }
     } catch (e) {
@@ -111,7 +111,7 @@ class _ClinicalReportOptionsScreenState
     final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('임상 리포트 생성'),
+        title: const Text('활동 기록 리포트 생성'),
         leading: _currentStep > 0
             ? IconButton(
                 icon: const Icon(Icons.arrow_back),
@@ -213,7 +213,7 @@ class _ClinicalReportOptionsScreenState
             theme,
             type: ReportType.doctor,
             icon: Icons.medical_services_outlined,
-            title: '의료진용 리포트',
+            title: '상담 참고용 리포트',
             subtitle: '영역별 점수·추이·상담 시 참고사항',
           ),
           const SizedBox(height: 16),
@@ -539,7 +539,7 @@ class _ClinicalReportOptionsScreenState
   // Step 3: 확인 및 생성
   Widget _buildStepConfirm(ThemeData theme) {
     final typeLabel =
-        _selectedType == ReportType.doctor ? '의료진용' : '보호자용';
+        _selectedType == ReportType.doctor ? '상담 참고용' : '보호자용';
     final today = DateTime.now();
     final dateStr =
         '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
@@ -667,7 +667,7 @@ class _PdfPreviewPage extends StatelessWidget {
             tooltip: '리포트 공유',
             onPressed: () async {
               await Share.shareXFiles([XFile(file.path)],
-                  text: 'MemoryLink 임상 리포트');
+                  text: 'MemoryLink 활동 기록 리포트');
             },
           ),
         ],
