@@ -1,15 +1,15 @@
 appId: com.teammemorylink.memorylink
 ---
 # 하단 네비게이션 탭 전환 테스트
-# 실제 좌표 (1080x2400): 홈=30%, 인지훈련=43%, 생활습관=53%, 리포트=64%, 내정보=74% / y=93%
+# 하단 탭은 이름(접근성 라벨: 홈·인지훈련·생활습관·리포트·내정보)으로 누른다. 화면 비율 좌표는
+# 선택된 탭이 넓어지고 기기 크기가 달라지면 어긋났다(2026-10-05 라벨 탭으로 바꿈).
 - runFlow: helpers/login_helper.yaml
 
 # 홈 탭 확인 (기본)
 - assertVisible: "오늘 걸음"
 
 # 인지훈련 탭
-- tapOn:
-    point: "43%,93%"
+- tapOn: "인지훈련"
 - waitForAnimationToEnd:
     timeout: 2000
 - extendedWaitUntil:
@@ -18,8 +18,7 @@ appId: com.teammemorylink.memorylink
 - assertVisible: "두뇌 트레이닝 센터"
 
 # 생활습관 탭
-- tapOn:
-    point: "53%,93%"
+- tapOn: "생활습관"
 - waitForAnimationToEnd:
     timeout: 2000
 - extendedWaitUntil:
@@ -28,8 +27,7 @@ appId: com.teammemorylink.memorylink
 - assertVisible: "생활습관"
 
 # 리포트 탭
-- tapOn:
-    point: "64%,93%"
+- tapOn: "리포트"
 - waitForAnimationToEnd:
     timeout: 2000
 - extendedWaitUntil:
@@ -38,8 +36,7 @@ appId: com.teammemorylink.memorylink
 - assertVisible: "주간 분석 리포트"
 
 # 내정보 탭
-- tapOn:
-    point: "74%,93%"
+- tapOn: "내정보"
 - waitForAnimationToEnd:
     timeout: 2000
 - extendedWaitUntil:
@@ -47,9 +44,8 @@ appId: com.teammemorylink.memorylink
     timeout: 8000
 - assertVisible: "내 정보"
 
-# 홈 탭으로 복귀 (다른 탭 활성화 시 홈 탭 위치가 23-24%로 이동)
-- tapOn:
-    point: "24%,93%"
+# 홈 탭으로 복귀
+- tapOn: "홈"
 - waitForAnimationToEnd:
     timeout: 3000
 - extendedWaitUntil:

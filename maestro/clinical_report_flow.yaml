@@ -3,8 +3,7 @@
 - runFlow: helpers/login_helper.yaml
 
 # 리포트 탭
-- tapOn:
-    point: "64%,93%"
+- tapOn: "리포트"
 - extendedWaitUntil:
     visible: "주간 분석 리포트"
     timeout: 8000

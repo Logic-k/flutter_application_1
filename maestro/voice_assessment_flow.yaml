@@ -8,8 +8,7 @@ appId: com.teammemorylink.memorylink
 - runFlow: helpers/login_helper.yaml
 
 # 내정보 탭 진입
-- tapOn:
-    point: "74%,93%"
+- tapOn: "내정보"
 - extendedWaitUntil:
     visible: "내 정보"
     timeout: 5000
