@@ -1,0 +1,58 @@
+name: Firestore retention
+
+# 무료(Spark) 요금제에는 Firestore TTL 자동 삭제가 없어서(결제 활성화가 필요) 이 작업이 매일 대신 지운다.
+# 지우는 기준과 안전장치는 firebase-ops/retention.mjs 머리말, 운영 절차는 docs/release/DATA_DELETION_RUNBOOK.md.
+#
+# 인증은 키 파일 없는 Workload Identity Federation이다. GCP 쪽 신뢰 조건이 이 저장소(id 고정)의
+# main 브랜치·이 파일·예약 또는 수동 실행만 받는다. 파일 이름을 바꾸면 GCP 공급자 조건도 같이 바꿔야 한다.
+# 서비스 계정은 문서 읽기·삭제와 익명 계정 조회·삭제만 할 수 있다(만들기·수정 불가).
+# 예약 실행은 GitHub 규칙상 기본 브랜치(main)에서만 돈다. 공개 저장소라 로그에는 개수만 남긴다.
+on:
+  schedule:
+    - cron: '20 18 * * *' # 매일 03:20 KST
+  workflow_dispatch:
+    inputs:
+      apply:
+        description: '실제로 지운다 (끄면 미리보기만)'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: firestore-retention
+  cancel-in-progress: false
+
+jobs:
+  retention:
+    if: github.repository == 'Logic-k/flutter_application_1' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+      - id: auth
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3.0.0
+        with:
+          workload_identity_provider: projects/702473908574/locations/global/workloadIdentityPools/github-actions/providers/memorylink-main
+          service_account: firestore-retention@memorylink-7af26.iam.gserviceaccount.com
+          token_format: access_token
+          access_token_lifetime: 900s
+          create_credentials_file: false
+          export_environment_variables: false
+      - name: 보존기간이 지난 서버 데이터 정리
+        env:
+          FIRESTORE_ACCESS_TOKEN: ${{ steps.auth.outputs.access_token }}
+          APPLY: ${{ github.event_name == 'schedule' || inputs.apply == true }}
+        run: |
+          if [ "$APPLY" = "true" ]; then
+            node firebase-ops/retention.mjs --apply
+          else
+            node firebase-ops/retention.mjs
+          fi
