@@ -15,7 +15,10 @@ appId: com.teammemorylink.memorylink
 - tapOn:
     point: "25%,55%"
     waitToSettleTimeoutMs: 300
-- assertVisible: "(정답입니다|아쉬워요, 오답입니다)"
+# 배지는 1.7초 뒤 사라진다. 느린 CI 에뮬레이터(소프트웨어 렌더링)에서는 첫 화면 확인 전에 사라져서,
+# 다음 답 전까지 남는 문항 안내(스크린리더 라이브 리전, "정답입니다. 문제 2번…")의 같은 문구로도 통과한다.
+# 배지가 뜨고 사라지는 것 자체는 test/widget/training/game_template_test.dart 가 본다.
+- assertVisible: "(?s).*(정답입니다|아쉬워요, 오답입니다).*"
 - waitForAnimationToEnd
 - repeat:
     times: 9
