@@ -1,0 +1,16 @@
+00:00 +0: loading E:/Test_Android/flutter_application_1/integration_test/auth_flow_test.dart
+Running Gradle task 'assembleDebug'...                             85.8s
+√ Built build\app\outputs\flutter-apk\app-debug.apk
+Installing build\app\outputs\flutter-apk\app-debug.apk...        1,704ms
+00:00 +0: Auth Flow E2E 앱 시작 시 로그인 화면이 표시된다
+[LocalAI] 규칙 기반 엔진 준비 완료
+[AiChatService] API 키 없음 → LocalFallback 사용
+04:17 +1: Auth Flow E2E admin/admin으로 로그인 후 홈 화면으로 이동한다
+04:22 +1: Auth Flow E2E 앱 시작 시 로그인 화면이 표시된다
+[LocalAI] 규칙 기반 엔진 준비 완료
+08:50 +2: Auth Flow E2E 잘못된 자격증명으로 로그인 시 에러 메시지가 표시된다
+08:55 +2: Auth Flow E2E 앱 시작 시 로그인 화면이 표시된다
+[LocalAI] 규칙 기반 엔진 준비 완료
+13:08 +3: (tearDownAll)
+13:09 +3: All tests passed!
+exit=0 elapsed=893s

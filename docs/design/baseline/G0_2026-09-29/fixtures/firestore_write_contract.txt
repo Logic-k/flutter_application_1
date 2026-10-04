@@ -1,0 +1,216 @@
+# Firestore write contract snapshot (source: HEAD 27ca9d3, extracted 2026-09-29 21:53:31)
+# 테스트용 Firestore fake 는 저장소에 없다(fake_cloud_firestore 미의존, FirebaseService.setAvailableForTest(false) 가드만 존재).
+
+================ lib/core/services/guardian_sync_service.dart
+99:      await _firestore.collection('guardian_views').doc(token).set({
+100-        'token': token,
+101-        // Security Rules 소유권 판별용 (rules: ownerUid == request.auth.uid)
+102-        'ownerUid': AuthService.uid ?? '',
+103-        'user_name': userName,
+104-        'today_steps': todaySteps,
+105-        'weekly_avg_steps': weeklyAvg,
+106-        'weekly_steps_data': weeklyStepsList,
+107-        'weekly_dates': weeklyDateList,
+108-        'recent_scores': recentScores,
+109-        'is_anomaly': isAnomaly,
+110-        'anomaly_message': anomalyMessage,
+111-        'emergency_contact': emergencyContact ?? '',
+112-        'last_sync': FieldValue.serverTimestamp(),
+113-      });
+114-
+115-      // 글로벌 통계 업데이트 (소셜 랭킹용)
+150:      await _firestore.collection('guardian_views').doc(token).set({
+151-        'ownerUid': AuthService.uid ?? '',
+152-        'is_anomaly': true,
+153-        'anomaly_message': message,
+154-        'user_name': userName,
+155-        'today_steps': todaySteps,
+156-        'weekly_avg_steps': weeklyAvg,
+157-        'emergency_contact': emergencyContact ?? '',
+158-        'last_sync': FieldValue.serverTimestamp(),
+159-      }, SetOptions(merge: true));
+160-      return true;
+161-    } catch (e) {
+162-      debugPrint('[GuardianSync] 이상 알림 전송 실패: $e');
+163-      return false;
+164-    }
+165-  }
+166-
+199:      await ref.set({
+200-        'avg_score': overallAvg,
+201-        'std_dev': snap.exists ? (snap.data()?['std_dev'] ?? 15.0) : 15.0,
+202-        'category_stats': categoryStats,
+203-        'updated_at': FieldValue.serverTimestamp(),
+204-      }, SetOptions(merge: true));
+205-    } catch (_) {
+206-      // 통계 업데이트 실패는 메인 동기화에 영향 없음
+207-    }
+208-  }
+209-}
+210-
+211-class GuardianSyncResult {
+212-  final bool success;
+213-  final String token;
+214-  final bool isAnomaly;
+215-  final String? error;
+================ lib/core/cs_service.dart
+85:    await _db.collection('inquiries').add({
+86-      'username': username,
+87-      // Security Rules 소유권 판별용 (rules: authorUid == request.auth.uid)
+88-      'authorUid': AuthService.uid ?? '',
+89-      'title': title,
+90-      'body': body,
+91-      'status': 'pending',
+92-      'created_at': FieldValue.serverTimestamp(),
+93-    });
+94-  }
+95-
+96-  static Future<List<Map<String, dynamic>>> fetchMyInquiries(
+97-      String username) async {
+98-    try {
+99-      // 규칙상 본인(authorUid) 문서만 조회 가능하므로 쿼리에 uid 조건이 필수다.
+100-      // username 조건은 한 기기(동일 uid)에서 여러 로컬 계정을 쓸 때의 분리용.
+101-      final snapshot = await _db
+147:    await _db.collection('notices').add({
+148-      'title': title,
+149-      'body': body,
+150-      'is_pinned': isPinned,
+151-      'created_at': FieldValue.serverTimestamp(),
+152-      'updated_at': FieldValue.serverTimestamp(),
+153-    });
+154-  }
+155-
+156-  static Future<void> updateNotice(
+157-    String id, {
+158-    required String title,
+159-    required String body,
+160-    required bool isPinned,
+161-  }) async {
+162:    await _db.collection('notices').doc(id).update({
+163-      'title': title,
+164-      'body': body,
+165-      'is_pinned': isPinned,
+166-      'updated_at': FieldValue.serverTimestamp(),
+167-    });
+168-  }
+169-
+170-  static Future<void> deleteNotice(String id) async {
+171-    await _db.collection('notices').doc(id).delete();
+172-  }
+173-
+174-  static Future<void> createFaq({
+175-    required String category,
+176-    required String question,
+177-    required String answer,
+178-    int sortOrder = 0,
+180:    await _db.collection('faqs').add({
+181-      'category': category,
+182-      'question': question,
+183-      'answer': answer,
+184-      'sort_order': sortOrder,
+185-    });
+186-  }
+187-
+188-  static Future<void> updateFaq(
+189-    String id, {
+190-    required String category,
+191-    required String question,
+192-    required String answer,
+193-  }) async {
+194:    await _db.collection('faqs').doc(id).update({
+195-      'category': category,
+196-      'question': question,
+197-      'answer': answer,
+198-    });
+199-  }
+200-
+201-  static Future<void> deleteFaq(String id) async {
+202-    await _db.collection('faqs').doc(id).delete();
+203-  }
+204-
+205-  static Future<List<Map<String, dynamic>>> fetchAllInquiries() async {
+206-    try {
+207-      final snapshot = await _db
+208-          .collection('inquiries')
+209-          .orderBy('created_at', descending: true)
+210-          .get();
+228:    batch.set(replyRef, {
+229-      'body': body,
+230-      'created_at': FieldValue.serverTimestamp(),
+231-    });
+232:    batch.update(_db.collection('inquiries').doc(inquiryId), {
+233-      'status': 'answered',
+234-    });
+235-    await batch.commit();
+236-  }
+237-
+238-  // 데모용 초기 공지사항/FAQ 시드 (이미 데이터가 있으면 건너뜀)
+239-  static Future<void> seedDemoData() async {
+240-    try {
+241-      final existing = await _db.collection('notices').limit(1).get();
+242-      if (existing.docs.isNotEmpty) return;
+243-
+244-      final batch = _db.batch();
+245-
+246-      // ── 공지사항 3개 ────────────────────────────────────────────
+247-      final notices = [
+248-        {
+288:        batch.set(_db.collection('notices').doc(), {
+289-          ...notice,
+290-          'created_at': FieldValue.serverTimestamp(),
+291-          'updated_at': FieldValue.serverTimestamp(),
+292-        });
+293-      }
+294-
+295-      // ── FAQ 8개 ──────────────────────────────────────────────────
+296-      final faqs = [
+297-        {
+298-          'category': '계정',
+299-          'question': '처음 가입은 어떻게 하나요?',
+300-          'answer':
+301-              '앱 실행 후 로그인 화면에서 "회원가입" 버튼을 누르세요.\n'
+302-              '사용자 이름(영문/숫자)과 비밀번호를 설정한 뒤 기본 건강 정보를 입력하면 가입이 완료됩니다.\n'
+303-              '가입 후 처음 실행 시 앱 사용법을 안내하는 온보딩 화면이 표시됩니다.',
+304-          'sort_order': 0,
+385:        batch.set(ref, faq);
+386-      }
+387-
+388-      await batch.commit();
+389-    } catch (e) {
+390-      debugPrint('seedDemoData error: $e');
+391-    }
+392-  }
+393-}
+================ lib/features/training/difficulty_provider.dart
+103:    results.add(isCorrect);
+104:    if (responseTime != null) times.add(responseTime);
+105-
+106-    if (results.length > 5) results.removeAt(0);
+107-    if (times.length > 5) times.removeAt(0);
+108-
+109-    int currentLevel = _levels[category]!;
+110-
+111-    bool isConsecutiveCorrect = results.length >= 3 && results.sublist(results.length - 3).every((res) => res);
+112-    double avgTime = times.isEmpty ? 0 : times.reduce((a, b) => a + b) / times.length;
+113-    double targetTime = getTargetTime(category);
+114-
+115-    if (isConsecutiveCorrect && (responseTime == null || avgTime <= targetTime)) {
+116-      if (currentLevel < 10) {
+117-        _levels[category] = currentLevel + 1;
+118-        results.clear();
+119-        times.clear();
+120-        await _syncToFirestore();
+142:          .set({
+143-        'ownerUid': AuthService.uid,
+144-        'username': username,
+145-        'calculation_level': _levels[GameCategory.calculation],
+146-        'logic_level': _levels[GameCategory.logic],
+147-        'memory_level': _levels[GameCategory.memory],
+148-        'perception_level': _levels[GameCategory.perception],
+149-        'updated_at': FieldValue.serverTimestamp(),
+150-      }, SetOptions(merge: true));
+151-    } catch (e) {
+152-      debugPrint('Error syncing levels to Firestore: $e');
+153-    }
+154-  }
+155-}

@@ -1,0 +1,429 @@
+00:00 +0: loading E:/Test_Android/flutter_application_1/test/documentation_consistency_test.dart
+00:00 +0: E:/Test_Android/flutter_application_1/test/documentation_consistency_test.dart: 문서는 현재 아키텍처와 구현 상태를 정확히 설명한다
+00:00 +1: E:/Test_Android/flutter_application_1/test/documentation_consistency_test.dart: 문서는 게임화 저장 경계와 Android 검증 기준을 정확히 기록한다
+00:00 +2: E:/Test_Android/flutter_application_1/test/documentation_consistency_test.dart: 문서는 향후 개발 우선순위와 문서 역할을 구분한다
+00:00 +3: E:/Test_Android/flutter_application_1/test/documentation_consistency_test.dart: lib/core/fx 복사본은 헤더에 flutterfx 출처·MIT를 남기고 고지 문서에 등록된다
+00:00 +4: E:/Test_Android/flutter_application_1/test/unit/core/anomaly_monitor_test.dart: AnomalyMonitorService.checkActivityAnomaly 데이터가 3개 미만이면 isAnomaly: false를 반환한다
+00:00 +5: E:/Test_Android/flutter_application_1/test/unit/core/anomaly_monitor_test.dart: AnomalyMonitorService.checkActivityAnomaly 데이터가 3개 이상이고 조건 미충족이면 isAnomaly: false를 반환한다
+00:00 +6: E:/Test_Android/flutter_application_1/test/unit/core/anomaly_monitor_test.dart: AnomalyMonitorService.checkActivityAnomaly 18시 이후이고 현재 걸음 < 평균의 30%면 isAnomaly: true를 반환한다
+00:00 +7: E:/Test_Android/flutter_application_1/test/unit/core/anomaly_monitor_test.dart: AnomalyMonitorService.checkActivityAnomaly 18시 이전이면 조건 미달로 isAnomaly: false를 반환한다
+00:00 +8: E:/Test_Android/flutter_application_1/test/unit/core/anomaly_monitor_test.dart: AnomalyMonitorService.checkActivityAnomaly 결과 Map에 avg_steps와 current_steps 키가 포함된다
+00:00 +9: E:/Test_Android/flutter_application_1/test/unit/core/anomaly_monitor_test.dart: AnomalyMonitorService.generateGuardianAlert 알림 메시지에 사용자 이름이 포함된다
+00:00 +10: E:/Test_Android/flutter_application_1/test/unit/core/anomaly_monitor_test.dart: AnomalyMonitorService.generateGuardianAlert 알림 메시지에 평균 걸음수가 포함된다
+00:00 +11: E:/Test_Android/flutter_application_1/test/unit/core/anomaly_monitor_test.dart: AnomalyMonitorService.generateGuardianAlert 알림 메시지에 현재 걸음수가 포함된다
+00:00 +12: E:/Test_Android/flutter_application_1/test/unit/core/app_motion_test.dart: 모션 토큰은 DESIGN.md §4의 4단 값이다
+00:00 +13: E:/Test_Android/flutter_application_1/test/unit/core/app_motion_test.dart: 스태거·안무 상한·스프링 토큰은 08 계획 G-01 값이다
+00:00 +14: E:/Test_Android/flutter_application_1/test/unit/core/app_motion_test.dart: MLSpringOutCurve는 0에서 시작해 1로 끝나고 오버슈트가 5%를 넘지 않는다
+00:02 +15: E:/Test_Android/flutter_application_1/test/unit/core/database_helper_test.dart: (setUpAll)
+00:02 +15: E:/Test_Android/flutter_application_1/test/unit/core/database_helper_test.dart: DatabaseHelper - User 작업 insertUser + getUser: 올바른 자격증명으로 사용자를 조회한다
+00:02 +16: E:/Test_Android/flutter_application_1/test/unit/core/database_helper_test.dart: DatabaseHelper - User 작업 getUser: 잘못된 비밀번호면 null을 반환한다
+00:02 +17: E:/Test_Android/flutter_application_1/test/unit/core/database_helper_test.dart: DatabaseHelper - User 작업 insertUser: 존재하지 않는 사용자 조회 시 null을 반환한다
+00:03 +18: E:/Test_Android/flutter_application_1/test/unit/core/database_helper_test.dart: DatabaseHelper - User 작업 updateUserField: 지정 필드를 업데이트한다
+00:03 +19: E:/Test_Android/flutter_application_1/test/unit/core/database_helper_test.dart: DatabaseHelper - User 작업 비밀번호는 평문으로 저장되지 않고 해시로 검증된다
+00:03 +20: E:/Test_Android/flutter_application_1/test/unit/core/database_v9_migration_test.dart: fresh v9 database creates training schema and indexes
+00:03 +21: E:/Test_Android/flutter_application_1/test/unit/core/database_v9_migration_test.dart: fresh v9 database creates training schema and indexes
+00:03 +22: E:/Test_Android/flutter_application_1/test/unit/core/database_v9_migration_test.dart: fresh v9 database creates training schema and indexes
+00:03 +23: E:/Test_Android/flutter_application_1/test/unit/core/database_v9_migration_test.dart: fresh v9 database creates training schema and indexes
+00:03 +24: E:/Test_Android/flutter_application_1/test/unit/core/database_helper_test.dart: DatabaseHelper - Score 작업 getScoreHistory: 시간순으로 모든 점수를 반환한다
+00:03 +25: E:/Test_Android/flutter_application_1/test/unit/core/database_v9_migration_test.dart: file-backed v8 upgrade preserves scores and unlocks all activities
+00:04 +26: E:/Test_Android/flutter_application_1/test/unit/core/database_helper_test.dart: DatabaseHelper - Daily Steps 작업 updateDailySteps: 같은 날 upsert가 올바르게 동작한다
+00:04 +27: E:/Test_Android/flutter_application_1/test/unit/core/database_v9_migration_test.dart: new user gets progress and initial unlocks atomically
+00:04 +28: E:/Test_Android/flutter_application_1/test/unit/core/database_v9_migration_test.dart: new user gets progress and initial unlocks atomically
+00:04 +29: E:/Test_Android/flutter_application_1/test/unit/core/database_helper_test.dart: DatabaseHelper - Health Log (FINGER) 작업 upsertHealthLog + getHealthLog: 같은 날짜는 갱신된다(1건 유지)
+00:04 +30: E:/Test_Android/flutter_application_1/test/unit/core/database_v9_migration_test.dart: repository isolates accounts and ignores duplicate unlock and attempt
+00:04 +31: E:/Test_Android/flutter_application_1/test/unit/core/database_v9_migration_test.dart: repository isolates accounts and ignores duplicate unlock and attempt
+00:04 +32: E:/Test_Android/flutter_application_1/test/unit/core/firebase_service_test.dart: FirebaseService 초기화 가드 초기화가 실패해도 예외를 전파하지 않는다
+[FirebaseService] 초기화 실패 — 로컬 전용 모드로 계속한다: PlatformException(channel-error, Unable to establish connection on channel: "dev.flutter.pigeon.firebase_core_platform_interface.FirebaseCoreHostApi.initializeCore"., null, null)
+00:04 +33: E:/Test_Android/flutter_application_1/test/unit/core/database_helper_test.dart: DatabaseHelper - Health Log (FINGER) 작업 getHealthLog: 기록 없는 날짜는 null
+00:04 +33: E:/Test_Android/flutter_application_1/test/unit/core/firebase_service_test.dart: FirebaseService 초기화 가드 초기화 실패 후 isAvailable은 false로 남는다
+[FirebaseService] 초기화 실패 — 로컬 전용 모드로 계속한다: PlatformException(channel-error, Unable to establish connection on channel: "dev.flutter.pigeon.firebase_core_platform_interface.FirebaseCoreHostApi.initializeCore"., null, null)
+00:04 +34: E:/Test_Android/flutter_application_1/test/unit/core/database_helper_test.dart: DatabaseHelper - Health Log (FINGER) 작업 getHealthLog: 기록 없는 날짜는 null
+00:04 +35: E:/Test_Android/flutter_application_1/test/unit/core/database_v9_migration_test.dart: constraints and thrown transactions leave no partial writes
+00:04 +36: E:/Test_Android/flutter_application_1/test/unit/core/database_helper_test.dart: DatabaseHelper - Health Log (FINGER) 작업 resetUserMeasurementData: 건강 기록도 삭제된다
+00:04 +37: E:/Test_Android/flutter_application_1/test/unit/core/database_v9_migration_test.dart: foreign keys reject attempts for missing users
+00:04 +38: E:/Test_Android/flutter_application_1/test/unit/core/database_v9_migration_test.dart: foreign keys reject attempts for missing users
+00:04 +39: E:/Test_Android/flutter_application_1/test/unit/core/database_helper_test.dart: DatabaseHelper - Admin 통계 getAtRiskUsers: 결과가 List 타입이다
+00:05 +40: E:/Test_Android/flutter_application_1/test/unit/core/database_v9_migration_test.dart: reset deletes gamification rows and restores initial unlocks
+00:05 +41: E:/Test_Android/flutter_application_1/test/unit/core/database_v9_migration_test.dart: (tearDownAll)
+00:05 +41: E:/Test_Android/flutter_application_1/test/unit/core/formatters_test.dart: Fmt.count 천 단위마다 구분 기호를 넣는다
+00:05 +42: E:/Test_Android/flutter_application_1/test/unit/core/formatters_test.dart: Fmt.count 음수도 구분 기호를 유지한다
+00:05 +43: E:/Test_Android/flutter_application_1/test/unit/core/formatters_test.dart: 걸음 수 표기 steps와 stepsOfGoal이 같은 구분 기호를 쓴다
+00:05 +44: E:/Test_Android/flutter_application_1/test/unit/core/formatters_test.dart: 걸음 수 표기 목표치도 구분 기호를 받는다
+00:05 +45: E:/Test_Android/flutter_application_1/test/unit/core/formatters_test.dart: Fmt.decimal 소수 자릿수를 고정한다
+00:05 +46: E:/Test_Android/flutter_application_1/test/unit/core/motion_token_guard_test.dart: 화면 코드는 Duration(milliseconds:) 를 직접 쓰지 않는다
+00:06 +47: E:/Test_Android/flutter_application_1/test/unit/core/palette_guard_test.dart: 화면 코드는 Material 기본 팔레트를 색으로 쓰지 않는다
+00:07 +48: E:/Test_Android/flutter_application_1/test/unit/core/settings_provider_motion_test.dart: 움직임 줄이기는 기본 꺼짐, 효과음은 기본 켜짐이다
+00:08 +49: E:/Test_Android/flutter_application_1/test/unit/core/settings_provider_motion_test.dart: 두 설정은 저장되고 효과음 토글은 SoundService에 즉시 반영된다
+00:08 +50: E:/Test_Android/flutter_application_1/test/unit/core/step_anomaly_policy_test.dart: StepAnomalyPolicy.evaluate 기준선이 3일 미만이면 미판정(evaluated=false, isAnomaly=false)
+00:08 +51: E:/Test_Android/flutter_application_1/test/unit/core/step_anomaly_policy_test.dart: StepAnomalyPolicy.evaluate 18시 이전이면 걸음이 아주 적어도 이상이 아니다
+00:08 +52: E:/Test_Android/flutter_application_1/test/unit/core/step_anomaly_policy_test.dart: StepAnomalyPolicy.evaluate 17시와 18시 경계 — 18시부터 판정한다
+00:08 +53: E:/Test_Android/flutter_application_1/test/unit/core/step_anomaly_policy_test.dart: StepAnomalyPolicy.evaluate 18시 이후 + 오늘 < 기준 평균의 30%이면 이상
+00:08 +54: E:/Test_Android/flutter_application_1/test/unit/core/step_anomaly_policy_test.dart: StepAnomalyPolicy.evaluate 정확히 30%는 이상이 아니다 (미만 조건)
+00:08 +55: E:/Test_Android/flutter_application_1/test/unit/core/step_anomaly_policy_test.dart: StepAnomalyPolicy.evaluate 평소 평균이 1,000보 이하면 판정하지 않는다
+00:08 +56: E:/Test_Android/flutter_application_1/test/unit/core/step_anomaly_policy_test.dart: StepAnomalyPolicy.evaluate 조건 미충족이면 isAnomaly=false이지만 기준 평균은 채운다
+00:08 +57: E:/Test_Android/flutter_application_1/test/unit/core/step_anomaly_policy_test.dart: StepAnomalyPolicy.baselineFromWeeklyRows 오늘 날짜 행은 기준선에서 제외한다
+00:08 +58: E:/Test_Android/flutter_application_1/test/unit/core/step_anomaly_policy_test.dart: StepAnomalyPolicy.baselineFromWeeklyRows 오늘 행이 없으면 전부 기준선이다
+00:09 +59: E:/Test_Android/flutter_application_1/test/unit/core/theme_contrast_test.dart: 본문 텍스트 대비 (WCAG 1.4.3, 4.5:1) text on 흰 카드
+00:09 +60: E:/Test_Android/flutter_application_1/test/unit/core/theme_contrast_test.dart: 본문 텍스트 대비 (WCAG 1.4.3, 4.5:1) text on 스캐폴드 배경
+00:09 +61: E:/Test_Android/flutter_application_1/test/unit/core/theme_contrast_test.dart: 본문 텍스트 대비 (WCAG 1.4.3, 4.5:1) text on 보조 카드
+00:09 +62: E:/Test_Android/flutter_application_1/test/unit/core/theme_contrast_test.dart: 본문 텍스트 대비 (WCAG 1.4.3, 4.5:1) textSoft on 흰 카드
+00:09 +63: E:/Test_Android/flutter_application_1/test/unit/core/theme_contrast_test.dart: 본문 텍스트 대비 (WCAG 1.4.3, 4.5:1) textSoft on 스캐폴드 배경
+00:09 +64: E:/Test_Android/flutter_application_1/test/unit/core/theme_contrast_test.dart: 본문 텍스트 대비 (WCAG 1.4.3, 4.5:1) textSoft on 보조 카드
+00:09 +65: E:/Test_Android/flutter_application_1/test/unit/core/theme_contrast_test.dart: 상태 문구 색 대비 (WCAG 1.4.3, 4.5:1) goodText on 흰 카드
+00:09 +66: E:/Test_Android/flutter_application_1/test/unit/core/theme_contrast_test.dart: 상태 문구 색 대비 (WCAG 1.4.3, 4.5:1) warnText on 흰 카드
+00:09 +67: E:/Test_Android/flutter_application_1/test/unit/core/theme_contrast_test.dart: 상태 문구 색 대비 (WCAG 1.4.3, 4.5:1) badText on 흰 카드
+00:09 +68: E:/Test_Android/flutter_application_1/test/unit/core/theme_contrast_test.dart: 조작 영역 경계선 대비 (WCAG 1.4.11, 3:1) lineStrong on 흰 카드
+00:09 +69: E:/Test_Android/flutter_application_1/test/unit/core/theme_contrast_test.dart: 조작 영역 경계선 대비 (WCAG 1.4.11, 3:1) lineStrong on 스캐폴드 배경
+00:09 +70: E:/Test_Android/flutter_application_1/test/unit/core/theme_contrast_test.dart: 조작 영역 경계선 대비 (WCAG 1.4.11, 3:1) lineStrong on 보조 카드
+00:09 +71: E:/Test_Android/flutter_application_1/test/unit/core/theme_contrast_test.dart: 조작 영역 경계선 대비 (WCAG 1.4.11, 3:1) 장식용 line은 대비 요건 대상이 아니다
+00:09 +72: E:/Test_Android/flutter_application_1/test/unit/core/theme_contrast_test.dart: 강조색 위 흰 글자 primary 위 흰 글자는 AA 큰 글자(3:1)를 넘는다
+00:09 +73: E:/Test_Android/flutter_application_1/test/unit/core/theme_contrast_test.dart: 연보라 면 위 글자 onPrimaryContainer 는 primaryContainer 위에서 4.5:1 을 넘는다
+00:10 +74: E:/Test_Android/flutter_application_1/test/unit/core/user_provider_test.dart: UserProvider - login 올바른 자격증명으로 로그인 시 true를 반환하고 currentUser가 설정된다
+00:10 +75: E:/Test_Android/flutter_application_1/test/unit/core/user_provider_test.dart: UserProvider - login 잘못된 자격증명으로 로그인 시 false를 반환하고 로그인 상태가 유지되지 않는다
+00:10 +76: E:/Test_Android/flutter_application_1/test/unit/core/user_provider_test.dart: UserProvider - login logout 후 currentUser가 null이 되고 세션 토큰이 무효화된다
+00:10 +77: E:/Test_Android/flutter_application_1/test/unit/core/user_provider_test.dart: UserProvider - login 계정 전환 시 이전 사용자의 음성 점수가 남지 않는다
+00:10 +78: E:/Test_Android/flutter_application_1/test/unit/core/user_provider_test.dart: UserProvider - setCognitiveScore 카테고리별 점수가 올바르게 저장된다
+00:10 +79: E:/Test_Android/flutter_application_1/test/unit/core/user_provider_test.dart: UserProvider - setCognitiveScore persist: false이면 DB insertScore를 호출하지 않는다
+00:10 +80: E:/Test_Android/flutter_application_1/test/unit/core/user_provider_test.dart: UserProvider - setCognitiveScore totalAssessmentScore: 인지 점수(0-100)가 높을수록 위험도가 낮아진다
+00:10 +81: E:/Test_Android/flutter_application_1/test/unit/core/user_provider_test.dart: UserProvider - setCognitiveScore totalAssessmentScore: 인지 점수가 없으면 설문 위험도만 사용한다
+00:10 +82: E:/Test_Android/flutter_application_1/test/unit/core/user_provider_test.dart: UserProvider - setCognitiveScore totalAssessmentScore: 결과는 항상 0.0~1.0 범위다
+00:10 +83: E:/Test_Android/flutter_application_1/test/unit/core/user_provider_test.dart: UserProvider - register register 성공 시 insertUser를 호출하고 자동 로그인한다
+00:10 +84: E:/Test_Android/flutter_application_1/test/unit/core/user_provider_test.dart: UserProvider - register insertUser 실패 시 false를 반환한다
+00:11 +85: E:/Test_Android/flutter_application_1/test/unit/dementia_center/dementia_centers_asset_test.dart: (setUpAll)
+00:11 +85: E:/Test_Android/flutter_application_1/test/unit/dementia_center/dementia_centers_asset_test.dart: UTF-8로 읽히고 헤더가 배포 스키마와 일치한다
+00:11 +86: E:/Test_Android/flutter_application_1/test/unit/dementia_center/dementia_centers_asset_test.dart: 자리표시자가 아니라 실제 데이터가 들어 있다
+00:11 +87: E:/Test_Android/flutter_application_1/test/unit/dementia_center/dementia_centers_asset_test.dart: 전국 시도가 고르게 들어 있다
+00:11 +88: E:/Test_Android/flutter_application_1/test/unit/dementia_center/dementia_centers_asset_test.dart: 필수 필드가 비어 있는 센터가 없다
+00:11 +89: E:/Test_Android/flutter_application_1/test/unit/dementia_center/dementia_centers_asset_test.dart: 대부분의 센터가 전화번호와 좌표를 갖는다
+00:11 +90: E:/Test_Android/flutter_application_1/test/unit/dementia_center/dementia_centers_asset_test.dart: 쉼표가 든 주소가 한 필드로 유지된다
+00:11 +91: E:/Test_Android/flutter_application_1/test/unit/dementia_center/dementia_centers_asset_test.dart: (tearDownAll)
+00:12 +91: E:/Test_Android/flutter_application_1/test/unit/dementia_center/dementia_center_csv_test.dart: parseRows 따옴표 안의 쉼표를 필드 구분자로 보지 않는다
+00:12 +92: E:/Test_Android/flutter_application_1/test/unit/dementia_center/dementia_center_csv_test.dart: parseRows 이스케이프된 따옴표를 한 개로 되돌린다
+00:12 +93: E:/Test_Android/flutter_application_1/test/unit/dementia_center/dementia_center_csv_test.dart: parseRows CRLF와 LF를 모두 줄바꿈으로 처리한다
+00:12 +94: E:/Test_Android/flutter_application_1/test/unit/dementia_center/dementia_center_csv_test.dart: parseRows UTF-8 BOM을 제거해 첫 컬럼명이 어긋나지 않게 한다
+00:12 +95: E:/Test_Android/flutter_application_1/test/unit/dementia_center/dementia_center_csv_test.dart: parseRows 끝의 빈 줄은 행으로 세지 않는다
+00:12 +96: E:/Test_Android/flutter_application_1/test/unit/dementia_center/dementia_center_csv_test.dart: parse 실제 배포 스키마를 모델로 옮긴다
+00:12 +97: E:/Test_Android/flutter_application_1/test/unit/dementia_center/dementia_center_csv_test.dart: parse 컬럼 순서가 바뀌어도 이름으로 매핑한다
+00:12 +98: E:/Test_Android/flutter_application_1/test/unit/dementia_center/dementia_center_csv_test.dart: parse 필수 컬럼이 없으면 조용히 비우지 않고 예외를 던진다
+00:12 +99: E:/Test_Android/flutter_application_1/test/unit/dementia_center/dementia_center_csv_test.dart: parse 헤더만 있으면 빈 목록이다
+00:12 +100: E:/Test_Android/flutter_application_1/test/unit/dementia_center/dementia_center_csv_test.dart: parse 이름이나 시도가 빈 행은 건너뛴다
+00:12 +101: E:/Test_Android/flutter_application_1/test/unit/dementia_center/dementia_center_csv_test.dart: parse 위경도가 비어 있으면 null로 두고 지도 링크를 만들지 않는다
+00:12 +102: E:/Test_Android/flutter_application_1/test/unit/dementia_center/dementia_center_csv_test.dart: DementiaCenter 파생 값 스킴 없는 홈페이지에 https를 붙인다
+00:12 +103: E:/Test_Android/flutter_application_1/test/unit/dementia_center/dementia_center_csv_test.dart: DementiaCenter 파생 값 전화번호의 하이픈을 제거한 tel URI를 만든다
+00:12 +104: E:/Test_Android/flutter_application_1/test/unit/dementia_center/dementia_center_csv_test.dart: DementiaCenter 파생 값 전화번호가 없으면 tel URI도 없다
+00:13 +105: E:/Test_Android/flutter_application_1/test/unit/dementia_center/dementia_center_repository_test.dart: load 상태 분기 자산이 없으면 missing
+00:13 +106: E:/Test_Android/flutter_application_1/test/unit/dementia_center/dementia_center_repository_test.dart: load 상태 분기 헤더만 있으면 missing — 파일이 깨진 게 아니라 아직 안 채운 것이다
+00:13 +107: E:/Test_Android/flutter_application_1/test/unit/dementia_center/dementia_center_repository_test.dart: load 상태 분기 필수 컬럼이 없으면 invalid이고 원인을 알려 준다
+[DementiaCenterRepository] CSV 파싱 실패: 치매안심센터 CSV에 필수 컬럼이 없습니다: 치매안심센터명, 시군구. 실제 헤더: 시도, 주소1
+00:13 +108: E:/Test_Android/flutter_application_1/test/unit/dementia_center/dementia_center_repository_test.dart: load 상태 분기 UTF-8이 아니면 invalid이고 인코딩을 지목한다
+00:13 +109: E:/Test_Android/flutter_application_1/test/unit/dementia_center/dementia_center_repository_test.dart: load 상태 분기 정상 CSV는 ready
+00:13 +110: E:/Test_Android/flutter_application_1/test/unit/dementia_center/dementia_center_repository_test.dart: load 상태 분기 두 번째 load는 자산을 다시 읽지 않는다
+00:13 +111: E:/Test_Android/flutter_application_1/test/unit/dementia_center/dementia_center_repository_test.dart: 지역 목록 시도는 중복 없이 원본 등장 순서를 지킨다
+00:13 +112: E:/Test_Android/flutter_application_1/test/unit/dementia_center/dementia_center_repository_test.dart: 지역 목록 시군구는 해당 시도 것만 중복 없이 가나다순
+00:13 +113: E:/Test_Android/flutter_application_1/test/unit/dementia_center/dementia_center_repository_test.dart: 지역 목록 시군구를 생략하면 시도 전체를 센터명 순으로 반환한다
+00:13 +114: E:/Test_Android/flutter_application_1/test/unit/dementia_center/dementia_center_repository_test.dart: 지역 목록 시군구를 지정하면 그 안에서만 거른다
+00:13 +115: E:/Test_Android/flutter_application_1/test/unit/dementia_center/dementia_center_repository_test.dart: 지역 목록 센터가 없는 지역은 빈 목록이지 예외가 아니다
+00:14 +116: E:/Test_Android/flutter_application_1/test/unit/gait/gait_analyzer_test.dart: GaitAnalyzer 걸음 감지 초기 stepCount는 0이다
+00:14 +117: E:/Test_Android/flutter_application_1/test/unit/gait/gait_analyzer_test.dart: GaitAnalyzer 걸음 감지 magnitude > threshold이면 걸음을 감지하고 true를 반환한다
+00:14 +118: E:/Test_Android/flutter_application_1/test/unit/gait/gait_analyzer_test.dart: GaitAnalyzer 걸음 감지 magnitude <= threshold이면 걸음을 감지하지 않는다
+00:14 +119: E:/Test_Android/flutter_application_1/test/unit/gait/gait_analyzer_test.dart: GaitAnalyzer 걸음 감지 300ms 이내의 두 번째 이벤트는 감지하지 않는다 (debounce)
+00:14 +120: E:/Test_Android/flutter_application_1/test/unit/gait/gait_analyzer_test.dart: GaitAnalyzer 걸음 감지 300ms 이후의 두 번째 이벤트는 별도 걸음으로 감지한다
+00:14 +121: E:/Test_Android/flutter_application_1/test/unit/gait/gait_analyzer_test.dart: GaitAnalyzer 걸음 감지 2초를 넘는 간격은 표본에 넣지 않는다 (멈춤·회전 구간 제외)
+00:14 +122: E:/Test_Android/flutter_application_1/test/unit/gait/gait_analyzer_test.dart: 걸음 간격 변동성 표본이 부족하면 값을 만들지 않고 null을 돌려준다
+00:14 +123: E:/Test_Android/flutter_application_1/test/unit/gait/gait_analyzer_test.dart: 걸음 간격 변동성 최소 표본은 100개다 (문헌의 50 stride ≈ 100 걸음 간격)
+00:14 +124: E:/Test_Android/flutter_application_1/test/unit/gait/gait_analyzer_test.dart: 걸음 간격 변동성 표본이 충분해지는 순간부터 값이 나온다
+00:14 +125: E:/Test_Android/flutter_application_1/test/unit/gait/gait_analyzer_test.dart: 걸음 간격 변동성 간격이 모두 같으면 변동계수는 0이다
+00:14 +126: E:/Test_Android/flutter_application_1/test/unit/gait/gait_analyzer_test.dart: 걸음 간격 변동성 표본 표준편차(n-1)를 쓴다
+00:14 +127: E:/Test_Android/flutter_application_1/test/unit/gait/gait_analyzer_test.dart: 걸음 간격 변동성 진행률은 0~1 사이로 유지된다
+00:14 +128: E:/Test_Android/flutter_application_1/test/unit/gait/gait_analyzer_test.dart: 요약 필수 키를 모두 포함한다
+00:14 +129: E:/Test_Android/flutter_application_1/test/unit/gait/gait_analyzer_test.dart: 요약 측정되지 않은 값은 0이 아니라 null이다
+00:14 +130: E:/Test_Android/flutter_application_1/test/unit/gait/gait_analyzer_test.dart: 요약 total_steps는 stepCount와 일치한다
+00:14 +131: E:/Test_Android/flutter_application_1/test/unit/gait/gait_analyzer_test.dart: 요약 reset() 후 모든 상태가 초기화된다
+00:14 +132: E:/Test_Android/flutter_application_1/test/unit/reports/clinical_report_data_test.dart: 인지활동 지수 0~100 원 척도를 유지한다 (30점 환산으로 되돌아가지 않는다)
+00:15 +133: E:/Test_Android/flutter_application_1/test/unit/reports/clinical_report_data_test.dart: 인지활동 지수 측정하지 않은 영역은 평균에서 제외한다
+00:15 +134: E:/Test_Android/flutter_application_1/test/unit/reports/clinical_report_data_test.dart: 인지활동 지수 데이터가 하나도 없으면 0이다
+00:15 +135: E:/Test_Android/flutter_application_1/test/unit/reports/clinical_report_data_test.dart: 인지활동 지수 100을 넘지 않는다
+00:15 +136: E:/Test_Android/flutter_application_1/test/unit/reports/clinical_report_data_test.dart: 수행 구간(밴드) 75 / 55 / 35 경계에서 전환된다
+00:15 +137: E:/Test_Android/flutter_application_1/test/unit/reports/clinical_report_data_test.dart: 수행 구간(밴드) 라벨이 비처방적 표현이다
+00:15 +138: E:/Test_Android/flutter_application_1/test/unit/reports/clinical_report_data_test.dart: 면책 고지 세 문장이 규정된 순서로 있다
+00:15 +139: E:/Test_Android/flutter_application_1/test/unit/reports/clinical_report_data_test.dart: 소스에 표준 척도 이름이 남아 있지 않다 lib/features/reports/clinical_report_generator.dart 에 MMSE·GDS 표기가 없다
+00:15 +140: E:/Test_Android/flutter_application_1/test/unit/reports/clinical_report_data_test.dart: 소스에 표준 척도 이름이 남아 있지 않다 lib/features/reports/clinical_report_options_screen.dart 에 MMSE·GDS 표기가 없다
+00:15 +141: E:/Test_Android/flutter_application_1/test/unit/reports/clinical_report_data_test.dart: 소스에 표준 척도 이름이 남아 있지 않다 lib/core/cs_service.dart 에 MMSE·GDS 표기가 없다
+00:15 +142: E:/Test_Android/flutter_application_1/test/unit/training/difficulty_provider_test.dart: DifficultyProvider - 초기 상태 모든 카테고리의 초기 레벨은 1이다
+00:15 +143: E:/Test_Android/flutter_application_1/test/unit/training/difficulty_provider_test.dart: DifficultyProvider - 초기 상태 getTargetTime은 레벨 1에서 max(2.0, 5.0 - 0.3) = 4.7을 반환한다
+00:15 +144: E:/Test_Android/flutter_application_1/test/unit/training/difficulty_provider_test.dart: DifficultyProvider - 레벨 조정 (Supabase 동기화 제외) 3연속 정답이면 레벨이 1 올라간다
+00:15 +145: E:/Test_Android/flutter_application_1/test/unit/training/difficulty_provider_test.dart: DifficultyProvider - 레벨 조정 (Supabase 동기화 제외) 2연속 오답이면 레벨이 1 내려간다
+00:15 +146: E:/Test_Android/flutter_application_1/test/unit/training/difficulty_provider_test.dart: DifficultyProvider - 레벨 조정 (Supabase 동기화 제외) 레벨 1에서 오답이 반복되어도 1 미만으로 내려가지 않는다
+00:15 +147: E:/Test_Android/flutter_application_1/test/unit/training/difficulty_provider_test.dart: DifficultyProvider - 레벨 조정 (Supabase 동기화 제외) 레벨 10이 최대치이며 초과하지 않는다
+00:15 +148: E:/Test_Android/flutter_application_1/test/unit/training/difficulty_provider_test.dart: DifficultyProvider - 레벨 조정 (Supabase 동기화 제외) 카테고리 간 레벨은 서로 독립적이다
+00:15 +149: E:/Test_Android/flutter_application_1/test/unit/training/difficulty_provider_test.dart: DifficultyProvider - 레벨 조정 (Supabase 동기화 제외) 레벨이 높을수록 getTargetTime이 짧아진다
+00:15 +150: E:/Test_Android/flutter_application_1/test/unit/training/difficulty_provider_test.dart: DifficultyProvider - 레벨 조정 (Supabase 동기화 제외) getTargetTime은 최솟값 2.0 이하로 내려가지 않는다
+00:16 +151: E:/Test_Android/flutter_application_1/test/unit/training/report_analyzer_test.dart: ReportAnalyzer.generateSummary scoreHistory가 비어있으면 데이터 부족 메시지를 반환한다
+00:16 +152: E:/Test_Android/flutter_application_1/test/unit/training/report_analyzer_test.dart: ReportAnalyzer.generateSummary 평균 점수 > 80이면 "매우 우수한" 메시지를 포함한다
+00:16 +153: E:/Test_Android/flutter_application_1/test/unit/training/report_analyzer_test.dart: ReportAnalyzer.generateSummary 평균 점수 50~80이면 "꾸준한 훈련" 메시지를 포함한다
+00:16 +154: E:/Test_Android/flutter_application_1/test/unit/training/report_analyzer_test.dart: ReportAnalyzer.generateSummary 평균 점수 <= 50이면 "집중적인 훈련" 메시지를 포함한다
+00:16 +155: E:/Test_Android/flutter_application_1/test/unit/training/report_analyzer_test.dart: ReportAnalyzer.generateSummary 계산력이 가장 높은 점수면 강점으로 계산력을 식별한다
+00:16 +156: E:/Test_Android/flutter_application_1/test/unit/training/report_analyzer_test.dart: ReportAnalyzer.generateSummary 집중력이 가장 낮은 점수면 개선 영역으로 집중력을 식별한다
+00:16 +157: E:/Test_Android/flutter_application_1/test/unit/training/report_analyzer_test.dart: ReportAnalyzer.generateRecommendations steps < 5000이면 산책 권장 항목을 포함한다
+00:16 +158: E:/Test_Android/flutter_application_1/test/unit/training/report_analyzer_test.dart: ReportAnalyzer.generateRecommendations steps >= 5000이면 활동 유지 권장 항목을 포함한다
+00:16 +159: E:/Test_Android/flutter_application_1/test/unit/training/report_analyzer_test.dart: ReportAnalyzer.generateRecommendations memory < 60이면 범주화 훈련 권장 항목을 포함한다
+00:16 +160: E:/Test_Android/flutter_application_1/test/unit/training/report_analyzer_test.dart: ReportAnalyzer.generateRecommendations 항상 수면 권장 항목을 포함한다
+00:16 +161: E:/Test_Android/flutter_application_1/test/unit/training/speech_score_test.dart: SentenceReadingGame.computeSpeechScore 공백 제거 후 완전 일치하면 100.0을 반환한다
+00:16 +162: E:/Test_Android/flutter_application_1/test/unit/training/speech_score_test.dart: SentenceReadingGame.computeSpeechScore 인식 텍스트가 목표 문장을 포함하면 100.0을 반환한다
+00:16 +163: E:/Test_Android/flutter_application_1/test/unit/training/speech_score_test.dart: SentenceReadingGame.computeSpeechScore 문장의 일부만 읽으면 만점이 아닌 부분 점수를 받는다
+00:16 +164: E:/Test_Android/flutter_application_1/test/unit/training/speech_score_test.dart: SentenceReadingGame.computeSpeechScore 빈 인식 텍스트는 0.0을 반환한다
+00:16 +165: E:/Test_Android/flutter_application_1/test/unit/training/speech_score_test.dart: SentenceReadingGame.computeSpeechScore 내용이 전혀 다르면 0에 가까운 점수를 받는다
+00:16 +166: E:/Test_Android/flutter_application_1/test/unit/training/speech_score_test.dart: SentenceReadingGame.computeSpeechScore 길이만 같고 내용이 다른 발화는 높은 점수를 받지 못한다
+00:16 +167: E:/Test_Android/flutter_application_1/test/unit/training/speech_score_test.dart: SentenceReadingGame.computeSpeechScore 한 글자만 틀리면 높은 점수를 받는다
+00:16 +168: E:/Test_Android/flutter_application_1/test/unit/training/speech_score_test.dart: SentenceReadingGame.computeSpeechScore 점수는 0 ~ 100 범위를 벗어나지 않는다
+00:17 +169: E:/Test_Android/flutter_application_1/test/unit/training/training_catalog_test.dart: training catalog contains the exact eight stable activities in course order
+00:17 +170: E:/Test_Android/flutter_application_1/test/unit/training/training_catalog_test.dart: training catalog defines every locked catalog field
+00:17 +171: E:/Test_Android/flutter_application_1/test/unit/training/training_catalog_test.dart: training catalog exposes the locked initial and legacy unlock sets
+00:17 +172: E:/Test_Android/flutter_application_1/test/unit/training/training_catalog_test.dart: training catalog looks up known IDs and rejects unknown IDs
+00:17 +173: E:/Test_Android/flutter_application_1/test/unit/training/training_catalog_test.dart: training catalog has no duplicate IDs or routes
+00:17 +174: E:/Test_Android/flutter_application_1/test/unit/training/training_completion_service_test.dart: TrainingCompletionService 90점 최초 완료를 한 트랜잭션으로 반영한다
+00:17 +175: E:/Test_Android/flutter_application_1/test/unit/training/training_completion_service_test.dart: TrainingCompletionService 최고 점수 경신·오늘 목표 달성은 그 순간에만 축하 신호를 낸다
+00:17 +176: E:/Test_Android/flutter_application_1/test/unit/training/training_completion_service_test.dart: TrainingCompletionService 어제에 이어 오늘 첫 훈련이면 연속 학습 연장 신호를 낸다
+00:17 +177: E:/Test_Android/flutter_application_1/test/unit/training/training_completion_service_test.dart: TrainingCompletionService 같은 attempt ID 재전송은 쓰기와 XP를 반복하지 않는다
+00:17 +178: E:/Test_Android/flutter_application_1/test/unit/training/training_completion_service_test.dart: TrainingCompletionService 재도전은 최초 보너스 없이 최고 점수와 완료 횟수만 높인다
+00:17 +179: E:/Test_Android/flutter_application_1/test/unit/training/training_completion_service_test.dart: TrainingCompletionService 일상 회상은 XP와 일일 목표만 기록한다
+00:17 +180: E:/Test_Android/flutter_application_1/test/unit/training/training_completion_service_test.dart: TrainingCompletionService 일상 회상 재참여에는 최초 완료 보너스를 다시 주지 않는다
+00:17 +181: E:/Test_Android/flutter_application_1/test/unit/training/training_completion_service_test.dart: TrainingCompletionService 다른 사용자와 충돌한 attempt ID는 기존 결과를 노출하지 않는다
+00:17 +182: E:/Test_Android/flutter_application_1/test/unit/training/training_completion_service_test.dart: TrainingCompletionService 전날 다음 날의 첫 완료에서 streak를 올린다
+00:17 +183: E:/Test_Android/flutter_application_1/test/unit/training/training_completion_service_test.dart: TrainingCompletionService 미래 날짜는 현재 서울 날짜로 제한한다
+00:17 +184: E:/Test_Android/flutter_application_1/test/unit/training/training_completion_service_test.dart: TrainingCompletionService 트랜잭션 중 예외가 발생하면 어떤 변경도 남기지 않는다
+00:18 +185: E:/Test_Android/flutter_application_1/test/unit/training/training_progress_provider_test.dart: TrainingProgressProvider login, logout, A-B-A 전환 시 사용자별 상태만 노출한다
+00:18 +186: E:/Test_Android/flutter_application_1/test/unit/training/training_progress_provider_test.dart: TrainingProgressProvider 느린 A 로드 결과가 이후 B 상태를 덮어쓰지 않는다
+00:18 +187: E:/Test_Android/flutter_application_1/test/unit/training/training_progress_provider_test.dart: TrainingProgressProvider 로드 실패를 노출하고 refresh 성공 시 오류를 지운다
+00:18 +188: E:/Test_Android/flutter_application_1/test/unit/training/training_progress_provider_test.dart: TrainingProgressProvider 저장 실패 후 재시도하면 결과를 반환하고 최신 상태를 다시 읽는다
+00:18 +189: E:/Test_Android/flutter_application_1/test/unit/training/training_progress_provider_test.dart: TrainingProgressProvider 현재 사용자와 다른 완료 요청은 저장하지 않는다
+00:18 +190: E:/Test_Android/flutter_application_1/test/unit/training/training_progress_rules_test.dart: XP and level rules characterization: catalog-backed scored completion keeps its formula
+00:18 +191: E:/Test_Android/flutter_application_1/test/unit/training/training_progress_rules_test.dart: XP and level rules 90-score first completion yields exactly 49 XP
+00:18 +192: E:/Test_Android/flutter_application_1/test/unit/training/training_progress_rules_test.dart: XP and level rules repeat completion omits only the first-completion bonus
+00:18 +193: E:/Test_Android/flutter_application_1/test/unit/training/training_progress_rules_test.dart: XP and level rules rounds the score bonus to the nearest integer
+00:18 +194: E:/Test_Android/flutter_application_1/test/unit/training/training_progress_rules_test.dart: XP and level rules rejects malformed scores and score/activity mismatches
+00:18 +195: E:/Test_Android/flutter_application_1/test/unit/training/training_progress_rules_test.dart: XP and level rules level boundary is 99/100 XP and XP cannot be negative
+00:18 +196: E:/Test_Android/flutter_application_1/test/unit/training/training_progress_rules_test.dart: mastery rules uses completion, 70, and 90 thresholds
+00:18 +197: E:/Test_Android/flutter_application_1/test/unit/training/training_progress_rules_test.dart: mastery rules preserves the highest mastery and validates inputs
+00:18 +198: E:/Test_Android/flutter_application_1/test/unit/training/training_progress_rules_test.dart: daily distinct completion rule counts duplicate activities only once
+00:18 +199: E:/Test_Android/flutter_application_1/test/unit/training/training_progress_rules_test.dart: daily distinct completion rule rejects unknown activity IDs
+00:18 +200: E:/Test_Android/flutter_application_1/test/unit/training/training_progress_rules_test.dart: daily distinct completion rule counts distinct activities only on the requested Seoul date
+00:18 +201: E:/Test_Android/flutter_application_1/test/unit/training/training_progress_rules_test.dart: daily distinct completion rule date-aware counting rejects unknown IDs before returning a count
+00:18 +202: E:/Test_Android/flutter_application_1/test/unit/training/training_progress_rules_test.dart: Asia/Seoul streak rule starts at one and increments on the next Seoul date
+00:18 +203: E:/Test_Android/flutter_application_1/test/unit/training/training_progress_rules_test.dart: Asia/Seoul streak rule same-day and older completions do not change the streak
+00:18 +204: E:/Test_Android/flutter_application_1/test/unit/training/training_progress_rules_test.dart: Asia/Seoul streak rule missed day resets the streak to one
+00:18 +205: E:/Test_Android/flutter_application_1/test/unit/training/training_progress_rules_test.dart: Asia/Seoul streak rule future completion is clamped to the current Seoul date
+00:18 +206: E:/Test_Android/flutter_application_1/test/unit/training/training_progress_rules_test.dart: Asia/Seoul streak rule Seoul midnight boundary is used regardless of DateTime zone
+00:18 +207: E:/Test_Android/flutter_application_1/test/unit/training/training_progress_rules_test.dart: Asia/Seoul streak rule rejects invalid stored state
+00:19 +208: E:/Test_Android/flutter_application_1/test/widget/accessibility_guideline_test.dart: (setUpAll)
+00:19 +208: E:/Test_Android/flutter_application_1/test/widget/accessibility_guideline_test.dart: 탭 가능한 요소는 스크린리더가 읽을 이름을 갖는다 그림 스도쿠
+00:21 +209: E:/Test_Android/flutter_application_1/test/widget/assessment/assessment_screen_test.dart: AssessmentScreen: 첫 번째 질문과 1/10 타이틀이 표시된다
+00:22 +210: E:/Test_Android/flutter_application_1/test/widget/assessment/assessment_screen_test.dart: AssessmentScreen: 첫 번째 질문과 1/10 타이틀이 표시된다
+00:22 +211: E:/Test_Android/flutter_application_1/test/widget/assessment/assessment_screen_test.dart: AssessmentScreen: 첫 번째 질문과 1/10 타이틀이 표시된다
+00:22 +212: E:/Test_Android/flutter_application_1/test/widget/assessment/assessment_screen_test.dart: AssessmentScreen: 첫 번째 질문과 1/10 타이틀이 표시된다
+00:23 +213: E:/Test_Android/flutter_application_1/test/widget/auth/login_screen_test.dart: LoginScreen: 사용자 아이디, 비밀번호 TextField 2개를 렌더링한다
+00:23 +214: E:/Test_Android/flutter_application_1/test/widget/auth/login_screen_test.dart: LoginScreen: 사용자 아이디, 비밀번호 TextField 2개를 렌더링한다
+00:23 +215: E:/Test_Android/flutter_application_1/test/widget/auth/login_screen_test.dart: LoginScreen: 사용자 아이디, 비밀번호 TextField 2개를 렌더링한다
+00:23 +216: E:/Test_Android/flutter_application_1/test/widget/auth/login_screen_test.dart: LoginScreen: 사용자 아이디, 비밀번호 TextField 2개를 렌더링한다
+00:23 +217: E:/Test_Android/flutter_application_1/test/widget/auth/login_screen_test.dart: LoginScreen: 사용자 아이디, 비밀번호 TextField 2개를 렌더링한다
+00:23 +218: E:/Test_Android/flutter_application_1/test/widget/auth/login_screen_test.dart: LoginScreen: 사용자 아이디, 비밀번호 TextField 2개를 렌더링한다
+00:23 +219: E:/Test_Android/flutter_application_1/test/widget/auth/login_screen_test.dart: LoginScreen: 사용자 아이디, 비밀번호 TextField 2개를 렌더링한다
+00:23 +220: E:/Test_Android/flutter_application_1/test/widget/auth/login_screen_test.dart: LoginScreen: 사용자 아이디, 비밀번호 TextField 2개를 렌더링한다
+00:23 +221: E:/Test_Android/flutter_application_1/test/widget/auth/login_screen_test.dart: LoginScreen: 사용자 아이디, 비밀번호 TextField 2개를 렌더링한다
+00:23 +222: E:/Test_Android/flutter_application_1/test/widget/auth/login_screen_test.dart: LoginScreen: 사용자 아이디, 비밀번호 TextField 2개를 렌더링한다
+00:24 +223: E:/Test_Android/flutter_application_1/test/widget/auth/login_screen_test.dart: LoginScreen: 사용자 아이디, 비밀번호 TextField 2개를 렌더링한다
+00:24 +224: E:/Test_Android/flutter_application_1/test/widget/auth/login_screen_test.dart: LoginScreen: 사용자 아이디, 비밀번호 TextField 2개를 렌더링한다
+00:24 +225: E:/Test_Android/flutter_application_1/test/widget/auth/login_screen_test.dart: LoginScreen: 사용자 아이디, 비밀번호 TextField 2개를 렌더링한다
+00:24 +226: E:/Test_Android/flutter_application_1/test/widget/core/floating_pill_nav_test.dart: 비활성 하단 탭도 접근성 라벨로 선택할 수 있다
+00:24 +227: E:/Test_Android/flutter_application_1/test/widget/core/floating_pill_nav_test.dart: 비활성 하단 탭도 접근성 라벨로 선택할 수 있다
+00:24 +228: E:/Test_Android/flutter_application_1/test/widget/core/floating_pill_nav_test.dart: 비활성 하단 탭도 접근성 라벨로 선택할 수 있다
+00:24 +229: E:/Test_Android/flutter_application_1/test/widget/core/floating_pill_nav_test.dart: 비활성 하단 탭도 접근성 라벨로 선택할 수 있다
+00:25 +230: E:/Test_Android/flutter_application_1/test/widget/core/floating_pill_nav_test.dart: 비활성 하단 탭도 접근성 라벨로 선택할 수 있다
+00:25 +231: E:/Test_Android/flutter_application_1/test/widget/core/floating_pill_nav_test.dart: 비활성 하단 탭도 접근성 라벨로 선택할 수 있다
+00:25 +232: E:/Test_Android/flutter_application_1/test/widget/core/floating_pill_nav_test.dart: 비활성 하단 탭도 접근성 라벨로 선택할 수 있다
+00:25 +233: E:/Test_Android/flutter_application_1/test/widget/core/floating_pill_nav_test.dart: 비활성 하단 탭도 접근성 라벨로 선택할 수 있다
+00:25 +234: E:/Test_Android/flutter_application_1/test/widget/core/memory_opening_test.dart: full: 덮는 동안 앱의 접근성 노드와 티커를 막고, 2.4초 뒤 걷힌다
+00:25 +235: E:/Test_Android/flutter_application_1/test/widget/core/memory_opening_test.dart: full: 덮는 동안 앱의 접근성 노드와 티커를 막고, 2.4초 뒤 걷힌다
+00:25 +236: E:/Test_Android/flutter_application_1/test/widget/core/memory_opening_test.dart: full: 덮는 동안 앱의 접근성 노드와 티커를 막고, 2.4초 뒤 걷힌다
+00:25 +237: E:/Test_Android/flutter_application_1/test/widget/core/memory_opening_test.dart: full: 덮는 동안 앱의 접근성 노드와 티커를 막고, 2.4초 뒤 걷힌다
+00:26 +238: E:/Test_Android/flutter_application_1/test/widget/core/ml_motion_widgets_test.dart: MLChart full: 첫 프레임은 기준선, 다음 프레임에 실데이터로 바뀌며 duration 은 enter
+00:26 +239: E:/Test_Android/flutter_application_1/test/widget/core/ml_motion_widgets_test.dart: MLChart full: 첫 프레임은 기준선, 다음 프레임에 실데이터로 바뀌며 duration 은 enter
+00:26 +240: E:/Test_Android/flutter_application_1/test/widget/core/ml_motion_widgets_test.dart: MLChart full: 첫 프레임은 기준선, 다음 프레임에 실데이터로 바뀌며 duration 은 enter
+00:26 +241: E:/Test_Android/flutter_application_1/test/widget/core/ml_motion_widgets_test.dart: MLChart full: 첫 프레임은 기준선, 다음 프레임에 실데이터로 바뀌며 duration 은 enter
+00:27 +242: E:/Test_Android/flutter_application_1/test/widget/core/ml_motion_widgets_test.dart: MLChart full: 첫 프레임은 기준선, 다음 프레임에 실데이터로 바뀌며 duration 은 enter
+00:27 +243: E:/Test_Android/flutter_application_1/test/widget/core/ml_motion_widgets_test.dart: MLChart full: 첫 프레임은 기준선, 다음 프레임에 실데이터로 바뀌며 duration 은 enter
+00:27 +244: E:/Test_Android/flutter_application_1/test/widget/core/ml_motion_widgets_test.dart: MLChart full: 첫 프레임은 기준선, 다음 프레임에 실데이터로 바뀌며 duration 은 enter
+00:27 +245: E:/Test_Android/flutter_application_1/test/widget/core/motion_settings_test.dart: 세 신호가 모두 꺼져 있으면 축소 모션이 아니다
+00:27 +246: E:/Test_Android/flutter_application_1/test/widget/core/motion_settings_test.dart: 세 신호가 모두 꺼져 있으면 축소 모션이 아니다
+00:27 +247: E:/Test_Android/flutter_application_1/test/widget/core/motion_settings_test.dart: 세 신호가 모두 꺼져 있으면 축소 모션이 아니다
+00:28 +248: E:/Test_Android/flutter_application_1/test/widget/core/motion_settings_test.dart: 세 신호가 모두 꺼져 있으면 축소 모션이 아니다
+00:28 +249: E:/Test_Android/flutter_application_1/test/widget/core/motion_settings_test.dart: 세 신호가 모두 꺼져 있으면 축소 모션이 아니다
+00:28 +250: E:/Test_Android/flutter_application_1/test/widget/core/motion_settings_test.dart: 세 신호가 모두 꺼져 있으면 축소 모션이 아니다
+00:28 +251: E:/Test_Android/flutter_application_1/test/widget/core/motion_settings_test.dart: 세 신호가 모두 꺼져 있으면 축소 모션이 아니다
+00:28 +252: E:/Test_Android/flutter_application_1/test/widget/core/pressable_scale_test.dart: 누르는 동안 0.98로 줄고 놓으면 100ms 안에 1.0으로 돌아온다
+00:28 +253: E:/Test_Android/flutter_application_1/test/widget/core/pressable_scale_test.dart: 누르는 동안 0.98로 줄고 놓으면 100ms 안에 1.0으로 돌아온다
+00:28 +254: E:/Test_Android/flutter_application_1/test/widget/core/pressable_scale_test.dart: 누르는 동안 0.98로 줄고 놓으면 100ms 안에 1.0으로 돌아온다
+00:28 +255: E:/Test_Android/flutter_application_1/test/widget/core/pressable_scale_test.dart: 누르는 동안 0.98로 줄고 놓으면 100ms 안에 1.0으로 돌아온다
+00:28 +256: E:/Test_Android/flutter_application_1/test/widget/core/pressable_scale_test.dart: 누르는 동안 0.98로 줄고 놓으면 100ms 안에 1.0으로 돌아온다
+00:28 +257: E:/Test_Android/flutter_application_1/test/widget/core/pressable_scale_test.dart: 누르는 동안 0.98로 줄고 놓으면 100ms 안에 1.0으로 돌아온다
+00:28 +258: E:/Test_Android/flutter_application_1/test/widget/core/pressable_scale_test.dart: 누르는 동안 0.98로 줄고 놓으면 100ms 안에 1.0으로 돌아온다
+00:28 +259: E:/Test_Android/flutter_application_1/test/widget/core/pressable_scale_test.dart: 누르는 동안 0.98로 줄고 놓으면 100ms 안에 1.0으로 돌아온다
+00:29 +260: E:/Test_Android/flutter_application_1/test/widget/core/staggered_column_test.dart: full: t=0 은 전부 투명, 중간에는 앞 자식이 먼저, 400ms 에는 전부 최종 상태
+00:29 +261: E:/Test_Android/flutter_application_1/test/widget/core/staggered_column_test.dart: full: t=0 은 전부 투명, 중간에는 앞 자식이 먼저, 400ms 에는 전부 최종 상태
+00:29 +262: E:/Test_Android/flutter_application_1/test/widget/core/staggered_column_test.dart: full: t=0 은 전부 투명, 중간에는 앞 자식이 먼저, 400ms 에는 전부 최종 상태
+00:29 +263: E:/Test_Android/flutter_application_1/test/widget/core/staggered_column_test.dart: full: t=0 은 전부 투명, 중간에는 앞 자식이 먼저, 400ms 에는 전부 최종 상태
+00:29 +264: E:/Test_Android/flutter_application_1/test/widget/core/staggered_column_test.dart: full: t=0 은 전부 투명, 중간에는 앞 자식이 먼저, 400ms 에는 전부 최종 상태
+00:29 +264: E:/Test_Android/flutter_application_1/test/widget/core/pressable_scale_test.dart: 안쪽 제스처를 가로채지 않는다
+
+Warning: A call to tap() with finder "Found 1 widget with key [<'target'>]: [
+  SizedBox-[<'target'>](width: 100.0, height: 100.0, renderObject: RenderConstrainedBox#8e361 relayoutBoundary=up6),
+]" derived an Offset (Offset(400.0, 300.0)) that would not hit test on the specified widget.
+Maybe the widget is actually off-screen, or another widget is obscuring it, or the widget cannot receive pointer events.
+The finder corresponds to this RenderBox: RenderConstrainedBox#8e361 relayoutBoundary=up6
+The hit test result at that offset is: HitTestResult(RenderPointerListener#25bde@Offset(50.0, 50.0), RenderSemanticsGestureHandler#aa09f@Offset(50.0, 50.0), RenderAnimatedOpacity#bdcab@Offset(50.0, 50.0), RenderPointerListener#18a07@Offset(50.0, 50.0), RenderPositionedBox#2defa@Offset(400.0, 300.0), HitTestEntry<HitTestTarget>#ec8a6(_ReusableRenderView#038d3), HitTestEntry<HitTestTarget>#43137(<AutomatedTestWidgetsFlutterBinding>))
+#0      WidgetController._getElementPoint (package:flutter_test/src/controller.dart:2158:25)
+#1      WidgetController.getCenter (package:flutter_test/src/controller.dart:1942:12)
+#2      WidgetController.tap (package:flutter_test/src/controller.dart:1075:7)
+#3      main.<anonymous closure> (file:///E:/Test_Android/flutter_application_1/test/widget/core/pressable_scale_test.dart:74:18)
+<asynchronous suspension>
+#4      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#5      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1682:5)
+<asynchronous suspension>
+#6      StackZoneSpecification._registerCallback.<anonymous closure> (package:stack_trace/src/stack_zone_specification.dart:114:42)
+<asynchronous suspension>
+To silence this warning, pass "warnIfMissed: false" to "tap()".
+To make this warning fatal, set WidgetController.hitTestWarningShouldBeFatal to true.
+
+00:29 +265: E:/Test_Android/flutter_application_1/test/widget/core/staggered_column_test.dart: full: t=0 은 전부 투명, 중간에는 앞 자식이 먼저, 400ms 에는 전부 최종 상태
+00:29 +266: E:/Test_Android/flutter_application_1/test/widget/core/staggered_column_test.dart: full: t=0 은 전부 투명, 중간에는 앞 자식이 먼저, 400ms 에는 전부 최종 상태
+00:29 +267: E:/Test_Android/flutter_application_1/test/widget/core/staggered_column_test.dart: full: t=0 은 전부 투명, 중간에는 앞 자식이 먼저, 400ms 에는 전부 최종 상태
+00:29 +268: E:/Test_Android/flutter_application_1/test/widget/core/staggered_column_test.dart: full: t=0 은 전부 투명, 중간에는 앞 자식이 먼저, 400ms 에는 전부 최종 상태
+00:29 +269: E:/Test_Android/flutter_application_1/test/widget/core/staggered_column_test.dart: full: t=0 은 전부 투명, 중간에는 앞 자식이 먼저, 400ms 에는 전부 최종 상태
+00:29 +270: E:/Test_Android/flutter_application_1/test/widget/core/staggered_column_test.dart: full: t=0 은 전부 투명, 중간에는 앞 자식이 먼저, 400ms 에는 전부 최종 상태
+00:29 +271: E:/Test_Android/flutter_application_1/test/widget/core/staggered_column_test.dart: full: t=0 은 전부 투명, 중간에는 앞 자식이 먼저, 400ms 에는 전부 최종 상태
+00:29 +272: E:/Test_Android/flutter_application_1/test/widget/core/staggered_column_test.dart: full: t=0 은 전부 투명, 중간에는 앞 자식이 먼저, 400ms 에는 전부 최종 상태
+00:29 +273: E:/Test_Android/flutter_application_1/test/widget/core/staggered_column_test.dart: full: t=0 은 전부 투명, 중간에는 앞 자식이 먼저, 400ms 에는 전부 최종 상태
+00:29 +274: E:/Test_Android/flutter_application_1/test/widget/core/staggered_column_test.dart: full: t=0 은 전부 투명, 중간에는 앞 자식이 먼저, 400ms 에는 전부 최종 상태
+00:29 +275: E:/Test_Android/flutter_application_1/test/widget/core/staggered_column_test.dart: full: t=0 은 전부 투명, 중간에는 앞 자식이 먼저, 400ms 에는 전부 최종 상태
+00:29 +276: E:/Test_Android/flutter_application_1/test/widget/core/staggered_column_test.dart: full: t=0 은 전부 투명, 중간에는 앞 자식이 먼저, 400ms 에는 전부 최종 상태
+00:30 +277: E:/Test_Android/flutter_application_1/test/widget/auth/login_screen_test.dart: 스플래시 → 로그인 로고 연결(08 계획 G-03) 로고 이동은 앱 실행당 한 번뿐이다(로그아웃 후 재진입 무모션)
+00:30 +278: E:/Test_Android/flutter_application_1/test/widget/auth/login_screen_test.dart: 스플래시 → 로그인 로고 연결(08 계획 G-03) 로고 이동은 앱 실행당 한 번뿐이다(로그아웃 후 재진입 무모션)
+00:30 +279: E:/Test_Android/flutter_application_1/test/widget/core/ml_motion_widgets_test.dart: 스켈레톤 MLSkeletonList 는 스피너 없이 카드 모양 자리를 그리고 "불러오는 중"으로 읽힌다
+00:30 +280: E:/Test_Android/flutter_application_1/test/widget/core/ml_motion_widgets_test.dart: 스켈레톤 MLSkeletonList 는 스피너 없이 카드 모양 자리를 그리고 "불러오는 중"으로 읽힌다
+00:30 +281: E:/Test_Android/flutter_application_1/test/widget/core/ml_motion_widgets_test.dart: 스켈레톤 MLSkeletonList 는 스피너 없이 카드 모양 자리를 그리고 "불러오는 중"으로 읽힌다
+00:30 +282: E:/Test_Android/flutter_application_1/test/widget/core/ml_motion_widgets_test.dart: 스켈레톤 MLSkeletonList 는 스피너 없이 카드 모양 자리를 그리고 "불러오는 중"으로 읽힌다
+00:30 +283: E:/Test_Android/flutter_application_1/test/widget/dementia_center/dementia_center_finder_screen_test.dart: 첫 시도의 센터 목록을 보여준다
+00:30 +284: E:/Test_Android/flutter_application_1/test/widget/dementia_center/dementia_center_finder_screen_test.dart: 첫 시도의 센터 목록을 보여준다
+00:30 +285: E:/Test_Android/flutter_application_1/test/widget/dementia_center/dementia_center_finder_screen_test.dart: 첫 시도의 센터 목록을 보여준다
+00:30 +286: E:/Test_Android/flutter_application_1/test/widget/dementia_center/dementia_center_finder_screen_test.dart: 첫 시도의 센터 목록을 보여준다
+00:30 +287: E:/Test_Android/flutter_application_1/test/widget/dementia_center/dementia_center_finder_screen_test.dart: 첫 시도의 센터 목록을 보여준다
+00:30 +288: E:/Test_Android/flutter_application_1/test/widget/dementia_center/dementia_center_finder_screen_test.dart: 첫 시도의 센터 목록을 보여준다
+00:31 +289: E:/Test_Android/flutter_application_1/test/widget/dementia_center/dementia_center_finder_screen_test.dart: 첫 시도의 센터 목록을 보여준다
+00:31 +290: E:/Test_Android/flutter_application_1/test/widget/dementia_center/dementia_center_finder_screen_test.dart: 첫 시도의 센터 목록을 보여준다
+00:33 +291: E:/Test_Android/flutter_application_1/test/widget/dementia_center/dementia_center_finder_screen_test.dart: 첫 시도의 센터 목록을 보여준다
+00:33 +292: E:/Test_Android/flutter_application_1/test/widget/dementia_center/dementia_center_finder_screen_test.dart: 첫 시도의 센터 목록을 보여준다
+00:33 +293: E:/Test_Android/flutter_application_1/test/widget/gait_analysis/walking_dashboard_screen_test.dart: 생활습관 탭에서 실시간 보행 측정을 켤 수 있다
+00:33 +294: E:/Test_Android/flutter_application_1/test/widget/gait_analysis/walking_dashboard_screen_test.dart: 생활습관 탭에서 실시간 보행 측정을 켤 수 있다
+00:34 +295: E:/Test_Android/flutter_application_1/test/widget/gait_analysis/walking_dashboard_screen_test.dart: 생활습관 탭에서 실시간 보행 측정을 켤 수 있다
+00:34 +296: E:/Test_Android/flutter_application_1/test/widget/gait_analysis/walking_dashboard_screen_test.dart: 생활습관 탭에서 실시간 보행 측정을 켤 수 있다
+00:34 +297: E:/Test_Android/flutter_application_1/test/widget/gait_analysis/walking_dashboard_screen_test.dart: 생활습관 탭에서 실시간 보행 측정을 켤 수 있다
+00:34 +298: E:/Test_Android/flutter_application_1/test/widget/gait_analysis/walking_dashboard_screen_test.dart: 생활습관 탭에서 실시간 보행 측정을 켤 수 있다
+00:34 +299: E:/Test_Android/flutter_application_1/test/widget/gait_analysis/walking_dashboard_screen_test.dart: 생활습관 탭에서 실시간 보행 측정을 켤 수 있다
+00:35 +300: E:/Test_Android/flutter_application_1/test/widget/health/health_input_screen_test.dart: HealthInputScreen: 주요 입력 섹션이 표시된다
+00:35 +301: E:/Test_Android/flutter_application_1/test/widget/health/health_input_screen_test.dart: HealthInputScreen: 주요 입력 섹션이 표시된다
+00:36 +302: E:/Test_Android/flutter_application_1/test/widget/health/health_input_screen_test.dart: HealthInputScreen: 주요 입력 섹션이 표시된다
+00:36 +303: E:/Test_Android/flutter_application_1/test/widget/health/health_input_screen_test.dart: HealthInputScreen: 주요 입력 섹션이 표시된다
+00:36 +304: E:/Test_Android/flutter_application_1/test/widget/health/health_input_screen_test.dart: HealthInputScreen: 주요 입력 섹션이 표시된다
+00:36 +305: E:/Test_Android/flutter_application_1/test/widget/health/health_input_screen_test.dart: HealthInputScreen: 주요 입력 섹션이 표시된다
+00:36 +306: E:/Test_Android/flutter_application_1/test/widget/health/health_input_screen_test.dart: HealthInputScreen: 주요 입력 섹션이 표시된다
+00:37 +307: E:/Test_Android/flutter_application_1/test/widget/health/health_input_screen_test.dart: HealthInputScreen: 주요 입력 섹션이 표시된다
+00:37 +308: E:/Test_Android/flutter_application_1/test/widget/settings/settings_screen_test.dart: SettingsScreen: 설정 타이틀과 주요 섹션이 표시된다
+00:37 +309: E:/Test_Android/flutter_application_1/test/widget/settings/settings_screen_test.dart: SettingsScreen: 설정 타이틀과 주요 섹션이 표시된다
+00:37 +310: E:/Test_Android/flutter_application_1/test/widget/settings/settings_screen_test.dart: SettingsScreen: 설정 타이틀과 주요 섹션이 표시된다
+00:37 +311: E:/Test_Android/flutter_application_1/test/widget/settings/settings_screen_test.dart: SettingsScreen: 설정 타이틀과 주요 섹션이 표시된다
+00:37 +312: E:/Test_Android/flutter_application_1/test/widget/settings/settings_screen_test.dart: SettingsScreen: 설정 타이틀과 주요 섹션이 표시된다
+00:38 +313: E:/Test_Android/flutter_application_1/test/widget/settings/settings_screen_test.dart: SettingsScreen: 설정 타이틀과 주요 섹션이 표시된다
+00:38 +314: E:/Test_Android/flutter_application_1/test/widget/settings/settings_screen_test.dart: SettingsScreen: 설정 타이틀과 주요 섹션이 표시된다
+00:39 +315: E:/Test_Android/flutter_application_1/test/widget/training/comparison_game_test.dart: ComparisonGame: VS 텍스트와 선택 카드 2개를 렌더링한다
+00:39 +316: E:/Test_Android/flutter_application_1/test/widget/training/comparison_game_test.dart: ComparisonGame: VS 텍스트와 선택 카드 2개를 렌더링한다
+00:39 +317: E:/Test_Android/flutter_application_1/test/widget/training/comparison_game_test.dart: ComparisonGame: VS 텍스트와 선택 카드 2개를 렌더링한다
+00:39 +318: E:/Test_Android/flutter_application_1/test/widget/training/comparison_game_test.dart: ComparisonGame: VS 텍스트와 선택 카드 2개를 렌더링한다
+00:39 +319: E:/Test_Android/flutter_application_1/test/widget/training/daily_recall_completion_test.dart: 일상 회상은 점수 없이 같은 완료 시도를 재전송한다
+00:39 +320: E:/Test_Android/flutter_application_1/test/widget/training/daily_recall_completion_test.dart: 일상 회상은 점수 없이 같은 완료 시도를 재전송한다
+00:39 +321: E:/Test_Android/flutter_application_1/test/widget/training/daily_recall_completion_test.dart: 일상 회상은 점수 없이 같은 완료 시도를 재전송한다
+00:40 +322: E:/Test_Android/flutter_application_1/test/widget/training/daily_recall_completion_test.dart: 일상 회상은 점수 없이 같은 완료 시도를 재전송한다
+00:40 +323: E:/Test_Android/flutter_application_1/test/widget/training/daily_recall_completion_test.dart: 일상 회상은 점수 없이 같은 완료 시도를 재전송한다
+00:40 +324: E:/Test_Android/flutter_application_1/test/widget/training/daily_recall_completion_test.dart: 일상 회상은 점수 없이 같은 완료 시도를 재전송한다
+00:40 +325: E:/Test_Android/flutter_application_1/test/widget/training/daily_recall_completion_test.dart: 일상 회상은 점수 없이 같은 완료 시도를 재전송한다
+00:40 +326: E:/Test_Android/flutter_application_1/test/widget/training/daily_recall_completion_test.dart: 일상 회상은 점수 없이 같은 완료 시도를 재전송한다
+00:40 +327: E:/Test_Android/flutter_application_1/test/widget/training/daily_recall_completion_test.dart: 일상 회상은 점수 없이 같은 완료 시도를 재전송한다
+00:40 +328: E:/Test_Android/flutter_application_1/test/widget/training/daily_recall_completion_test.dart: 일상 회상은 점수 없이 같은 완료 시도를 재전송한다
+00:40 +329: E:/Test_Android/flutter_application_1/test/widget/training/daily_recall_completion_test.dart: 일상 회상은 점수 없이 같은 완료 시도를 재전송한다
+00:41 +330: E:/Test_Android/flutter_application_1/test/widget/training/daily_recall_completion_test.dart: 일상 회상은 점수 없이 같은 완료 시도를 재전송한다
+00:41 +331: E:/Test_Android/flutter_application_1/test/widget/training/daily_recall_completion_test.dart: 일상 회상은 점수 없이 같은 완료 시도를 재전송한다
+00:41 +332: E:/Test_Android/flutter_application_1/test/widget/training/daily_recall_completion_test.dart: 일상 회상은 점수 없이 같은 완료 시도를 재전송한다
+00:41 +333: E:/Test_Android/flutter_application_1/test/widget/training/daily_recall_completion_test.dart: 일상 회상은 점수 없이 같은 완료 시도를 재전송한다
+00:42 +334: E:/Test_Android/flutter_application_1/test/widget/training/daily_recall_completion_test.dart: 일상 회상은 점수 없이 같은 완료 시도를 재전송한다
+00:42 +335: E:/Test_Android/flutter_application_1/test/widget/training/daily_recall_completion_test.dart: 일상 회상은 점수 없이 같은 완료 시도를 재전송한다
+00:42 +336: E:/Test_Android/flutter_application_1/test/widget/training/daily_recall_completion_test.dart: 일상 회상은 점수 없이 같은 완료 시도를 재전송한다
+00:42 +337: E:/Test_Android/flutter_application_1/test/widget/training/daily_recall_completion_test.dart: 일상 회상은 점수 없이 같은 완료 시도를 재전송한다
+00:42 +338: E:/Test_Android/flutter_application_1/test/widget/training/daily_recall_completion_test.dart: 일상 회상은 점수 없이 같은 완료 시도를 재전송한다
+00:42 +339: E:/Test_Android/flutter_application_1/test/widget/training/daily_recall_completion_test.dart: 일상 회상은 점수 없이 같은 완료 시도를 재전송한다
+00:43 +340: E:/Test_Android/flutter_application_1/test/widget/training/daily_recall_completion_test.dart: 일상 회상은 점수 없이 같은 완료 시도를 재전송한다
+00:43 +341: E:/Test_Android/flutter_application_1/test/widget/training/daily_recall_completion_test.dart: 일상 회상은 점수 없이 같은 완료 시도를 재전송한다
+00:43 +342: E:/Test_Android/flutter_application_1/test/widget/training/daily_recall_completion_test.dart: 일상 회상은 점수 없이 같은 완료 시도를 재전송한다
+00:43 +343: E:/Test_Android/flutter_application_1/test/widget/training/daily_recall_completion_test.dart: 일상 회상은 점수 없이 같은 완료 시도를 재전송한다
+00:43 +344: E:/Test_Android/flutter_application_1/test/widget/training/daily_recall_completion_test.dart: 일상 회상은 점수 없이 같은 완료 시도를 재전송한다
+00:43 +345: E:/Test_Android/flutter_application_1/test/widget/training/daily_recall_completion_test.dart: 일상 회상은 점수 없이 같은 완료 시도를 재전송한다
+00:43 +346: E:/Test_Android/flutter_application_1/test/widget/training/daily_recall_completion_test.dart: 일상 회상은 점수 없이 같은 완료 시도를 재전송한다
+00:44 +347: E:/Test_Android/flutter_application_1/test/widget/training/daily_recall_completion_test.dart: 일상 회상은 점수 없이 같은 완료 시도를 재전송한다
+00:44 +348: E:/Test_Android/flutter_application_1/test/widget/training/daily_recall_completion_test.dart: 일상 회상은 점수 없이 같은 완료 시도를 재전송한다
+00:44 +349: E:/Test_Android/flutter_application_1/test/widget/training/daily_recall_completion_test.dart: 일상 회상은 점수 없이 같은 완료 시도를 재전송한다
+00:44 +350: E:/Test_Android/flutter_application_1/test/widget/training/daily_recall_completion_test.dart: 일상 회상은 점수 없이 같은 완료 시도를 재전송한다
+00:44 +351: E:/Test_Android/flutter_application_1/test/widget/training/daily_recall_completion_test.dart: 일상 회상은 점수 없이 같은 완료 시도를 재전송한다
+00:44 +352: E:/Test_Android/flutter_application_1/test/widget/training/scored_game_completion_test.dart: MultiplicationGame: 마지막 답변은 multiplication 완료 기록을 한 번 저장한다
+00:44 +353: E:/Test_Android/flutter_application_1/test/widget/training/scored_game_completion_test.dart: MultiplicationGame: 마지막 답변은 multiplication 완료 기록을 한 번 저장한다
+00:44 +354: E:/Test_Android/flutter_application_1/test/widget/training/scored_game_completion_test.dart: MultiplicationGame: 마지막 답변은 multiplication 완료 기록을 한 번 저장한다
+00:44 +355: E:/Test_Android/flutter_application_1/test/widget/training/scored_game_completion_test.dart: MultiplicationGame: 마지막 답변은 multiplication 완료 기록을 한 번 저장한다
+00:44 +356: E:/Test_Android/flutter_application_1/test/widget/training/scored_game_completion_test.dart: MultiplicationGame: 마지막 답변은 multiplication 완료 기록을 한 번 저장한다
+00:44 +357: E:/Test_Android/flutter_application_1/test/widget/training/scored_game_completion_test.dart: MultiplicationGame: 마지막 답변은 multiplication 완료 기록을 한 번 저장한다
+00:45 +358: E:/Test_Android/flutter_application_1/test/widget/training/scored_game_completion_test.dart: MultiplicationGame: 마지막 답변은 multiplication 완료 기록을 한 번 저장한다
+00:45 +359: E:/Test_Android/flutter_application_1/test/widget/training/scored_game_completion_test.dart: MultiplicationGame: 마지막 답변은 multiplication 완료 기록을 한 번 저장한다
+00:45 +360: E:/Test_Android/flutter_application_1/test/widget/training/scored_game_completion_test.dart: MultiplicationGame: 마지막 답변은 multiplication 완료 기록을 한 번 저장한다
+00:45 +361: E:/Test_Android/flutter_application_1/test/widget/training/scored_game_completion_test.dart: MultiplicationGame: 마지막 답변은 multiplication 완료 기록을 한 번 저장한다
+00:45 +362: E:/Test_Android/flutter_application_1/test/widget/training/scored_game_completion_test.dart: MultiplicationGame: 마지막 답변은 multiplication 완료 기록을 한 번 저장한다
+00:45 +363: E:/Test_Android/flutter_application_1/test/widget/training/scored_game_completion_test.dart: MultiplicationGame: 마지막 답변은 multiplication 완료 기록을 한 번 저장한다
+00:45 +364: E:/Test_Android/flutter_application_1/test/widget/training/scored_game_completion_test.dart: MultiplicationGame: 마지막 답변은 multiplication 완료 기록을 한 번 저장한다
+00:45 +365: E:/Test_Android/flutter_application_1/test/widget/training/scored_game_completion_test.dart: MultiplicationGame: 마지막 답변은 multiplication 완료 기록을 한 번 저장한다
+00:45 +366: E:/Test_Android/flutter_application_1/test/widget/training/scored_game_completion_test.dart: MultiplicationGame: 마지막 답변은 multiplication 완료 기록을 한 번 저장한다
+00:45 +367: E:/Test_Android/flutter_application_1/test/widget/training/scored_game_completion_test.dart: MultiplicationGame: 마지막 답변은 multiplication 완료 기록을 한 번 저장한다
+00:46 +368: E:/Test_Android/flutter_application_1/test/widget/training/scored_game_completion_test.dart: MultiplicationGame: 마지막 답변은 multiplication 완료 기록을 한 번 저장한다
+00:46 +369: E:/Test_Android/flutter_application_1/test/widget/training/scored_game_completion_test.dart: MultiplicationGame: 마지막 답변은 multiplication 완료 기록을 한 번 저장한다
+00:46 +370: E:/Test_Android/flutter_application_1/test/widget/training/scored_game_completion_test.dart: MultiplicationGame: 마지막 답변은 multiplication 완료 기록을 한 번 저장한다
+00:46 +371: E:/Test_Android/flutter_application_1/test/widget/training/scored_game_completion_test.dart: MultiplicationGame: 마지막 답변은 multiplication 완료 기록을 한 번 저장한다
+00:48 +372: E:/Test_Android/flutter_application_1/test/widget/training/scored_game_completion_test.dart: MultiplicationGame: 마지막 답변은 multiplication 완료 기록을 한 번 저장한다
+00:48 +373: E:/Test_Android/flutter_application_1/test/widget/training/training_hub_screen_test.dart: XP, 오늘 목표, 8개 과정 노드를 표시한다
+00:48 +374: E:/Test_Android/flutter_application_1/test/widget/training/training_progress_widgets_test.dart: 진행 헤더는 레벨과 다음 레벨까지의 경험치를 안내한다
+00:48 +375: E:/Test_Android/flutter_application_1/test/widget/training/training_progress_widgets_test.dart: 진행 헤더는 레벨과 다음 레벨까지의 경험치를 안내한다
+00:48 +376: E:/Test_Android/flutter_application_1/test/widget/voice_assessment/voice_assessment_blocked_screen_test.dart: 음성 진단은 사용 중지 안내만 표시한다
+00:49 +377: E:/Test_Android/flutter_application_1/test/widget/voice_assessment/voice_assessment_blocked_screen_test.dart: 음성 진단은 사용 중지 안내만 표시한다
+00:49 +378: E:/Test_Android/flutter_application_1/test/widget/voice_assessment/voice_assessment_blocked_screen_test.dart: 음성 진단은 사용 중지 안내만 표시한다
+00:49 +379: E:/Test_Android/flutter_application_1/test/widget_test.dart: App smoke test: 로그인 화면이 렌더링된다
+00:49 +380: E:/Test_Android/flutter_application_1/test/widget_test.dart: App smoke test: 로그인 화면이 렌더링된다
+00:49 +381: E:/Test_Android/flutter_application_1/test/widget_test.dart: App smoke test: 로그인 화면이 렌더링된다
+00:49 +382: E:/Test_Android/flutter_application_1/test/widget_test.dart: App smoke test: 로그인 화면이 렌더링된다
+00:49 +383: E:/Test_Android/flutter_application_1/test/widget_test.dart: App smoke test: 로그인 화면이 렌더링된다
+00:49 +384: E:/Test_Android/flutter_application_1/test/widget_test.dart: App smoke test: 로그인 화면이 렌더링된다
+00:49 +385: E:/Test_Android/flutter_application_1/test/widget_test.dart: App smoke test: 로그인 화면이 렌더링된다
+00:50 +386: E:/Test_Android/flutter_application_1/test/widget_test.dart: App smoke test: 로그인 화면이 렌더링된다
+00:50 +387: E:/Test_Android/flutter_application_1/test/widget_test.dart: App smoke test: 로그인 화면이 렌더링된다
+00:50 +388: E:/Test_Android/flutter_application_1/test/widget_test.dart: App smoke test: 로그인 화면이 렌더링된다
+00:50 +389: E:/Test_Android/flutter_application_1/test/widget_test.dart: App smoke test: 로그인 화면이 렌더링된다
+00:50 +390: E:/Test_Android/flutter_application_1/test/widget/training/scored_game_completion_test.dart: ShapeMatchGame: 마지막 답변은 shape_match 완료 기록을 한 번 저장한다
+00:50 +391: E:/Test_Android/flutter_application_1/test/widget/training/scored_game_completion_test.dart: ShapeMatchGame: 마지막 답변은 shape_match 완료 기록을 한 번 저장한다
+00:50 +392: E:/Test_Android/flutter_application_1/test/widget/training/training_hub_screen_test.dart: 코스를 불러오는 동안 스피너 대신 스켈레톤을 그린다(08 계획 G-05)
+00:51 +393: E:/Test_Android/flutter_application_1/test/widget/training/scored_game_completion_test.dart: ComparisonGame: 저장 실패 후 같은 시도만 재전송한다
+00:51 +394: E:/Test_Android/flutter_application_1/test/widget/training/scored_game_completion_test.dart: (tearDownAll)
+00:51 +394: All tests passed!
+exit=0 elapsed=67s
