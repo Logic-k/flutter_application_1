@@ -1,0 +1,136 @@
+// 스크래치: G3 컴포넌트를 실제 서체로 PNG 렌더링해 리포트에 싣는다. 저장소 테스트 아님.
+import 'dart:io';
+import 'dart:ui' as ui;
+
+import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_application_1/core/design_system/components/async_panel.dart';
+import 'package:flutter_application_1/core/design_system/components/card.dart';
+import 'package:flutter_application_1/core/design_system/components/form_section.dart';
+import 'package:flutter_application_1/core/design_system/components/primary_action.dart';
+import 'package:flutter_application_1/core/design_system/components/status_banner.dart';
+import 'package:flutter_application_1/core/design_system/patterns/metric_summary.dart';
+import 'package:flutter_application_1/core/theme.dart';
+
+const _out = 'docs/design/baseline/G3_2026-09-29/preview';
+
+Future<void> _loadFonts() async {
+  final pretendard = FontLoader('Pretendard');
+  for (final w in ['Regular', 'Medium', 'SemiBold', 'Bold', 'ExtraBold']) {
+    pretendard.addFont(Future.value(ByteData.sublistView(File('assets/fonts/Pretendard-$w.ttf').readAsBytesSync())));
+  }
+  await pretendard.load();
+  final icons = FontLoader('MaterialIcons')
+    ..addFont(Future.value(ByteData.sublistView(File(
+        'C:/flutter_windows_3.41.5-stable/flutter/bin/cache/artifacts/material_fonts/materialicons-regular.otf')
+        .readAsBytesSync())));
+  await icons.load();
+}
+
+Widget _caption(String s) => Padding(
+  padding: const EdgeInsets.only(top: 18, bottom: 8),
+  child: Text(s, style: const TextStyle(fontFamily: 'Pretendard', fontSize: 12, fontWeight: FontWeight.w700, color: MLColors.textSoft, letterSpacing: 0.4)),
+);
+
+Future<void> _shoot(WidgetTester tester, String name, List<Widget> children) async {
+  await tester.binding.setSurfaceSize(const Size(411, 2600));
+  const key = Key('shot');
+  await tester.pumpWidget(MaterialApp(
+    debugShowCheckedModeBanner: false,
+    theme: AppTheme.lightTheme,
+    home: Scaffold(body: SingleChildScrollView(child: RepaintBoundary(
+      key: key,
+      child: Container(
+        color: MLColors.bg,
+        padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, mainAxisSize: MainAxisSize.min, children: children),
+      ),
+    ))),
+  ));
+  await tester.pumpAndSettle();
+  final boundary = tester.renderObject<RenderRepaintBoundary>(find.byKey(key));
+  final image = await tester.runAsync(() => boundary.toImage(pixelRatio: 2));
+  final bytes = await tester.runAsync(() => image!.toByteData(format: ui.ImageByteFormat.png));
+  Directory(_out).createSync(recursive: true);
+  File('$_out/$name.png').writeAsBytesSync(bytes!.buffer.asUint8List());
+  debugDisableShadows = true;
+}
+
+void main() {
+  setUpAll(() async => _loadFonts());
+
+  testWidgets('async states', (tester) async {
+    debugDisableShadows = false;
+    Widget panel(MLAsyncStatus s, {bool refreshing = false}) => MLAsyncPanel(
+      status: s,
+      loadingLabel: '걸음 기록을 불러오는 중',
+      emptyMessage: '아직 오늘 걸음 기록이 없어요.\n걷기 측정을 켜면 여기에 쌓여요.',
+      emptyActionLabel: '걷기 측정 켜기',
+      onEmptyAction: () {},
+      errorMessage: '걸음 기록을 불러오지 못했어요.\n잠시 뒤 다시 시도해 주세요.',
+      onRetry: () {},
+      fallbackLabel: '나중에 보기',
+      onFallback: () {},
+      refreshing: refreshing,
+      child: const MLRoleCard(role: MLCardRole.data, child: MLMetricSummary(
+        label: '오늘 걸음 수', value: '3,500', unit: '걸음',
+        interpretation: '평소보다 조금 적어요', source: '오늘 14:05 · 걸음 센서')),
+    );
+    await _shoot(tester, '01_async_panel', [
+      _caption('LOADING — 무엇을 불러오는지 + 정적 스켈레톤'), panel(MLAsyncStatus.loading),
+      _caption('EMPTY — 이유 + 첫 행동'), panel(MLAsyncStatus.empty),
+      _caption('ERROR — 쉬운 설명 + 다시 시도·대안'), panel(MLAsyncStatus.error),
+      _caption('CONTENT + REFRESHING — 내용 유지, 작은 표시'), panel(MLAsyncStatus.content, refreshing: true),
+    ]);
+  });
+
+  testWidgets('status and metric', (tester) async {
+    debugDisableShadows = false;
+    await _shoot(tester, '02_status_metric', [
+      _caption('MLStatusBanner — 아이콘 + 라벨 글자 + 뜻 (면 색 ≠ 글자 색)'),
+      const MLStatusBanner(tone: MLStatusTone.info, message: '매일 저녁 8시에 일기 알림을 보내 드려요.'),
+      const SizedBox(height: 10),
+      const MLStatusBanner(tone: MLStatusTone.success, message: '오늘 일기를 저장했어요.'),
+      const SizedBox(height: 10),
+      MLStatusBanner(tone: MLStatusTone.warning, message: '이번 주 기록이 3일 비어 있어요.', actionLabel: '기록하러 가기', onAction: () {}),
+      const SizedBox(height: 10),
+      const MLStatusBanner(tone: MLStatusTone.danger, message: '보호자에게 보내지 못했어요. 인터넷 연결을 확인해 주세요.'),
+      _caption('MLMetricSummary — 값 있음 / 값 없음(null) / 실제 0'),
+      const MLRoleCard(role: MLCardRole.data, child: MLMetricSummary(label: '평균 수면', value: '6.5', unit: '시간', interpretation: '권장 범위(7~8시간)보다 조금 짧아요', source: '최근 14일 · 건강 기록')),
+      const SizedBox(height: 10),
+      const MLRoleCard(role: MLCardRole.data, child: MLMetricSummary(label: '평균 수면', value: null, unit: '시간', source: '최근 14일 · 건강 기록')),
+      const SizedBox(height: 10),
+      const MLRoleCard(role: MLCardRole.data, child: MLMetricSummary(label: '오늘 걸음 수', value: '0', unit: '걸음', interpretation: '아직 걷지 않았어요')),
+    ]);
+  });
+
+  testWidgets('cards form action', (tester) async {
+    debugDisableShadows = false;
+    TextStyle body() => const TextStyle(fontFamily: 'Pretendard', fontSize: 16, fontWeight: FontWeight.w600, color: MLColors.text);
+    await _shoot(tester, '03_cards_form_action', [
+      _caption('MLRoleCard — hero · standard · interactive · data · support'),
+      const MLRoleCard(role: MLCardRole.hero, child: Text('안녕하세요, 김민준님!\n오늘 훈련 2개가 남았어요.', style: TextStyle(fontFamily: 'Pretendard', fontSize: 19, fontWeight: FontWeight.w800, color: Colors.white))),
+      const SizedBox(height: 12),
+      MLRoleCard(role: MLCardRole.standard, child: Text('standard — 일반 정보, 그림자 없이 outline', style: body())),
+      const SizedBox(height: 12),
+      MLRoleCard(role: MLCardRole.interactive, onTap: () {}, semanticLabel: '누가 큰가요 시작', child: Text('interactive — 카드 전체가 버튼, 눌림 피드백', style: body())),
+      const SizedBox(height: 12),
+      const MLRoleCard(role: MLCardRole.data, child: MLMetricSummary(label: '이번 주 훈련', value: '5', unit: '회', interpretation: '지난주보다 2회 많아요')),
+      const SizedBox(height: 12),
+      MLRoleCard(role: MLCardRole.support, child: Text('support — 도움·면책. 이 앱은 진단 도구가 아니에요.', style: body())),
+      _caption('MLFormSection — 제목(header) · 필수/선택 글자'),
+      const MLFormSection(
+        title: '기본 정보', description: '맞춤 훈련을 위해 나이를 알려 주세요.', requirement: MLFieldRequirement.required,
+        children: [TextField(decoration: InputDecoration(labelText: '나이'))],
+      ),
+      _caption('MLPrimaryAction — 기본 · 제출 중 · 비활성(이유)'),
+      MLPrimaryAction(label: '저장하기', onPressed: () {}),
+      const SizedBox(height: 10),
+      MLPrimaryAction(label: '저장하기', busy: true, busyLabel: '저장하는 중이에요', onPressed: () {}),
+      const SizedBox(height: 10),
+      const MLPrimaryAction(label: '다음', onPressed: null, disabledReason: '필수 동의 2개를 선택하면 다음으로 갈 수 있어요'),
+    ]);
+  });
+}
