@@ -1,10 +1,20 @@
+// ─────────────────────────────────────────────────────────────────────────
+// [TTA 표준 적용] TTAK.KO-10.1497 「인공지능 시스템 신뢰성 제고를 위한 요구사항」
+//
+// 적용 지점: AI 응답 제공자의 폴백 구조(_provider 교체 체계).
+//   GeminiProvider(원격, 개발 빌드 전용) -> LocalFallbackProvider(규칙기반)
+//   온디바이스 Gemma 제공자는 16KB 기기 호환 문제로 출시 범위에서 뺐다(2026-10-04, LAUNCH_AUDIT P0-11).
+//   네트워크 단절이나 API 키 부재 상황에서도 통제된 응답을 유지해, 표준이 요구하는
+//   AI 시스템의 가용성·예측가능성을 확보한다. 초기값을 LocalFallbackProvider로 두어
+//   어떤 실패 경로에서도 응답 없는 상태가 발생하지 않는다.
+//
+// 같은 표준의 나머지 요구사항은 features/reports/clinical_report_generator.dart 에 적용.
+// ─────────────────────────────────────────────────────────────────────────
 import 'package:flutter/foundation.dart';
 import 'ai_provider_interface.dart';
 import 'ai_key_service.dart';
 import 'gemini_provider.dart';
-import 'gemma_local_provider.dart';
 import 'local_fallback_provider.dart';
-import 'model_download_service.dart';
 import '../app_config.dart';
 import '../../features/ai_chat/models/chat_message.dart';
 
@@ -55,7 +65,6 @@ class AiChatService {
 
   static String get currentProviderName => _provider.providerName;
   static bool get isUsingAI => _provider is! LocalFallbackProvider;
-  static bool get isUsingLocalModel => _provider is GemmaLocalProvider;
 
   /// 메시지 전송 — 내부 제공자에 위임
   static Future<String> chat(
@@ -74,14 +83,14 @@ class AiChatService {
   }
 
   static Future<void> _applyBestProvider() async {
-    // 우선순위: 온디바이스 Gemma > Gemini API > LocalFallback
-    if (await ModelDownloadService.isModelReady()) {
-      _provider = GemmaLocalProvider();
-      debugPrint('[AiChatService] 온디바이스 Gemma 모델 사용');
+    if (!AppConfig.isGenerativeAiEnabled) {
+      _provider = LocalFallbackProvider();
+      debugPrint('[AiChatService] 생성형 AI 꺼짐 → 규칙 기반(LocalFallback)만 사용');
       _initialized = true;
       return;
     }
 
+    // 우선순위: Gemini API(키가 있을 때) > LocalFallback
     final key = await AiKeyService.resolveKey(
       dartDefineKey: AppConfig.geminiApiKey,
     );

@@ -1,0 +1,158 @@
+# SQLite schema snapshot (fresh onCreate, debug seed, in-memory)
+user_version=9
+
+tables(10): daily_active_users, daily_steps, diary_entries, health_logs, training_activity_progress, training_attempts, training_scores, training_unlocks, training_user_progress, users
+
+## row counts after onCreate (debug seed)
+daily_active_users	25
+daily_steps	60
+diary_entries	20
+health_logs	0
+training_activity_progress	0
+training_attempts	0
+training_scores	240
+training_unlocks	15
+training_user_progress	3
+users	3
+
+## DDL
+-- table daily_active_users
+CREATE TABLE daily_active_users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        date TEXT NOT NULL,
+        UNIQUE(user_id, date),
+        FOREIGN KEY (user_id) REFERENCES users (id)
+      );
+
+-- table daily_steps
+CREATE TABLE daily_steps (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER,
+        steps INTEGER DEFAULT 0,
+        calories REAL DEFAULT 0,
+        distance REAL DEFAULT 0,
+        date TEXT,
+        FOREIGN KEY (user_id) REFERENCES users (id)
+      );
+
+-- table diary_entries
+CREATE TABLE diary_entries (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        date TEXT NOT NULL,
+        content TEXT NOT NULL DEFAULT '',
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL,
+        UNIQUE(user_id, date),
+        FOREIGN KEY (user_id) REFERENCES users (id)
+      );
+
+-- table health_logs
+CREATE TABLE health_logs (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,
+      date TEXT NOT NULL,
+      sleep_hours REAL,
+      sleep_quality INTEGER,
+      systolic INTEGER,
+      diastolic INTEGER,
+      glucose REAL,
+      diet_score INTEGER,
+      memo TEXT,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      UNIQUE(user_id, date),
+      FOREIGN KEY (user_id) REFERENCES users (id)
+    );
+
+-- table training_activity_progress
+CREATE TABLE training_activity_progress (
+        user_id INTEGER NOT NULL,
+        activity_id TEXT NOT NULL,
+        best_score REAL NULL CHECK(best_score BETWEEN 0 AND 100),
+        mastery_stars INTEGER NOT NULL DEFAULT 0
+          CHECK(mastery_stars BETWEEN 0 AND 3),
+        completion_count INTEGER NOT NULL DEFAULT 0
+          CHECK(completion_count >= 0),
+        first_completed_at TEXT NULL,
+        last_completed_at TEXT NULL,
+        PRIMARY KEY (user_id, activity_id),
+        FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+      );
+
+-- table training_attempts
+CREATE TABLE training_attempts (
+        id TEXT PRIMARY KEY,
+        user_id INTEGER NOT NULL,
+        activity_id TEXT NOT NULL,
+        score REAL NULL CHECK(score BETWEEN 0 AND 100),
+        correct_answers INTEGER NULL,
+        total_questions INTEGER NULL,
+        duration_ms INTEGER NULL CHECK(duration_ms >= 0),
+        xp_earned INTEGER NOT NULL CHECK(xp_earned >= 0),
+        completed_at TEXT NOT NULL,
+        local_date TEXT NOT NULL,
+        FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+      );
+
+-- table training_scores
+CREATE TABLE training_scores (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER,
+        category TEXT,
+        score REAL,
+        created_at TEXT,
+        FOREIGN KEY (user_id) REFERENCES users (id)
+      );
+
+-- table training_unlocks
+CREATE TABLE training_unlocks (
+        user_id INTEGER NOT NULL,
+        activity_id TEXT NOT NULL,
+        unlocked_at TEXT NOT NULL,
+        source TEXT NOT NULL,
+        PRIMARY KEY (user_id, activity_id),
+        FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+      );
+
+-- table training_user_progress
+CREATE TABLE training_user_progress (
+        user_id INTEGER PRIMARY KEY,
+        total_xp INTEGER NOT NULL DEFAULT 0 CHECK(total_xp >= 0),
+        current_streak INTEGER NOT NULL DEFAULT 0 CHECK(current_streak >= 0),
+        longest_streak INTEGER NOT NULL DEFAULT 0 CHECK(longest_streak >= 0),
+        last_training_date TEXT NULL,
+        updated_at TEXT NOT NULL,
+        FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+      );
+
+-- table users
+CREATE TABLE users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT UNIQUE,
+        name TEXT,
+        password TEXT,
+        password_hash TEXT,
+        password_salt TEXT,
+        session_token TEXT,
+        goal TEXT,
+        age INTEGER,
+        weight REAL,
+        blood_type TEXT,
+        medications TEXT,
+        emergency_contact TEXT,
+        pedometer_enabled INTEGER DEFAULT 0,
+        has_completed_onboarding INTEGER DEFAULT 0
+      );
+
+-- index idx_training_attempts_user_activity_completed
+CREATE INDEX idx_training_attempts_user_activity_completed
+      ON training_attempts (user_id, activity_id, completed_at)
+    ;
+
+-- index idx_training_attempts_user_date
+CREATE INDEX idx_training_attempts_user_date
+      ON training_attempts (user_id, local_date)
+    ;
+

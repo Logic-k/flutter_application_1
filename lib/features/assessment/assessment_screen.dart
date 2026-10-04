@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import '../../core/theme.dart';
+import '../../core/motion/app_motion.dart';
+import '../../core/motion/motion_settings.dart';
 import '../../core/user_provider.dart';
 
 class AssessmentScreen extends StatefulWidget {
@@ -33,10 +36,14 @@ class _AssessmentScreenState extends State<AssessmentScreen> {
     context.read<UserProvider>().setSurveyAnswer(_currentPage, answer);
     
     if (_currentPage < _questions.length - 1) {
-      _pageController.nextPage(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
+      if (MotionSettings.reduceOf(context, listen: false)) {
+        _pageController.jumpToPage(_currentPage + 1);
+      } else {
+        _pageController.nextPage(
+          duration: AppMotion.route,
+          curve: Curves.easeInOut,
+        );
+      }
     } else {
       context.push('/cognitive_tasks');
     }
@@ -51,6 +58,7 @@ class _AssessmentScreenState extends State<AssessmentScreen> {
         title: Text('자가 체크 (${_currentPage + 1}/${_questions.length})'),
         leading: IconButton(
           icon: const Icon(Icons.close),
+          tooltip: '닫기',
           onPressed: () => context.pop(),
         ),
       ),
@@ -86,7 +94,7 @@ class _AssessmentScreenState extends State<AssessmentScreen> {
                               onPressed: () => _onAnswer(1),
                               style: OutlinedButton.styleFrom(
                                 padding: const EdgeInsets.symmetric(vertical: 24),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.rTile)),
                               ),
                               child: const Text('예', style: TextStyle(fontSize: 18)),
                             ),
@@ -97,7 +105,7 @@ class _AssessmentScreenState extends State<AssessmentScreen> {
                               onPressed: () => _onAnswer(0),
                               style: OutlinedButton.styleFrom(
                                 padding: const EdgeInsets.symmetric(vertical: 24),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.rTile)),
                               ),
                               child: const Text('아니오', style: TextStyle(fontSize: 18)),
                             ),

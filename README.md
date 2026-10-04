@@ -78,7 +78,7 @@ MemoryLink는 **기억력 저하가 걱정되는 60~80대 사용자와 그 가�
 
 <div align="center">
 <img src="07_reports.png" width="160" alt="주간 리포트">
-<img src="09_clinical_report.png" width="160" alt="임상 리포트">
+<img src="09_clinical_report.png" width="160" alt="활동 기록 리포트">
 <img src="10_profile.png" width="160" alt="프로필">
 <img src="12_guardian_link.png" width="160" alt="보호자 연결">
 <img src="13_voice_assessment.png" width="160" alt="음성 평가">
@@ -99,7 +99,7 @@ MemoryLink는 **기억력 저하가 걱정되는 60~80대 사용자와 그 가�
     <td align="center" width="25%"><img src="docs/demo/04_walking_lifestyle.gif" width="200" alt="만보기 · 보행 분석"><br><b>만보기 · 보행 분석</b><br><sub>걸음 측정·정밀 분석 (15초)</sub></td>
   </tr>
   <tr>
-    <td align="center" width="25%"><img src="docs/demo/05_reports.gif" width="200" alt="주간 · 임상 리포트"><br><b>주간 · 임상 리포트</b><br><sub>인지 지표·리포트 생성 (20초)</sub></td>
+    <td align="center" width="25%"><img src="docs/demo/05_reports.gif" width="200" alt="주간 · 활동 기록 리포트"><br><b>주간 · 활동 기록 리포트</b><br><sub>인지 지표·리포트 생성 (20초)</sub></td>
     <td align="center" width="25%"><img src="docs/demo/06_ai_chat.gif" width="200" alt="AI 회상 대화"><br><b>AI 회상 대화</b><br><sub>Gemini 회상 요법 챗봇 (29초)</sub></td>
     <td align="center" width="25%"><img src="docs/demo/07_memory_garden.gif" width="200" alt="기억의 정원"><br><b>기억의 정원 (일기)</b><br><sub>달력 일기 작성·모아보기 (11초)</sub></td>
     <td align="center" width="25%"><img src="docs/demo/08_guardian_safety.gif" width="200" alt="보호자 연결 · 안전"><br><b>보호자 연결 · 안전</b><br><sub>QR·대시보드·응급 전화 (21초)</sub></td>
@@ -120,7 +120,7 @@ MemoryLink는 **기억력 저하가 걱정되는 60~80대 사용자와 그 가�
 | 📈 인지 평가 영역 | **4개** (계산·논리·기억·집중) |
 | 🎯 적응형 난이도 | **10단계** |
 | 📋 PDF 리포트 | **4페이지** |
-| 🧪 자동화 테스트 | **flutter test 117 · Maestro E2E 17 flow** |
+| 🧪 자동화 테스트 | [**실측 기준선**](DEVELOPMENT_ROADMAP.md#baseline) |
 | 📲 화면 수 | **30+** |
 
 </div>
@@ -387,7 +387,7 @@ lib/
 /memory_garden                 일기 작성
 /diary_book                    일기 조회
 /ai_chat                       AI 회상 대화
-/report_options                임상 리포트 옵션
+/report_options                활동 기록 리포트 옵션
 /profile                       프로필
 /guardian_link                 보호자 연결
 /cs_center                     CS 센터
@@ -400,11 +400,11 @@ lib/
 <details>
 <summary>🧪 QA 현황 펼치기</summary>
 
-| 테스트 유형 | 수량 |
-|---|---|
-| flutter test (단위·위젯) | 117개 통과 |
-| 통합 테스트 | 5개 |
-| Maestro E2E flow | 17개 통과 (게이팅) + 스크린샷 투어 |
+실측 수치(테스트 통과 수·analyze·Maestro flow·AAB 크기)는 한 곳에서만 관리한다 —
+**[DEVELOPMENT_ROADMAP.md §1 실측 기준선](DEVELOPMENT_ROADMAP.md#baseline)**.
+여기에 값을 복사해 두면 코드보다 먼저 낡는다.
+
+아래 명령을 직접 돌리면 그 값을 재현할 수 있다.
 
 ```bash
 flutter analyze
@@ -427,9 +427,13 @@ flutter build apk
 | AI 대화 | Gemini REST API + 로컬 폴백 완료 |
 | 리포트 | 차트 + 4페이지 PDF 생성 완료 |
 | 보호자 연계 | Firestore 공유 + 로컬 이상 알림 완료 |
-| 음성 평가 | STT + 규칙 기반 지표(TTR/WPM) 완료 |
+| 음성 평가 | **중지됨** — 정확도 개선 전까지 안내 화면으로 대체 (`/voice_assessment`) |
+| 공공데이터 | 치매안심센터 찾기 (공공데이터포털 「국립중앙의료원_치매안심센터 정보」) |
 | 관리자 | CS 관리 + 사용자 조회 화면 완료 |
 | 설정·건강 기록 | 통합 설정 화면(`/settings`) + 혈압·혈당 등 건강 기록 입력 완료 |
+
+> 이 표는 "저장소에 실행 경로가 있다"는 뜻이며, 임상적 유효성이나 의료기기 적합성을
+> 의미하지 않는다. 다음 분기 우선순위와 알려진 한계는 [DEVELOPMENT_ROADMAP.md](DEVELOPMENT_ROADMAP.md) 참조.
 
 </details>
 
@@ -468,6 +472,14 @@ flutter build apk
 <br>
 
 **2026 캡스톤 디자인 프로젝트** · 팀 MemoryLink
+
+### 2026-10-03 격리 QA 인계
+
+보호자 연결은 성공한 동기화의 시각과 실패 상태를 구분한다. Firebase 비가용 상황에서는 로컬 탐색을 유지하며, 정상 동기화 payload에서 긴급 연락처를 제외하고 이상 알림의 연락 기능을 보존한다. 기존 정상 문서의 번호는 소유자가 정상 재동기화를 성공하기 전까지 공개 REST 응답에 남을 수 있다.
+
+부팅 자동 시작을 명시적으로 끄고, OFF·계정 전환·늦은 권한 응답·dispose 경계를 합성 SDK 채널에서 검증한다. 실제 재부팅·OS 서비스 종료·업데이트 후 앱 실행 전 상태는 전용 합성 단말에서 별도 검증해야 한다. Guardian 웹과 Firestore 규칙의 로컬 수정은 운영 배포를 의미하지 않는다.
+
+`flutter analyze --no-pub --no-fatal-infos`, `flutter test --no-pub --reporter expanded`, `flutter build apk --debug --no-pub`의 실행 결과는 별도 QA 로그를 따른다. 기존 skip 2건은 통과로 세지 않는다. release 설정의 debug 서명 폴백도 정식 배포 서명으로 간주하지 않는다. 링크 만료·회전·해지 정책은 이번에 임의로 정하지 않았다.
 
 [![Contact](https://img.shields.io/badge/Contact-teammemorylink@gmail.com-6C5CE7?style=flat-square&logo=gmail&logoColor=white)](mailto:teammemorylink@gmail.com)
 

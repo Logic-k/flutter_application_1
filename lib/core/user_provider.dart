@@ -87,10 +87,25 @@ class UserProvider extends ChangeNotifier {
     final String? token = prefs.getString('session_token');
     final String? legacyPassword = prefs.getString('password');
 
+    // 저장된 세션이 없으면 DB를 열 이유가 없다.
+    //
+    // 신규 설치·clearState 직후가 정확히 이 경우인데, 예전에는 그런 상황에서도
+    // _dbHelper에 도달해 SQLite 최초 생성(DDL 12건 + 데모 시드 수백 건)이
+    // 통째로 돌 때까지 앱이 로딩 스피너에 묶여 있었다. 로그인 화면이 나오기까지
+    // 40초를 넘겨 E2E가 타임아웃될 정도였다.
+    //
+    // DB 생성은 사용자가 로그인·회원가입을 실제로 누를 때 일어나면 되고,
+    // 그 시점에는 이미 화면이 떠 있어 진행 표시를 줄 수 있다.
+    if (username == null) {
+      _isLoading = false;
+      notifyListeners();
+      return;
+    }
+
     Map<String, dynamic>? user;
-    if (username != null && token != null) {
+    if (token != null) {
       user = await _dbHelper.getUserBySessionToken(username, token);
-    } else if (username != null && legacyPassword != null) {
+    } else if (legacyPassword != null) {
       // 구버전(평문 저장) 세션 → 검증 후 토큰 방식으로 이전
       user = await _dbHelper.getUser(username, legacyPassword);
     }
@@ -101,7 +116,7 @@ class UserProvider extends ChangeNotifier {
       await _dbHelper.recordDauIfNeeded(user['id'] as int);
       await _loadUserDataFromDB();
       debugPrint('Auto-login success for: $username');
-    } else if (username != null) {
+    } else {
       debugPrint('Auto-login failed: session invalid');
     }
     _isLoading = false;
@@ -191,6 +206,7 @@ class UserProvider extends ChangeNotifier {
     _logicScore = 0;
     _memoryScore = 0;
     _attentionScore = 0;
+    _voiceScore = 0;
     
     for (var score in scores) {
       setCognitiveScore(score['category'], score['score'], persist: false);

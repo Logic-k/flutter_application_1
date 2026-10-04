@@ -3,9 +3,8 @@ appId: com.teammemorylink.memorylink
 # 리포트 화면 테스트
 - runFlow: helpers/login_helper.yaml
 
-# 리포트 탭 (64%, 93%)
-- tapOn:
-    point: "64%,93%"
+# 리포트 탭
+- tapOn: "리포트"
 - extendedWaitUntil:
     visible: "주간 분석 리포트"
     timeout: 8000
@@ -17,16 +16,15 @@ appId: com.teammemorylink.memorylink
     timeout: 10000
 - assertVisible: "나의 인지 건강 일기"
 
-# 임상 리포트 버튼 확인
+# 활동 기록 리포트 버튼 확인
 - scrollUntilVisible:
     element:
-      text: "임상 리포트 생성하기"
+      text: "활동 기록 리포트 생성하기"
     direction: DOWN
-- assertVisible: "임상 리포트 생성하기"
+- assertVisible: "활동 기록 리포트 생성하기"
 
-# 홈 탭으로 복귀 (다른 탭 활성화 시 홈 탭 위치가 23-24%로 이동)
-- tapOn:
-    point: "24%,93%"
+# 홈 탭으로 복귀
+- tapOn: "홈"
 - waitForAnimationToEnd:
     timeout: 3000
 - extendedWaitUntil:

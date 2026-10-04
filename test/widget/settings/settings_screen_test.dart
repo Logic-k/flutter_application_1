@@ -1,9 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_application_1/features/settings/settings_screen.dart';
 
+import '../../helpers/mock_definitions.dart';
 import '../../helpers/test_helpers.dart';
+
+/// 토글 행을 눌렀을 때 어떤 설정을 무엇으로 바꾸는지 기록한다.
+class _RecordingSettings extends FakeSettingsProvider {
+  final calls = <String>[];
+  @override
+  Future<void> setSoundEffects(bool enabled) async => calls.add('sound:$enabled');
+  @override
+  Future<void> setReduceMotion(bool enabled) async => calls.add('motion:$enabled');
+}
 
 void main() {
   setUp(() {
@@ -37,10 +48,118 @@ void main() {
     );
   });
 
+  testWidgets('SettingsScreen: 효과음·움직임 줄이기 토글이 접근성 카드에 있다', (tester) async {
+    await pump(tester);
+
+    expect(find.text('효과음'), findsOneWidget);
+    expect(find.text('움직임 줄이기'), findsOneWidget);
+    expect(find.byType(Switch), findsNWidgets(5));
+  });
+
+  testWidgets('토글 행은 글자를 눌러도 스위치와 같은 설정을 바꾼다', (tester) async {
+    final settings = _RecordingSettings();
+    await pumpWithProviders(tester, const SettingsScreen(), settingsProvider: settings);
+    await tester.pump();
+
+    await tester.ensureVisible(find.text('효과음'));
+    await tester.tap(find.text('효과음'));
+    await tester.ensureVisible(find.text('움직임 줄이기'));
+    await tester.tap(find.text('움직임 줄이기'));
+    await tester.pump();
+
+    expect(settings.calls, ['sound:${!settings.soundEffectsEnabled}', 'motion:${!settings.reduceMotion}']);
+  });
+
   testWidgets('SettingsScreen: 개인정보 처리방침·로그아웃 행이 존재한다', (tester) async {
     await pump(tester);
 
     expect(find.text('개인정보 처리방침'), findsOneWidget);
     expect(find.text('로그아웃'), findsOneWidget);
+  });
+
+  testWidgets('서버 데이터 삭제는 기기 기록이 남는다고 알리고 확인을 먼저 묻는다', (tester) async {
+    final user = MockUserProvider();
+    when(() => user.currentUser).thenReturn({'id': 1, 'username': 'Synthetic user'});
+    await pumpWithProviders(tester, const SettingsScreen(), userProvider: user);
+    await tester.pump();
+
+    await tester.scrollUntilVisible(find.text('서버에 저장된 내 데이터 삭제'), 300,
+        scrollable: find.byType(Scrollable).first);
+    await tester.tap(find.text('서버에 저장된 내 데이터 삭제'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('서버 데이터 삭제'), findsOneWidget);
+    expect(find.textContaining('건강 기록, 일기는 그대로 남습니다'), findsOneWidget);
+    await tester.tap(find.text('취소'));
+    await tester.pumpAndSettle();
+    expect(find.text('서버 데이터 삭제'), findsNothing);
+  });
+
+  testWidgets('SettingsScreen: 정보 영역에 한이음 사사문구가 표시된다', (tester) async {
+    await pump(tester);
+
+    expect(find.textContaining('과학기술정보통신부 대학디지털교육역량강화사업'), findsOneWidget);
+  });
+
+  testWidgets('초기화 성공 후에만 완료 메시지를 표시하고 진행 상태를 갱신한다', (
+    tester,
+  ) async {
+    final user = MockUserProvider();
+    final progress = MockTrainingProgressProvider();
+    when(() => user.resetMeasurementData()).thenAnswer((_) async {});
+    when(() => progress.refresh()).thenAnswer((_) async {});
+    await pumpWithProviders(
+      tester,
+      const SettingsScreen(),
+      userProvider: user,
+      trainingProgressProvider: progress,
+    );
+    await tester.pump();
+
+    await tester.scrollUntilVisible(
+      find.text('측정 데이터 초기화'),
+      300,
+    );
+    await tester.tap(find.text('측정 데이터 초기화'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(TextButton, '초기화'));
+    await tester.pumpAndSettle();
+
+    verify(() => user.resetMeasurementData()).called(1);
+    verify(() => progress.refresh()).called(1);
+    expect(find.text('데이터가 초기화되었습니다.'), findsOneWidget);
+    expect(find.text('데이터 초기화'), findsNothing);
+  });
+
+  testWidgets('초기화 실패 시 성공 메시지를 표시하지 않고 재시도할 수 있다', (
+    tester,
+  ) async {
+    final user = MockUserProvider();
+    final progress = MockTrainingProgressProvider();
+    when(() => user.resetMeasurementData()).thenThrow(Exception('disk'));
+    await pumpWithProviders(
+      tester,
+      const SettingsScreen(),
+      userProvider: user,
+      trainingProgressProvider: progress,
+    );
+    await tester.pump();
+
+    await tester.scrollUntilVisible(
+      find.text('측정 데이터 초기화'),
+      300,
+    );
+    await tester.tap(find.text('측정 데이터 초기화'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(TextButton, '초기화'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('데이터가 초기화되었습니다.'), findsNothing);
+    expect(
+      find.text('데이터를 초기화하지 못했습니다. 다시 시도해 주세요.'),
+      findsOneWidget,
+    );
+    expect(find.text('데이터 초기화'), findsOneWidget);
+    expect(find.widgetWithText(TextButton, '초기화'), findsOneWidget);
   });
 }

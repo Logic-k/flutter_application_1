@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../core/version_label.dart';
 import '../../core/user_provider.dart';
 import '../../core/ml_widgets.dart';
 import '../../core/theme.dart';
@@ -17,7 +18,7 @@ class ProfileScreen extends StatelessWidget {
     final user = userProvider.currentUser;
 
     if (user == null) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator(color: MLColors.primary)));
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     return Scaffold(
@@ -26,6 +27,7 @@ class ProfileScreen extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.edit_outlined),
+            tooltip: '프로필 수정',
             onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const EditProfileScreen())),
           ),
           IconButton(
@@ -36,7 +38,8 @@ class ProfileScreen extends StatelessWidget {
         ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(22, 6, 22, 110),
+        padding: const EdgeInsets.fromLTRB(
+            22, 6, 22, FloatingPillNav.contentBottomInset),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -59,13 +62,31 @@ class ProfileScreen extends StatelessWidget {
             ),
             const SizedBox(height: 22),
 
+            // 초기 평가 결과 화면에서만 갈 수 있으면, 온보딩을 마친 사용자는
+            // 다시 찾아갈 방법이 없다. 상담이 필요해지는 시점은 가입 직후가
+            // 아니라 나중이므로 상시 진입점을 둔다.
+            MLSectionTitle('상담과 도움'),
+            Semantics(
+              identifier: 'dementia_center_card',
+              child: MLCard(
+                padding: EdgeInsets.zero,
+                child: MLListRow(
+                  icon: Icons.place_rounded, color: MLColors.care,
+                  title: '가까운 치매안심센터 찾기',
+                  subtitle: '전국 센터 안내 · 치매상담콜센터 1899-9988',
+                  onTap: () => context.push('/dementia_centers'),
+                ),
+              ),
+            ),
+            const SizedBox(height: 22),
+
             MLSectionTitle('고객센터'),
             Semantics(
               identifier: 'cs_center_card',
               child: MLCard(
                 padding: EdgeInsets.zero,
                 child: MLListRow(
-                  icon: Icons.support_agent_rounded, color: MLColors.primary,
+                  icon: Icons.support_agent_rounded, color: context.scheme.primary,
                   title: '고객센터',
                   subtitle: '공지사항, FAQ, 1:1 문의',
                   onTap: () => context.push('/cs_center'),
@@ -86,12 +107,7 @@ class ProfileScreen extends StatelessWidget {
             ),
             const SizedBox(height: 32),
 
-            Center(
-              child: GestureDetector(
-                onLongPress: () => context.push('/admin_login'),
-                child: const Text('MemoryLink v1.0.0', style: TextStyle(fontSize: 12, color: MLColors.textFaint)),
-              ),
-            ),
+            const MLVersionLabel(),
           ],
         ),
       ),
@@ -114,11 +130,11 @@ class ProfileScreen extends StatelessWidget {
               Container(
                 width: 72, height: 72,
                 decoration: BoxDecoration(
-                  color: MLColors.primarySoft,
-                  borderRadius: BorderRadius.circular(24),
+                  color: context.scheme.primaryContainer,
+                  borderRadius: BorderRadius.circular(AppTheme.rSheet),
                   image: hasImage ? DecorationImage(image: FileImage(File(imagePath)), fit: BoxFit.cover) : null,
                 ),
-                child: hasImage ? null : const Icon(Icons.person_rounded, size: 36, color: MLColors.primary),
+                child: hasImage ? null : Icon(Icons.person_rounded, size: 36, color: context.scheme.primary),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -127,18 +143,18 @@ class ProfileScreen extends StatelessWidget {
                   children: [
                     Text(
                       (user['name'] as String?)?.isNotEmpty == true ? user['name'] : user['username'] ?? '사용자',
-                      style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
+                      style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
                     ),
                     const SizedBox(height: 3),
-                    Text('아이디: ${user['username'] ?? ''}', style: const TextStyle(fontSize: 13, color: MLColors.textSoft)),
+                    Text('아이디: ${user['username'] ?? ''}', style: TextStyle(fontSize: 13, color: context.scheme.onSurfaceVariant)),
                   ],
                 ),
               ),
               OutlinedButton(
                 onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const EditProfileScreen())),
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: MLColors.primary,
-                  side: const BorderSide(color: MLColors.primary),
+                  foregroundColor: context.scheme.primary,
+                  side: BorderSide(color: context.scheme.primary),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.rBtn)),
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                 ),
@@ -157,18 +173,18 @@ class ProfileScreen extends StatelessWidget {
       padding: EdgeInsets.zero,
       child: Column(children: [
         MLListRow(icon: Icons.calendar_today_rounded, color: MLColors.calc, title: '나이', trailing: Text('${up.age ?? "-"} 세', style: const TextStyle(fontWeight: FontWeight.w700))),
-        Divider(height: 1, color: MLColors.line),
+        const Divider(),
         MLListRow(icon: Icons.monitor_weight_rounded, color: MLColors.mem, title: '몸무게', trailing: Text('${up.weight ?? "-"} kg', style: const TextStyle(fontWeight: FontWeight.w700))),
-        Divider(height: 1, color: MLColors.line),
+        const Divider(),
         MLListRow(icon: Icons.bloodtype_rounded, color: MLColors.bad, title: '혈액형', trailing: Text(up.bloodType ?? '미설정', style: const TextStyle(fontWeight: FontWeight.w700))),
-        Divider(height: 1, color: MLColors.line),
+        const Divider(),
         MLListRow(icon: Icons.medical_services_rounded, color: MLColors.warn, title: '복용 약물', trailing: Text(up.medications ?? '없음', style: const TextStyle(fontWeight: FontWeight.w700))),
-        Divider(height: 1, color: MLColors.line),
+        const Divider(),
         MLListRow(icon: Icons.notifications_active_rounded, color: MLColors.sky, title: '비상 연락처', trailing: Text(up.emergencyContact ?? '미설정', style: const TextStyle(fontWeight: FontWeight.w700))),
-        Divider(height: 1, color: MLColors.line),
-        MLListRow(icon: Icons.mic_rounded, color: MLColors.logic, title: '음성 진단', subtitle: '인지 건강 초기 진단 재실행', onTap: () => context.push('/voice_assessment')),
-        Divider(height: 1, color: MLColors.line),
-        MLListRow(icon: Icons.health_and_safety_rounded, color: MLColors.primary, title: '건강 기록', subtitle: '수면·혈압·식이 기록 및 추세', onTap: () => context.push('/health_input')),
+        const Divider(),
+        MLListRow(icon: Icons.mic_off_rounded, color: context.scheme.onSurfaceVariant, title: '말하기 기록', subtitle: '준비 중 · 정확도 개선을 위해 현재 사용 중지', onTap: () => context.push('/voice_assessment')),
+        const Divider(),
+        MLListRow(icon: Icons.health_and_safety_rounded, color: context.scheme.primary, title: '건강 기록', subtitle: '수면·혈압·식이 기록 및 추세', onTap: () => context.push('/health_input')),
       ]),
     );
   }

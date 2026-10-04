@@ -14,19 +14,40 @@ class GaitProvider with ChangeNotifier {
 
   bool _isMeasuring = false;
   int _steps = 0;
-  double _variability = 0.0;
+  double? _cv;
+  int _samples = 0;
   final List<double> _liveAccData = []; // 실시간 파형 시각화용 데이터
-  
+
+  /// 마지막으로 끝낸 세션의 요약. 측정 중이 아닐 때 화면이 보여줄 값이다.
+  Map<String, dynamic>? _lastSummary;
+
   bool get isMeasuring => _isMeasuring;
   int get steps => _steps;
-  double get variability => _variability;
+
+  /// 걸음 간격 변동계수(%). 표본이 부족하면 null — 화면은 값 대신 안내를 보여준다.
+  double? get stepIntervalCv => _cv;
+
+  /// 변동성 계산에 쓰인 표본 수.
+  int get sampleCount => _samples;
+
+  /// 목표 표본까지의 진행률 (0.0~1.0).
+  double get sampleProgress =>
+      (_samples / GaitAnalyzer.minIntervalsForVariability).clamp(0.0, 1.0);
+
+  bool get hasEnoughSamples =>
+      _samples >= GaitAnalyzer.minIntervalsForVariability;
+
+  Map<String, dynamic>? get lastSummary => _lastSummary;
+
   List<double> get liveAccData => _liveAccData;
 
   /// 보행 분석 시작
   void startMeasurement() {
     _isMeasuring = true;
     _steps = 0;
-    _variability = 0.0;
+    _cv = null;
+    _samples = 0;
+    _lastSummary = null;
     _liveAccData.clear();
     _analyzer.reset();
 
@@ -49,7 +70,8 @@ class GaitProvider with ChangeNotifier {
 
       if (isStep) {
         _steps = _analyzer.stepCount;
-        _variability = _analyzer.gaitVariability;
+        _samples = _analyzer.intervalSampleCount;
+        _cv = _analyzer.stepIntervalCv;
       }
 
       // 100Hz 샘플마다 전체 리빌드를 유발하지 않도록
@@ -67,7 +89,11 @@ class GaitProvider with ChangeNotifier {
     _accSubscription?.cancel();
     _accSubscription = null;
     _sensingService.stopSensing();
+
     final summary = _analyzer.getSummary();
+    _lastSummary = summary;
+    _samples = _analyzer.intervalSampleCount;
+    _cv = _analyzer.stepIntervalCv;
 
     notifyListeners();
     return summary;

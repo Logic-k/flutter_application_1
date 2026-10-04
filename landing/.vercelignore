@@ -1,0 +1,2 @@
+# Cloudflare Pages 전용 파일. Vercel 배포본에 평문으로 노출될 이유가 없다.
+_headers

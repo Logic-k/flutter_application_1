@@ -23,25 +23,11 @@ if (-not $devices) {
 Write-Host "✅ $($devices.Line.Trim())" -ForegroundColor Green
 
 # ── 실행할 flow 목록 ────────────────────────────────────────────────
-$flows = @(
-    "maestro/login_flow.yaml",
-    "maestro/login_fail_flow.yaml",
-    "maestro/register_flow.yaml",
-    "maestro/navigation_flow.yaml",
-    "maestro/training_hub_flow.yaml",
-    "maestro/profile_flow.yaml",
-    "maestro/cs_center_flow.yaml",
-    "maestro/reports_flow.yaml",
-    "maestro/voice_assessment_flow.yaml",
-    "maestro/social_ranking_flow.yaml",
-    "maestro/guardian_link_flow.yaml",
-    "maestro/home_detail_flow.yaml",
-    "maestro/ai_chat_flow.yaml",
-    "maestro/memory_garden_flow.yaml",
-    "maestro/training_game_flow.yaml",
-    "maestro/edit_profile_flow.yaml",
-    "maestro/clinical_report_flow.yaml"
-)
+# 게이팅 목록의 정본은 maestro/gating_flows.txt 다. CI(scripts/maestro_gating.sh)도 같은 파일을 읽는다.
+# 게이팅 제외 flow와 목록 변경 이력도 그 파일에 적는다.
+$flows = @(Get-Content -Encoding UTF8 (Join-Path $projectRoot "maestro/gating_flows.txt") |
+    ForEach-Object { $_.Trim() } |
+    Where-Object { $_ -ne "" -and -not $_.StartsWith("#") })
 
 if ($Flow -ne "") {
     $flows = @("maestro/${Flow}.yaml")

@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import '../../core/theme.dart';
+import '../../core/motion/app_motion.dart';
+import '../../core/motion/motion_settings.dart';
+import '../../core/motion/pressable_scale.dart';
 import '../../core/user_provider.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -202,12 +206,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(
                           color: theme.colorScheme.secondaryContainer,
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(AppTheme.rChip),
                         ),
                         child: Text(
                           '나중에 입력해도 됩니다',
                           style: TextStyle(
-                            fontSize: 11,
+                            fontSize: 12,
                             color: theme.colorScheme.onSecondaryContainer,
                           ),
                         ),
@@ -268,7 +272,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   onPressed: _handleRegister,
                   style: ElevatedButton.styleFrom(
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16)),
+                        borderRadius: BorderRadius.circular(AppTheme.rTile)),
                     elevation: 0,
                   ),
                   child: const Text('가입 완료',
@@ -284,19 +288,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   Widget _buildGoalSelector(ThemeData theme) {
     final goals = ['예방', '걱정', '가족 관리'];
+    // 선택 색 전환은 불투명도·색 변화라 움직임 줄이기(fadeOnly)에서도 남긴다.
+    final fade = MotionSettings.levelOf(context) == MotionLevel.none
+        ? Duration.zero
+        : AppMotion.fade;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: goals.map((goal) {
         bool isSelected = _selectedGoal == goal;
-        return InkWell(
+        // DESIGN.md §4 눌림 피드백은 필수다.
+        return PressableScale(
+          child: InkWell(
           onTap: () => setState(() => _selectedGoal = goal),
-          child: Container(
+          borderRadius: BorderRadius.circular(AppTheme.rField),
+          child: AnimatedContainer(
+            duration: fade,
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             decoration: BoxDecoration(
               color: isSelected
                   ? theme.colorScheme.primary
                   : theme.colorScheme.surface,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(AppTheme.rField),
               border: Border.all(
                 color: isSelected
                     ? theme.colorScheme.primary
@@ -312,6 +324,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               ),
             ),
+          ),
           ),
         );
       }).toList(),

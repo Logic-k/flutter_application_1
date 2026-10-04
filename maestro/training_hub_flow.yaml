@@ -1,41 +1,64 @@
-﻿appId: com.teammemorylink.memorylink
+appId: com.teammemorylink.memorylink
 ---
-# 인지훈련 허브 및 게임 진입 테스트
 - runFlow: helpers/login_helper.yaml
-
-# 인지훈련 탭 (30%, 93%)
-- tapOn:
-    point: "43%,93%"
+- tapOn: "인지훈련"
 - extendedWaitUntil:
     visible: "두뇌 트레이닝 센터"
-    timeout: 5000
-
-# 훈련 화면 및 카테고리 타이틀 확인
-- assertVisible: "두뇌 트레이닝 센터"
-- assertVisible: "계산 및 판단력"
-
-# 스크롤하며 나머지 카테고리 확인
+    timeout: 10000
+- assertVisible: ".*레벨 1.*"
+- assertVisible: ".*오늘 목표 0/3.*"
 - scrollUntilVisible:
     element:
-      text: "논리 및 추론"
+      text: ".*누가 큰가요.*"
     direction: DOWN
-- assertVisible: "논리 및 추론"
-
+    visibilityPercentage: 50
+- assertVisible: ".*누가 큰가요.*"
+- assertVisible: ".*도전 가능.*"
 - scrollUntilVisible:
     element:
-      text: "기억 및 지각"
+      text: ".*구구단 맞추기.*"
     direction: DOWN
-- assertVisible: "기억 및 지각"
-
+- assertVisible: ".*구구단 맞추기.*"
+- assertVisible: ".*잠김.*"
 - scrollUntilVisible:
     element:
-      text: "스마트 케어"
+      text: ".*규칙 찾아보기.*"
     direction: DOWN
-- assertVisible: "스마트 케어"
-
-# 위로 스크롤 후 뒤로가기
+    visibilityPercentage: 50
+- assertVisible: ".*규칙 찾아보기.*"
+- assertVisible: ".*도전 가능.*"
 - scrollUntilVisible:
     element:
-      text: "두뇌 트레이닝 센터"
-    direction: UP
-- assertVisible: "두뇌 트레이닝 센터"
+      text: ".*범주화 훈련.*"
+    direction: DOWN
+    visibilityPercentage: 50
+- assertVisible: ".*범주화 훈련.*"
+- assertVisible: ".*잠김.*"
+- scrollUntilVisible:
+    element:
+      text: ".*그림 스도쿠.*"
+    direction: DOWN
+    visibilityPercentage: 50
+- assertVisible: ".*그림 스도쿠.*"
+- assertVisible: ".*도전 가능.*"
+- scrollUntilVisible:
+    element:
+      text: ".*같은 모양 찾기.*"
+    direction: DOWN
+    visibilityPercentage: 50
+- assertVisible: ".*같은 모양 찾기.*"
+- assertVisible: ".*도전 가능.*"
+- scrollUntilVisible:
+    element:
+      text: ".*문장 읽기 훈련.*"
+    direction: DOWN
+    visibilityPercentage: 50
+- assertVisible: ".*문장 읽기 훈련.*"
+- assertVisible: ".*잠김.*"
+- scrollUntilVisible:
+    element:
+      text: ".*일상 회상 훈련.*"
+    direction: DOWN
+    visibilityPercentage: 50
+- assertVisible: ".*일상 회상 훈련.*"
+- assertVisible: ".*도전 가능.*"

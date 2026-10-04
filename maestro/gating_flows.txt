@@ -1,0 +1,40 @@
+# Maestro 게이팅 flow 목록 (정본)
+# run_maestro_tests.ps1(로컬)과 scripts/maestro_gating.sh(CI)가 이 파일을 읽는다.
+# 한 줄에 하나, 저장소 루트 기준 경로. '#'으로 시작하는 줄과 빈 줄은 건너뛴다.
+# test/unit/core/maestro_gating_list_test.dart 가 없는 파일·중복을 잡는다.
+#
+# 게이팅 제외: demo_recording_flow / demo_recording_v3 / demo_recording_tta_2min / screenshot_tour_flow /
+# design_review_shots / hanium_screens / hanium_screens2
+# (영상·스크린샷 촬영용이며 통과/실패로 품질을 판정하는 flow가 아니다)
+#
+# 2026-08-24: social_ranking_flow 를 목록과 파일에서 지웠다. 검사 대상이던 SocialRankingView
+# 위젯을 삭제했기 때문이다(백분위 표기 역전, 상수로 계산하던 가짜 비교값).
+maestro/login_flow.yaml
+maestro/login_fail_flow.yaml
+maestro/register_flow.yaml
+maestro/navigation_flow.yaml
+maestro/training_hub_flow.yaml
+maestro/profile_flow.yaml
+maestro/cs_center_flow.yaml
+maestro/reports_flow.yaml
+maestro/voice_assessment_flow.yaml
+maestro/guardian_link_flow.yaml
+maestro/home_detail_flow.yaml
+maestro/ai_chat_flow.yaml
+maestro/memory_garden_flow.yaml
+maestro/training_game_flow.yaml
+maestro/edit_profile_flow.yaml
+maestro/clinical_report_flow.yaml
+# 인지훈련 게임화(커밋 ff9b6fb)와 함께 추가된 flow
+maestro/training_progression_flow.yaml
+maestro/training_persistence_flow.yaml
+maestro/training_accessibility_flow.yaml
+maestro/dementia_center_flow.yaml
+# 콜드 스타트 오프닝(2026-09-27). 가리는 동안 입력 칸을 숨기는지·건너뛰기·자동 로그인 대기
+maestro/opening_flow.yaml
+# 계정과 모든 데이터 삭제(2026-10-04, 감사 P0-07). 에뮬레이터 빌드는 서버에 닿지 않으므로
+# 두 번 확인과 '서버 삭제 실패 시 아무것도 지우지 않음'을 본다. 지우는 성공 경로는 위젯 테스트·실기기 QA
+maestro/account_deletion_flow.yaml
+# 알림 권한 거부(2026-10-05, 감사 P0-04). 앱을 열 때는 묻지 않고, 일기 알림 행을 누를 때만 묻는다.
+# 거부하면 꺼진 채로 휴대폰 설정을 안내한다. 설정 토글 행 전체를 누를 수 있게 한 뒤 E2E로 볼 수 있게 됐다
+maestro/notification_permission_denied_flow.yaml

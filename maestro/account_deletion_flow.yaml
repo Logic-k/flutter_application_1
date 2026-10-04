@@ -1,0 +1,63 @@
+appId: com.teammemorylink.memorylink
+---
+# 계정과 모든 데이터 삭제(LAUNCH_AUDIT P0-07): 두 번 확인하고, 서버 기록을 지우지 못하면 아무것도 지우지 않는다.
+# 에뮬레이터 빌드(IS_EMULATOR)는 Firebase에 붙지 않아 서버 삭제가 늘 실패한다. 그래서 이 flow는
+# 취소 경로와 실패 경로(확인 두 번 → '지우지 못했습니다' → 계정이 남아 다시 열면 자동 로그인)를 본다.
+# 지우는 성공 경로는 위젯 테스트(test/widget/settings/account_deletion_test.dart)와 실기기 QA가 맡는다.
+- runFlow: helpers/login_helper.yaml
+
+# 내정보 탭
+- tapOn: "내정보"
+- extendedWaitUntil:
+    visible: "내 정보"
+    timeout: 5000
+- scrollUntilVisible:
+    element:
+      text: "설정
+글자 크기, 알림, AI, 개인정보, 로그아웃"
+    direction: DOWN
+    centerElement: true
+- tapOn: "설정
+글자 크기, 알림, AI, 개인정보, 로그아웃"
+- extendedWaitUntil:
+    visible: "화면 및 접근성"
+    timeout: 5000
+- scrollUntilVisible:
+    element:
+      text: "(?s)계정과 모든 데이터 삭제.*"
+    direction: DOWN
+    centerElement: true
+
+# 첫 확인에서 취소하면 대화상자만 닫힌다.
+- tapOn: "(?s)계정과 모든 데이터 삭제.*"
+- extendedWaitUntil:
+    visible: "계정과 모든 데이터를 지울까요?"
+    timeout: 5000
+- tapOn: "취소"
+- assertNotVisible: "계정과 모든 데이터를 지울까요?"
+
+# 두 번 확인한다.
+- tapOn: "(?s)계정과 모든 데이터 삭제.*"
+- extendedWaitUntil:
+    visible: "계정과 모든 데이터를 지울까요?"
+    timeout: 5000
+- tapOn: "계속"
+- extendedWaitUntil:
+    visible: "정말 지울까요?"
+    timeout: 5000
+- tapOn: "모두 삭제"
+
+# 서버에 닿지 못했으니 기기 기록도 지우지 않았다고 알린다.
+- extendedWaitUntil:
+    visible: "지우지 못했습니다"
+    timeout: 15000
+- assertVisible: "(?s).*아무것도 지우지 않았습니다.*"
+- tapOn: "확인"
+- assertVisible: "(?s)계정과 모든 데이터 삭제.*"
+
+# 계정과 세션이 남아 있다: 앱을 다시 열면 로그인 화면 없이 홈으로 간다.
+- stopApp
+- launchApp
+- extendedWaitUntil:
+    visible: "오늘 걸음"
+    timeout: 90000

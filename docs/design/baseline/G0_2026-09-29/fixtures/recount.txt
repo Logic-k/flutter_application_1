@@ -1,0 +1,130 @@
+# Recount at HEAD 27ca9d3 (2026-09-29)
+
+GoRoute( occurrences: 44
+parsed paths: 44  unique: 44
+
+ 1 /
+ 2 /login
+ 3 /register
+ 4 /onboarding
+ 5 /consent
+ 6 /assessment
+ 7 /cognitive_tasks
+ 8 /assessment_result
+ 9 /report_options
+10 /training_hub
+11 /training_history
+12 /game/comparison
+13 /game/sequence
+14 /game/sudoku
+15 /game/multiplication
+16 /game/shape_match
+17 /game/categorization
+18 /game/reading
+19 /memory_garden
+20 /diary_book
+21 /guardian_link
+22 /voice_assessment
+23 /dementia_centers
+24 /ai_chat
+25 /walking_dashboard
+26 /training/recall
+27 /profile
+28 /ondevice-ai
+29 /settings
+30 /health_input
+31 /cs_center
+32 /cs/notices
+33 /cs/notice_detail/:id
+34 /cs/faq
+35 /cs/inquiry_submit
+36 /cs/my_inquiries
+37 /cs/inquiry_detail/:id
+38 /admin_login
+39 /admin/dashboard
+40 /admin/user_detail/:userId
+41 /admin/cs_management
+42 /admin/notice_edit
+43 /admin/faq_edit
+44 /admin/inquiry_detail/:id
+
+test/**/*_test.dart: 53  (helpers excluded: test/helpers/mock_definitions.dart, test/helpers/test_helpers.dart)
+  test/documentation_consistency_test.dart
+  test/unit/core/anomaly_monitor_test.dart
+  test/unit/core/app_motion_test.dart
+  test/unit/core/database_helper_test.dart
+  test/unit/core/database_v9_migration_test.dart
+  test/unit/core/firebase_service_test.dart
+  test/unit/core/formatters_test.dart
+  test/unit/core/motion_token_guard_test.dart
+  test/unit/core/palette_guard_test.dart
+  test/unit/core/settings_provider_motion_test.dart
+  test/unit/core/step_anomaly_policy_test.dart
+  test/unit/core/theme_contrast_test.dart
+  test/unit/core/user_provider_test.dart
+  test/unit/dementia_center/dementia_center_csv_test.dart
+  test/unit/dementia_center/dementia_center_repository_test.dart
+  test/unit/dementia_center/dementia_centers_asset_test.dart
+  test/unit/gait/gait_analyzer_test.dart
+  test/unit/reports/clinical_report_data_test.dart
+  test/unit/training/difficulty_provider_test.dart
+  test/unit/training/report_analyzer_test.dart
+  test/unit/training/speech_score_test.dart
+  test/unit/training/training_catalog_test.dart
+  test/unit/training/training_completion_service_test.dart
+  test/unit/training/training_progress_provider_test.dart
+  test/unit/training/training_progress_rules_test.dart
+  test/widget/accessibility_guideline_test.dart
+  test/widget/assessment/assessment_screen_test.dart
+  test/widget/auth/login_screen_test.dart
+  test/widget/core/fade_slide_in_test.dart
+  test/widget/core/floating_pill_nav_test.dart
+  test/widget/core/memory_opening_test.dart
+  test/widget/core/ml_motion_widgets_test.dart
+  test/widget/core/motion_settings_test.dart
+  test/widget/core/pressable_scale_test.dart
+  test/widget/core/staggered_column_test.dart
+  test/widget/dementia_center/dementia_center_finder_screen_test.dart
+  test/widget/gait_analysis/gait_session_card_test.dart
+  test/widget/gait_analysis/walking_dashboard_screen_test.dart
+  test/widget/health/health_input_screen_test.dart
+  test/widget/home/home_screen_test.dart
+  test/widget/settings/settings_screen_test.dart
+  test/widget/training/categorization_game_test.dart
+  test/widget/training/comparison_game_test.dart
+  test/widget/training/daily_recall_completion_test.dart
+  test/widget/training/game_layout_overflow_test.dart
+  test/widget/training/game_semantics_text_test.dart
+  test/widget/training/game_template_test.dart
+  test/widget/training/scored_game_completion_test.dart
+  test/widget/training/training_history_screen_test.dart
+  test/widget/training/training_hub_screen_test.dart
+  test/widget/training/training_progress_widgets_test.dart
+  test/widget/voice_assessment/voice_assessment_blocked_screen_test.dart
+  test/widget_test.dart
+
+Maestro gating ($flows): 21
+  maestro/login_flow.yaml
+  maestro/login_fail_flow.yaml
+  maestro/register_flow.yaml
+  maestro/navigation_flow.yaml
+  maestro/training_hub_flow.yaml
+  maestro/profile_flow.yaml
+  maestro/cs_center_flow.yaml
+  maestro/reports_flow.yaml
+  maestro/voice_assessment_flow.yaml
+  maestro/guardian_link_flow.yaml
+  maestro/home_detail_flow.yaml
+  maestro/ai_chat_flow.yaml
+  maestro/memory_garden_flow.yaml
+  maestro/training_game_flow.yaml
+  maestro/edit_profile_flow.yaml
+  maestro/clinical_report_flow.yaml
+  maestro/training_progression_flow.yaml
+  maestro/training_persistence_flow.yaml
+  maestro/training_accessibility_flow.yaml
+  maestro/dementia_center_flow.yaml
+  maestro/opening_flow.yaml
+
+maestro/*.yaml top-level: 28; non-gating(7): maestro/demo_recording_flow.yaml, maestro/demo_recording_tta_2min.yaml, maestro/demo_recording_v3.yaml, maestro/design_review_shots.yaml, maestro/hanium_screens.yaml, maestro/hanium_screens2.yaml, maestro/screenshot_tour_flow.yaml
+integration_test/*_test.dart: 2

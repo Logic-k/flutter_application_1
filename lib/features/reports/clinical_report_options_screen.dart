@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:printing/printing.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
+import '../../core/theme.dart';
+import '../../core/motion/app_motion.dart';
+import '../../core/motion/motion_settings.dart';
 import '../../core/database_helper.dart';
 import '../../core/user_provider.dart';
 import 'clinical_report_generator.dart';
@@ -33,25 +36,30 @@ class _ClinicalReportOptionsScreenState
     super.dispose();
   }
 
+  /// 단계 이동. 움직임 줄이기면 슬라이드 없이 바로 바꾼다.
+  void _goToStep() {
+    if (MotionSettings.reduceOf(context, listen: false)) {
+      _pageController.jumpToPage(_currentStep);
+    } else {
+      _pageController.animateToPage(
+        _currentStep,
+        duration: AppMotion.route,
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
   void _nextStep() {
     if (_currentStep < 3) {
       setState(() => _currentStep++);
-      _pageController.animateToPage(
-        _currentStep,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
+      _goToStep();
     }
   }
 
   void _prevStep() {
     if (_currentStep > 0) {
       setState(() => _currentStep--);
-      _pageController.animateToPage(
-        _currentStep,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
+      _goToStep();
     }
   }
 
@@ -85,7 +93,7 @@ class _ClinicalReportOptionsScreenState
       } else {
         await Share.shareXFiles(
           [XFile(file.path)],
-          text: 'MemoryLink 임상 리포트',
+          text: 'MemoryLink 활동 기록 리포트',
         );
       }
     } catch (e) {
@@ -103,10 +111,11 @@ class _ClinicalReportOptionsScreenState
     final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('임상 리포트 생성'),
+        title: const Text('활동 기록 리포트 생성'),
         leading: _currentStep > 0
             ? IconButton(
                 icon: const Icon(Icons.arrow_back),
+                tooltip: '이전 단계',
                 onPressed: _prevStep,
               )
             : null,
@@ -204,8 +213,8 @@ class _ClinicalReportOptionsScreenState
             theme,
             type: ReportType.doctor,
             icon: Icons.medical_services_outlined,
-            title: '의료진용 리포트',
-            subtitle: '점수·추이·임상 권고사항·전문의 의뢰 기준',
+            title: '상담 참고용 리포트',
+            subtitle: '영역별 점수·추이·상담 시 참고사항',
           ),
           const SizedBox(height: 16),
           _buildTypeCard(
@@ -242,10 +251,10 @@ class _ClinicalReportOptionsScreenState
     return GestureDetector(
       onTap: () => setState(() => _selectedType = type),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
+        duration: AppMotion.fade,
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppTheme.rTile),
           border: Border.all(
             color: selected
                 ? theme.colorScheme.primary
@@ -264,7 +273,7 @@ class _ClinicalReportOptionsScreenState
                 color: selected
                     ? theme.colorScheme.primaryContainer
                     : theme.colorScheme.surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(AppTheme.rField),
               ),
               child: Icon(icon,
                   color: selected
@@ -410,7 +419,7 @@ class _ClinicalReportOptionsScreenState
   }) {
     return InkWell(
       onTap: () => onChanged(!value),
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(AppTheme.rField),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
         child: Row(
@@ -492,10 +501,10 @@ class _ClinicalReportOptionsScreenState
     return GestureDetector(
       onTap: () => setState(() => _caregiverPresent = value),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
+        duration: AppMotion.fade,
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppTheme.rTile),
           border: Border.all(
             color: selected
                 ? theme.colorScheme.primary
@@ -530,7 +539,7 @@ class _ClinicalReportOptionsScreenState
   // Step 3: 확인 및 생성
   Widget _buildStepConfirm(ThemeData theme) {
     final typeLabel =
-        _selectedType == ReportType.doctor ? '의료진용' : '보호자용';
+        _selectedType == ReportType.doctor ? '상담 참고용' : '보호자용';
     final today = DateTime.now();
     final dateStr =
         '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
@@ -560,7 +569,7 @@ class _ClinicalReportOptionsScreenState
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: theme.colorScheme.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(AppTheme.rField),
             ),
             child: Row(
               children: [
@@ -655,9 +664,10 @@ class _PdfPreviewPage extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.share),
+            tooltip: '리포트 공유',
             onPressed: () async {
               await Share.shareXFiles([XFile(file.path)],
-                  text: 'MemoryLink 임상 리포트');
+                  text: 'MemoryLink 활동 기록 리포트');
             },
           ),
         ],

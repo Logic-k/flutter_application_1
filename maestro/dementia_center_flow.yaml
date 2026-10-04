@@ -1,0 +1,54 @@
+appId: com.teammemorylink.memorylink
+---
+# 치매안심센터 찾기 (공공데이터포털 「국립중앙의료원_치매안심센터 정보」).
+# 데이터가 비거나 인코딩이 깨지면 안내 화면으로 떨어지므로, 실제 목록이
+# 그려지는지를 지킨다.
+- runFlow: helpers/login_helper.yaml
+
+# 내정보 탭 진입
+- tapOn: "내정보"
+- extendedWaitUntil:
+    visible: "내 정보"
+    timeout: 10000
+
+# 상시 진입점 — 초기 평가 결과 화면에만 두면 온보딩을 마친 사용자는 못 찾아간다
+- scrollUntilVisible:
+    element:
+      text: ".*가까운 치매안심센터 찾기.*"
+    direction: DOWN
+    visibilityPercentage: 50
+- tapOn: ".*가까운 치매안심센터 찾기.*"
+
+- extendedWaitUntil:
+    visible: "가까운 치매안심센터"
+    timeout: 10000
+
+# 데이터 유무와 무관하게 항상 쓸 수 있어야 하는 공식 창구.
+# 카드 전체가 탭 가능한 한 단위라 제목과 번호가 한 시맨틱 노드로 병합된다.
+# 카드로서는 올바른 동작이므로 부분 일치로 확인한다.
+- assertVisible: ".*치매상담콜센터.*"
+- assertVisible: ".*1899-9988.*"
+
+# 지역 선택 UI
+- assertVisible: "지역 선택"
+
+# 실제 목록이 그려졌는지 — 자리표시자 CSV면 "불러오지 못했습니다"가 뜬다
+- assertNotVisible: "센터 목록을 불러오지 못했습니다"
+- assertVisible: ".*검색 결과.*곳.*"
+- assertVisible: ".*치매안심센터.*"
+
+# 센터 카드의 동작 버튼. Semantics label과 버튼 안 텍스트가 한 노드로 병합되므로
+# 정확 일치가 아니라 부분 일치로 확인한다.
+- assertVisible: ".*전화.*"
+- assertVisible: ".*지도.*"
+
+# 공공누리 출처표시(법적 의무)는 목록 맨 아래에 있다. 시도 전체를 고르면 카드가
+# 수십 장이라 E2E로 끝까지 내려가는 것은 느리고 취약하다.
+# 그 단언은 test/widget/dementia_center/dementia_center_finder_screen_test.dart
+# ('공공데이터 출처표시가 화면에 남아 있다')가 대신 지킨다.
+
+# 뒤로가기 → 내정보 복귀
+- back
+- extendedWaitUntil:
+    visible: "내 정보"
+    timeout: 5000

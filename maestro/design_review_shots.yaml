@@ -1,0 +1,100 @@
+appId: com.teammemorylink.memorylink
+---
+# 디자인 재측정용 스크린샷 촬영(게이팅 제외 — 통과/실패로 품질을 판정하지 않는다).
+# 07 계획 F-02~F-05 반영 후 화면을 docs/design/review/ 보고서에 싣기 위해 찍는다.
+# 실행: 출력 폴더에서 `maestro test <repo>/maestro/design_review_shots.yaml`
+- launchApp:
+    clearState: true
+- waitForAnimationToEnd:
+    timeout: 3000
+- extendedWaitUntil:
+    visible: "사용자 아이디"
+    timeout: 90000
+- takeScreenshot: dr_01_login
+- tapOn: "사용자 아이디"
+- inputText: "kim_minjun"
+- tapOn: "비밀번호"
+- inputText: "demo1234"
+- hideKeyboard
+- tapOn: "로그인"
+- extendedWaitUntil:
+    visible: "오늘 걸음"
+    timeout: 20000
+- waitForAnimationToEnd
+- takeScreenshot: dr_02_home
+- swipe:
+    start: "50%,80%"
+    end: "50%,30%"
+    duration: 600
+- waitForAnimationToEnd
+- takeScreenshot: dr_03_home_lower
+
+# ── 인지훈련 ──────────────────────────────────────────────────
+- tapOn: "인지훈련"
+- extendedWaitUntil:
+    visible: "두뇌 트레이닝 센터"
+    timeout: 10000
+- waitForAnimationToEnd
+- takeScreenshot: dr_04_hub
+- tapOn: ".*누가 큰가요.*"
+- extendedWaitUntil:
+    visible: "VS"
+    timeout: 10000
+- waitForAnimationToEnd
+- takeScreenshot: dr_05_game
+# 배지가 떠 있는 순간을 찍는다(tapOn 의 안정화 대기를 줄여야 사라지기 전에 찍힌다).
+- tapOn:
+    point: "25%,55%"
+    waitToSettleTimeoutMs: 300
+- takeScreenshot: dr_06_feedback_a
+- waitForAnimationToEnd
+- tapOn:
+    point: "75%,55%"
+    waitToSettleTimeoutMs: 300
+- takeScreenshot: dr_07_feedback_b
+- waitForAnimationToEnd
+- repeat:
+    times: 8
+    commands:
+      - tapOn:
+          point: "25%,55%"
+      - waitForAnimationToEnd
+- extendedWaitUntil:
+    visible: "계속하기"
+    timeout: 15000
+- waitForAnimationToEnd
+- takeScreenshot: dr_08_result
+- tapOn: "계속하기"
+- extendedWaitUntil:
+    visible: "두뇌 트레이닝 센터"
+    timeout: 10000
+
+# ── 생활습관 · 리포트 · 내 정보 ────────────────────────────────
+- tapOn: "생활습관"
+- waitForAnimationToEnd:
+    timeout: 3000
+- takeScreenshot: dr_09_lifestyle
+- tapOn: "리포트"
+- waitForAnimationToEnd:
+    timeout: 3000
+- takeScreenshot: dr_10_reports
+- tapOn: "내정보"
+- extendedWaitUntil:
+    visible: "내 정보"
+    timeout: 5000
+- takeScreenshot: dr_11_profile
+- scrollUntilVisible:
+    element:
+      text: "설정\n글자 크기, 알림, AI, 개인정보, 로그아웃"
+    direction: DOWN
+    centerElement: true
+- tapOn: "설정\n글자 크기, 알림, AI, 개인정보, 로그아웃"
+- extendedWaitUntil:
+    visible: "화면 및 접근성"
+    timeout: 5000
+- scrollUntilVisible:
+    element:
+      text: "(?s).*움직임 줄이기.*"
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: dr_12_settings

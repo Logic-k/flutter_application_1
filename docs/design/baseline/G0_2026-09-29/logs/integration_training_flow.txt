@@ -1,0 +1,17 @@
+00:00 +0: loading E:/Test_Android/flutter_application_1/integration_test/training_flow_test.dart
+Running Gradle task 'assembleDebug'...                            138.6s
+√ Built build\app\outputs\flutter-apk\app-debug.apk
+Installing build\app\outputs\flutter-apk\app-debug.apk...        2,832ms
+00:00 +0: 비교 훈련 완료 후 XP가 쌓이고 구구단 과정이 열린다
+[LocalAI] 규칙 기반 엔진 준비 완료
+[AiChatService] API 키 없음 → LocalFallback 사용
+02:23 +0: loading E:/Test_Android/flutter_application_1/integration_test/training_flow_test.dart
+Some possible finders for the widgets at Offset(210.6, 472.8):
+  find.byType(MemoryOpening)
+  find.byType(MemoryLinkApp)
+  find.byType(SingleChildBuilder)
+  find.byType(MultiProvider)
+  find.byType(RawView)
+08:58 +1: (tearDownAll)
+08:59 +1: All tests passed!
+exit=0 elapsed=712s

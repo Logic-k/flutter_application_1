@@ -1,0 +1,59 @@
+appId: com.teammemorylink.memorylink
+---
+# 한이음 캡처 이어서: 13 말하기 기록(차단 안내) · 14 고객센터 · 15 치매안심센터
+# 전제: 이미 로그인된 상태 (hanium_screens.yaml 실행 직후)
+- launchApp
+- extendedWaitUntil:
+    visible: "오늘 걸음"
+    timeout: 30000
+- tapOn:
+    point: "74%,93%"
+- extendedWaitUntil:
+    visible: "내 정보"
+    timeout: 8000
+- waitForAnimationToEnd:
+    timeout: 1500
+
+# ── 13 말하기 기록 (정확도 개선 중지 안내 화면) ───────────────────
+- scrollUntilVisible:
+    element:
+      text: ".*말하기 기록.*"
+    direction: DOWN
+    timeout: 20000
+- tapOn: ".*말하기 기록.*"
+- waitForAnimationToEnd:
+    timeout: 3000
+- takeScreenshot: 13_voice_assessment
+- pressKey: back
+
+# ── 14 고객센터 (상세 진입) ─────────────────────────────────────
+- extendedWaitUntil:
+    visible: "내 정보"
+    timeout: 8000
+- scrollUntilVisible:
+    element:
+      text: ".*고객센터.*"
+    direction: DOWN
+    timeout: 20000
+- tapOn: ".*고객센터.*"
+- waitForAnimationToEnd:
+    timeout: 3000
+- takeScreenshot: 14_cs_center
+- pressKey: back
+
+# ── 15 치매안심센터 찾기 ────────────────────────────────────────
+- extendedWaitUntil:
+    visible: "내 정보"
+    timeout: 8000
+- scrollUntilVisible:
+    element:
+      text: ".*가까운 치매안심센터 찾기.*"
+    direction: DOWN
+    timeout: 25000
+- tapOn: ".*가까운 치매안심센터 찾기.*"
+- extendedWaitUntil:
+    visible: "가까운 치매안심센터"
+    timeout: 12000
+- waitForAnimationToEnd:
+    timeout: 2000
+- takeScreenshot: 15_dementia_center

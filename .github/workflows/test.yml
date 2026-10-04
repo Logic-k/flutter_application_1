@@ -1,16 +1,38 @@
-name: Flutter CI
+name: PR Gate
+
+# 출시 감사 P0-02: 싼 검사가 먼저 실패하면 비싼 에뮬레이터 단계는 돌지 않는다.
+#   1 analyze → 2 unit/widget → 3 integration(API 33) → 4 debug Maestro(API 36) → 5 release 검증
+#                                                                             ↘ 6 16KB 페이지 기기(API 36 ps16k)
+# integration 은 PR·수동 실행에서만 돈다. push 에서는 건너뛰고 다음 단계로 간다.
+# Maestro 에뮬레이터는 로컬 정본 QA_Device 와 같게 둔다: pixel_6_pro(1440×3120), 제스처 탐색, 애니메이션 켬.
+# 게이팅 flow 일부가 하단 탭을 화면 비율 좌표로 누르고, opening_flow 는 오프닝이 보여야 통과한다.
+# pixel_6·3버튼 탐색·애니메이션 끔에서는 14/22가 환경 탓으로 실패했다(2026-10-04 첫 실행).
+# 소프트웨어 렌더링에서 SystemUI가 ANR을 내면 "System UI isn't responding" 창이 앱을 덮어 모든 flow가 실패한다
+# (4차 실행 0/22). 오류 창을 끄고(hide_error_dialogs는 구성 변경 때 다시 읽으므로 야간 모드를 한 번 바꿨다 되돌린다)
+# 에뮬레이터에 코어 4개·메모리 4GB를 준다. 창이 꺼져 있으면 멈춘 SystemUI는 다시 시작될 뿐 앱을 가리지 않는다.
+# 설치 직후 첫 실행은 가장 느리므로 게이팅 전에 앱을 한 번 띄워 30초 둔다. 6차의 첫 flow 실패는 느림이 아니라
+# 첫 입력의 첫 글자 중복("kkim_minjun")이었고, 로그인 입력 flow들이 한 글자를 넣었다 지운 뒤 입력하도록 고쳤다.
+# 공개 저장소라 표준 러너 시간은 과금되지 않는다.
+# 2회 이상 비결정 실패가 난 flow 만 따로 격리한다(docs/plans/01 S1-01). 지금은 격리 목록이 없다.
 
 on:
   push:
     branches: [main, develop]
   pull_request:
     branches: [main, develop]
+  workflow_dispatch:
+
+concurrency:
+  group: pr-gate-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FLUTTER_VERSION: '3.41.5'
 
 jobs:
-  test:
-    name: Unit & Widget Tests
+  analyze:
+    name: 1. Analyze
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -18,15 +40,38 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.32.0'
-          channel: 'stable'
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
           cache: true
 
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Analyze (lint)
-        run: flutter analyze --no-fatal-infos
+      # info 도 실패로 본다. --no-fatal-infos 로만 통과하는 상태를 green 으로 부르지 않는다.
+      - name: Analyze
+        run: flutter analyze
+
+  unit:
+    name: 2. Unit & Widget Tests
+    needs: analyze
+    runs-on: ubuntu-latest
+    # 저장소 기본 토큰 권한이 read라 PR 커버리지 댓글을 달려면 쓰기 권한이 필요하다.
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
 
       - name: Run unit & widget tests with coverage
         run: flutter test --coverage --reporter=github
@@ -39,34 +84,41 @@ jobs:
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
+      # 정보용 댓글이라 게이트를 막지 않는다(포크에서 온 PR은 토큰이 읽기 전용이라 늘 실패한다).
       - name: Coverage summary (PR comment)
         if: github.event_name == 'pull_request'
+        continue-on-error: true
         uses: romeovs/lcov-reporter-action@v0.3.1
         with:
           lcov-file: coverage/lcov.info
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
   integration:
-    name: Integration Tests (Android Emulator)
+    name: 3. Integration Tests (API 33)
+    needs: unit
+    if: github.event_name != 'push'
     runs-on: ubuntu-latest
-    # PR에서만 실행 (에뮬레이터는 시간이 걸리므로 push시 skip)
-    if: github.event_name == 'pull_request'
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.32.0'
-          channel: 'stable'
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
           cache: true
 
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Enable KVM (Android emulator acceleration)
+      - name: Enable KVM
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
@@ -78,4 +130,236 @@ jobs:
           api-level: 33
           arch: x86_64
           profile: Nexus 6
-          script: flutter test integration_test/auth_flow_test.dart integration_test/training_flow_test.dart
+          script: flutter test --dart-define=IS_EMULATOR=true integration_test/auth_flow_test.dart integration_test/training_flow_test.dart
+
+  maestro:
+    name: 4. Maestro Gate (API 36)
+    needs: integration
+    if: ${{ !failure() && !cancelled() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      # 에뮬레이터용 x86_64 debug APK. IS_EMULATOR 는 Firebase 를 건너뛰어 운영 익명 계정을 만들지 않는다.
+      - name: Build debug APK
+        run: |
+          flutter build apk --debug \
+            --dart-define=IS_EMULATOR=true \
+            --target-platform android-x64
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
+            | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Install Maestro
+        run: |
+          curl -Ls "https://get.maestro.mobile.dev" | bash
+          echo "$HOME/.maestro/bin" >> $GITHUB_PATH
+
+      # 목록 정본은 maestro/gating_flows.txt(로컬 run_maestro_tests.ps1 과 같은 목록).
+      # android-emulator-runner 는 script 를 줄마다 따로 실행하므로 반복문은 스크립트 파일에 둔다.
+      - name: Run Maestro flows
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 36
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6_pro
+          cores: 4
+          ram-size: 4096M
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+          disable-animations: false
+          script: |
+            adb shell settings put global hide_error_dialogs 1
+            adb shell cmd uimode night yes
+            adb shell cmd uimode night no
+            adb shell cmd overlay enable com.android.internal.systemui.navbar.gestural
+            adb install build/app/outputs/flutter-apk/app-debug.apk
+            adb shell monkey -p com.teammemorylink.memorylink -c android.intent.category.LAUNCHER 1
+            sleep 30
+            adb shell am force-stop com.teammemorylink.memorylink
+
+            bash scripts/maestro_gating.sh
+
+      # 스크린샷 투어는 게이팅이 아니다. 결과와 무관하게 항상 찍는다.
+      - name: Capture screenshots
+        if: always()
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 36
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6_pro
+          cores: 4
+          ram-size: 4096M
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+          disable-animations: false
+          script: |
+            adb shell settings put global hide_error_dialogs 1 || true
+            adb shell cmd uimode night yes || true
+            adb shell cmd uimode night no || true
+            adb shell cmd overlay enable com.android.internal.systemui.navbar.gestural || true
+            adb install -r build/app/outputs/flutter-apk/app-debug.apk || true
+            maestro test maestro/screenshot_tour_flow.yaml || true
+
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots-${{ github.run_number }}
+          path: ~/.maestro/tests/
+          retention-days: 30
+
+      - name: Upload Maestro artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: maestro-debug-${{ github.run_number }}
+          path: ~/.maestro/tests/
+          retention-days: 7
+
+  release:
+    name: 5. Release 검증 (AAB)
+    needs: maestro
+    if: ${{ !failure() && !cancelled() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      # CI 에는 업로드 키가 없다. 키 없이 release 를 만들면 빌드가 멈춰야 한다(감사 P0-14, debug 서명 폴백 금지).
+      - name: 업로드 키가 없으면 release 빌드가 멈춘다
+        run: |
+          if flutter build appbundle --release > signing-gate.log 2>&1; then
+            echo "::error::업로드 키 없이 release AAB 가 만들어졌다"
+            exit 1
+          fi
+          # 다른 이유(네트워크·메모리)로 실패한 것을 서명 차단으로 오인하지 않는다.
+          if ! grep -q "release 서명 키가 없습니다" signing-gate.log; then
+            cat signing-gate.log
+            echo "::error::release 빌드가 서명 키 검사가 아닌 다른 이유로 실패했다"
+            exit 1
+          fi
+
+      # 서명만 빼고 출시와 같은 release 산출물을 만든다. 서명된 빌드 확인은 RELEASE_CHECKLIST.md 4·5번(로컬).
+      - name: Build unsigned release AAB
+        run: flutter build appbundle --release -P allowUnsignedRelease=true
+
+      # 모든 ABI(arm64-v8a 포함)의 .so 를 정적으로 본다. x86_64 에뮬레이터 실행만으로 arm64 를 검증했다고 하지 않는다.
+      - name: 16KB 페이지 정렬
+        run: python3 scripts/check_16kb.py build/app/outputs/bundle/release/app-release.aab
+
+      - name: 병합 매니페스트가 Play 신고와 같다
+        run: python3 scripts/check_release_manifest.py build/app/intermediates/merged_manifests/release/processReleaseManifest/AndroidManifest.xml
+
+  # 16KB 페이지 커널. 정렬되지 않은 .so 는 여기서 실행 중 로드에 실패한다. 화면 조건은 4단계와 같다.
+  page16k:
+    name: 6. 16KB 페이지 기기 (API 36 ps16k)
+    needs: maestro
+    if: ${{ !failure() && !cancelled() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build debug APK
+        run: |
+          flutter build apk --debug \
+            --dart-define=IS_EMULATOR=true \
+            --target-platform android-x64
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
+            | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Install Maestro
+        run: |
+          curl -Ls "https://get.maestro.mobile.dev" | bash
+          echo "$HOME/.maestro/bin" >> $GITHUB_PATH
+
+      - name: Run Maestro flows
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 36
+          target: google_apis_ps16k
+          arch: x86_64
+          profile: pixel_6_pro
+          cores: 4
+          ram-size: 4096M
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+          disable-animations: false
+          script: |
+            adb shell getconf PAGE_SIZE
+            adb shell settings put global hide_error_dialogs 1
+            adb shell cmd uimode night yes
+            adb shell cmd uimode night no
+            adb shell cmd overlay enable com.android.internal.systemui.navbar.gestural
+            adb install build/app/outputs/flutter-apk/app-debug.apk
+            adb shell monkey -p com.teammemorylink.memorylink -c android.intent.category.LAUNCHER 1
+            sleep 30
+            adb shell am force-stop com.teammemorylink.memorylink
+
+            bash scripts/maestro_gating.sh
+
+      - name: Upload Maestro artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: maestro-16k-${{ github.run_number }}
+          path: ~/.maestro/tests/
+          retention-days: 7

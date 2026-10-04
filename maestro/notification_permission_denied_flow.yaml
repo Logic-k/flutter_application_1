@@ -1,0 +1,53 @@
+appId: com.teammemorylink.memorylink
+---
+# 알림 권한 거부(LAUNCH_AUDIT P0-04): 앱을 열 때는 알림 권한을 묻지 않고 일기 알림을 켤 때만 묻는다.
+# 거부하면 알림은 꺼진 채로 남고, 휴대폰 설정에서 허용하는 방법을 알려 준다.
+- runFlow: helpers/login_helper.yaml
+
+# launchApp 은 기본으로 모든 권한을 허용한다. 알림 권한만 거둔 채 다시 연다(세션이 남아 자동 로그인).
+- launchApp:
+    permissions:
+      notifications: deny
+- extendedWaitUntil:
+    visible: "오늘 걸음"
+    timeout: 90000
+
+# 앱을 여는 것만으로는 권한을 묻지 않는다.
+- assertNotVisible:
+    id: ".*permission_(allow|deny)_button.*"
+
+# 내정보 → 설정 → 알림
+- tapOn: "내정보"
+- extendedWaitUntil:
+    visible: "내 정보"
+    timeout: 5000
+- scrollUntilVisible:
+    element:
+      text: "설정
+글자 크기, 알림, AI, 개인정보, 로그아웃"
+    direction: DOWN
+    centerElement: true
+- tapOn: "설정
+글자 크기, 알림, AI, 개인정보, 로그아웃"
+- extendedWaitUntil:
+    visible: "화면 및 접근성"
+    timeout: 5000
+- scrollUntilVisible:
+    element:
+      text: "(?s).*매일 저녁 일기 알림.*"
+    direction: DOWN
+    centerElement: true
+
+# 행을 누르면 그때 권한을 묻는다. 거부한다.
+- tapOn: "(?s).*매일 저녁 일기 알림.*"
+- extendedWaitUntil:
+    visible:
+      id: ".*permission_deny_button.*"
+    timeout: 15000
+- tapOn:
+    id: ".*permission_deny_button.*"
+
+# 꺼진 채로 남고 다시 켜는 방법을 알린다.
+- extendedWaitUntil:
+    visible: "(?s).*알림 권한이 꺼져 있습니다.*"
+    timeout: 10000

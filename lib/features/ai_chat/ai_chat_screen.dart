@@ -2,17 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
+import '../../core/theme.dart';
+import '../../core/motion/app_motion.dart';
+import '../../core/motion/motion_settings.dart';
 import '../../core/ai/ai_chat_service.dart';
 import '../../core/ai/ai_key_service.dart';
 import '../../core/local_ai_service.dart';
 import '../../core/user_provider.dart';
 import 'models/chat_message.dart';
+import 'models/chat_speech_metrics.dart';
 
 /// AI 인지 대화 화면
 ///
 /// - Gemini(또는 Fallback) AI와 3~5턴 자연 대화
 /// - 텍스트 입력 또는 마이크(STT) 입력
-/// - 대화 종료 후 LocalAIService로 인지 점수 분석 → DB 저장
+/// - 유효한 음성 시간 미확보 시 텍스트 지표만 표시하고 점수 저장 차단
 class AiChatScreen extends StatefulWidget {
   const AiChatScreen({super.key});
 
@@ -32,6 +36,8 @@ class _AiChatScreenState extends State<AiChatScreen> {
   bool _sessionEnded = false;
   double? _finalScore;
   String _analysisDetail = '';
+  ChatInputSource _inputSource = ChatInputSource.typed;
+  int _listenGeneration = 0;
 
   static const int _maxTurns = 10;
   int _aiTurnCount = 0;
@@ -52,7 +58,14 @@ class _AiChatScreenState extends State<AiChatScreen> {
   }
 
   Future<void> _initSpeech() async {
-    _speechAvailable = await _speech.initialize();
+    _speechAvailable = await _speech.initialize(
+      onStatus: (status) {
+        if (mounted) setState(() => _isListening = status == 'listening' && !_sessionEnded && !_isLoading);
+      },
+      onError: (_) {
+        if (mounted) setState(() => _isListening = false);
+      },
+    );
     if (mounted) setState(() {});
   }
 
@@ -70,11 +83,17 @@ class _AiChatScreenState extends State<AiChatScreen> {
     setState(() => _messages.add(msg));
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
-        _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-        );
+        final target = _scrollController.position.maxScrollExtent;
+        // 움직임 줄이기면 스크롤 이동 애니메이션 없이 바로 새 메시지로 간다.
+        if (MotionSettings.reduceOf(context, listen: false)) {
+          _scrollController.jumpTo(target);
+        } else {
+          _scrollController.animateTo(
+            target,
+            duration: AppMotion.route,
+            curve: Curves.easeOut,
+          );
+        }
       }
     });
   }
@@ -83,8 +102,15 @@ class _AiChatScreenState extends State<AiChatScreen> {
     final trimmed = text.trim();
     if (trimmed.isEmpty || _isLoading || _sessionEnded) return;
 
+    final source = _inputSource;
+    _listenGeneration++;
+    _speech.cancel();
+    _isListening = false;
+    _inputSource = ChatInputSource.typed;
     _textController.clear();
-    _addMessage(ChatMessage(text: trimmed, isUser: true, timestamp: DateTime.now()));
+    _addMessage(ChatMessage(
+      text: trimmed, isUser: true, timestamp: DateTime.now(), inputSource: source,
+    ));
     setState(() => _isLoading = true);
 
     final response = await AiChatService.chat(trimmed, List.from(_messages));
@@ -101,7 +127,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
   }
 
   Future<void> _endSession() async {
-    if (_sessionEnded) return;
+    if (_sessionEnded || _isLoading) return;
 
     // 사용자가 한 마디도 하지 않았으면 분석하지 않는다 (0점 결과 방지)
     final hasUserSpeech = _messages.any((m) => m.isUser);
@@ -112,36 +138,31 @@ class _AiChatScreenState extends State<AiChatScreen> {
       return;
     }
 
+    _listenGeneration++;
+    _speech.cancel();
+    FocusScope.of(context).unfocus();
     setState(() {
       _sessionEnded = true;
       _isLoading = true;
+      _isListening = false;
     });
 
-    // 사용자 발화 전체 합산
-    final userTexts = _messages.where((m) => m.isUser).map((m) => m.text).join(' ');
-    final words = userTexts.split(RegExp(r'\s+')).where((w) => w.isNotEmpty).toList();
-    final totalWords = words.length;
-    final uniqueWords = words.map((w) => w.toLowerCase()).toSet().length;
-    final ttr = totalWords > 0 ? uniqueWords / totalWords : 0.0;
-
-    // 대화 시간 기반 WPM 추정 (세션 시작부터 현재까지)
-    final durationSec = _messages.isNotEmpty
-        ? DateTime.now().difference(_messages.first.timestamp).inSeconds
-        : 60;
-    final wpm = durationSec > 0 ? (totalWords / durationSec) * 60 : 0.0;
+    // 현재 STT는 실제 발화 시간을 제공하지 않으므로 시간 지표는 null이다.
+    final metrics = ChatSpeechMetrics.fromMessages(_messages);
 
     // LocalAIService로 인지 점수 분석
     final result = await LocalAIService().analyzeText(
-      text: userTexts,
-      ttr: ttr,
-      wpm: wpm,
-      totalWords: totalWords,
-      durationSeconds: durationSec,
+      text: metrics.text,
+      ttr: metrics.ttr,
+      wpm: metrics.wpm,
+      totalWords: metrics.totalWords,
+      durationSeconds: metrics.speechDurationSeconds,
     );
 
     if (!mounted) return;
 
-    final score = (result['cognitive_score'] as double).clamp(0.0, 100.0);
+    final score = result['is_available'] == true
+        ? (result['cognitive_score'] as double?)?.clamp(0.0, 100.0) : null;
     final analysis = result['analysis'] as String? ?? '';
 
     setState(() {
@@ -184,16 +205,20 @@ class _AiChatScreenState extends State<AiChatScreen> {
   }
 
   Future<void> _toggleListening() async {
+    if (_isLoading || _sessionEnded) return;
     if (_isListening) {
       await _speech.stop();
-      setState(() => _isListening = false);
+      if (mounted) setState(() => _isListening = false);
       return;
     }
     if (!_speechAvailable) return;
+    final generation = ++_listenGeneration;
     setState(() => _isListening = true);
     await _speech.listen(
       onResult: (SpeechRecognitionResult result) {
-        if (mounted) _textController.text = result.recognizedWords;
+        if (!mounted || _sessionEnded || _isLoading || generation != _listenGeneration) return;
+        _inputSource = ChatInputSource.voice;
+        _textController.text = result.recognizedWords;
       },
       localeId: 'ko_KR',
       listenFor: const Duration(seconds: 30),
@@ -216,7 +241,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
           IconButton(
             icon: Icon(
               AiChatService.isUsingAI ? Icons.smart_toy : Icons.smart_toy_outlined,
-              color: AiChatService.isUsingAI ? Colors.green : null,
+              color: AiChatService.isUsingAI ? MLColors.goodText : null,
             ),
             tooltip: AiChatService.isUsingAI
                 ? 'Gemini AI 연결됨'
@@ -225,7 +250,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
           ),
           if (!_sessionEnded)
             TextButton(
-              onPressed: _endSession,
+              onPressed: _isLoading ? null : _endSession,
               child: const Text('대화 종료'),
             ),
         ],
@@ -264,7 +289,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
             ),
 
           // 분석 결과 카드
-          if (_sessionEnded && _finalScore != null)
+          if (_sessionEnded && !_isLoading)
             _buildResultCard(theme),
 
           // 입력창
@@ -293,7 +318,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
           ),
           const SizedBox(height: 4),
           ClipRRect(
-            borderRadius: BorderRadius.circular(4),
+            borderRadius: BorderRadius.circular(AppTheme.rBar),
             child: LinearProgressIndicator(
               value: progress,
               minHeight: 4,
@@ -327,8 +352,8 @@ class _AiChatScreenState extends State<AiChatScreen> {
               decoration: BoxDecoration(
                 color: isUser ? theme.primaryColor : theme.colorScheme.surfaceContainerHighest,
                 borderRadius: BorderRadius.only(
-                  topLeft: const Radius.circular(16),
-                  topRight: const Radius.circular(16),
+                  topLeft: const Radius.circular(AppTheme.rTile),
+                  topRight: const Radius.circular(AppTheme.rTile),
                   bottomLeft: Radius.circular(isUser ? 16 : 4),
                   bottomRight: Radius.circular(isUser ? 4 : 16),
                 ),
@@ -360,21 +385,31 @@ class _AiChatScreenState extends State<AiChatScreen> {
         children: [
           // 마이크 버튼
           IconButton(
-            onPressed: _speechAvailable ? _toggleListening : null,
+            onPressed: _speechAvailable && !_isLoading ? _toggleListening : null,
+            tooltip: _isListening ? '음성 인식 중지' : '음성으로 입력',
             icon: Icon(
               _isListening ? Icons.mic : Icons.mic_none_outlined,
-              color: _isListening ? Colors.red : theme.colorScheme.onSurfaceVariant,
+              color: _isListening ? MLColors.badText : theme.colorScheme.onSurfaceVariant,
             ),
           ),
           // 텍스트 입력
           Expanded(
             child: TextField(
               controller: _textController,
+              enabled: !_isLoading,
+              onChanged: (_) {
+                if (_inputSource == ChatInputSource.voice) {
+                  _inputSource = ChatInputSource.editedVoice;
+                }
+                _listenGeneration++;
+                _speech.cancel();
+                setState(() => _isListening = false);
+              },
               decoration: InputDecoration(
                 hintText: '메시지를 입력하세요...',
                 hintStyle: TextStyle(color: theme.colorScheme.onSurfaceVariant),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(24),
+                  borderRadius: BorderRadius.circular(AppTheme.rSheet),
                   borderSide: BorderSide.none,
                 ),
                 filled: true,
@@ -388,7 +423,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
           const SizedBox(width: 8),
           // 전송 버튼
           FilledButton(
-            onPressed: () => _sendMessage(_textController.text),
+            onPressed: _isLoading ? null : () => _sendMessage(_textController.text),
             style: FilledButton.styleFrom(
               shape: const CircleBorder(),
               padding: const EdgeInsets.all(12),
@@ -401,16 +436,17 @@ class _AiChatScreenState extends State<AiChatScreen> {
   }
 
   Widget _buildResultCard(ThemeData theme) {
-    final score = _finalScore!;
-    final isGood = score >= 60;
-    final color = score >= 75 ? Colors.green : (score >= 50 ? Colors.orange : Colors.red);
+    final score = _finalScore;
+    final isGood = score != null && score >= 60;
+    final color = score == null ? theme.colorScheme.onSurfaceVariant
+        : score >= 75 ? MLColors.goodText : (score >= 50 ? MLColors.warnText : MLColors.badText);
 
     return Container(
       margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(AppTheme.rPanel),
         border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Column(
@@ -420,10 +456,10 @@ class _AiChatScreenState extends State<AiChatScreen> {
             children: [
               Icon(isGood ? Icons.check_circle_outline : Icons.info_outline, color: color, size: 24),
               const SizedBox(width: 8),
-              Text(
-                '오늘 대화 점수: ${score.toStringAsFixed(0)}점',
+              Expanded(child: Text(
+                score == null ? '종합 점수: 측정 불가' : '오늘 대화 점수: ${score.toStringAsFixed(0)}점',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: color),
-              ),
+              )),
             ],
           ),
           if (_analysisDetail.isNotEmpty) ...[
@@ -434,11 +470,11 @@ class _AiChatScreenState extends State<AiChatScreen> {
           SizedBox(
             width: double.infinity,
             child: FilledButton.icon(
-              onPressed: _saveScore,
+              onPressed: score == null ? null : _saveScore,
               icon: const Icon(Icons.save_outlined),
               label: const Text('결과 저장하기'),
               style: FilledButton.styleFrom(
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.rField)),
               ),
             ),
           ),
@@ -498,7 +534,7 @@ class _ApiKeyDialogState extends State<_ApiKeyDialog> {
                 : 'API 키를 등록하면 Gemini AI와 대화할 수 있습니다.',
             style: TextStyle(
               fontSize: 13,
-              color: isUsing ? Colors.green : theme.colorScheme.onSurfaceVariant,
+              color: isUsing ? MLColors.goodText : theme.colorScheme.onSurfaceVariant,
             ),
           ),
           const SizedBox(height: 16),
@@ -517,7 +553,7 @@ class _ApiKeyDialogState extends State<_ApiKeyDialog> {
           const SizedBox(height: 8),
           Text(
             'Google AI Studio에서 무료로 발급받을 수 있습니다.',
-            style: TextStyle(fontSize: 11, color: theme.colorScheme.onSurfaceVariant),
+            style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurfaceVariant),
           ),
         ],
       ),
@@ -532,7 +568,7 @@ class _ApiKeyDialogState extends State<_ApiKeyDialog> {
                     await widget.onDelete();
                     nav.pop();
                   },
-            child: const Text('키 삭제', style: TextStyle(color: Colors.red)),
+            child: const Text('키 삭제', style: TextStyle(color: MLColors.badText)),
           ),
         TextButton(
           onPressed: () => Navigator.pop(context),

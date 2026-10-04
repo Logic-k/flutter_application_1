@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MemoryLink 계정 및 데이터 삭제 안내</title>
+  <style>
+    :root { --bg:#f6f8fb; --card:#fff; --text:#1c2430; --muted:#5b6675; --primary:#2C3E6B; --line:#e5e9f0; }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body { background:var(--bg); color:var(--text); font-family:-apple-system,'Apple SD Gothic Neo','맑은 고딕',sans-serif; line-height:1.7; padding:0 0 60px; }
+    header { background:var(--primary); color:#fff; padding:32px 20px; }
+    .wrap { max-width:760px; margin:0 auto; padding:0 20px; }
+    header .wrap { padding:0 20px; }
+    h1 { font-size:24px; }
+    .updated { opacity:.8; font-size:13px; margin-top:6px; }
+    main { margin-top:24px; }
+    section { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:20px 22px; margin-bottom:16px; }
+    h2 { font-size:17px; color:var(--primary); margin-bottom:10px; }
+    h3 { font-size:15px; margin:14px 0 6px; }
+    p, li { font-size:14px; color:var(--text); }
+    ul, ol { padding-left:20px; margin-top:6px; }
+    li { margin-bottom:4px; }
+    .muted { color:var(--muted); font-size:13px; }
+    table { width:100%; border-collapse:collapse; margin-top:8px; font-size:13px; }
+    th, td { border:1px solid var(--line); padding:8px 10px; text-align:left; vertical-align:top; }
+    th { background:#eef2f8; }
+    .highlight { background:#eef2f8; border:1px solid var(--primary); border-radius:10px; padding:14px 16px; margin-top:10px; }
+    .highlight b { color:var(--primary); }
+    a { color:var(--primary); }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <h1>MemoryLink 계정 및 데이터 삭제 안내</h1>
+      <div class="updated">운영 주체: Team MemoryLink · 최종 갱신: 2026-10-04</div>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <main>
+      <section>
+        <p>본 페이지는 Google Play에 등록된 <b>MemoryLink</b> 앱(개발자: Team MemoryLink)의
+        계정 및 관련 데이터 삭제 요청 방법을 안내합니다.</p>
+      </section>
+
+      <section id="how-to-delete">
+        <h2>1. 계정 삭제를 요청하는 방법</h2>
+        <div class="highlight">
+          <p><b>이메일로 요청하기</b></p>
+          <ol>
+            <li><a href="mailto:teammemorylink@gmail.com?subject=%5BMemoryLink%5D%20%EA%B3%84%EC%A0%95%20%EC%82%AD%EC%A0%9C%20%EC%9A%94%EC%B2%AD">teammemorylink@gmail.com</a> 으로 이메일을 보냅니다.</li>
+            <li>제목에 <b>“[MemoryLink] 계정 삭제 요청”</b>을 적습니다.</li>
+            <li>본문에 <b>앱 가입 시 사용한 아이디</b>를 적습니다. 보호자 공유를 썼다면 <b>보호자 화면에 보이는 이름</b>도 적어 주세요. 보호자 페이지 링크는 열쇠와 같으니 이메일에 붙이지 마세요.</li>
+            <li>요청 접수 후 <b>7일 이내</b>에 서버에 저장된 데이터를 삭제하고 완료 안내를 회신합니다.</li>
+          </ol>
+        </div>
+        <p class="muted" style="margin-top:10px">
+          MemoryLink의 계정 정보(아이디·비밀번호 등)는 서버가 아닌 <b>사용자 기기 안(로컬 데이터베이스)</b>에만
+          저장됩니다. 따라서 기기 내 계정과 데이터는 <b>앱을 삭제(제거)하면 즉시 함께 삭제</b>됩니다.
+          서버에 저장된 일부 데이터(아래 2번 표 참조)는 위 이메일 요청으로 삭제할 수 있습니다.</p>
+      </section>
+
+      <section id="what-is-deleted">
+        <h2>2. 삭제되는 데이터와 보관되는 데이터</h2>
+        <h3>삭제되는 데이터</h3>
+        <table>
+          <tr><th>저장 위치</th><th>데이터</th><th>삭제 방법·시점</th></tr>
+          <tr>
+            <td>기기 내(로컬)</td>
+            <td>계정 정보(아이디·비밀번호·이름·나이·체중 등), 감정 일기, 건강 기록(수면·혈압·혈당 등), 인지 훈련 기록, 걸음 수 기록, 프로필 사진</td>
+            <td>앱 삭제 시 즉시 삭제. 또는 앱 내 <b>설정 → 측정 데이터 초기화</b>로 측정 기록만 삭제 가능</td>
+          </tr>
+          <tr>
+            <td>서버(클라우드)</td>
+            <td>보호자 안심 연결 데이터(이름, 걸음 수, 인지 훈련 점수), 고객센터 문의 내역, 익명 인증 식별자. 예전 버전이 저장한 비상 연락처·훈련 난이도도 포함</td>
+            <td>앱 안 <b>설정 → 서버에 저장된 내 데이터 삭제</b>로 즉시 삭제. 또는 이메일 요청 접수 후 <b>7일 이내</b> 삭제. 요청이 없어도 30일 동안 소식이 없어 닫힌 보호자 링크는 5일 이내에, 문의는 접수 1년 뒤에 매일 정리 작업이 지웁니다(<a href="./privacy.html">처리방침 3번</a>)</td>
+          </tr>
+        </table>
+        <h3>삭제 후 보관되는 데이터</h3>
+        <p>삭제 완료 후 추가로 보관하는 데이터는 <b>없습니다</b>.
+        단, 관련 법령에서 보관을 의무화하는 정보가 있는 경우에 한해 해당 법령이 정한 기간 동안만 보관 후 파기합니다.</p>
+      </section>
+
+      <section id="partial-delete">
+        <h2>3. 계정을 삭제하지 않고 데이터만 삭제하기</h2>
+        <p>MemoryLink는 계정을 유지한 채 데이터의 일부 또는 전체만 삭제하는 방법을 제공합니다.</p>
+        <div class="highlight">
+          <p><b>방법 A — 앱 안에서 직접 삭제</b></p>
+          <ol>
+            <li>MemoryLink 앱을 열고 <b>설정</b> 화면으로 이동합니다.</li>
+            <li><b>측정 데이터 초기화</b>를 누릅니다.</li>
+            <li>확인을 누르면 인지 훈련 점수·측정 기록이 즉시 삭제됩니다. 계정은 유지됩니다.</li>
+            <li>서버에 저장된 데이터는 같은 화면의 <b>서버에 저장된 내 데이터 삭제</b>로 바로 지울 수 있습니다. 보호자 링크가 끊기고 1:1 문의가 지워집니다.</li>
+          </ol>
+          <p style="margin-top:12px"><b>방법 B — 서버에 저장된 데이터 삭제 요청</b></p>
+          <ol>
+            <li><a href="mailto:teammemorylink@gmail.com?subject=%5BMemoryLink%5D%20%EB%8D%B0%EC%9D%B4%ED%84%B0%20%EC%82%AD%EC%A0%9C%20%EC%9A%94%EC%B2%AD">teammemorylink@gmail.com</a> 으로 이메일을 보냅니다.</li>
+            <li>제목에 <b>“[MemoryLink] 데이터 삭제 요청”</b>을 적고, 본문에 <b>앱 가입 아이디</b>와 삭제를 원하는 데이터 범위(예: “계정은 유지하고 보호자 연결 데이터만 삭제”)를 적습니다.</li>
+            <li>요청 접수 후 <b>7일 이내</b>에 해당 데이터를 삭제하고 완료 안내를 회신합니다.</li>
+          </ol>
+        </div>
+        <p class="muted" style="margin-top:10px">삭제 대상 데이터의 종류는 위 2번 표와 같습니다. 데이터만 삭제한 경우 추가로 보관하는 데이터는 없습니다.</p>
+      </section>
+
+      <section>
+        <h2>4. 문의처</h2>
+        <p class="muted">운영 주체: Team MemoryLink<br>
+        이메일: teammemorylink@gmail.com<br>
+        개인정보 처리방침: <a href="./privacy.html">https://memorylink-7af26.web.app/privacy.html</a></p>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

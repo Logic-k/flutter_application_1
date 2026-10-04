@@ -1,0 +1,43 @@
+// G0 scratch: fresh v9 DB의 스키마·시드 행 수를 기준선 파일로 덤프한다. 저장소 테스트 아님.
+import 'dart:io';
+
+import 'package:flutter_test/flutter_test.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:flutter_application_1/core/database_helper.dart';
+
+void main() {
+  setUpAll(() {
+    sqfliteFfiInit();
+    databaseFactory = databaseFactoryFfi;
+  });
+
+  test('dump v9 schema', () async {
+    DatabaseHelper.resetForTest();
+    final db = await DatabaseHelper().database;
+    final out = StringBuffer()
+      ..writeln('# SQLite schema snapshot (fresh onCreate, debug seed, in-memory)')
+      ..writeln('user_version=${(await db.rawQuery('PRAGMA user_version')).first.values.first}')
+      ..writeln();
+    final objs = await db.rawQuery(
+        "SELECT type, name, tbl_name, sql FROM sqlite_master "
+        "WHERE name NOT LIKE 'sqlite_%' AND name != 'android_metadata' ORDER BY type DESC, name");
+    final tables = objs.where((o) => o['type'] == 'table').map((o) => o['name'] as String).toList();
+    out.writeln('tables(${tables.length}): ${tables.join(', ')}');
+    out.writeln();
+    out.writeln('## row counts after onCreate (debug seed)');
+    for (final t in tables) {
+      final c = (await db.rawQuery('SELECT COUNT(*) AS c FROM "$t"')).first['c'];
+      out.writeln('$t\t$c');
+    }
+    out.writeln();
+    out.writeln('## DDL');
+    for (final o in objs) {
+      out.writeln('-- ${o['type']} ${o['name']}');
+      out.writeln('${o['sql']};');
+      out.writeln();
+    }
+    File('docs/design/baseline/G0_2026-09-29/fixtures/sqlite_schema_v9.txt')
+        .writeAsStringSync(out.toString());
+    await DatabaseHelper.closeForTest();
+  });
+}

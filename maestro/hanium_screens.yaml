@@ -1,0 +1,185 @@
+appId: com.teammemorylink.memorylink
+---
+# 한이음 제출물용 스크린샷 캡처 (2026-08 리디자인 반영본)
+# screenshot_tour_flow.yaml 기반 + 상세 화면 진입(보호자/음성/CS) + 치매안심센터 + 로그인.
+# 실행 cwd에 00~15 PNG가 떨어진다.
+
+# ── 00 로그인 화면 ─────────────────────────────────────────────
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: "사용자 아이디"
+    timeout: 90000
+- waitForAnimationToEnd:
+    timeout: 1500
+- takeScreenshot: 00_login
+
+# ── 로그인 (demo 계정) ─────────────────────────────────────────
+- tapOn: "사용자 아이디"
+- eraseText: 30
+- inputText: "kim_minjun"
+- tapOn: "비밀번호"
+- eraseText: 30
+- inputText: "demo1234"
+- hideKeyboard
+- tapOn: "로그인"
+- extendedWaitUntil:
+    visible: "오늘 걸음"
+    timeout: 25000
+- waitForAnimationToEnd:
+    timeout: 1500
+
+# ── 01 홈 화면 ─────────────────────────────────────────────────
+- takeScreenshot: 01_home
+
+# ── 02 AI 채팅 ─────────────────────────────────────────────────
+- tapOn: "AI 도우미\nAI와 대화로 인지 건강을 확인해보세요"
+- extendedWaitUntil:
+    visible: "AI 대화 도우미"
+    timeout: 10000
+- waitForAnimationToEnd:
+    timeout: 1500
+- takeScreenshot: 02_ai_chat
+- pressKey: back
+
+# ── 03 오늘의 일기 ─────────────────────────────────────────────
+- extendedWaitUntil:
+    visible: "오늘의 일기\n오늘 하루를 기록해보세요"
+    timeout: 5000
+- tapOn: "오늘의 일기\n오늘 하루를 기록해보세요"
+- extendedWaitUntil:
+    visible: "기억의 정원 일기"
+    timeout: 10000
+- waitForAnimationToEnd:
+    timeout: 1500
+- takeScreenshot: 03_memory_garden
+- pressKey: back
+
+# ── 04 인지훈련 허브 ────────────────────────────────────────────
+- tapOn:
+    point: "43%,93%"
+- extendedWaitUntil:
+    visible: "두뇌 트레이닝 센터"
+    timeout: 5000
+- waitForAnimationToEnd:
+    timeout: 1500
+- takeScreenshot: 04_training_hub
+
+# ── 05 게임 화면 ────────────────────────────────────────────────
+- tapOn: ".*누가 큰가요.*"
+- extendedWaitUntil:
+    visible: "VS"
+    timeout: 5000
+- waitForAnimationToEnd:
+    timeout: 1200
+- takeScreenshot: 05_training_game
+- pressKey: back
+
+# ── 06 생활습관 (걷기 대시보드) ─────────────────────────────────
+- tapOn:
+    point: "53%,93%"
+- extendedWaitUntil:
+    visible: "/ 10,000 보"
+    timeout: 10000
+- waitForAnimationToEnd:
+    timeout: 1500
+- takeScreenshot: 06_walking_dashboard
+
+# ── 07 리포트 ──────────────────────────────────────────────────
+- tapOn:
+    point: "64%,93%"
+- extendedWaitUntil:
+    visible: "주간 분석 리포트"
+    timeout: 8000
+- waitForAnimationToEnd:
+    timeout: 2000
+- takeScreenshot: 07_reports
+
+# ── 09 활동 기록 리포트 ─────────────────────────────────────────────
+- scrollUntilVisible:
+    element:
+      text: "활동 기록 리포트 생성하기"
+    direction: DOWN
+    timeout: 30000
+- waitForAnimationToEnd:
+    timeout: 3000
+- takeScreenshot: 09_clinical_report
+
+# ── 10 내정보 ──────────────────────────────────────────────────
+- tapOn:
+    point: "74%,93%"
+- extendedWaitUntil:
+    visible: "내 정보"
+    timeout: 5000
+- waitForAnimationToEnd:
+    timeout: 1500
+- takeScreenshot: 10_profile
+
+# ── 11 프로필 편집 ─────────────────────────────────────────────
+- tapOn: "편집"
+- extendedWaitUntil:
+    visible: "정보 수정"
+    timeout: 5000
+- waitForAnimationToEnd:
+    timeout: 1500
+- takeScreenshot: 11_edit_profile
+- pressKey: back
+
+# ── 12 보호자 안심 연결 (상세 진입) ─────────────────────────────
+- extendedWaitUntil:
+    visible: "내 정보"
+    timeout: 5000
+- scrollUntilVisible:
+    element:
+      text: "보호자 안심 연결\n보호자가 활동 상태를 확인할 수 있습니다."
+    direction: DOWN
+- tapOn: "보호자 안심 연결\n보호자가 활동 상태를 확인할 수 있습니다."
+- waitForAnimationToEnd:
+    timeout: 3000
+- takeScreenshot: 12_guardian_link
+- pressKey: back
+
+# ── 13 말하기 기록 (상세 진입) ────────────────────────────────────
+- extendedWaitUntil:
+    visible: "내 정보"
+    timeout: 8000
+- scrollUntilVisible:
+    element:
+      text: ".*말하기 기록.*"
+    direction: DOWN
+- tapOn: ".*말하기 기록.*"
+- waitForAnimationToEnd:
+    timeout: 3000
+- takeScreenshot: 13_voice_assessment
+- pressKey: back
+
+# ── 14 고객센터 (상세 진입) ─────────────────────────────────────
+- extendedWaitUntil:
+    visible: "내 정보"
+    timeout: 8000
+- scrollUntilVisible:
+    element:
+      text: "고객센터\n공지사항, FAQ, 1:1 문의"
+    direction: DOWN
+- tapOn: "고객센터\n공지사항, FAQ, 1:1 문의"
+- waitForAnimationToEnd:
+    timeout: 3000
+- takeScreenshot: 14_cs_center
+- pressKey: back
+
+# ── 15 치매안심센터 찾기 ────────────────────────────────────────
+- extendedWaitUntil:
+    visible: "내 정보"
+    timeout: 8000
+- scrollUntilVisible:
+    element:
+      text: ".*가까운 치매안심센터 찾기.*"
+    direction: DOWN
+    timeout: 25000
+- tapOn: ".*가까운 치매안심센터 찾기.*"
+- extendedWaitUntil:
+    visible: "가까운 치매안심센터"
+    timeout: 12000
+- waitForAnimationToEnd:
+    timeout: 2000
+- takeScreenshot: 15_dementia_center

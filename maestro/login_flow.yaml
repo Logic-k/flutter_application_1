@@ -5,9 +5,11 @@ appId: com.teammemorylink.memorylink
     clearState: true
 
 # 2. 앱 초기화 대기 (로그인 화면 TextField 등장까지)
+# clearState 직후 첫 실행은 DB 생성 + v9 마이그레이션 + 30일치 데모 시드가 모두 돌아
+# 콜드 스타트가 40초를 넘는다. helpers/login_helper.yaml과 같은 90초를 쓴다.
 - extendedWaitUntil:
     visible: "사용자 아이디"
-    timeout: 40000
+    timeout: 90000
 
 # 3. 로그인 화면 요소 확인
 - assertVisible: "사용자 아이디"
@@ -16,6 +18,10 @@ appId: com.teammemorylink.memorylink
 
 # 3. 아이디 입력
 - tapOn: "사용자 아이디"
+# 설치 직후 첫 입력은 첫 글자가 두 번 들어갈 때가 있다("kkim_minjun", 2026-10-05 로컬·CI 6차).
+# 한 글자를 넣었다 지워 입력 연결을 먼저 세운 뒤 진짜 값을 넣는다.
+- inputText: "x"
+- eraseText
 - inputText: "kim_minjun"
 
 # 4. 비밀번호 입력
@@ -28,7 +34,8 @@ appId: com.teammemorylink.memorylink
 - tapOn: "로그인"
 
 # 6. 로그인 성공 확인 (홈 화면 진입 대기 후 확인)
+# helpers/login_helper.yaml 과 같은 20초. 게이팅의 첫 flow라 설치 직후 가장 느리다(CI 6차에서 10초를 넘겼다).
 - extendedWaitUntil:
     visible: "오늘 걸음"
-    timeout: 10000
+    timeout: 20000
 - assertVisible: "오늘 걸음"

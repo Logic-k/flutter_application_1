@@ -1,0 +1,8 @@
+Analyzing flutter_application_1...                              
+
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\core\ml_widgets.dart:197:7 - use_null_aware_elements
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\core\ml_widgets.dart:248:7 - use_null_aware_elements
+   info - Type could be non-nullable - lib\core\theme.dart:121:24 - unnecessary_nullable_for_final_variable_declarations
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\features\training\games\shape_match_game.dart:223:7 - use_null_aware_elements
+
+4 issues found. (ran in 37.5s)

@@ -1,6 +1,7 @@
+import 'dart:convert';
 import 'dart:math';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/auth_service.dart';
 import '../../core/firebase_service.dart';
 
@@ -42,10 +43,11 @@ class DifficultyProvider extends ChangeNotifier {
   DifficultyProvider({required String username}) : _username = username;
 
   /// 로그인/로그아웃 시 사용자 전환. 사용자가 바뀌면 레벨을 초기화하고
-  /// 새 사용자의 난이도를 Firestore에서 다시 불러온다.
+  /// 새 사용자의 난이도를 기기에서 다시 불러온다.
   Future<void> setUsername(String username) async {
     if (username == _username) return;
     _username = username;
+    _changedSinceLoad = false;
     for (final category in GameCategory.values) {
       _levels[category] = 1;
       _recentResults[category]!.clear();
@@ -63,35 +65,117 @@ class DifficultyProvider extends ChangeNotifier {
     return max(2.0, 5.0 - (level * 0.3));
   }
 
-  /// Firestore 문서 ID. 익명 uid를 접두사로 붙여 기기(익명 세션) 간
-  /// username 충돌을 막고, Security Rules의 ownerUid 검사와 짝을 이룬다.
-  /// uid가 없으면(오프라인·미인증) 원격 동기화를 건너뛴다.
-  String? get _docId {
-    final uid = AuthService.uid;
-    if (uid == null || username.isEmpty) return null;
-    return '${uid}_$username';
+  // 난이도는 기기에만 저장한다(SharedPreferences, 아이디별).
+  // 예전에는 Firestore에 '익명 uid_아이디' 문서로 올렸지만, uid가 설치 단위라
+  // 기기 간 동기화가 일어나지 않았고 재설치·오프라인에서는 레벨이 1로 돌아갔다.
+  static const _prefPrefix = 'difficulty_levels_';
+
+  /// 이 기기 계정의 난이도 저장 키. 계정 삭제 때 함께 지운다.
+  static String prefKeyFor(String username) => '$_prefPrefix$username';
+  static const _fieldNames = {
+    GameCategory.calculation: 'calculation_level',
+    GameCategory.logic: 'logic_level',
+    GameCategory.memory: 'memory_level',
+    GameCategory.perception: 'perception_level',
+  };
+
+  /// 사용자가 이번 로그인 뒤에 레벨을 바꿨는가. 늦게 도착한 예전 클라우드 값이
+  /// 새 진행을 덮지 않게 한다.
+  bool _changedSinceLoad = false;
+  bool _waitingForFirebase = false;
+
+  /// 기기에 저장된 난이도를 불러온다. 없으면 예전 클라우드 문서를 한 번 옮겨 온다.
+  Future<void> loadLevels() async {
+    final requested = _username;
+    if (requested.isEmpty) return;
+    final stored = await _readLocal(requested);
+    if (requested != _username) return;
+    if (stored != null) {
+      _apply(stored);
+      return;
+    }
+    // 자동 로그인은 Firebase 초기화보다 먼저 끝난다. 준비되면 그때 한 번 옮긴다.
+    if (FirebaseService.isAvailable) {
+      await _migrateAndApply(requested);
+    } else if (!_waitingForFirebase) {
+      _waitingForFirebase = true;
+      FirebaseService.availability.addListener(_onFirebaseReady);
+    }
   }
 
-  /// Firestore에서 초기 난이도 데이터를 불러옵니다.
-  Future<void> loadLevels() async {
-    final docId = _docId;
-    if (docId == null) return;
-    try {
-      final doc = await FirebaseService.db
-          .collection('training_difficulty')
-          .doc(docId)
-          .get();
+  void _onFirebaseReady() {
+    if (!FirebaseService.isAvailable) return;
+    FirebaseService.availability.removeListener(_onFirebaseReady);
+    _waitingForFirebase = false;
+    final name = _username;
+    if (name.isNotEmpty) _migrateAndApply(name);
+  }
 
-      if (doc.exists) {
-        final data = doc.data()!;
-        _levels[GameCategory.calculation] = data['calculation_level'] as int? ?? 1;
-        _levels[GameCategory.logic] = data['logic_level'] as int? ?? 1;
-        _levels[GameCategory.memory] = data['memory_level'] as int? ?? 1;
-        _levels[GameCategory.perception] = data['perception_level'] as int? ?? 1;
-        notifyListeners();
-      }
+  Future<void> _migrateAndApply(String name) async {
+    final migrated = await _migrateFromCloud(name);
+    if (migrated == null || name != _username || _changedSinceLoad) return;
+    _apply(migrated);
+  }
+
+  void _apply(Map<String, dynamic> stored) {
+    for (final entry in _fieldNames.entries) {
+      final value = stored[entry.value];
+      if (value is int) _levels[entry.key] = value.clamp(1, 10);
+    }
+    notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    if (_waitingForFirebase) FirebaseService.availability.removeListener(_onFirebaseReady);
+    super.dispose();
+  }
+
+  Future<Map<String, dynamic>?> _readLocal(String name) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString('$_prefPrefix$name');
+      return raw == null ? null : jsonDecode(raw) as Map<String, dynamic>;
     } catch (e) {
-      debugPrint('Error loading levels from Firestore: $e');
+      debugPrint('[Difficulty] 기기 난이도 읽기 실패: $e');
+      return null;
+    }
+  }
+
+  Future<void> _saveLocal() async {
+    final name = _username;
+    if (name.isEmpty) return;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('$_prefPrefix$name', jsonEncode({
+        for (final entry in _fieldNames.entries) entry.value: _levels[entry.key],
+      }));
+    } catch (e) {
+      debugPrint('[Difficulty] 기기 난이도 저장 실패: $e');
+    }
+  }
+
+  /// 예전 Firestore 문서가 있으면 기기로 옮기고 서버 문서를 지운다(한 번).
+  Future<Map<String, dynamic>?> _migrateFromCloud(String name) async {
+    if (!FirebaseService.isAvailable) return null;
+    final uid = AuthService.uid;
+    if (uid == null) return null;
+    try {
+      final ref = FirebaseService.db.collection('training_difficulty').doc('${uid}_$name');
+      final doc = await ref.get();
+      if (!doc.exists) return null;
+      final data = Map<String, dynamic>.from(doc.data()!);
+      final levels = {
+        for (final field in _fieldNames.values)
+          if (data[field] is int) field: data[field],
+      };
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('$_prefPrefix$name', jsonEncode(levels));
+      await ref.delete();
+      return levels;
+    } catch (e) {
+      debugPrint('[Difficulty] 예전 난이도 옮기기 실패(다음 실행 때 다시 시도): $e');
+      return null;
     }
   }
 
@@ -117,39 +201,20 @@ class DifficultyProvider extends ChangeNotifier {
         _levels[category] = currentLevel + 1;
         results.clear();
         times.clear();
-        await _syncToFirestore();
+        _changedSinceLoad = true;
+        await _saveLocal();
       }
     } else if (results.length >= 2 && results.sublist(results.length - 2).every((res) => !res)) {
       if (currentLevel > 1) {
         _levels[category] = currentLevel - 1;
         results.clear();
         times.clear();
-        await _syncToFirestore();
+        _changedSinceLoad = true;
+        await _saveLocal();
       }
     }
 
     notifyListeners();
   }
 
-  /// Firestore에 현재 난이도 상태를 저장합니다.
-  Future<void> _syncToFirestore() async {
-    final docId = _docId;
-    if (docId == null) return;
-    try {
-      await FirebaseService.db
-          .collection('training_difficulty')
-          .doc(docId)
-          .set({
-        'ownerUid': AuthService.uid,
-        'username': username,
-        'calculation_level': _levels[GameCategory.calculation],
-        'logic_level': _levels[GameCategory.logic],
-        'memory_level': _levels[GameCategory.memory],
-        'perception_level': _levels[GameCategory.perception],
-        'updated_at': FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true));
-    } catch (e) {
-      debugPrint('Error syncing levels to Firestore: $e');
-    }
-  }
 }

@@ -5,6 +5,9 @@ import 'package:table_calendar/table_calendar.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import '../../core/theme.dart';
+import '../../core/ml_widgets.dart';
+import '../../core/motion/app_motion.dart';
+import '../../core/motion/motion_settings.dart';
 import '../../core/user_provider.dart';
 import 'diary_provider.dart';
 
@@ -172,13 +175,34 @@ class _DiaryScreenState extends State<DiaryScreen> {
           ),
         ],
       ),
-      body: !_loaded
-          ? const Center(child: CircularProgressIndicator())
-          : Column(
+      // 불러오는 동안은 달력 + 입력 칸 모양의 자리를 그리고, 도착하면 크로스페이드(08 계획 G-05).
+      // 입력 칸이 Expanded 라 스태거는 걸지 않는다.
+      body: MLLoadSwitcher(
+          loading: !_loaded,
+          skeleton: Semantics(
+            label: '일기를 불러오는 중',
+            excludeSemantics: true,
+            child: const Padding(
+              padding: EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  MLSkeleton(height: 300, radius: AppTheme.rCard),
+                  SizedBox(height: 20),
+                  MLSkeleton(width: 140, height: 18),
+                  SizedBox(height: 12),
+                  MLSkeleton(height: 120, radius: AppTheme.rField),
+                ],
+              ),
+            ),
+          ),
+          child: Column(
               children: [
                 // 키보드가 열리면 캘린더를 애니메이션으로 접음
                 AnimatedSize(
-                  duration: const Duration(milliseconds: 200),
+                  duration: MotionSettings.reduceOf(context)
+                      ? Duration.zero
+                      : AppMotion.enter,
                   curve: Curves.easeInOut,
                   child: SizedBox(
                     height: keyboardOpen ? 0 : null,
@@ -193,6 +217,7 @@ class _DiaryScreenState extends State<DiaryScreen> {
                 ),
               ],
             ),
+      ),
     );
   }
 
@@ -215,11 +240,11 @@ class _DiaryScreenState extends State<DiaryScreen> {
       ),
       calendarStyle: CalendarStyle(
         todayDecoration: BoxDecoration(
-          color: MLColors.primary,
+          color: context.scheme.primary,
           shape: BoxShape.circle,
         ),
         selectedDecoration: BoxDecoration(
-          color: MLColors.primary.withValues(alpha: 0.7),
+          color: context.scheme.primary.withValues(alpha: 0.7),
           shape: BoxShape.circle,
         ),
         todayTextStyle: const TextStyle(
@@ -249,12 +274,12 @@ class _DiaryScreenState extends State<DiaryScreen> {
           Row(
             children: [
               Icon(Icons.edit_note_rounded,
-                  size: 18, color: MLColors.primary),
+                  size: 18, color: context.scheme.primary),
               const SizedBox(width: 6),
               Text(
                 dateLabel,
                 style: theme.textTheme.labelLarge?.copyWith(
-                  color: MLColors.primary,
+                  color: context.scheme.primary,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -276,7 +301,7 @@ class _DiaryScreenState extends State<DiaryScreen> {
     return Container(
       decoration: BoxDecoration(
         color: theme.colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppTheme.rField),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       child: TextField(
@@ -305,7 +330,7 @@ class _DiaryScreenState extends State<DiaryScreen> {
             width: double.infinity,
             decoration: BoxDecoration(
               color: theme.colorScheme.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(AppTheme.rField),
             ),
             padding: const EdgeInsets.all(12),
             child: content != null && content.isNotEmpty
@@ -344,7 +369,7 @@ class _DiaryScreenState extends State<DiaryScreen> {
               icon: Icon(
                 _isListening ? Icons.mic : Icons.mic_none_outlined,
                 color: _isListening
-                    ? Colors.red
+                    ? MLColors.badText
                     : theme.colorScheme.onSurfaceVariant,
               ),
               tooltip: _isListening ? '음성 인식 중지' : '음성으로 입력',
@@ -355,7 +380,7 @@ class _DiaryScreenState extends State<DiaryScreen> {
             Text(
               '듣고 있어요...',
               style: theme.textTheme.bodySmall
-                  ?.copyWith(color: Colors.red),
+                  ?.copyWith(color: MLColors.badText),
             ),
           const Spacer(),
           FilledButton.icon(

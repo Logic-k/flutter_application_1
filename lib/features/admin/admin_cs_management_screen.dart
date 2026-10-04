@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import '../../core/app_config.dart';
+import '../../core/theme.dart';
+import '../../core/ml_widgets.dart';
 import '../../core/cs_service.dart';
 
 class AdminCsManagementScreen extends StatefulWidget {
@@ -22,7 +25,8 @@ class _AdminCsManagementScreenState extends State<AdminCsManagementScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
-    _refresh();
+    // 관리자 권한(Custom Claim) 부여 체계가 없으면 규칙이 읽기·쓰기를 거부한다.
+    if (AppConfig.isAdminCloudWriteEnabled) _refresh();
   }
 
   void _refresh() {
@@ -41,6 +45,20 @@ class _AdminCsManagementScreenState extends State<AdminCsManagementScreen>
 
   @override
   Widget build(BuildContext context) {
+    if (!AppConfig.isAdminCloudWriteEnabled) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('고객센터 관리')),
+        body: const Padding(
+          padding: EdgeInsets.all(24),
+          child: MLCard(
+            child: Text(
+              '공지사항·FAQ·문의 답변은 지금 Firebase 콘솔에서 관리합니다.\n'
+              '앱에서 관리하려면 관리자 권한 부여 체계를 먼저 만들어야 합니다.',
+            ),
+          ),
+        ),
+      );
+    }
     return Scaffold(
       appBar: AppBar(
         title: const Text('고객센터 관리'),
@@ -80,6 +98,9 @@ class _NoticeTab extends StatelessWidget {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
+          if (snapshot.hasError) {
+            return MLErrorState(onRetry: onRefresh);
+          }
           final notices = snapshot.data ?? [];
           if (notices.isEmpty) {
             return const Center(child: Text('공지사항이 없습니다.'));
@@ -98,6 +119,7 @@ class _NoticeTab extends StatelessWidget {
                   children: [
                     IconButton(
                       icon: const Icon(Icons.edit_outlined, size: 20),
+                      tooltip: '수정',
                       onPressed: () async {
                         await context.push('/admin/notice_edit', extra: {
                           'id': n['id'],
@@ -110,7 +132,8 @@ class _NoticeTab extends StatelessWidget {
                     ),
                     IconButton(
                       icon: Icon(Icons.delete_outline,
-                          size: 20, color: Colors.red[400]),
+                          size: 20, color: MLColors.badText),
+                      tooltip: '삭제',
                       onPressed: () async {
                         final confirm = await _confirmDelete(context);
                         if (confirm) {
@@ -152,6 +175,9 @@ class _FaqTab extends StatelessWidget {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
+          if (snapshot.hasError) {
+            return MLErrorState(onRetry: onRefresh);
+          }
           final faqs = snapshot.data ?? [];
           if (faqs.isEmpty) {
             return const Center(child: Text('FAQ가 없습니다.'));
@@ -165,7 +191,7 @@ class _FaqTab extends StatelessWidget {
               return ListTile(
                 leading: Chip(
                     label: Text(f['category'] as String? ?? '',
-                        style: const TextStyle(fontSize: 11))),
+                        style: const TextStyle(fontSize: 12))),
                 title: Text(f['question'] as String? ?? '',
                     maxLines: 1, overflow: TextOverflow.ellipsis),
                 trailing: Row(
@@ -173,6 +199,7 @@ class _FaqTab extends StatelessWidget {
                   children: [
                     IconButton(
                       icon: const Icon(Icons.edit_outlined, size: 20),
+                      tooltip: '수정',
                       onPressed: () async {
                         await context.push('/admin/faq_edit', extra: {
                           'id': f['id'],
@@ -185,7 +212,8 @@ class _FaqTab extends StatelessWidget {
                     ),
                     IconButton(
                       icon: Icon(Icons.delete_outline,
-                          size: 20, color: Colors.red[400]),
+                          size: 20, color: MLColors.badText),
+                      tooltip: '삭제',
                       onPressed: () async {
                         final confirm = await _confirmDelete(context);
                         if (confirm) {
@@ -226,6 +254,9 @@ class _InquiryTab extends StatelessWidget {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         }
+        if (snapshot.hasError) {
+          return MLErrorState(onRetry: onRefresh);
+        }
         final inquiries = snapshot.data ?? [];
         if (inquiries.isEmpty) {
           return const Center(child: Text('접수된 문의가 없습니다.'));
@@ -244,7 +275,7 @@ class _InquiryTab extends StatelessWidget {
             return ListTile(
               leading: Icon(
                 isAnswered ? Icons.check_circle_outline : Icons.hourglass_top,
-                color: isAnswered ? Colors.green : Colors.amber[700],
+                color: isAnswered ? MLColors.goodText : MLColors.warnText,
               ),
               title: Text(inq['title'] as String? ?? '',
                   maxLines: 1, overflow: TextOverflow.ellipsis),

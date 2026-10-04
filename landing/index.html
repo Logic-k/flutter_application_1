@@ -1,0 +1,838 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MemoryLink — 매일의 기록이 쌓여 변화가 보입니다</title>
+<meta name="description" content="고령층 인지건강 관리·보호자 연계 앱. 인지 훈련 7종, 걸음·수면·혈압 기록, AI 회상 대화, 전국 치매안심센터 256곳 안내. 진단·선별 검사가 아닙니다.">
+<meta name="theme-color" content="#F1F0FB" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#131120" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="favicon.png">
+<link rel="apple-touch-icon" href="icons/Icon-192.png">
+<link rel="canonical" href="https://memorylink.pages.dev/">
+<meta property="og:url" content="https://memorylink.pages.dev/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="MemoryLink — 매일의 기록이 쌓여 변화가 보입니다">
+<meta property="og:description" content="고령층 인지건강 관리·보호자 연계 앱. 인지 훈련 7종, 생활 기록, AI 회상 대화, 전국 치매안심센터 안내.">
+<meta property="og:image" content="https://memorylink.pages.dev/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════════════════════════
+   MemoryLink 소개 페이지
+
+   앱의 디자인 언어를 웹으로 옮긴다. 색·둥글기·그림자·컴포넌트를
+   theme.dart / ml_widgets.dart 와 같은 값으로 맞췄다. 랜딩과 앱이
+   따로 놀면 설치 직후 "다른 제품인가?" 하는 인상을 준다.
+
+   옮겨 온 것: MLCard · MLHeroCard · MLIconTile · MLStatusPill
+              FloatingPillNav · 둥글기 척도(rBar~rCard)
+   ═══════════════════════════════════════════════════════════════════ */
+
+:root{
+  /* 브랜드 — theme.dart MLColors */
+  --primary:#6C5CE7;
+  --primary-deep:#5847D6;
+  --primary-soft:#ECE9FC;
+  --on-primary:#FFFFFF;
+
+  --bg:#F1F0FB;
+  --surface:#FFFFFF;
+  --surface-alt:#F6F5FD;
+  --line:#E6E3F2;
+  --line-strong:#8480A4;
+
+  --text:#241F3D;
+  --text-soft:#5E5978;
+
+  --calc:#6C5CE7; --logic:#A66BE8; --mem:#38C9A6;
+  --care:#FF7AA2; --read:#FFB74D;  --sky:#5AA9F0;
+  --good-text:#1F7A56; --warn-text:#8A5A00; --bad-text:#C62828;
+
+  /* 둥글기 — AppTheme 척도 그대로 */
+  --r-field:12px; --r-btn:14px; --r-tile:16px;
+  --r-panel:20px; --r-sheet:24px; --r-card:26px; --r-pill:999px;
+
+  --maxw:1180px;
+
+  /* MLCard 의 그림자 — 얕게 두 겹 */
+  --shadow-sm:0 1px 2px rgba(36,31,61,.04), 0 4px 12px rgba(36,31,61,.05);
+  --shadow:0 1px 2px rgba(36,31,61,.05), 0 12px 32px rgba(36,31,61,.08);
+  --shadow-lg:0 2px 6px rgba(36,31,61,.06), 0 32px 72px rgba(36,31,61,.14);
+  --ring:0 0 0 4px rgba(108,92,231,.34);
+
+  --grad:linear-gradient(135deg,#7C6FF0 0%,#9E7DF6 100%);
+}
+
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --primary:#A99BFF; --primary-deep:#C3B7FF; --primary-soft:#2A2447; --on-primary:#17123A;
+    --bg:#131120; --surface:#1D1A2C; --surface-alt:#232035;
+    --line:#332E49; --line-strong:#918CB6;
+    --text:#F4F2FF; --text-soft:#C0BADD;
+    --good-text:#66D9AB; --warn-text:#F0BC6A; --bad-text:#FF8B8B;
+    --shadow-sm:0 1px 2px rgba(0,0,0,.4), 0 4px 12px rgba(0,0,0,.35);
+    --shadow:0 1px 2px rgba(0,0,0,.45), 0 12px 32px rgba(0,0,0,.45);
+    --shadow-lg:0 2px 6px rgba(0,0,0,.5), 0 32px 72px rgba(0,0,0,.6);
+    --ring:0 0 0 4px rgba(169,155,255,.45);
+  }
+}
+:root[data-theme="dark"]{
+  --primary:#A99BFF; --primary-deep:#C3B7FF; --primary-soft:#2A2447; --on-primary:#17123A;
+  --bg:#131120; --surface:#1D1A2C; --surface-alt:#232035;
+  --line:#332E49; --line-strong:#918CB6;
+  --text:#F4F2FF; --text-soft:#C0BADD;
+  --good-text:#66D9AB; --warn-text:#F0BC6A; --bad-text:#FF8B8B;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.4), 0 4px 12px rgba(0,0,0,.35);
+  --shadow:0 1px 2px rgba(0,0,0,.45), 0 12px 32px rgba(0,0,0,.45);
+  --shadow-lg:0 2px 6px rgba(0,0,0,.5), 0 32px 72px rgba(0,0,0,.6);
+  --ring:0 0 0 4px rgba(169,155,255,.45);
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%; scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){ html{scroll-behavior:auto} }
+
+body{
+  margin:0; background:var(--bg); color:var(--text);
+  font-family:"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,-apple-system,sans-serif;
+  font-size:17px; line-height:1.75;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+h1,h2,h3{margin:0; line-height:1.26; letter-spacing:-.024em; font-weight:900}
+p{margin:0}
+/* height:auto 가 없으면 <img height="…"> 속성이 프레젠테이션 힌트로 남아
+   높이가 픽셀로 고정된다. 그러면 aspect-ratio 가 무시되고 object-fit:cover 가
+   가로를 잘라 낸다 — 이미지가 확대돼 보이던 원인이 이것이었다. */
+img{max-width:100%; height:auto; display:block}
+a{color:var(--primary-deep); text-underline-offset:3px}
+:where(a,button,summary,[tabindex]):focus-visible{outline:none; box-shadow:var(--ring); border-radius:12px}
+
+.wrap{max-width:var(--maxw); margin:0 auto; padding:0 24px}
+.skip{
+  position:absolute; left:14px; top:-120px; z-index:200;
+  background:var(--surface); color:var(--text); padding:14px 22px;
+  border-radius:var(--r-btn); font-weight:700; box-shadow:var(--shadow-lg);
+  transition:top .18s ease;
+}
+.skip:focus{top:14px}
+
+/* ═══ FloatingPillNav — 앱 하단 알약 네비를 상단으로 옮겨 왔다 ═════ */
+.nav{position:fixed; inset:14px 0 auto; z-index:100; pointer-events:none}
+.nav__pill{
+  pointer-events:auto;
+  width:min(var(--maxw), calc(100% - 28px)); margin:0 auto;
+  display:flex; align-items:center; gap:14px;
+  padding:9px 9px 9px 18px;
+  background:color-mix(in srgb, var(--surface) 76%, transparent);
+  border:1px solid color-mix(in srgb, var(--line) 80%, transparent);
+  border-radius:var(--r-pill);
+  backdrop-filter:saturate(180%) blur(18px);
+  -webkit-backdrop-filter:saturate(180%) blur(18px);
+  box-shadow:var(--shadow-sm);
+  transition:box-shadow .25s ease, background-color .25s ease;
+}
+.nav[data-stuck="true"] .nav__pill{
+  background:color-mix(in srgb, var(--surface) 93%, transparent);
+  box-shadow:var(--shadow);
+}
+.brand{display:flex; align-items:center; gap:11px; font-weight:900; font-size:18px;
+  letter-spacing:-.02em; color:var(--text); text-decoration:none; flex:none}
+.brand__mark{
+  width:34px; height:34px; border-radius:11px; flex:none;
+  background:var(--grad); display:grid; place-items:center; color:#fff;
+  box-shadow:0 4px 12px rgba(108,92,231,.35);
+}
+.nav__links{display:none; gap:2px; margin:0 auto}
+.nav__links a{
+  color:var(--text-soft); text-decoration:none; font-weight:500; font-size:15.5px;
+  padding:9px 15px; border-radius:var(--r-pill);
+  transition:background-color .18s ease, color .18s ease;
+}
+.nav__links a:hover{background:var(--surface-alt); color:var(--text)}
+.nav__end{display:flex; align-items:center; gap:8px; margin-left:auto; flex:none}
+@media (min-width:960px){ .nav__links{display:flex} .nav__end{margin-left:0} }
+
+.icon-btn{
+  display:grid; place-items:center; width:40px; height:40px; flex:none;
+  border-radius:var(--r-pill); border:1px solid var(--line);
+  background:var(--surface); color:var(--text-soft); cursor:pointer;
+  transition:background-color .18s ease, color .18s ease;
+}
+.icon-btn:hover{background:var(--surface-alt); color:var(--text)}
+.icon-btn .moon{display:none}
+:root[data-theme="dark"] .icon-btn .moon{display:block}
+:root[data-theme="dark"] .icon-btn .sun{display:none}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]) .icon-btn .moon{display:block}
+  :root:not([data-theme="light"]) .icon-btn .sun{display:none}
+}
+
+/* ═══ 버튼 ═════════════════════════════════════════════════════════ */
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:9px;
+  min-height:54px; padding:0 26px; border-radius:var(--r-btn);
+  border:1px solid transparent; font:inherit; font-weight:700; font-size:16.5px;
+  text-decoration:none; cursor:pointer; white-space:nowrap;
+  transition:transform .2s cubic-bezier(.2,.7,.3,1), background-color .2s ease,
+             box-shadow .2s ease, border-color .2s ease;
+}
+.btn--primary{background:var(--primary); color:var(--on-primary); box-shadow:0 6px 20px rgba(108,92,231,.32)}
+.btn--primary:hover{background:var(--primary-deep); transform:translateY(-2px); box-shadow:0 10px 28px rgba(108,92,231,.4)}
+.btn--ghost{background:var(--surface); color:var(--text); border-color:var(--line-strong)}
+.btn--ghost:hover{background:var(--surface-alt); transform:translateY(-2px)}
+.btn--sm{min-height:40px; padding:0 18px; font-size:15px; border-radius:var(--r-pill)}
+@media (prefers-reduced-motion:reduce){ .btn:hover{transform:none} }
+
+/* ═══ 섹션 ═════════════════════════════════════════════════════════ */
+section{padding:104px 0}
+.eyebrow{
+  display:inline-flex; align-items:center; gap:9px; font-size:13.5px; font-weight:700;
+  letter-spacing:.09em; color:var(--primary-deep); text-transform:uppercase; margin-bottom:18px;
+}
+.eyebrow::before{content:""; width:24px; height:2px; border-radius:2px; background:currentColor; flex:none; opacity:.7}
+.h2{font-size:clamp(29px,4.5vw,45px)}
+.lede{margin-top:20px; color:var(--text-soft); font-size:clamp(17px,1.7vw,19.5px); max-width:60ch}
+.center{text-align:center}
+.center .eyebrow{justify-content:center}
+.center .lede{margin-left:auto; margin-right:auto}
+
+/* ═══ 히어로 ═══════════════════════════════════════════════════════ */
+.hero{position:relative; padding:150px 0 0; overflow:hidden}
+.hero::before{
+  /* 광원 하나만. 보라 범벅은 피한다. */
+  content:""; position:absolute; left:50%; top:-360px; translate:-50% 0;
+  width:min(1100px,150vw); aspect-ratio:1;
+  background:radial-gradient(closest-side, rgba(108,92,231,.20), transparent 72%);
+  pointer-events:none;
+}
+.hero__head{position:relative; max-width:820px; margin:0 auto; text-align:center}
+.hero h1{font-size:clamp(35px,6.2vw,62px); letter-spacing:-.035em}
+.hero h1 em{
+  font-style:normal;
+  background:linear-gradient(105deg,var(--primary) 10%,var(--logic) 90%);
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+}
+.hero__sub{margin:24px auto 0; color:var(--text-soft); font-size:clamp(17px,2vw,20px); max-width:52ch}
+.hero__actions{display:flex; flex-wrap:wrap; gap:12px; justify-content:center; margin-top:36px}
+.hero__note{
+  margin:26px auto 0; font-size:15px; color:var(--text-soft);
+  display:inline-flex; align-items:center; gap:9px;
+  background:var(--surface); border:1px solid var(--line);
+  padding:11px 18px; border-radius:var(--r-pill); box-shadow:var(--shadow-sm);
+}
+.hero__note svg{flex:none; color:var(--warn-text)}
+
+/* 무대 — 기기와 카드가 겹쳐 앉는 곳 */
+.stage{position:relative; margin-top:76px; padding-bottom:110px}
+.stage__floor{
+  position:absolute; inset:auto 0 0; height:58%;
+  background:linear-gradient(180deg, transparent, color-mix(in srgb, var(--primary-soft) 72%, transparent));
+  border-radius:64px 64px 0 0; pointer-events:none;
+}
+.stage__in{position:relative; display:grid; place-items:center}
+
+/* 기기 — 비율을 자산과 정확히 맞춰 늘어나거나 넘치지 않게 한다 */
+.device{
+  position:relative; width:min(292px, 74vw);
+  padding:10px; border-radius:42px;
+  background:linear-gradient(165deg,#3A3453,#1A1729);
+  box-shadow:var(--shadow-lg);
+}
+.device img{
+  width:100%; height:auto; aspect-ratio:620/1147; object-fit:cover; object-position:top;
+  border-radius:33px; background:var(--surface); display:block;
+}
+.device::after{
+  content:""; position:absolute; top:21px; left:50%; translate:-50% 0;
+  width:62px; height:5px; border-radius:99px; background:rgba(255,255,255,.26);
+}
+
+/* 떠 있는 앱 카드 — MLCard 를 그대로 옮긴 모양 */
+.float{
+  position:absolute; width:274px; background:var(--surface);
+  border:1px solid var(--line); border-radius:var(--r-card);
+  box-shadow:var(--shadow-lg); overflow:hidden; display:none;
+}
+.float img{width:100%; height:auto; display:block}
+.float__cap{padding:13px 16px; border-top:1px solid var(--line); background:var(--surface)}
+.float--l{left:calc(50% - 430px); top:8%}
+.float--r{right:calc(50% - 430px); top:44%}
+@media (min-width:1080px){ .float{display:block} }
+@media (min-width:1080px) and (max-width:1280px){
+  .float{width:228px}
+  .float--l{left:calc(50% - 372px)}
+  .float--r{right:calc(50% - 372px)}
+}
+
+/* ═══ 지표 밴드 ════════════════════════════════════════════════════ */
+.stats{padding:0 0 104px}
+.stats__grid{display:grid; gap:14px; grid-template-columns:repeat(2,1fr)}
+@media (min-width:860px){ .stats__grid{grid-template-columns:repeat(4,1fr)} }
+.stat{
+  background:var(--surface); border:1px solid var(--line);
+  border-radius:var(--r-card); padding:28px 24px; text-align:center;
+  box-shadow:var(--shadow-sm);
+}
+.stat__num{
+  font-size:clamp(32px,4vw,42px); font-weight:900; letter-spacing:-.035em; line-height:1.05;
+  background:linear-gradient(120deg,var(--primary),var(--logic));
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+}
+.stat__label{margin-top:10px; font-weight:700; font-size:16px}
+.stat__sub{margin-top:4px; font-size:14px; color:var(--text-soft)}
+
+/* ═══ 벤토 그리드 ══════════════════════════════════════════════════ */
+.bento{display:grid; gap:16px; margin-top:52px; grid-template-columns:1fr}
+@media (min-width:760px){ .bento{grid-template-columns:repeat(2,1fr)} }
+@media (min-width:1060px){ .bento{grid-template-columns:repeat(6,1fr)} }
+
+.cell{
+  background:var(--surface); border:1px solid var(--line);
+  border-radius:var(--r-card); padding:30px; overflow:hidden;
+  display:flex; flex-direction:column;
+  transition:transform .22s cubic-bezier(.2,.7,.3,1), box-shadow .22s ease, border-color .22s ease;
+}
+.cell:hover{transform:translateY(-3px); box-shadow:var(--shadow);
+  border-color:color-mix(in srgb, var(--line-strong) 45%, var(--line))}
+@media (prefers-reduced-motion:reduce){ .cell:hover{transform:none} }
+@media (min-width:1060px){
+  .cell--wide{grid-column:span 4}
+  .cell--half{grid-column:span 3}
+  .cell--third{grid-column:span 2}
+}
+.cell h3{font-size:21px}
+.cell p{margin-top:11px; color:var(--text-soft); font-size:16px}
+.cell__shot{
+  margin-top:24px; border-radius:var(--r-panel); overflow:hidden;
+  border:1px solid var(--line); background:var(--surface-alt);
+}
+/* 이미지는 항상 자산과 같은 비율로 고정한다. 늘어나거나 셀을 넘지 않게. */
+.cell__shot img{width:100%; display:block}
+.cell__shot--course img{height:auto; aspect-ratio:760/430; object-fit:cover; object-position:top}
+.cell__shot--chat img{height:auto; aspect-ratio:980/428; object-fit:cover; object-position:top}
+.push{margin-top:auto}
+
+/* MLIconTile */
+.tile{width:52px; height:52px; border-radius:var(--r-tile); display:grid; place-items:center;
+  flex:none; margin-bottom:18px}
+
+/* MLStatusPill */
+.pill{
+  display:inline-flex; align-items:center; gap:7px; font-size:13.5px; font-weight:700;
+  padding:6px 13px; border-radius:var(--r-pill); margin-bottom:16px; width:fit-content;
+}
+.pill::before{content:""; width:7px; height:7px; border-radius:99px; background:currentColor}
+
+.chips{display:flex; flex-wrap:wrap; gap:8px; margin-top:20px}
+.chip{
+  font-size:14px; font-weight:500; padding:7px 14px; border-radius:var(--r-pill);
+  background:var(--surface-alt); border:1px solid var(--line); color:var(--text-soft);
+}
+
+/* ═══ 보호자 밴드 — MLHeroCard ════════════════════════════════════ */
+.band{
+  position:relative; background:var(--grad); border-radius:var(--r-card);
+  padding:clamp(38px,5.5vw,66px); color:#fff; overflow:hidden; box-shadow:var(--shadow-lg);
+}
+.band::after{
+  content:""; position:absolute; right:-14%; top:-46%; width:58%; aspect-ratio:1;
+  background:radial-gradient(closest-side, rgba(255,255,255,.20), transparent 70%);
+  pointer-events:none;
+}
+.band__grid{position:relative; display:grid; gap:44px; align-items:center}
+@media (min-width:980px){ .band__grid{grid-template-columns:1.05fr .95fr; gap:60px} }
+.band h2{font-size:clamp(27px,3.8vw,40px); color:#fff}
+.band p{margin-top:18px; color:rgba(255,255,255,.93); font-size:17.5px; max-width:46ch}
+.band__list{list-style:none; margin:30px 0 0; padding:0; display:grid; gap:16px}
+.band__list li{display:flex; gap:13px; align-items:flex-start; color:rgba(255,255,255,.95); font-size:16.5px}
+.band__list svg{flex:none; margin-top:5px}
+/* 보라 배경 위에 보라 카드를 그냥 얹으면 묻힌다. 흰 판으로 한 겹 받쳐
+   MLCard 가 떠 있는 모양을 만든다. */
+.band__shot{
+  background:#fff; padding:14px; border-radius:var(--r-card);
+  box-shadow:0 28px 70px rgba(0,0,0,.30);
+}
+.band__shot > div{border-radius:var(--r-panel); overflow:hidden; border:1px solid rgba(36,31,61,.10)}
+.band__shot img{width:100%; height:auto; aspect-ratio:760/501; object-fit:cover; object-position:top; display:block}
+
+/* ═══ 카드 그리드 ══════════════════════════════════════════════════ */
+.cards{display:grid; gap:16px; margin-top:48px}
+@media (min-width:720px){ .cards{grid-template-columns:repeat(2,1fr)} }
+@media (min-width:1040px){ .cards{grid-template-columns:repeat(3,1fr)} }
+
+/* ═══ 설계 원칙 ════════════════════════════════════════════════════ */
+.stance{background:var(--surface-alt)}
+.stance__grid{display:grid; gap:16px; margin-top:48px}
+@media (min-width:900px){ .stance__grid{grid-template-columns:1fr 1fr} }
+.stance__col{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-card); padding:32px}
+.stance__col h3{font-size:19px; display:flex; align-items:center; gap:11px}
+.stance__list{list-style:none; margin:22px 0 0; padding:0; display:grid; gap:15px}
+.stance__list li{display:flex; gap:13px; align-items:flex-start; font-size:16px; color:var(--text-soft); line-height:1.68}
+.stance__list svg{flex:none; margin-top:5px}
+
+/* ═══ 만듦새 ═══════════════════════════════════════════════════════ */
+.build{display:grid; gap:14px; margin-top:44px; grid-template-columns:repeat(2,1fr)}
+@media (min-width:900px){ .build{grid-template-columns:repeat(4,1fr)} }
+.build__item{background:var(--surface); border:1px solid var(--line);
+  border-radius:var(--r-panel); padding:24px; text-align:center}
+.build__val{font-size:29px; font-weight:900; letter-spacing:-.03em; line-height:1.1}
+.build__key{margin-top:7px; font-size:14px; color:var(--text-soft)}
+
+/* ═══ CTA · 고지 · 푸터 ════════════════════════════════════════════ */
+.cta__box{
+  background:var(--grad); border-radius:var(--r-card);
+  padding:clamp(42px,6vw,72px); color:#fff; text-align:center;
+  box-shadow:var(--shadow-lg); position:relative; overflow:hidden;
+}
+.cta__box::after{
+  content:""; position:absolute; left:-10%; bottom:-60%; width:50%; aspect-ratio:1;
+  background:radial-gradient(closest-side, rgba(255,255,255,.18), transparent 70%);
+}
+.cta__box > *{position:relative}
+.cta__box h2{font-size:clamp(27px,3.9vw,40px); color:#fff}
+.cta__box p{margin-top:18px; color:rgba(255,255,255,.93); font-size:17.5px}
+.cta__actions{display:flex; flex-wrap:wrap; gap:12px; justify-content:center; margin-top:34px}
+.cta__box .btn--primary{background:#fff; color:#3B2F94; box-shadow:0 8px 24px rgba(0,0,0,.18)}
+.cta__box .btn--primary:hover{background:#F3F0FF}
+.cta__box .btn--ghost{background:rgba(255,255,255,.14); color:#fff; border-color:rgba(255,255,255,.55)}
+.cta__box .btn--ghost:hover{background:rgba(255,255,255,.24)}
+
+.disclaimer{
+  margin-top:24px; background:var(--surface); border:1px solid var(--line);
+  border-left:4px solid var(--read); border-radius:var(--r-panel); padding:28px 30px;
+}
+.disclaimer h3{font-size:17px; display:flex; align-items:center; gap:10px}
+.disclaimer ol{margin:17px 0 0; padding-left:22px; display:grid; gap:10px}
+.disclaimer li{color:var(--text-soft); font-size:15.5px; line-height:1.72}
+
+.footer{border-top:1px solid var(--line); padding:56px 0 72px; margin-top:40px}
+.footer__in{display:grid; gap:28px}
+@media (min-width:760px){ .footer__in{grid-template-columns:1fr auto; align-items:start} }
+.footer__links{display:flex; flex-wrap:wrap; gap:6px}
+.footer__links a{color:var(--text-soft); text-decoration:none; font-size:15px; font-weight:500;
+  padding:9px 14px; border-radius:var(--r-pill)}
+.footer__links a:hover{background:var(--surface-alt); color:var(--text)}
+.footer__meta{margin-top:18px; font-size:14.5px; color:var(--text-soft); line-height:1.85}
+
+/* ═══ 등장 ═════════════════════════════════════════════════════════ */
+.reveal{opacity:0; transform:translateY(20px); transition:opacity .7s ease, transform .7s cubic-bezier(.2,.7,.3,1)}
+.reveal.is-in{opacity:1; transform:none}
+@media (prefers-reduced-motion:reduce){ .reveal{opacity:1; transform:none; transition:none} }
+</style>
+</head>
+<body>
+
+<a class="skip" href="#main">본문으로 건너뛰기</a>
+
+<header class="nav" id="nav">
+  <div class="nav__pill">
+    <a class="brand" href="#top">
+      <span class="brand__mark" aria-hidden="true">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"/><path d="M5 7l7-4 7 4v10l-7 4-7-4z"/></svg>
+      </span>
+      MemoryLink
+    </a>
+    <nav class="nav__links" aria-label="주요 섹션">
+      <a href="#features">기능</a>
+      <a href="#care">보호자 연계</a>
+      <a href="#access">접근성</a>
+      <a href="#stance">설계 원칙</a>
+    </nav>
+    <div class="nav__end">
+      <button class="icon-btn" id="themeToggle" type="button" aria-label="밝기 전환">
+        <svg class="sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        <svg class="moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      </button>
+      <a class="btn btn--primary btn--sm" href="#cta">문의하기</a>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+<span id="top"></span>
+
+<!-- ═══ 히어로 ═══════════════════════════════════════════════════ -->
+<section class="hero">
+  <div class="wrap">
+    <div class="hero__head">
+      <span class="eyebrow">고령층 인지건강 관리</span>
+      <h1>매일의 기록이 쌓여,<br><em>변화가 보입니다</em></h1>
+      <p class="hero__sub">
+        인지 훈련과 걸음·수면·혈압 기록을 한 곳에 모읍니다.
+        흩어져 있던 생활 신호가 하나의 흐름으로 보이고,
+        멀리 사는 가족도 그 흐름을 함께 볼 수 있습니다.
+      </p>
+      <div class="hero__actions">
+        <a class="btn btn--primary" href="#features">
+          기능 살펴보기
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+        <a class="btn btn--ghost" href="#stance">설계 원칙 보기</a>
+      </div>
+      <p class="hero__note">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 16v-5M12 8h.01"/></svg>
+        <span>진단·선별 검사가 아니며 의료기기가 아닙니다</span>
+      </p>
+    </div>
+  </div>
+
+  <div class="wrap stage">
+    <div class="stage__floor" aria-hidden="true"></div>
+    <div class="stage__in">
+      <div class="float float--l" aria-hidden="true">
+        <img src="shots/t-reports.webp" width="760" height="746" alt="" loading="lazy">
+        <div class="float__cap">
+          <span class="pill" style="background:rgba(56,201,166,.16); color:var(--good-text); margin:0">영역별 인지 지표</span>
+        </div>
+      </div>
+
+      <div class="device">
+        <img src="shots/p-home.webp" width="620" height="1147"
+             alt="MemoryLink 홈 화면. 오늘 걸음 수와 훈련 현황, AI 도우미와 오늘의 일기 카드가 차례로 보인다."
+             fetchpriority="high">
+      </div>
+
+      <div class="float float--r" aria-hidden="true">
+        <img src="shots/t-steps.webp" width="760" height="606" alt="" loading="lazy">
+        <div class="float__cap">
+          <span class="pill" style="background:var(--primary-soft); color:var(--primary-deep); margin:0">오늘의 걸음</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 지표 ═════════════════════════════════════════════════════ -->
+<section class="stats" aria-label="핵심 수치">
+  <div class="wrap stats__grid">
+    <div class="stat"><div class="stat__num">7종</div><div class="stat__label">인지 훈련</div><div class="stat__sub">계산 · 논리 · 기억 · 집중</div></div>
+    <div class="stat"><div class="stat__num">256곳</div><div class="stat__label">치매안심센터</div><div class="stat__sub">전국 17개 시·도 · 공공데이터</div></div>
+    <div class="stat"><div class="stat__num">4가지</div><div class="stat__label">생활 신호</div><div class="stat__sub">걸음 · 수면 · 혈압 · 식이</div></div>
+    <div class="stat"><div class="stat__num">AA</div><div class="stat__label">명도 대비 기준</div><div class="stat__sub">자동 테스트로 상시 검증</div></div>
+  </div>
+</section>
+
+<!-- ═══ 기능 (벤토) ══════════════════════════════════════════════ -->
+<section id="features" style="background:var(--surface-alt); border-top:1px solid var(--line); border-bottom:1px solid var(--line)">
+  <div class="wrap">
+    <div class="center">
+      <span class="eyebrow">기능</span>
+      <h2 class="h2">따로 놀던 기록을 하나의 흐름으로</h2>
+      <p class="lede">
+        인지 훈련만 있는 앱, 걸음 수만 세는 앱은 이미 많습니다.
+        MemoryLink는 네 가지 생활 신호를 같은 화면에서 이어 붙여
+        "요즘 어떤지"를 한눈에 보이게 합니다.
+      </p>
+    </div>
+
+    <div class="bento">
+      <article class="cell cell--wide reveal">
+        <span class="pill" style="background:var(--primary-soft); color:var(--primary-deep)">인지 훈련</span>
+        <h3>매일 조금씩, 잠금이 풀리듯</h3>
+        <p>
+          계산·논리·기억·집중 네 영역을 다루는 훈련 7종. 난이도는 성적에 따라
+          자동으로 조정되고, 다음 단계는 앞 단계를 마쳐야 열립니다.
+          오늘 할 만큼만 하도록 목표는 하루 3개로 잡았습니다.
+        </p>
+        <div class="chips">
+          <span class="chip">누가 큰가요?</span><span class="chip">규칙 찾아보기</span>
+          <span class="chip">도형 스도쿠</span><span class="chip">구구단 맞추기</span>
+          <span class="chip">범주와 훈련</span><span class="chip">문장 읽기</span>
+          <span class="chip">일상 회상</span>
+        </div>
+        <div class="cell__shot cell__shot--course push">
+          <img src="shots/t-course.webp" width="760" height="496"
+               alt="훈련 과정 목록. 활동마다 도전 가능 또는 잠김 상태가 함께 표시된다." loading="lazy">
+        </div>
+      </article>
+
+      <article class="cell cell--third reveal">
+        <span class="tile" style="background:rgba(56,201,166,.16); color:var(--good-text)" aria-hidden="true">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 4.5a1.5 1.5 0 1 0 0-.01"/><path d="M8 21l2.5-6 3-2 1-4 3.5 3 3 .5"/><path d="M6 12l2-4 3-1"/></svg>
+        </span>
+        <h3>걸음과 수면</h3>
+        <p>
+          걸음은 자동으로 세고, 수면·혈압·식이는 몇 번의 탭으로 남깁니다.
+          인지 점수 옆에 놓이면 "잠 못 잔 주에 점수가 어땠는지"가 보입니다.
+        </p>
+      </article>
+
+      <article class="cell cell--half reveal">
+        <span class="pill" style="background:rgba(90,169,240,.16); color:#1B5E9E">AI 회상 대화</span>
+        <h3>시험이 아니라 대화입니다</h3>
+        <p>
+          "오늘 아침에 뭘 드셨어요?" 같은 물음으로 하루를 되짚습니다.
+          네트워크가 끊겨도 대화는 끊기지 않습니다 — 온디바이스 모델과
+          규칙 기반 응답으로 세 겹의 대비책을 뒀습니다.
+        </p>
+        <div class="cell__shot cell__shot--chat push">
+          <img src="shots/t-chat.webp" width="980" height="428"
+               alt="AI 대화 도우미 화면. 회상을 돕는 첫 질문이 말풍선으로 표시된다." loading="lazy">
+        </div>
+      </article>
+
+      <article class="cell cell--third reveal">
+        <span class="tile" style="background:rgba(166,107,232,.16); color:#6B3FA0" aria-hidden="true">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5M4 19h16"/><path d="M8 16v-5M12 16V8M16 16v-3"/></svg>
+        </span>
+        <h3>주간 리포트</h3>
+        <p>
+          영역별 지표를 막대와 상태로 보여 주고, 판정 대신 지난주 대비
+          어느 쪽으로 움직였는지를 짚습니다.
+        </p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 보호자 연계 ══════════════════════════════════════════════ -->
+<section id="care">
+  <div class="wrap">
+    <div class="band">
+      <div class="band__grid">
+        <div>
+          <span class="eyebrow" style="color:rgba(255,255,255,.92)">보호자 연계</span>
+          <h2>멀리 있어도,<br>오늘 어떤지 알 수 있게</h2>
+          <p>
+            매일 전화해 "밥은 드셨어요?"를 묻기는 어렵습니다.
+            보호자는 활동·인지 요약만 봅니다. 일기 원문이나 대화 내용은 넘어가지 않습니다.
+          </p>
+          <ul class="band__list">
+            <li>
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg>
+              <span>평상시에는 <strong>요약만</strong> — 기록의 원문은 기기를 떠나지 않습니다.</span>
+            </li>
+            <li>
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg>
+              <span>활동량이 눈에 띄게 줄면 그때 <strong>상황 설명과 비상연락처</strong>가 함께 열립니다.</span>
+            </li>
+            <li>
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg>
+              <span>연결은 암호학적 난수 링크로만 열리고, <strong>당사자가 끊으면 즉시 닫힙니다.</strong></span>
+            </li>
+          </ul>
+        </div>
+        <div class="band__shot">
+          <div>
+            <img src="shots/t-greeting.webp" width="760" height="501"
+                 alt="홈 화면 상단의 인사 카드. 오늘 걸음 수와 훈련 현황, 레벨과 경험치가 함께 표시된다." loading="lazy">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 접근성 ═══════════════════════════════════════════════════ -->
+<section id="access" style="background:var(--surface-alt); border-top:1px solid var(--line); border-bottom:1px solid var(--line)">
+  <div class="wrap">
+    <div class="center">
+      <span class="eyebrow">접근성</span>
+      <h2 class="h2">쓰는 사람을 기준으로 만든 화면</h2>
+      <p class="lede">
+        인지 저하 위험군은 곧 디지털 취약계층이기도 합니다.
+        앱의 진입 장벽 자체가 서비스 실패의 원인이 되기 때문에,
+        대비와 터치 타겟은 취향이 아니라 요건으로 다뤘습니다.
+      </p>
+    </div>
+    <div class="cards">
+      <article class="cell reveal">
+        <span class="tile" style="background:var(--primary-soft); color:var(--primary-deep)" aria-hidden="true">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V5h16v2M9 20h6M12 5v15"/></svg>
+        </span>
+        <h3>글자 크기 3단계</h3>
+        <p>기본 · 크게 · 아주 크게. 안드로이드 접근성 설정으로 이미 키워 둔 배율을 앱이 되돌리지 않습니다.</p>
+      </article>
+      <article class="cell reveal">
+        <span class="tile" style="background:rgba(56,201,166,.16); color:var(--good-text)" aria-hidden="true">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18z" fill="currentColor" stroke="none"/></svg>
+        </span>
+        <h3>WCAG AA 대비</h3>
+        <p>본문 4.5:1, 조작 경계선 3:1을 넘깁니다. 색 값을 되돌리면 자동 테스트가 막습니다.</p>
+      </article>
+      <article class="cell reveal">
+        <span class="tile" style="background:rgba(255,183,77,.22); color:var(--warn-text)" aria-hidden="true">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3"/></svg>
+        </span>
+        <h3>음성 안내와 진동</h3>
+        <p>핵심 안내를 읽어 주고, 버튼 반응을 진동으로도 전합니다. 화면을 잘 못 보는 상황에 대비합니다.</p>
+      </article>
+      <article class="cell reveal">
+        <span class="tile" style="background:rgba(166,107,232,.16); color:#6B3FA0" aria-hidden="true">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M9 12l2 2 4-4"/></svg>
+        </span>
+        <h3>56dp 터치 타겟</h3>
+        <p>Material 권고는 48dp지만, 진전·관절 가동범위 저하를 기준으로 56dp를 하한으로 뒀습니다.</p>
+      </article>
+      <article class="cell reveal">
+        <span class="tile" style="background:rgba(90,169,240,.16); color:#1B5E9E" aria-hidden="true">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>
+        </span>
+        <h3>스크린리더 대응</h3>
+        <p>훈련 7종의 화면 요소에 의미 라벨을 붙였습니다. 색으로만 전달하는 정보를 남기지 않습니다.</p>
+      </article>
+      <article class="cell reveal">
+        <span class="tile" style="background:rgba(255,122,162,.16); color:#B23A5E" aria-hidden="true">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        </span>
+        <h3>도움받을 곳 상시 안내</h3>
+        <p>전국 치매안심센터 256곳을 앱 안에 담았습니다. 점수와 무관하게 언제든 찾아갈 수 있습니다.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 설계 원칙 ════════════════════════════════════════════════ -->
+<section id="stance" class="stance">
+  <div class="wrap">
+    <div class="center">
+      <span class="eyebrow">설계 원칙</span>
+      <h2 class="h2">하지 않기로 한 것이 더 중요합니다</h2>
+      <p class="lede">
+        인지 건강을 다루는 앱은 조금만 넘어가도 의료의 영역이 됩니다.
+        할 수 있는 것보다 하지 않기로 한 것을 먼저 정했습니다.
+      </p>
+    </div>
+    <div class="stance__grid">
+      <div class="stance__col reveal">
+        <h3>
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="var(--bad-text)" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M8 12h8"/></svg>
+          하지 않습니다
+        </h3>
+        <ul class="stance__list">
+          <li><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--bad-text)" stroke-width="2.7" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg><span>표준 검사 점수로 환산하지 않습니다. MMSE·MoCA·CIST와 등가라고 말하지 않습니다.</span></li>
+          <li><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--bad-text)" stroke-width="2.7" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg><span>"정상 / 치매 의심" 같은 판정을 내리지 않습니다.</span></li>
+          <li><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--bad-text)" stroke-width="2.7" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg><span>검증되지 않은 측정값을 리포트나 보호자 화면에 흘리지 않습니다.</span></li>
+          <li><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--bad-text)" stroke-width="2.7" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg><span>일기 원문과 대화 내용을 서버에 쌓지 않습니다.</span></li>
+        </ul>
+      </div>
+      <div class="stance__col reveal">
+        <h3>
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="var(--good-text)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.5 2.5 4.5-5"/></svg>
+          대신 이렇게 합니다
+        </h3>
+        <ul class="stance__list">
+          <li><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--good-text)" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg><span>앱 자체 기준의 <strong>인지활동 지수</strong>로 표시하고, 내부 기준임을 함께 적습니다.</span></li>
+          <li><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--good-text)" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg><span>판정 대신 <strong>변화의 방향</strong>을 보여 줍니다. 지난주 대비 어떤지가 핵심입니다.</span></li>
+          <li><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--good-text)" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg><span>면책 고지를 부록이 아니라 <strong>리포트 첫 장과 결과 화면</strong>에 놓습니다.</span></li>
+          <li><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--good-text)" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg><span>걱정되면 갈 곳을 알려 줍니다 — 치매안심센터와 진료과를 함께 안내합니다.</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div style="margin-top:60px">
+      <h3 style="font-size:21px">만듦새</h3>
+      <p style="margin-top:11px; color:var(--text-soft); max-width:58ch">
+        접근성과 안전은 선언이 아니라 회귀를 막는 장치로 지킵니다.
+        아래 수치는 매 변경마다 자동으로 확인합니다.
+      </p>
+      <div class="build">
+        <div class="build__item"><div class="build__val">307</div><div class="build__key">자동 테스트 통과</div></div>
+        <div class="build__item"><div class="build__val">20</div><div class="build__key">E2E 시나리오 게이팅</div></div>
+        <div class="build__item"><div class="build__val">0</div><div class="build__key">정적 분석 오류·경고</div></div>
+        <div class="build__item"><div class="build__val">7.3초</div><div class="build__key">콜드 스타트 (15.1초에서 단축)</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ CTA ══════════════════════════════════════════════════════ -->
+<section id="cta">
+  <div class="wrap">
+    <div class="cta__box">
+      <h2>지금은 출시를 준비하고 있습니다</h2>
+      <p>
+        Google Play 비공개 테스트를 거쳐 정식 출시를 준비 중입니다.<br>
+        기관 도입이나 협업 문의는 아래로 연락 주세요.
+      </p>
+      <div class="cta__actions">
+        <a class="btn btn--primary" href="mailto:teammemorylink@gmail.com">문의하기</a>
+        <a class="btn btn--ghost" href="#features">기능 다시 보기</a>
+      </div>
+    </div>
+
+    <!-- 앱에 인쇄되는 문구를 글자 그대로 옮긴다. -->
+    <div class="disclaimer">
+      <h3>
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="var(--warn-text)" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
+        의료 관련 고지
+      </h3>
+      <ol>
+        <li>본 지표는 진단·선별 검사가 아니며 의료기기가 아닙니다.</li>
+        <li>점수 구간은 앱 내부 기준이며 MMSE·MoCA·CIST 등 표준 검사와 등가성이 검증되지 않았습니다.</li>
+        <li>인지 저하가 의심되면 가까운 치매안심센터 또는 신경과·정신건강의학과 진료를 받으십시오.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="footer">
+  <div class="wrap footer__in">
+    <div>
+      <a class="brand" href="#top" style="font-size:18px">
+        <span class="brand__mark" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"/><path d="M5 7l7-4 7 4v10l-7 4-7-4z"/></svg>
+        </span>
+        MemoryLink
+      </a>
+      <p class="footer__meta">
+        고령층 인지건강 관리 · 보호자 연계 애플리케이션<br>
+        치매상담콜센터 1899-9988 (24시간)
+      </p>
+    </div>
+    <nav class="footer__links" aria-label="추가 링크">
+      <a href="/privacy">개인정보 처리방침</a>
+      <a href="#stance">설계 원칙</a>
+      <a href="#access">접근성</a>
+      <a href="mailto:teammemorylink@gmail.com">문의</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+(function () {
+  'use strict';
+  var root = document.documentElement;
+
+  var saved = null;
+  try { saved = localStorage.getItem('ml-theme'); } catch (e) {}
+  if (saved === 'dark' || saved === 'light') root.setAttribute('data-theme', saved);
+
+  document.getElementById('themeToggle').addEventListener('click', function () {
+    var systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    var current = root.getAttribute('data-theme') || (systemDark ? 'dark' : 'light');
+    var next = current === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    try { localStorage.setItem('ml-theme', next); } catch (e) {}
+  });
+
+  var nav = document.getElementById('nav');
+  var onScroll = function () {
+    nav.setAttribute('data-stuck', window.scrollY > 12 ? 'true' : 'false');
+  };
+  onScroll();
+  window.addEventListener('scroll', onScroll, { passive: true });
+
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var targets = document.querySelectorAll('.reveal');
+  if (reduce || !('IntersectionObserver' in window)) {
+    targets.forEach(function (el) { el.classList.add('is-in'); });
+    return;
+  }
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (!entry.isIntersecting) return;
+      entry.target.classList.add('is-in');
+      io.unobserve(entry.target);
+    });
+  }, { rootMargin: '0px 0px -10% 0px', threshold: 0.06 });
+  targets.forEach(function (el) { io.observe(el); });
+})();
+</script>
+</body>
+</html>

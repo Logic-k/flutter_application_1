@@ -3,9 +3,8 @@
 # 고객센터 전체 메뉴 탐색 테스트
 - runFlow: helpers/login_helper.yaml
 
-# 내정보 탭 (90%, 93%)
-- tapOn:
-    point: "74%,93%"
+# 내정보 탭
+- tapOn: "내정보"
 - extendedWaitUntil:
     visible: "내 정보"
     timeout: 5000

@@ -1,9 +1,17 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'pedometer_manager.dart';
+import 'widgets/gait_session_card.dart';
+import '../../core/formatters.dart';
 import '../../core/ml_widgets.dart';
+import '../../core/motion/staggered_column.dart';
 import '../../core/theme.dart';
+
+/// 하루 걸음 목표. 홈 화면(`home_screen.dart`)과 같은 값을 쓴다.
+const int _stepGoal = 10000;
 
 class WalkingDashboardScreen extends StatefulWidget {
   const WalkingDashboardScreen({super.key});
@@ -20,6 +28,18 @@ class _WalkingDashboardScreenState extends State<WalkingDashboardScreen> {
   void initState() {
     super.initState();
     _loadWeeklyData();
+    unawaited(context.read<PedometerManager>().refreshTracking());
+  }
+
+  Future<void> _toggleTracking(PedometerManager pedometer, bool enabled) async {
+    await pedometer.toggleTracking(enabled);
+    if (!mounted || !enabled || pedometer.isTracking) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('실시간 측정을 사용하려면 신체 활동 권한을 허용해 주세요.'),
+      ),
+    );
   }
 
   Future<void> _loadWeeklyData() async {
@@ -41,7 +61,7 @@ class _WalkingDashboardScreenState extends State<WalkingDashboardScreen> {
   @override
   Widget build(BuildContext context) {
     final pedometer = context.watch<PedometerManager>();
-    final progress = (pedometer.todaySteps / 10000).clamp(0.01, 1.0);
+    final progress = (pedometer.todaySteps / _stepGoal).clamp(0.01, 1.0);
     // 걸음 수 기준 활동 시간 추정 (약 100보/분)
     final activityMinutes = (pedometer.todaySteps / 100).floor();
 
@@ -49,15 +69,61 @@ class _WalkingDashboardScreenState extends State<WalkingDashboardScreen> {
       appBar: AppBar(
         title: const Text('생활습관'),
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: MLColors.primary))
-          : SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(22, 6, 22, 110),
-              child: Column(
+      body: MLLoadSwitcher(
+        loading: _isLoading,
+        skeleton: _buildSkeleton(),
+        child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(
+                  22, 6, 22, FloatingPillNav.contentBottomInset),
+              // 측정 상태 → 오늘 걸음 → 성과 → 주간 추이 순(08 계획 G-04). 탭을 처음 열 때 1회.
+              child: StaggeredColumn(
+                playKey: 'walking_dashboard',
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // 1. 원형 게이지
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                   MLCard(
+                    child: Row(
+                      children: [
+                        MLIconTile(
+                          icon: Icons.sensors_rounded,
+                          color: pedometer.isTracking ? MLColors.good : context.scheme.onSurfaceVariant,
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text('실시간 보행 측정', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+                              const SizedBox(height: 3),
+                              Text(
+                                pedometer.isTracking
+                                    ? '측정 중입니다. 걸음 수가 자동으로 반영됩니다.'
+                                    : '스위치를 켜고 신체 활동 권한을 허용해 주세요.',
+                                style: TextStyle(color: context.scheme.onSurfaceVariant, fontSize: 13),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Switch(
+                          value: pedometer.isTracking,
+                          onChanged: (enabled) => _toggleTracking(pedometer, enabled),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  const GaitSessionCard(),
+                    ],
+                  ),
+
+                  // 1. 원형 게이지
+                  Padding(
+                    padding: const EdgeInsets.only(top: 20),
+                    child: MLCard(
                     child: SizedBox(
                       width: double.infinity,
                       child: Column(
@@ -67,12 +133,25 @@ class _WalkingDashboardScreenState extends State<WalkingDashboardScreen> {
                           value: progress,
                           size: 194,
                           stroke: 17,
-                          color: MLColors.primary,
+                          color: context.scheme.primary,
                           center: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text(pedometer.todaySteps.toString(), style: const TextStyle(fontSize: 38, fontWeight: FontWeight.w900)),
-                              const Text('/ 10,000 보', style: TextStyle(fontSize: 13, color: MLColors.textSoft, fontWeight: FontWeight.w600)),
+                              // 첫 진입에 0 에서 오늘 걸음까지 올라간다(움직임 줄이기면 즉시).
+                              MLCountUp(
+                                value: pedometer.todaySteps,
+                                playKey: 'walking_today_steps',
+                                semanticsLabel: '${Fmt.count(pedometer.todaySteps)} 걸음',
+                                builder: (context, v) => Text(
+                                  Fmt.count(v),
+                                  style: const TextStyle(
+                                    fontSize: 38,
+                                    fontWeight: FontWeight.w800,
+                                    fontFeatures: [FontFeature.tabularFigures()],
+                                  ),
+                                ),
+                              ),
+                              Text('/ ${Fmt.count(_stepGoal)} 보', style: TextStyle(fontSize: 13, color: context.scheme.onSurfaceVariant, fontWeight: FontWeight.w600)),
                             ],
                           ),
                         ),
@@ -82,9 +161,13 @@ class _WalkingDashboardScreenState extends State<WalkingDashboardScreen> {
                     ),
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  ),
 
                   // 2. 오늘의 성과 그리드 (MLMetricCard × 4)
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                  const SizedBox(height: 20),
                   MLSectionTitle('오늘의 성과'),
                   GridView.count(
                     shrinkWrap: true,
@@ -94,26 +177,63 @@ class _WalkingDashboardScreenState extends State<WalkingDashboardScreen> {
                     mainAxisSpacing: 14,
                     childAspectRatio: 1.5,
                     children: [
-                      MLMetricCard(icon: Icons.directions_walk_rounded, color: MLColors.read, label: '걸음 수', value: pedometer.todaySteps.toString(), unit: '걸음'),
+                      MLMetricCard(icon: Icons.directions_walk_rounded, color: MLColors.read, label: '걸음 수', value: Fmt.count(pedometer.todaySteps), unit: '걸음'),
                       MLMetricCard(icon: Icons.map_rounded, color: MLColors.calc, label: '이동 거리', value: pedometer.todayDistance.toStringAsFixed(2), unit: 'km'),
                       MLMetricCard(icon: Icons.local_fire_department_rounded, color: MLColors.bad, label: '소모 칼로리', value: pedometer.todayCalories.toInt().toString(), unit: 'kcal'),
                       MLMetricCard(icon: Icons.timer_rounded, color: MLColors.good, label: '활동 시간', value: activityMinutes.toString(), unit: '분'),
                     ],
                   ),
-                  const SizedBox(height: 24),
+                    ],
+                  ),
 
                   // 4. 주간 기록 차트
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                  const SizedBox(height: 24),
                   MLSectionTitle('주간 활동 추이'),
                   MLCard(
                     padding: const EdgeInsets.all(16),
                     child: SizedBox(
                       height: 200,
-                      child: BarChart(_buildWeeklyBarChart()),
+                      // 첫 진입에 막대가 바닥에서 자란다. 움직임 줄이기면 처음부터 실제 값.
+                      child: MLChart(
+                        playKey: 'walking_weekly_chart',
+                        builder: (context, entered, duration, curve) => BarChart(
+                          _buildWeeklyBarChart(entered: entered),
+                          duration: duration,
+                          curve: curve,
+                        ),
+                      ),
                     ),
+                  ),
+                    ],
                   ),
                 ],
               ),
             ),
+      ),
+    );
+  }
+
+  /// 불러오는 동안 실제 배치(측정 카드 → 게이지 카드 → 성과 그리드)를 닮은 자리.
+  Widget _buildSkeleton() {
+    return Semantics(
+      label: '걸음 기록을 불러오는 중',
+      excludeSemantics: true,
+      child: const Padding(
+        padding: EdgeInsets.fromLTRB(22, 6, 22, 0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            MLSkeletonCard(lines: 1),
+            SizedBox(height: 20),
+            MLSkeletonCard(lines: 1),
+            SizedBox(height: 20),
+            MLSkeletonCard(lines: 3, leading: false, height: 260),
+          ],
+        ),
+      ),
     );
   }
 
@@ -123,7 +243,8 @@ class _WalkingDashboardScreenState extends State<WalkingDashboardScreen> {
     return MLStatusPill(label: status, color: color);
   }
 
-  BarChartData _buildWeeklyBarChart() {
+  /// [entered] 가 false 면 같은 축에 높이 0 인 막대를 그린다(MLChart 진입 기준선).
+  BarChartData _buildWeeklyBarChart({bool entered = true}) {
     final stepMap = <String, int>{};
     for (var row in _weeklyData) {
       stepMap[row['date'] as String] = (row['steps'] ?? 0) as int;
@@ -148,11 +269,11 @@ class _WalkingDashboardScreenState extends State<WalkingDashboardScreen> {
       final steps = (stepMap[dayKey] ?? 0).toDouble();
       groups.add(BarChartGroupData(x: 6 - i, barRods: [
         BarChartRodData(
-          toY: steps,
+          toY: entered ? steps : 0,
           width: 16,
-          color: MLColors.primary,
-          borderRadius: BorderRadius.circular(8),
-          backDrawRodData: BackgroundBarChartRodData(show: true, toY: maxY, color: MLColors.primary.withValues(alpha: 0.10)),
+          color: context.scheme.primary,
+          borderRadius: BorderRadius.circular(AppTheme.rChip),
+          backDrawRodData: BackgroundBarChartRodData(show: true, toY: maxY, color: context.scheme.primary.withValues(alpha: 0.10)),
         ),
       ]));
     }
@@ -171,7 +292,7 @@ class _WalkingDashboardScreenState extends State<WalkingDashboardScreen> {
             if (index < 0) index += 7;
             return Padding(
               padding: const EdgeInsets.only(top: 8),
-              child: Text(days[index], style: const TextStyle(color: MLColors.textFaint, fontSize: 12, fontWeight: FontWeight.w700)),
+              child: Text(days[index], style: TextStyle(color: context.scheme.onSurfaceVariant, fontSize: 12, fontWeight: FontWeight.w700)),
             );
           },
         )),

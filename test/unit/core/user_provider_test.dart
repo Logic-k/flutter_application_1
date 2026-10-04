@@ -77,6 +77,42 @@ void main() {
       // 로그아웃 시 DB의 세션 토큰이 null로 초기화되어야 한다
       verify(() => mockDb.setSessionToken(1, null)).called(1);
     });
+
+    test('계정 전환 시 이전 사용자의 음성 점수가 남지 않는다', () async {
+      final firstUser = {
+        'id': 1,
+        'username': 'first',
+        'has_completed_onboarding': 1,
+        'pedometer_enabled': 0,
+        'age': 65,
+        'weight': 70.0,
+        'blood_type': null,
+        'medications': null,
+        'emergency_contact': null,
+      };
+      final secondUser = {...firstUser, 'id': 2, 'username': 'second'};
+
+      when(() => mockDb.getUser('first', 'pass'))
+          .thenAnswer((_) async => firstUser);
+      when(() => mockDb.getUser('second', 'pass'))
+          .thenAnswer((_) async => secondUser);
+      when(() => mockDb.getUserById(1)).thenAnswer((_) async => firstUser);
+      when(() => mockDb.getUserById(2)).thenAnswer((_) async => secondUser);
+      when(() => mockDb.setSessionToken(any(), any())).thenAnswer((_) async {});
+      when(() => mockDb.recordDauIfNeeded(any())).thenAnswer((_) async {});
+      when(() => mockDb.getLatestScores(1)).thenAnswer(
+        (_) async => [
+          {'category': 'voice', 'score': 88.0},
+        ],
+      );
+      when(() => mockDb.getLatestScores(2)).thenAnswer((_) async => []);
+
+      await provider.login('first', 'pass');
+      expect(provider.voiceScore, 88.0);
+
+      await provider.login('second', 'pass');
+      expect(provider.voiceScore, 0.0);
+    });
   });
 
   group('UserProvider - setCognitiveScore', () {

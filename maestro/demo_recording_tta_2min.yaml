@@ -1,0 +1,176 @@
+appId: com.teammemorylink.memorylink
+---
+# ═══════════════════════════════════════════════════════════════
+# MemoryLink — 2026 ICT 표준 챌린지(TTA) 제출용 시연 녹화 플로우
+#
+# TTA 요건: 최대 2분 · FULL HD 이상 · 화면 시연 위주.
+# v3(4분18초)를 줄인 것이 아니라, 적용한 TTA 표준 5종이 화면에서
+# 확인되는 장면만 골라 다시 구성했다. 각 씬 머리에 대응 표준을 적었다.
+#
+# 녹화: adb shell screenrecord --size 1080x2340 --bit-rate 12000000
+# ═══════════════════════════════════════════════════════════════
+
+# ── Scene 1: 로그인 → 홈 (약 12초) ─────────────────────────────
+# helpers/login_helper.yaml 대신 인라인으로 둔 이유: 첫 글자가 중복 입력되어
+# ("kkim_minjun") 로그인이 실패하는 일이 있다. 입력 전 eraseText로 필드를 비운다.
+- launchApp:
+    clearState: true
+- waitForAnimationToEnd:
+    timeout: 3000
+- extendedWaitUntil:
+    visible: "사용자 아이디"
+    timeout: 90000
+- tapOn: "사용자 아이디"
+- eraseText: 30
+- inputText: "kim_minjun"
+- assertVisible: "kim_minjun"
+- tapOn: "비밀번호"
+- eraseText: 30
+- inputText: "demo1234"
+- hideKeyboard
+- waitForAnimationToEnd:
+    timeout: 1000
+- tapOn: "로그인"
+- extendedWaitUntil:
+    visible: "오늘 걸음"
+    timeout: 25000
+- waitForAnimationToEnd:
+    timeout: 1500
+
+# ── Scene 2: 인지훈련 게임  [TTAK.KO-10.1497] ──────────────────
+# 적응형 난이도와 임상 점수/XP 분리 저장이 동작하는 화면.
+- tapOn: "인지훈련"
+- extendedWaitUntil:
+    visible: "두뇌 트레이닝 센터"
+    timeout: 10000
+- waitForAnimationToEnd:
+    timeout: 1500
+
+# 카드 라벨은 게임화 도입 뒤 "누가 큰가요?, 도전 가능, ..." 형태로 바뀌었다.
+# 진행률·잠금 상태가 섞여 들어오므로 이름만 부분 일치시킨다.
+- tapOn: ".*누가 큰가요.*"
+- extendedWaitUntil:
+    visible: "VS"
+    timeout: 10000
+- waitForAnimationToEnd:
+    timeout: 1200
+
+# 실제 플레이 2문항
+- tapOn:
+    point: "27%,45%"
+- waitForAnimationToEnd:
+    timeout: 1200
+- tapOn:
+    point: "73%,45%"
+- waitForAnimationToEnd:
+    timeout: 1500
+
+- pressKey: back
+- waitForAnimationToEnd:
+    timeout: 1200
+
+# ── Scene 3: AI 대화  [TTAK.KO-10.1497] ────────────────────────
+# 온디바이스 → 원격 → 규칙기반 3단 폴백으로 무중단 응답.
+- tapOn: "홈"
+- extendedWaitUntil:
+    visible: "MemoryLink"
+    timeout: 10000
+- waitForAnimationToEnd:
+    timeout: 1000
+
+- tapOn: "AI 도우미\nAI와 대화로 인지 건강을 확인해보세요"
+- extendedWaitUntil:
+    visible: "AI 대화 도우미"
+    timeout: 12000
+- waitForAnimationToEnd:
+    timeout: 1500
+
+# Maestro는 유니코드 입력을 지원하지 않아 한글을 타이핑할 수 없다
+# (mobile-dev-inc/maestro#146). 한국어 데모에 영문 문장을 끼워 넣는 대신,
+# 앱이 먼저 건네는 회상 대화 인사말과 턴 진행 표시를 보여준다.
+- assertVisible: ".*오늘 기분은 어떠세요.*"
+- waitForAnimationToEnd:
+    timeout: 3500
+
+- pressKey: back
+- waitForAnimationToEnd:
+    timeout: 1500
+
+# ── Scene 4: 리포트 + 면책 고지  [TTAK.KO-10.1497] ─────────────
+# 자체 지표(인지활동 지수)와 코드 상수로 강제된 면책 3문장.
+- tapOn: "리포트"
+- extendedWaitUntil:
+    visible: "주간 분석 리포트"
+    timeout: 10000
+- waitForAnimationToEnd:
+    timeout: 2000
+
+- scrollUntilVisible:
+    element:
+      text: ".*활동 기록 리포트 생성하기.*"
+    direction: DOWN
+    centerElement: true
+    timeout: 25000
+- waitForAnimationToEnd:
+    timeout: 1500
+
+# ── Scene 5: 치매안심센터 (공공데이터 가산점) ──────────────────
+# 공공데이터포털 파일데이터 15138421 · 전국 256곳 · 위치정보 미수집.
+- tapOn: "내정보"
+- extendedWaitUntil:
+    visible: "내 정보"
+    timeout: 10000
+- waitForAnimationToEnd:
+    timeout: 1500
+
+- scrollUntilVisible:
+    element:
+      text: ".*가까운 치매안심센터 찾기.*"
+    direction: DOWN
+    centerElement: true
+    timeout: 25000
+- waitForAnimationToEnd:
+    timeout: 1000
+- tapOn: ".*가까운 치매안심센터 찾기.*"
+- extendedWaitUntil:
+    visible: "가까운 치매안심센터"
+    timeout: 12000
+- waitForAnimationToEnd:
+    timeout: 2000
+- pressKey: back
+- waitForAnimationToEnd:
+    timeout: 1500
+
+# ── Scene 6: 보호자 안심 연결  [TTAK.KO-10.1397-Part4] ─────────
+# 긴급조회 데이터 모델을 보호자 동기화 스키마에 매핑한 화면.
+- extendedWaitUntil:
+    visible: "내 정보"
+    timeout: 10000
+- scrollUntilVisible:
+    element:
+      text: ".*보호자 안심 연결.*"
+    direction: DOWN
+    centerElement: true
+    timeout: 25000
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# ── Scene 7: 접근성 설정  [TTAK.KO-08.0057 준용 + 10.1497] ─────
+# 글자 크기 3단계(기본/크게/아주 크게) · 음성 안내 · 진동 피드백,
+# 그리고 'AI 대화' 항목에서 현재 폴백 단계(LocalFallback)가 화면에 드러난다.
+#
+# 홈 앱바의 톱니가 아니라 '내 정보' 앱바의 톱니로 들어간다. 홈 쪽 버튼에는
+# 접근성 라벨이 없어 라벨로 못 잡지만(로드맵 §3.2의 tooltip 누락 사례),
+# 내 정보 쪽 버튼은 content-desc "설정"을 갖고 있어 좌표 없이 안정적으로 눌린다.
+- tapOn: "설정"
+- extendedWaitUntil:
+    visible: "화면 및 접근성"
+    timeout: 10000
+- waitForAnimationToEnd:
+    timeout: 2500
+- assertVisible: "글자 크기"
+- assertVisible: ".*음성 안내.*"
+- assertVisible: ".*효과음.*"
+- assertVisible: ".*움직임 줄이기.*"
+- waitForAnimationToEnd:
+    timeout: 2500

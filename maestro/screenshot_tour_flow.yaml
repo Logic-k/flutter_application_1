@@ -57,17 +57,13 @@
     timeout: 8000
 - takeScreenshot: 07_reports
 
-# ── 08 소셜 랭킹 ───────────────────────────────────────────────
-- scrollUntilVisible:
-    element:
-      text: "동년배 중에서 평균보다 높은 수준의 인지 능력을 보여주고 계십니다. 훌륭합니다!"
-    direction: DOWN
-- takeScreenshot: 08_social_ranking
+# 08 소셜 랭킹은 위젯째 삭제했다(백분위 표기 역전 + 미출시 Firestore 탓에
+# 평균 65·SD 15 상수로만 계산되던 가짜 비교값). 번호는 재사용하지 않는다.
 
-# ── 09 임상 리포트 ─────────────────────────────────────────────
+# ── 09 활동 기록 리포트 ─────────────────────────────────────────────
 - scrollUntilVisible:
     element:
-      text: "임상 리포트 생성하기"
+      text: "활동 기록 리포트 생성하기"
     direction: DOWN
     timeout: 30000
 - waitForAnimationToEnd:
@@ -100,13 +96,13 @@
     direction: DOWN
 - takeScreenshot: 12_guardian_link
 
-# ── 13 음성 진단 ───────────────────────────────────────────────
+# ── 13 말하기 기록 ───────────────────────────────────────────────
 - extendedWaitUntil:
     visible: "내 정보"
     timeout: 5000
 - scrollUntilVisible:
     element:
-      text: "음성 진단\n인지 건강 초기 진단 재실행"
+      text: ".*말하기 기록.*"
     direction: DOWN
 - takeScreenshot: 13_voice_assessment
 

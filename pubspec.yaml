@@ -36,10 +36,8 @@ dependencies:
   cupertino_icons: ^1.0.8
   go_router: ^17.1.0
   provider: ^6.1.5+1
-  google_fonts: ^8.0.2
   shared_preferences: ^2.2.3
   permission_handler: ^12.0.1
-  record: ^6.2.0
   path_provider: ^2.1.3
   fl_chart: ^1.2.0
   intl: ^0.19.0
@@ -56,18 +54,13 @@ dependencies:
   pdf: ^3.11.1
   printing: ^5.13.2
   share_plus: ^10.1.3
-  lottie: ^3.1.2
   qr_flutter: ^4.1.0
-  audioplayers: ^6.6.0
   flutter_tts: ^4.2.5
   speech_to_text: ^7.3.0
-  vibration: ^3.1.8
   url_launcher: ^6.3.2
   image_picker: ^1.1.2
   google_generative_ai: ^0.4.6
-  flutter_gemma: ^0.2.0
   http: ^1.2.2
-  flutter_svg: ^2.0.10
   table_calendar: ^3.1.2
   timezone: ^0.11.0
   crypto: ^3.0.7
@@ -152,15 +145,33 @@ flutter:
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
   fonts:
-    - family: NanumGothic
+    # Pretendard (OFL 1.1) — 라이선스 전문은 assets/fonts/Pretendard-OFL.txt.
+    # 나눔고딕은 Regular(400)/Bold(700) 두 벌뿐이라 theme.dart가 선언한
+    # w500~w900이 전부 400 또는 700으로 대체됐다. 본문(w600)과 제목(w800)이
+    # 같은 700으로 그려져 타입 위계가 크기 한 축으로 붕괴해 있었다.
+    # 아래 5단은 코드가 선언하는 굵기와 실제 렌더를 일치시키기 위한 최소 집합이다.
+    # 굵기를 추가·제거할 때는 lib/ 의 FontWeight 사용처를 함께 확인할 것 —
+    # 선언에 없는 굵기는 오류 없이 조용히 가장 가까운 것으로 바뀐다.
+    # PDF 리포트도 같은 서체를 쓴다(clinical_report_generator.dart).
+    # pdf 패키지의 pw.Font.ttf() 는 CFF(.otf)를 읽지 못하므로 반드시 .ttf 여야 한다.
+    - family: Pretendard
       fonts:
-        - asset: assets/fonts/NanumGothic-Regular.ttf
-        - asset: assets/fonts/NanumGothic-Bold.ttf
+        - asset: assets/fonts/Pretendard-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Pretendard-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Pretendard-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Pretendard-Bold.ttf
           weight: 700
+        - asset: assets/fonts/Pretendard-ExtraBold.ttf
+          weight: 800
 
   assets:
     - assets/fonts/
     - assets/icon/
     - assets/models/
-    - assets/illustrations/
+    # 공공데이터포털 「국립중앙의료원_치매안심센터 정보」.
+    # 교체 방법은 assets/data/README.md 참조.
+    - assets/data/dementia_centers.csv
 

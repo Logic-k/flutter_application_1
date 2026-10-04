@@ -1,5 +1,7 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import '../../core/ml_widgets.dart';
+import '../../core/theme.dart';
 import '../../core/database_helper.dart';
 
 class AdminUserDetailScreen extends StatefulWidget {
@@ -73,7 +75,7 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
             Text('프로필',
                 style: theme.textTheme.titleSmall
                     ?.copyWith(fontWeight: FontWeight.w600)),
-            const Divider(),
+            const Divider(height: 16),
             _infoRow('나이', '${user['age'] ?? '-'}세'),
             _infoRow('목표', _goalLabel(user['goal'] as String?)),
             _infoRow('혈액형', user['blood_type'] as String? ?? '-'),
@@ -91,7 +93,7 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
             SizedBox(
                 width: 80,
                 child: Text(label,
-                    style: const TextStyle(color: Colors.grey, fontSize: 13))),
+                    style: TextStyle(color: context.scheme.onSurfaceVariant, fontSize: 13))),
             Text(value, style: const TextStyle(fontSize: 13)),
           ],
         ),
@@ -105,11 +107,13 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
       };
 
   Widget _buildScoreChart(ThemeData theme) {
+    // 앱 전역 카테고리 팔레트를 그대로 쓴다. 여기만 Material 원색을 쓰면
+    // 같은 '기억력'이 사용자 화면에서는 민트, 관리자 차트에서는 주황이 된다.
     const catColors = {
-      'calculation': Colors.blue,
-      'logic': Colors.purple,
-      'memory': Colors.orange,
-      'attention': Colors.green,
+      'calculation': MLColors.calc,
+      'logic': MLColors.logic,
+      'memory': MLColors.mem,
+      'attention': MLColors.sky,
     };
     final Map<String, List<FlSpot>> lines = {};
     for (int i = 0; i < _scores.length; i++) {
@@ -150,7 +154,7 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
                             width: 12, height: 12, color: e.value),
                         const SizedBox(width: 4),
                         Text(_catLabel(e.key),
-                            style: const TextStyle(fontSize: 11)),
+                            style: const TextStyle(fontSize: 12)),
                       ]))
                   .toList(),
             ),
@@ -158,10 +162,16 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
             SizedBox(
               height: 180,
               child: bars.isEmpty
-                  ? const Center(
+                  ? Center(
                       child: Text('점수 기록이 없습니다.',
-                          style: TextStyle(color: Colors.grey)))
-                  : LineChart(LineChartData(
+                          style: TextStyle(color: context.scheme.onSurfaceVariant)))
+                  // 관리자 화면은 진입 연출 없이 축소 모션 규칙만 따른다(08 계획 G-04).
+                  : MLChart(
+                      playKey: 'admin_user_score_chart',
+                      builder: (context, _, duration, curve) => LineChart(
+                      duration: duration,
+                      curve: curve,
+                      LineChartData(
                       lineBarsData: bars,
                       titlesData: const FlTitlesData(
                         bottomTitles: AxisTitles(
@@ -176,6 +186,7 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
                       borderData: FlBorderData(show: false),
                       gridData: const FlGridData(show: false),
                     )),
+                    ),
             ),
           ],
         ),
@@ -201,7 +212,7 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
             toY: s,
             color: theme.colorScheme.secondary,
             width: 16,
-            borderRadius: BorderRadius.circular(4),
+            borderRadius: BorderRadius.circular(AppTheme.rBar),
           ),
         ],
       );
@@ -220,10 +231,15 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
             SizedBox(
               height: 140,
               child: groups.isEmpty
-                  ? const Center(
+                  ? Center(
                       child: Text('걸음 기록이 없습니다.',
-                          style: TextStyle(color: Colors.grey)))
-                  : BarChart(BarChartData(
+                          style: TextStyle(color: context.scheme.onSurfaceVariant)))
+                  : MLChart(
+                      playKey: 'admin_user_steps_chart',
+                      builder: (context, _, duration, curve) => BarChart(
+                      duration: duration,
+                      curve: curve,
+                      BarChartData(
                       barGroups: groups,
                       titlesData: const FlTitlesData(
                         bottomTitles: AxisTitles(
@@ -238,6 +254,7 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
                       borderData: FlBorderData(show: false),
                       gridData: const FlGridData(show: false),
                     )),
+                    ),
             ),
           ],
         ),

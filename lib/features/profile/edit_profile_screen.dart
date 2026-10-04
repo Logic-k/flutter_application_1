@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../core/theme.dart';
 import '../../core/user_provider.dart';
 
 class EditProfileScreen extends StatefulWidget {
@@ -72,8 +73,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             ),
             if (_imagePath != null)
               ListTile(
-                leading: const Icon(Icons.delete_outline, color: Colors.red),
-                title: const Text('사진 제거', style: TextStyle(color: Colors.red)),
+                leading: const Icon(Icons.delete_outline, color: MLColors.badText),
+                title: const Text('사진 제거', style: TextStyle(color: MLColors.badText)),
                 onTap: () => Navigator.pop(ctx, null),
               ),
           ],

@@ -1,0 +1,26 @@
+# cold start, QA_Device emulator-5680, debug APK IS_EMULATOR=true, 2026-09-29 23:06:46
+Success
+## run1: pm clear 직후
+Starting: Intent { cmp=com.teammemorylink.memorylink/.MainActivity }
+Status: ok
+LaunchState: COLD
+Activity: com.teammemorylink.memorylink/.MainActivity
+TotalTime: 7889
+WaitTime: 7892
+Complete
+## run2: force-stop 후 재시작(데이터 유지)
+Starting: Intent { cmp=com.teammemorylink.memorylink/.MainActivity }
+Status: ok
+LaunchState: COLD
+Activity: com.teammemorylink.memorylink/.MainActivity
+TotalTime: 9202
+WaitTime: 9212
+Complete
+## run3: force-stop 후 재시작(데이터 유지)
+Starting: Intent { cmp=com.teammemorylink.memorylink/.MainActivity }
+Status: ok
+LaunchState: COLD
+Activity: com.teammemorylink.memorylink/.MainActivity
+TotalTime: 7628
+WaitTime: 7632
+Complete
