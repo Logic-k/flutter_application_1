@@ -26,7 +26,7 @@ void main() {
   test('로컬 러너와 CI가 같은 목록 파일을 읽는다', () {
     expect(read('run_maestro_tests.ps1'), contains('maestro/gating_flows.txt'));
     expect(read('scripts/maestro_gating.sh'), contains('maestro/gating_flows.txt'));
-    final workflow = read('.github/workflows/maestro.yml');
+    final workflow = read('.github/workflows/test.yml');
     expect(workflow, contains('bash scripts/maestro_gating.sh'));
     // 목록을 워크플로에 다시 적지 않는다(스크린샷 촬영 flow만 예외).
     final listed = RegExp(r'maestro/\w+\.yaml').allMatches(workflow).map((m) => m.group(0)).toSet();
