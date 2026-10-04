@@ -7,6 +7,9 @@ name: PR Gate
 # Maestro 에뮬레이터는 로컬 정본 QA_Device 와 같게 둔다: pixel_6_pro(1440×3120), 제스처 탐색, 애니메이션 켬.
 # 게이팅 flow 일부가 하단 탭을 화면 비율 좌표로 누르고, opening_flow 는 오프닝이 보여야 통과한다.
 # pixel_6·3버튼 탐색·애니메이션 끔에서는 14/22가 환경 탓으로 실패했다(2026-10-04 첫 실행).
+# 소프트웨어 렌더링에서 SystemUI가 ANR을 내면 "System UI isn't responding" 창이 앱을 덮어 모든 flow가 실패한다
+# (4차 실행 0/22). 오류 창을 끄고(hide_error_dialogs는 구성 변경 때 다시 읽으므로 야간 모드를 한 번 바꿨다 되돌린다)
+# 에뮬레이터에 코어 4개·메모리 4GB를 준다. 창이 꺼져 있으면 멈춘 SystemUI는 다시 시작될 뿐 앱을 가리지 않는다.
 # 공개 저장소라 표준 러너 시간은 과금되지 않는다.
 # 2회 이상 비결정 실패가 난 flow 만 따로 격리한다(docs/plans/01 S1-01). 지금은 격리 목록이 없다.
 
@@ -174,9 +177,14 @@ jobs:
           target: google_apis
           arch: x86_64
           profile: pixel_6_pro
+          cores: 4
+          ram-size: 4096M
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
           disable-animations: false
           script: |
+            adb shell settings put global hide_error_dialogs 1
+            adb shell cmd uimode night yes
+            adb shell cmd uimode night no
             adb shell cmd overlay enable com.android.internal.systemui.navbar.gestural
             adb install build/app/outputs/flutter-apk/app-debug.apk
 
@@ -191,10 +199,15 @@ jobs:
           target: google_apis
           arch: x86_64
           profile: pixel_6_pro
+          cores: 4
+          ram-size: 4096M
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
           disable-animations: false
           script: |
-            adb shell cmd overlay enable com.android.internal.systemui.navbar.gestural
+            adb shell settings put global hide_error_dialogs 1 || true
+            adb shell cmd uimode night yes || true
+            adb shell cmd uimode night no || true
+            adb shell cmd overlay enable com.android.internal.systemui.navbar.gestural || true
             adb install -r build/app/outputs/flutter-apk/app-debug.apk || true
             maestro test maestro/screenshot_tour_flow.yaml || true
 
@@ -315,10 +328,15 @@ jobs:
           target: google_apis_ps16k
           arch: x86_64
           profile: pixel_6_pro
+          cores: 4
+          ram-size: 4096M
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
           disable-animations: false
           script: |
             adb shell getconf PAGE_SIZE
+            adb shell settings put global hide_error_dialogs 1
+            adb shell cmd uimode night yes
+            adb shell cmd uimode night no
             adb shell cmd overlay enable com.android.internal.systemui.navbar.gestural
             adb install build/app/outputs/flutter-apk/app-debug.apk
 
