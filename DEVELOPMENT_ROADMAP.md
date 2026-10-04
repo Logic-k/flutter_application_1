@@ -35,11 +35,11 @@ MemoryLink는 기능이 부족한 제품이 아니다. **이미 모은 데이터
 | 항목 | 결과 |
 |---|---|
 | `flutter analyze` | 에러 0 · 경고 0 · **info 0** (2026-10-04. 기본 명령이 그대로 통과한다. CI도 `--no-fatal-infos` 없이 돌린다) |
-| `flutter test` | **463 / 463 통과** (2026-10-04, 커밋된 트리 `c1c06d3`를 깨끗한 worktree에서 실행) |
-| 테스트 파일 | **67개** (`test/**/*_test.dart`, 같은 트리) |
+| `flutter test` | **582 통과 · 2 건너뜀** (2026-10-05, 남은 작업 3겹 커밋 뒤 커밋된 트리. 건너뜀 2는 G1 backlog) |
+| 테스트 파일 | **76개** (`test/**/*_test.dart`, 같은 트리) |
 | 통합 테스트 | **2개 파일 · 4건** (`integration_test/`). 2026-10-04 QA_Device(API 36)에서 4/4 통과. CI PR Gate 3단계 |
 | release AAB | 65.8MB → 70.2MB → **65.0MB** (2026-09-19 실측, 릴리스 서명됨). 70.2MB는 Pretendard 5벌(12.8MB) 전환 결과였고, 65.0MB는 미사용 의존성 6개·미사용 SVG 제거로 되돌린 수치다. Play AAB 상한 150MB 안이다 |
-| Maestro | 게이팅 **22** (2026-10-04 `account_deletion_flow` 추가 — 21 → 22) + 데모·스크린샷 **4** |
+| Maestro | 게이팅 **23** (2026-10-05 `notification_permission_denied_flow` 추가 — 22 → 23) + 데모·스크린샷 **4** |
 | GitHub PR Gate | **6단계 전부 통과** (2026-10-05 00:49, run 37208443355·`84c81a9`, 약 1시간 36분): analyze → 단위·위젯 → 통합 4/4(API 33) → Maestro 22/22(API 36 pixel_6_pro) → release 검증(서명 없는 AAB 60.6MB, .so 9개 16KB 정렬, 권한 12개) + 16KB 페이지 기기 22/22 |
 | release APK | **86.6MB** (2026-08-27 실측, 서명됨. 사이드로드·검증용이며 스토어 업로드는 AAB다) |
 | 콜드 스타트 | `+15s078ms` → `+7s252ms` → `+6s835ms` → **`+7s456ms`** (2026-09-20 재측정, 같은 조건. 2회차 재실행은 4.35초. 측정 조건은 아래 설명 그대로다: 2026-08-27 서체 전환 후 재측정. QA_Device, `pm clear` 직후 `am start -W`, debug 빌드. 폰트 자산이 3배로 늘었어도 느려지지 않았다 — Flutter는 폰트를 첫 프레임 뒤에 지연 로드한다) |
@@ -50,7 +50,7 @@ flow가 아니다. `maestro/helpers/` 2개(`login_helper` · `just_tap_confirm`)
 다른 flow가 불러 쓰는 조각이라 flow 수에 들어가지 않는다.
 **게이팅 대상의 정본은 `maestro/gating_flows.txt`다.** 로컬 `run_maestro_tests.ps1`과 CI
 `scripts/maestro_gating.sh`가 같은 파일을 읽는다(2026-10-04 이전에는 `$flows` 배열이었다). 위 표의 22는
-그 파일의 flow 줄 수이므로, 목록이 바뀌면 이곳도 함께 고친다.
+그 파일의 flow 줄 수이므로, 목록이 바뀌면 이곳도 함께 고친다. 하단 탭은 좌표가 아니라 탭 이름으로 누른다(2026-10-05).
 
 수치가 바뀐 경위:
 
@@ -64,7 +64,13 @@ flow가 아니다. `maestro/helpers/` 2개(`login_helper` · `just_tap_confirm`)
 - `flutter analyze` info **4 → 0** (10/4) — null-aware 원소 3건과 non-nullable 1건(출시 감사 P0-02).
 - `flutter test` **320 → 463** (8/26 → 10/4) — 그사이 여러 세션이 테스트를 더했다. 10/4에 다시 쟀다.
 - Maestro 게이팅 **21 → 22** (10/4) — `account_deletion_flow`(출시 감사 P0-07).
+- `flutter test` **463 → 582** (10/5) — 미커밋이던 3겹(한이음 문구·AI 발화 지표·디자인 G0~G3)을 커밋하고(+117)
+  설정 토글 행 테스트 2개를 더했다. 건너뜀 2는 G1 backlog(라우터 온보딩 우회, 309dp 탭 내용 넘침).
+- Maestro 게이팅 **22 → 23** (10/5) — `notification_permission_denied_flow`(출시 감사 P0-04).
 
+> **게이팅 23개 전부 통과(2026-10-05).** QA_Device(API 36), 하단 탭 이름 탭으로 바꾼 뒤. 새 알림 권한 거부 flow 포함.
+> 처음 1회는 설치 직후 첫 입력의 첫 글자 중복("kkim_minjun")으로 실패해 로그인 입력 앞에 한 글자를 넣었다 지우게 했다.
+>
 > **게이팅 22개 전부 통과(2026-10-04).** QA_Device `emulator-5680`(API 36), `-gpu angle_indirect`,
 > debug APK(`IS_EMULATOR=true`, 작업 트리). 기존 21개는 5·5·5·3·3개씩 포그라운드로 돌려 모두 첫 시도에
 > 통과했고(flow당 82~161초), 새 `account_deletion_flow`도 첫 시도에 통과했다(142초). 같은 날 통합 테스트

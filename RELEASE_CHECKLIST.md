@@ -86,10 +86,13 @@
 
 ## 5. 릴리스 빌드 명령 모음
 ```bash
-# AAB (Play 업로드용)
+# AAB (Play 업로드용). 테스트용 플러그인이 섞이지 않게 깨끗한 상태에서 만든다
+flutter clean
 flutter build appbundle --release
 python scripts/check_16kb.py build/app/outputs/bundle/release/app-release.aab
 python scripts/check_release_manifest.py build/app/intermediates/merged_manifests/release/processReleaseManifest/AndroidManifest.xml
+# .so는 9개(libapp·libflutter·libdatastore_shared_counter × 3 ABI)여야 한다. libsqlite3.so가 보이면
+# 테스트용 sqflite_common_ffi가 섞인 것이니 flutter clean 뒤 다시 만든다(2026-10-05 깨끗한 빌드 57.9MB로 확인)
 
 # APK (사이드로드/직접 배포 테스트용)
 flutter build apk --release

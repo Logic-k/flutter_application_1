@@ -64,6 +64,14 @@ lib/core/router.dart
 
 ## 2. 현재 검증 기준선
 
+> **2026-10-05 메모 — 이 문서 작성(9/28) 뒤 출시 감사로 바뀐 사실.** 코드가 정본이다(§1.1).
+> - AI 대화는 `Gemini(개발 빌드, 키가 있을 때) > LocalFallback` 두 단계다. 온디바이스 Gemma는 16KB 페이지 기기
+>   비호환으로 제거됐다(LAUNCH_AUDIT P0-11). 아래 §3-10의 Gemma는 지난 사실이다.
+> - 보호자 링크는 v2다: 128비트 토큰, 30일 만료, 이름·걸음·점수만 공개(§4.4의 '16자 token'은 v1).
+> - 출시 범위의 정본은 `docs/release/ADR-001_first_release_scope.md`, 수치 정본은 `DEVELOPMENT_ROADMAP.md` §1이다.
+>   Maestro 게이팅 목록은 `maestro/gating_flows.txt`(23개)이고, 하단 탭은 좌표가 아니라 탭 이름으로 누른다.
+> - `/voice_assessment` 화면 이름은 '말하기 기록'이다(감사 P0-15 비의료 표현). 중지 화면 자체는 그대로다.
+
 | 항목 | 현재 정본 | 주의 |
 |---|---:|---|
 | GoRouter | **44경로** | `router.dart`의 `GoRoute(` 직접 계산 |
