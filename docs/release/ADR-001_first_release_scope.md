@@ -39,7 +39,7 @@
 | 항목 | 상태 | 누가 |
 |---|---|---|
 | P0-00 패키지·개발자 신원 확인 | Play Console에서 확인 | 사용자 |
-| P0-02 CI·E2E | 2026-10-04 코드 완료. PR Gate 한 워크플로(analyze info 0 → unit → integration(API 33) → Maestro 게이팅 22(API 36, QA_Device와 같은 pixel_6_pro·제스처 탐색·애니메이션 켬) → release 검증, 그리고 16KB 페이지 기기(API 36 ps16k)). 로컬에서 통합 4/4·Maestro 22/22 통과. GitHub 첫 실행은 1~3단계 통과, Maestro는 에뮬레이터 조건 차이(pixel_6·3버튼 탐색·애니메이션 끔)로 8/22라 조건을 맞췄다. GitHub에서 전체 단계가 한 번 끝까지 도는 것을 확인해야 닫힌다 | 개발 |
+| P0-02 CI·E2E | 2026-10-05 해결. GitHub PR Gate 6단계가 run 37208443355(84c81a9)에서 모두 통과했다: analyze info 0 → 단위·위젯 → 통합 4/4(API 33) → Maestro 22/22(API 36, QA_Device와 같은 pixel_6_pro·제스처 탐색·애니메이션 켬) → release 검증(서명 없는 AAB 60.6MB, .so 9개 16KB 정렬, 권한 12개, 키 없는 release 중단), 그리고 16KB 페이지 기기(PAGE_SIZE 16384) 22/22. 앞선 여섯 번의 실행은 에뮬레이터 조건·타이밍 문제로 실패해 하나씩 고쳤다(ci·test 커밋 040f293~84c81a9) | 개발 |
 | P0-15 비의료 표현 | 2026-10-04 해결(사용자 승인). "임상 리포트"→"활동 기록 리포트", "의료진용"→"상담 참고용"(화면·PDF·FAQ), "음성 진단"→"말하기 기록"(준비 중), "현재의 건강 상태"·"AI 분석 요약" 정리. 게이팅 flow 3개 셀렉터도 함께 바꿨다. 영상·스크린샷용 flow 6개(demo_recording 3종·screenshot_tour·hanium_screens 2종)는 옛 문구를 그대로 쓴다 | 개발 |
 | P0-16 스토어 자산 | 기능 그래픽(1024×500)과 새 스크린샷 | 사용자 |
 
