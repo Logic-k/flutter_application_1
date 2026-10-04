@@ -1,6 +1,16 @@
 # MemoryLink — 에이전트 작업 규칙
 
-디자인 판단 기준은 `DESIGN.md`, 모션 계획은 `docs/plans/08_MOTION_SYSTEM_GLOBAL.md`, 실측 기준선은 `DEVELOPMENT_ROADMAP.md` §1이다.
+디자인 판단 기준은 `DESIGN.md`, 실측 기준선은 `DEVELOPMENT_ROADMAP.md` §1이다.
+
+## 디자인·모션 후속 개발 진입점
+
+디자인·모션·상태·접근성 후속 개발을 시작하기 전에
+`docs/design/CLAUDE_CODE_DESIGN_IMPLEMENTATION_HANDOFF.md`를 **전체 읽는다.** 이 문서가
+기능 보존 계약, 현재 검증 기준선, G0~G12 실행 순서, 화면별 작업, 검증·롤백과 재사용
+프롬프트를 통합한 실행 진입점이다. 세부 근거는 같은 디렉터리의 `MEMORYLINK_*.md` 문서를 따른다.
+
+`docs/plans/08_MOTION_SYSTEM_GLOBAL.md`는 현재 모션 시스템의 형성·실행 기록으로 보존하되,
+새 작업의 순서와 수치는 통합 핸드오프를 정본으로 사용한다.
 
 ## 모션 고정 규칙 (08 계획 §6-0)
 
