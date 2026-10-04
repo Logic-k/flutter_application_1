@@ -3,9 +3,11 @@ appId: com.teammemorylink.memorylink
 - runFlow: training_game_flow.yaml
 - stopApp
 - launchApp
+# 다시 여는 콜드 스타트는 오프닝과 자동 로그인을 거친다. 느린 에뮬레이터(CI 16KB 페이지 이미지)에서는 20초를 넘겨
+# helpers/login_helper.yaml 과 같은 90초를 준다. 셀렉터는 그대로다.
 - extendedWaitUntil:
     visible: "오늘 걸음"
-    timeout: 20000
+    timeout: 90000
 - tapOn: "인지훈련"
 - extendedWaitUntil:
     visible: "두뇌 트레이닝 센터"
