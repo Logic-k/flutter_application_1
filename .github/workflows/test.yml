@@ -1,9 +1,12 @@
 name: PR Gate
 
 # 출시 감사 P0-02: 싼 검사가 먼저 실패하면 비싼 에뮬레이터 단계는 돌지 않는다.
-#   1 analyze → 2 unit/widget → 3 integration → 4 debug Maestro(API 33) → 5 release 검증
-#                                                                    ↘ 6 기기 검사(API 36, API 36 16KB 페이지)
+#   1 analyze → 2 unit/widget → 3 integration(API 33) → 4 debug Maestro(API 36) → 5 release 검증
+#                                                                             ↘ 6 16KB 페이지 기기(API 36 ps16k)
 # integration 은 PR·수동 실행에서만 돈다. push 에서는 건너뛰고 다음 단계로 간다.
+# Maestro 에뮬레이터는 로컬 정본 QA_Device 와 같게 둔다: pixel_6_pro(1440×3120), 제스처 탐색, 애니메이션 켬.
+# 게이팅 flow 일부가 하단 탭을 화면 비율 좌표로 누르고, opening_flow 는 오프닝이 보여야 통과한다.
+# pixel_6·3버튼 탐색·애니메이션 끔에서는 14/22가 환경 탓으로 실패했다(2026-10-04 첫 실행).
 # 공개 저장소라 표준 러너 시간은 과금되지 않는다.
 # 2회 이상 비결정 실패가 난 flow 만 따로 격리한다(docs/plans/01 S1-01). 지금은 격리 목록이 없다.
 
@@ -119,7 +122,7 @@ jobs:
           script: flutter test --dart-define=IS_EMULATOR=true integration_test/auth_flow_test.dart integration_test/training_flow_test.dart
 
   maestro:
-    name: 4. Maestro Gate (API 33)
+    name: 4. Maestro Gate (API 36)
     needs: integration
     if: ${{ !failure() && !cancelled() }}
     runs-on: ubuntu-latest
@@ -167,12 +170,14 @@ jobs:
       - name: Run Maestro flows
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 33
+          api-level: 36
+          target: google_apis
           arch: x86_64
-          profile: pixel_6
+          profile: pixel_6_pro
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
-          disable-animations: true
+          disable-animations: false
           script: |
+            adb shell cmd overlay enable com.android.internal.systemui.navbar.gestural
             adb install build/app/outputs/flutter-apk/app-debug.apk
 
             bash scripts/maestro_gating.sh
@@ -182,12 +187,14 @@ jobs:
         if: always()
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 33
+          api-level: 36
+          target: google_apis
           arch: x86_64
-          profile: pixel_6
+          profile: pixel_6_pro
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
-          disable-animations: true
+          disable-animations: false
           script: |
+            adb shell cmd overlay enable com.android.internal.systemui.navbar.gestural
             adb install -r build/app/outputs/flutter-apk/app-debug.apk || true
             maestro test maestro/screenshot_tour_flow.yaml || true
 
@@ -257,16 +264,12 @@ jobs:
       - name: 병합 매니페스트가 Play 신고와 같다
         run: python3 scripts/check_release_manifest.py build/app/intermediates/merged_manifests/release/processReleaseManifest/AndroidManifest.xml
 
-  devices:
-    name: 6. 기기 검사 (API 36 ${{ matrix.target }})
+  # 16KB 페이지 커널. 정렬되지 않은 .so 는 여기서 실행 중 로드에 실패한다. 화면 조건은 4단계와 같다.
+  page16k:
+    name: 6. 16KB 페이지 기기 (API 36 ps16k)
     needs: maestro
     if: ${{ !failure() && !cancelled() }}
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        # google_apis_ps16k: 16KB 페이지 커널. 정렬되지 않은 .so 는 여기서 실행 중 로드에 실패한다.
-        target: [google_apis, google_apis_ps16k]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -309,13 +312,14 @@ jobs:
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 36
-          target: ${{ matrix.target }}
+          target: google_apis_ps16k
           arch: x86_64
-          profile: pixel_6
+          profile: pixel_6_pro
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
-          disable-animations: true
+          disable-animations: false
           script: |
             adb shell getconf PAGE_SIZE
+            adb shell cmd overlay enable com.android.internal.systemui.navbar.gestural
             adb install build/app/outputs/flutter-apk/app-debug.apk
 
             bash scripts/maestro_gating.sh
@@ -324,6 +328,6 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: maestro-api36-${{ matrix.target }}-${{ github.run_number }}
+          name: maestro-16k-${{ github.run_number }}
           path: ~/.maestro/tests/
           retention-days: 7
