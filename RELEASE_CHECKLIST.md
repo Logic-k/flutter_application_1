@@ -87,7 +87,8 @@
 - 스토어 업로드마다 **build number(+뒤)** 를 반드시 증가(중복 versionCode 거부됨).
 - 빌드 명령: `flutter build appbundle --release` → `build/app/outputs/bundle/release/app-release.aab`
 - release 빌드는 업로드 키(`android/key.properties`)가 없으면 멈춘다(2026-10-04, 감사 P0-14). debug 키로 서명된 "release"는 더 이상 나오지 않는다. 스토어에 올리지 않을 점검용 release가 필요하면 `flutter build appbundle --release -P allowUnsignedRelease=true`(서명 없음).
-- 생성형 AI(Gemini·온디바이스 모델)는 출시 빌드에서 기본으로 꺼져 있다(규칙 기반 대화만). 켜려면 `--dart-define=ENABLE_GENERATIVE_AI=true`가 필요하고, 그 전에 출시 감사 P0-10(인앱 신고·키 노출·무료 등급 약관)을 해결한다. 앱에 개발자 Gemini 키를 넣지 않는다.
+- 온디바이스 AI(flutter_gemma)와 모델 다운로드는 2026-10-04에 지웠다. 네이티브 라이브러리가 16KB 페이지 기기에서 돌지 않았다(감사 P0-11). 출시 전 `python scripts/check_16kb.py build/app/outputs/bundle/release/app-release.aab`로 모든 .so가 16KB 정렬인지 확인한다.
+- 생성형 AI(Gemini)는 출시 빌드에서 기본으로 꺼져 있다(규칙 기반 대화만). 켜려면 `--dart-define=ENABLE_GENERATIVE_AI=true`가 필요하고, 그 전에 출시 감사 P0-10(인앱 신고·키 노출·무료 등급 약관)을 해결한다. 앱에 개발자 Gemini 키를 넣지 않는다.
 
 ## 5. 릴리스 빌드 명령 모음
 ```bash

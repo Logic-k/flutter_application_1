@@ -22,7 +22,7 @@ import '../profile/edit_profile_screen.dart';
 /// 앱 전역 설정을 한 곳에 모은다:
 ///  - 화면/접근성 (글자 크기, 음성 안내, 진동)
 ///  - 알림 (매일 저녁 일기 알림)
-///  - AI (Gemini API 키, 온디바이스 모델)
+///  - AI (Gemini API 키, 개발 빌드 전용)
 ///  - 계정 (프로필 편집, 보호자 연결)
 ///  - 개인정보·데이터 (처리방침, 측정 데이터 초기화)
 ///  - 정보 (버전, 오픈소스 라이선스, 로그아웃)
@@ -358,12 +358,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       );
     }
 
-    final usingOndevice = AiChatService.isUsingLocalModel;
     final usingAi = AiChatService.isUsingAI;
     final statusColor = usingAi ? MLColors.goodText : context.scheme.onSurfaceVariant;
-    final statusLabel = usingOndevice
-        ? '온디바이스 AI 사용 중'
-        : (_hasApiKey ? 'Gemini API 사용 중' : '오프라인(규칙 기반) 모드');
+    final statusLabel = _hasApiKey ? 'Gemini API 사용 중' : '오프라인(규칙 기반) 모드';
 
     return MLCard(
       padding: EdgeInsets.zero,
@@ -382,8 +379,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         if (AppConfig.isGenerativeAiEnabled) ...[
         const Divider(),
 
-        // Gemini API 키
-        if (!usingOndevice) ...[
+        // Gemini API 키(개발 빌드 전용). 온디바이스 모델은 출시 범위에서 뺐다(LAUNCH_AUDIT P0-11).
           MLListRow(
             icon: Icons.key_rounded, color: context.scheme.primary,
             title: 'Gemini API 키',
@@ -436,19 +432,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
               ]),
             ),
-          const Divider(),
-        ],
-
-        // 온디바이스 모델
-        MLListRow(
-          icon: Icons.memory_rounded, color: MLColors.calc,
-          title: '온디바이스 AI 모델',
-          subtitle: usingOndevice ? '활성화됨 · 인터넷 없이 동작' : '인터넷 없이 동작하는 AI 모델 관리',
-          onTap: () async {
-            await context.push('/ondevice-ai');
-            if (mounted) _loadState();
-          },
-        ),
         ],
       ]),
     );

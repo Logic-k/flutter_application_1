@@ -16,6 +16,7 @@ import 'core/auth_service.dart';
 import 'core/cs_service.dart';
 import 'core/local_ai_service.dart';
 import 'core/ai/ai_chat_service.dart';
+import 'core/ai/legacy_model_cleanup.dart';
 import 'core/services/background_service.dart';
 import 'core/services/diary_notification_service.dart';
 import 'core/services/notification_tap_router.dart';
@@ -89,6 +90,9 @@ Future<void> _bootstrap({required bool isEmulator}) async {
 
   // 규칙 기반 엔진 준비 (모델 파일 없으면 그대로 규칙 기반으로 동작).
   await LocalAIService.initialize();
+
+  // 예전 빌드가 남긴 온디바이스 모델(약 1.5GB)과 HuggingFace 토큰을 지운다(LAUNCH_AUDIT P0-11).
+  unawaited(LegacyOnDeviceModelCleanup.run());
 
   // AI 대화 서비스 (GEMINI_API_KEY 없으면 LocalFallback 자동 사용).
   // path_provider 채널 + SharedPreferences 최초 로드를 유발하므로 뒤로 미룬다.
