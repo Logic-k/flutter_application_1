@@ -15,7 +15,6 @@ import '../../core/ai/ai_key_service.dart';
 import '../../core/ai/ai_chat_service.dart';
 import '../../core/services/diary_notification_service.dart';
 import '../../core/services/cloud_data_deletion_service.dart';
-import '../../main.dart' show flutterLocalNotificationsPlugin;
 import '../profile/edit_profile_screen.dart';
 
 /// 통합 설정 화면
@@ -35,9 +34,8 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  static const _reminderPrefKey = 'diary_reminder_enabled';
-
-  bool _reminderEnabled = true;
+  // 일기 알림은 기본 꺼짐이다. 켤 때 알림 권한을 묻는다(LAUNCH_AUDIT P0-04).
+  bool _reminderEnabled = false;
   bool _hasApiKey = false;
   bool _loadingAi = true;
   String _providerName = '';
@@ -57,7 +55,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final storedKey = await AiKeyService.getStoredKey();
     if (!mounted) return;
     setState(() {
-      _reminderEnabled = prefs.getBool(_reminderPrefKey) ?? true;
+      _reminderEnabled = prefs.getBool(DiaryNotificationService.prefKey) ?? false;
       _hasApiKey = storedKey != null;
       _providerName = AiChatService.currentProviderName;
       _loadingAi = false;
@@ -72,21 +70,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   // ─── 알림 토글 ───────────────────────────────────────────────
   Future<void> _toggleReminder(bool enabled) async {
-    setState(() => _reminderEnabled = enabled);
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_reminderPrefKey, enabled);
+    String message;
     if (enabled) {
-      await DiaryNotificationService.scheduleDailyReminder(
-          flutterLocalNotificationsPlugin);
+      final result = await DiaryNotificationService.enable();
+      if (!mounted) return;
+      setState(() => _reminderEnabled = result == DiaryReminderResult.enabled);
+      message = switch (result) {
+        DiaryReminderResult.enabled => '매일 저녁 7시 무렵 일기 알림을 보내 드립니다.',
+        DiaryReminderResult.permissionDenied =>
+          '알림 권한이 꺼져 있습니다. 휴대폰 설정에서 MemoryLink 알림을 허용한 뒤 다시 켜 주세요.',
+        DiaryReminderResult.unavailable => '이 기기에서는 알림을 준비하지 못했습니다.',
+      };
     } else {
-      await DiaryNotificationService.cancelReminder(
-          flutterLocalNotificationsPlugin);
+      setState(() => _reminderEnabled = false);
+      await DiaryNotificationService.disable();
+      if (!mounted) return;
+      message = '일기 알림이 꺼졌습니다.';
     }
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(enabled ? '매일 저녁 7시 일기 알림이 켜졌습니다.' : '일기 알림이 꺼졌습니다.')),
-      );
-    }
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
   }
 
   // ─── Gemini API 키 ───────────────────────────────────────────
@@ -198,7 +199,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               child: MLListRow(
                 icon: Icons.notifications_active_rounded, color: MLColors.sky,
                 title: '매일 저녁 일기 알림',
-                subtitle: '저녁 7시에 일기 작성을 알려드립니다.',
+                subtitle: '저녁 7시 무렵 일기 작성을 알려드립니다.',
                 trailing: Switch(
                   value: _reminderEnabled,
                   onChanged: _toggleReminder,

@@ -15,6 +15,12 @@ void main() {
     expect(declares('android.permission.HIGH_SAMPLING_RATE_SENSORS'), isFalse);
   });
 
+  test('일기 알림은 정확한 알람 권한 없이 예약하고, 예약 알림 리시버를 선언한다', () {
+    expect(declares('android.permission.SCHEDULE_EXACT_ALARM'), isFalse);
+    expect(manifest, contains('com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver'));
+    expect(manifest, contains('com.dexterous.flutterlocalnotifications.ScheduledNotificationBootReceiver'));
+  });
+
   test('음성 인식·읽기 엔진을 찾을 수 있게 패키지 조회를 선언한다', () {
     expect(manifest, contains('<action android:name="android.speech.RecognitionService" />'));
     expect(manifest, contains('<action android:name="android.intent.action.TTS_SERVICE" />'));

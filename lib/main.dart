@@ -18,7 +18,9 @@ import 'core/local_ai_service.dart';
 import 'core/ai/ai_chat_service.dart';
 import 'core/services/background_service.dart';
 import 'core/services/diary_notification_service.dart';
+import 'core/services/notification_tap_router.dart';
 import 'features/gait_analysis/gait_provider.dart';
+import 'features/gait_analysis/guardian_alert_sms_dialog.dart';
 import 'features/gait_analysis/pedometer_manager.dart';
 import 'features/diary/diary_provider.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -35,8 +37,11 @@ import 'features/opening/memory_opening.dart';
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
 
-/// 알림 플러그인 초기화 → 런타임 권한 요청 → 저녁 일기 알림 예약.
+/// 알림 플러그인 초기화 → 저장된 선택대로 저녁 일기 알림 예약 → 알림 탭 연결.
 /// runApp과 병렬로 진행되므로 실패해도 앱 기동에 영향을 주지 않는다.
+///
+/// 앱을 열 때 알림 권한을 묻지 않는다. 일기 알림은 설정에서 켤 때,
+/// 걸음 측정 알림은 걸음 측정을 켤 때 묻는다(LAUNCH_AUDIT P0-04).
 Future<void> _prepareNotifications() async {
   try {
     // 타임존은 저녁 7시 KST 알림 예약에만 쓰인다. 예전에는 runApp 앞에서
@@ -48,28 +53,26 @@ Future<void> _prepareNotifications() async {
         AndroidInitializationSettings('@mipmap/ic_launcher');
     const DarwinInitializationSettings iosSettings =
         DarwinInitializationSettings(
-          requestAlertPermission: true,
-          requestBadgePermission: true,
-          requestSoundPermission: true,
+          requestAlertPermission: false,
+          requestBadgePermission: false,
+          requestSoundPermission: false,
         );
     await flutterLocalNotificationsPlugin.initialize(
       settings: const InitializationSettings(
         android: androidSettings,
         iOS: iosSettings,
       ),
+      onDidReceiveNotificationResponse: (response) =>
+          NotificationTapRouter.handle(response.payload),
     );
-    // Android 13+ 알림 런타임 권한 요청.
-    // (만보기 토글에서만 요청하면 만보기를 안 쓰는 사용자는
-    //  저녁 일기 알림을 영영 받지 못한다)
-    await flutterLocalNotificationsPlugin
-        .resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin
-        >()
-        ?.requestNotificationsPermission();
-    await DiaryNotificationService.initialize(flutterLocalNotificationsPlugin);
-    await DiaryNotificationService.scheduleDailyReminder(
-      flutterLocalNotificationsPlugin,
-    );
+    await DiaryNotificationService.configure(flutterLocalNotificationsPlugin);
+    await DiaryNotificationService.applySavedPreference();
+    // 앱이 꺼져 있을 때 알림을 눌러 열었으면, 화면이 준비된 뒤 처리한다.
+    final launch = await flutterLocalNotificationsPlugin
+        .getNotificationAppLaunchDetails();
+    if (launch?.didNotificationLaunchApp ?? false) {
+      NotificationTapRouter.handle(launch!.notificationResponse?.payload);
+    }
   } catch (e) {
     debugPrint('[main] 알림 준비 실패 — 알림 없이 계속한다: $e');
   }
@@ -227,12 +230,37 @@ class _MemoryLinkAppState extends State<MemoryLinkApp> {
     final userProvider = context.read<UserProvider>();
     final adminProvider = context.read<AdminProvider>();
     _router = createAppRouter(userProvider, adminProvider);
+    NotificationTapRouter.pending.addListener(_schedulePendingTap);
+  }
+
+  @override
+  void dispose() {
+    NotificationTapRouter.pending.removeListener(_schedulePendingTap);
+    super.dispose();
+  }
+
+  /// 알림 탭은 화면이 그려진 뒤, 로그인 확인이 끝난 다음에 처리한다.
+  void _schedulePendingTap() {
+    if (NotificationTapRouter.pending.value == null) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) => _handlePendingTap());
+  }
+
+  Future<void> _handlePendingTap() async {
+    if (!mounted || NotificationTapRouter.pending.value == null) return;
+    final user = context.read<UserProvider>();
+    if (user.isLoading) return; // 로딩이 끝나면 build가 다시 부른다.
+    final navigatorContext = _router.routerDelegate.navigatorKey.currentContext;
+    if (navigatorContext == null) return;
+    final payload = NotificationTapRouter.take();
+    if (payload != NotificationTapRouter.guardianAlertPayload || user.currentUser == null) return;
+    await showGuardianAlertSmsDialog(navigatorContext, phone: user.emergencyContact);
   }
 
   @override
   Widget build(BuildContext context) {
     final userProvider = context.watch<UserProvider>();
     final settings = context.watch<SettingsProvider>();
+    if (!userProvider.isLoading) _schedulePendingTap();
 
     // 콜드 스타트 오프닝(DESIGN.md §4.1 네 번째 예외). 로그인 확인과 겹쳐 흐르고,
     // 확인이 늦으면 정지 화면에서 기다리므로 아래 로딩 스피너는 보이지 않는다.

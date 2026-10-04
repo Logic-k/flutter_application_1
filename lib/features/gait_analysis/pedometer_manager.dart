@@ -4,10 +4,10 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../../core/database_helper.dart';
 import '../../core/user_provider.dart';
 import '../../core/services/guardian_sync_service.dart';
+import '../../core/services/notification_tap_router.dart';
 import '../../core/services/step_anomaly_policy.dart';
 
 /// 만보기 매니저 (상태 관리)
@@ -262,7 +262,6 @@ class PedometerManager with ChangeNotifier, WidgetsBindingObserver {
     if (user == null) return;
 
     final userId = user['id'] as int;
-    final emergencyContact = _userProvider.emergencyContact;
 
     // 1. 공유 중인 보호자 공개 사본에 이상 상태를 올린다 (보호자 웹에 경고 표시).
     //    결과를 받는다 — 전송 실패를 삼키면 보호자는 아무 일 없다고 믿게 되므로,
@@ -283,10 +282,8 @@ class PedometerManager with ChangeNotifier, WidgetsBindingObserver {
           importance: Importance.high,
         ));
 
-    final smsPayload = emergencyContact != null && emergencyContact.isNotEmpty
-        ? 'sms:$emergencyContact'
-        : '';
-
+    // payload에는 전화번호를 넣지 않는다(시스템·로그 노출 방지). 누르면 앱이 현재 사용자의
+    // 비상 연락처로 보낼 문자를 먼저 보여 주고, 확인해야 문자 앱을 연다(LAUNCH_AUDIT P0-04).
     await _localNotifications.show(
       id: _guardianNotificationId,
       title: '활동량 이상 감지',
@@ -304,17 +301,8 @@ class PedometerManager with ChangeNotifier, WidgetsBindingObserver {
           autoCancel: true,
         ),
       ),
-      payload: smsPayload,
+      payload: NotificationTapRouter.guardianAlertPayload,
     );
-  }
-
-  /// 알림 탭 시 SMS 앱 실행 (앱 진입점에서 호출 필요)
-  Future<void> handleNotificationTap(String? payload) async {
-    if (payload == null || payload.isEmpty) return;
-    final uri = Uri.tryParse(payload);
-    if (uri != null && await canLaunchUrl(uri)) {
-      await launchUrl(uri);
-    }
   }
 
   /// 추적에 필요한 권한을 요청한다. 이미 요청이 떠 있으면 그 결과를 재사용한다.
