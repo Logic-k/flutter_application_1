@@ -102,8 +102,12 @@ Future<void> _bootstrap({required bool isEmulator}) async {
     debugPrint('[bootstrap] AI 대화 초기화 실패 — 로컬 폴백으로 계속한다: $e');
   }
 
+  // 알림 채널·저장된 일기 알림 예약·알림 탭 연결. 권한은 묻지 않고(LAUNCH_AUDIT P0-04) 네트워크도
+  // 쓰지 않으므로 에뮬레이터 QA 빌드에서도 준비한다. 알림 권한 거부 E2E가 이 경로를 쓴다.
+  unawaited(_prepareNotifications());
+
   // ── 실제 기기에서만 필요한 것 ────────────────────────────────────
-  // 네트워크·센서·알림 채널은 에뮬레이터 QA 빌드에서 건너뛴다.
+  // 네트워크·센서는 에뮬레이터 QA 빌드에서 건너뛴다.
   if (isEmulator) return;
 
   // 만보기 백그라운드 서비스 설정. autoStart:false라 여기서 실제로 시작되는 건
@@ -131,10 +135,6 @@ Future<void> _bootstrap({required bool isEmulator}) async {
           }),
     );
   }
-
-  // 알림 준비는 가장 마지막에. Android 13+ 권한 다이얼로그가 뜨므로
-  // 사용자가 이미 화면을 보고 있는 상태여야 맥락이 이해된다.
-  unawaited(_prepareNotifications());
 }
 
 /// Pretendard 는 SIL Open Font License 1.1 로 배포된다. OFL 은 폰트를 포함해

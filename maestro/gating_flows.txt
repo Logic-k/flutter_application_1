@@ -35,3 +35,6 @@ maestro/opening_flow.yaml
 # 계정과 모든 데이터 삭제(2026-10-04, 감사 P0-07). 에뮬레이터 빌드는 서버에 닿지 않으므로
 # 두 번 확인과 '서버 삭제 실패 시 아무것도 지우지 않음'을 본다. 지우는 성공 경로는 위젯 테스트·실기기 QA
 maestro/account_deletion_flow.yaml
+# 알림 권한 거부(2026-10-05, 감사 P0-04). 앱을 열 때는 묻지 않고, 일기 알림 행을 누를 때만 묻는다.
+# 거부하면 꺼진 채로 휴대폰 설정을 안내한다. 설정 토글 행 전체를 누를 수 있게 한 뒤 E2E로 볼 수 있게 됐다
+maestro/notification_permission_denied_flow.yaml
