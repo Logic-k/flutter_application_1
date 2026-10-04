@@ -24,7 +24,7 @@ MemoryLink는 기능이 부족한 제품이 아니다. **이미 모은 데이터
 
 <a id="baseline"></a>
 
-## 1. 실측 기준선 (2026-08-26)
+## 1. 실측 기준선 (2026-08-26, 2026-10-04 갱신)
 
 문서에 적힌 수치가 아니라 이 저장소에서 직접 돌린 결과다.
 
@@ -34,12 +34,12 @@ MemoryLink는 기능이 부족한 제품이 아니다. **이미 모은 데이터
 
 | 항목 | 결과 |
 |---|---|
-| `flutter analyze` | 에러 0 · 경고 0 · **info 4** (`ml_widgets.dart` 2 · `theme.dart` 1 · `shape_match_game.dart` 1, 전부 스타일 힌트) |
-| `flutter test` | **320 / 320 통과** |
-| 테스트 파일 | **44개** (`test/**/*_test.dart`) |
-| 통합 테스트 | **2개 파일** (`integration_test/`, 게이팅에 미포함) |
+| `flutter analyze` | 에러 0 · 경고 0 · **info 0** (2026-10-04. 기본 명령이 그대로 통과한다. CI도 `--no-fatal-infos` 없이 돌린다) |
+| `flutter test` | **463 / 463 통과** (2026-10-04, 커밋된 트리 `c1c06d3`를 깨끗한 worktree에서 실행) |
+| 테스트 파일 | **67개** (`test/**/*_test.dart`, 같은 트리) |
+| 통합 테스트 | **2개 파일 · 4건** (`integration_test/`). 2026-10-04 QA_Device(API 36)에서 4/4 통과. CI PR Gate 3단계 |
 | release AAB | 65.8MB → 70.2MB → **65.0MB** (2026-09-19 실측, 릴리스 서명됨). 70.2MB는 Pretendard 5벌(12.8MB) 전환 결과였고, 65.0MB는 미사용 의존성 6개·미사용 SVG 제거로 되돌린 수치다. Play AAB 상한 150MB 안이다 |
-| Maestro | 게이팅 **21** (2026-09-27 `opening_flow` 추가 — 20 → 21) + 데모·스크린샷 **4** |
+| Maestro | 게이팅 **22** (2026-10-04 `account_deletion_flow` 추가 — 21 → 22) + 데모·스크린샷 **4** |
 | release APK | **86.6MB** (2026-08-27 실측, 서명됨. 사이드로드·검증용이며 스토어 업로드는 AAB다) |
 | 콜드 스타트 | `+15s078ms` → `+7s252ms` → `+6s835ms` → **`+7s456ms`** (2026-09-20 재측정, 같은 조건. 2회차 재실행은 4.35초. 측정 조건은 아래 설명 그대로다: 2026-08-27 서체 전환 후 재측정. QA_Device, `pm clear` 직후 `am start -W`, debug 빌드. 폰트 자산이 3배로 늘었어도 느려지지 않았다 — Flutter는 폰트를 첫 프레임 뒤에 지연 로드한다) |
 
@@ -47,8 +47,9 @@ Maestro 내역: 게이팅 제외 4개는 `demo_recording_flow` · `demo_recordin
 `demo_recording_tta_2min` · `screenshot_tour_flow`이며, 통과/실패로 품질을 판정하는
 flow가 아니다. `maestro/helpers/` 2개(`login_helper` · `just_tap_confirm`)는
 다른 flow가 불러 쓰는 조각이라 flow 수에 들어가지 않는다.
-**게이팅 대상의 정본은 `run_maestro_tests.ps1`의 `$flows` 배열이다.** 위 표의 21은
-그 배열 길이를 옮긴 값이므로, 배열이 바뀌면 이곳도 함께 고친다.
+**게이팅 대상의 정본은 `maestro/gating_flows.txt`다.** 로컬 `run_maestro_tests.ps1`과 CI
+`scripts/maestro_gating.sh`가 같은 파일을 읽는다(2026-10-04 이전에는 `$flows` 배열이었다). 위 표의 22는
+그 파일의 flow 줄 수이므로, 목록이 바뀌면 이곳도 함께 고친다.
 
 수치가 바뀐 경위:
 
@@ -59,7 +60,15 @@ flow가 아니다. `maestro/helpers/` 2개(`login_helper` · `just_tap_confirm`)
   사본이 분석되고 있었다.
 - Maestro 게이팅 **17 → 21 → 20** — 8/24에 `social_ranking_flow`를 뺐다.
   검사 대상이던 `SocialRankingView` 위젯 자체를 삭제했기 때문이다.
+- `flutter analyze` info **4 → 0** (10/4) — null-aware 원소 3건과 non-nullable 1건(출시 감사 P0-02).
+- `flutter test` **320 → 463** (8/26 → 10/4) — 그사이 여러 세션이 테스트를 더했다. 10/4에 다시 쟀다.
+- Maestro 게이팅 **21 → 22** (10/4) — `account_deletion_flow`(출시 감사 P0-07).
 
+> **게이팅 22개 전부 통과(2026-10-04).** QA_Device `emulator-5680`(API 36), `-gpu angle_indirect`,
+> debug APK(`IS_EMULATOR=true`, 작업 트리). 기존 21개는 5·5·5·3·3개씩 포그라운드로 돌려 모두 첫 시도에
+> 통과했고(flow당 82~161초), 새 `account_deletion_flow`도 첫 시도에 통과했다(142초). 같은 날 통합 테스트
+> 두 파일을 함께 돌려 4/4 통과했다. 오프닝이 걷힐 때까지 기다리도록 고친 뒤 인증 3건이 13분에서 35초로 줄었다.
+>
 > **게이팅 21개 전부 통과(2026-09-27, 커밋 `b949c8c` 오프닝 반영).** QA_Device `emulator-5680`,
 > `-gpu angle_indirect`, debug APK(`IS_EMULATOR=true`). 한 세션에서 4~5개씩 나눠 포그라운드로 21개를
 > 모두 돌렸고 20개는 첫 시도에 통과했다. `opening_flow`만 1회 멈췄다 — 건너뛰기 단계의 "오프닝 보임" 대기가
