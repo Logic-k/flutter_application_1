@@ -41,6 +41,8 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   // 일기 알림은 기본 꺼짐이다. 켤 때 알림 권한을 묻는다(LAUNCH_AUDIT P0-04).
   bool _reminderEnabled = false;
+  // 권한을 묻는 동안 행을 한 번 더 눌러 요청이 겹치지 않게 한다.
+  bool _reminderBusy = false;
   bool _hasApiKey = false;
   bool _loadingAi = true;
   String _providerName = '';
@@ -75,24 +77,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   // ─── 알림 토글 ───────────────────────────────────────────────
   Future<void> _toggleReminder(bool enabled) async {
-    String message;
-    if (enabled) {
-      final result = await DiaryNotificationService.enable();
-      if (!mounted) return;
-      setState(() => _reminderEnabled = result == DiaryReminderResult.enabled);
-      message = switch (result) {
-        DiaryReminderResult.enabled => '매일 저녁 7시 무렵 일기 알림을 보내 드립니다.',
-        DiaryReminderResult.permissionDenied =>
-          '알림 권한이 꺼져 있습니다. 휴대폰 설정에서 MemoryLink 알림을 허용한 뒤 다시 켜 주세요.',
-        DiaryReminderResult.unavailable => '이 기기에서는 알림을 준비하지 못했습니다.',
-      };
-    } else {
-      setState(() => _reminderEnabled = false);
-      await DiaryNotificationService.disable();
-      if (!mounted) return;
-      message = '일기 알림이 꺼졌습니다.';
+    if (_reminderBusy) return;
+    _reminderBusy = true;
+    try {
+      String message;
+      if (enabled) {
+        final result = await DiaryNotificationService.enable();
+        if (!mounted) return;
+        setState(() => _reminderEnabled = result == DiaryReminderResult.enabled);
+        message = switch (result) {
+          DiaryReminderResult.enabled => '매일 저녁 7시 무렵 일기 알림을 보내 드립니다.',
+          DiaryReminderResult.permissionDenied =>
+            '알림 권한이 꺼져 있습니다. 휴대폰 설정에서 MemoryLink 알림을 허용한 뒤 다시 켜 주세요.',
+          DiaryReminderResult.unavailable => '이 기기에서는 알림을 준비하지 못했습니다.',
+        };
+      } else {
+        setState(() => _reminderEnabled = false);
+        await DiaryNotificationService.disable();
+        if (!mounted) return;
+        message = '일기 알림이 꺼졌습니다.';
+      }
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    } finally {
+      _reminderBusy = false;
     }
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
   }
 
   // ─── Gemini API 키 ───────────────────────────────────────────
@@ -142,6 +150,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               children: [
             // ─── 화면 / 접근성 ───
             MLSectionTitle('화면 및 접근성'),
+            // 토글 행은 행 어디를 눌러도 스위치와 같은 일을 한다. 작은 스위치만 누르게 하면
+            // 고령 사용자에게 표적이 작다(DESIGN.md 터치 56dp 원칙).
             MLCard(
               padding: EdgeInsets.zero,
               child: Column(children: [
@@ -151,6 +161,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   icon: Icons.record_voice_over_rounded, color: MLColors.mem,
                   title: '음성 안내',
                   subtitle: '핵심 정보와 안내를 읽어줍니다.',
+                  onTap: () => context.read<SettingsProvider>().setVoiceGuidance(!settings.voiceGuidanceEnabled),
                   trailing: Switch(
                     value: settings.voiceGuidanceEnabled,
                     onChanged: (v) => context.read<SettingsProvider>().setVoiceGuidance(v),
@@ -161,6 +172,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   icon: Icons.vibration_rounded, color: MLColors.logic,
                   title: '진동 피드백',
                   subtitle: '버튼 클릭 시 진동으로 반응합니다.',
+                  onTap: () => context.read<SettingsProvider>().setHapticFeedback(!settings.hapticFeedbackEnabled),
                   trailing: Switch(
                     value: settings.hapticFeedbackEnabled,
                     onChanged: (v) => context.read<SettingsProvider>().setHapticFeedback(v),
@@ -171,6 +183,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   icon: Icons.music_note_rounded, color: MLColors.sky,
                   title: '효과음',
                   subtitle: '정답·오답·완료를 짧은 소리로 알립니다.',
+                  onTap: () => context.read<SettingsProvider>().setSoundEffects(!settings.soundEffectsEnabled),
                   trailing: Switch(
                     value: settings.soundEffectsEnabled,
                     onChanged: (v) => context.read<SettingsProvider>().setSoundEffects(v),
@@ -182,6 +195,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   title: '움직임 줄이기',
                   // 켜면 이동·확대 효과를 끄고 부드러운 흐려짐만 남긴다(MotionLevel.fadeOnly).
                   subtitle: '움직이는 효과를 끄고 부드러운 전환만 남깁니다.',
+                  onTap: () => context.read<SettingsProvider>().setReduceMotion(!settings.reduceMotion),
                   trailing: Switch(
                     value: settings.reduceMotion,
                     onChanged: (v) => context.read<SettingsProvider>().setReduceMotion(v),
@@ -205,6 +219,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 icon: Icons.notifications_active_rounded, color: MLColors.sky,
                 title: '매일 저녁 일기 알림',
                 subtitle: '저녁 7시 무렵 일기 작성을 알려드립니다.',
+                onTap: () => _toggleReminder(!_reminderEnabled),
                 trailing: Switch(
                   value: _reminderEnabled,
                   onChanged: _toggleReminder,

@@ -7,6 +7,15 @@ import 'package:flutter_application_1/features/settings/settings_screen.dart';
 import '../../helpers/mock_definitions.dart';
 import '../../helpers/test_helpers.dart';
 
+/// 토글 행을 눌렀을 때 어떤 설정을 무엇으로 바꾸는지 기록한다.
+class _RecordingSettings extends FakeSettingsProvider {
+  final calls = <String>[];
+  @override
+  Future<void> setSoundEffects(bool enabled) async => calls.add('sound:$enabled');
+  @override
+  Future<void> setReduceMotion(bool enabled) async => calls.add('motion:$enabled');
+}
+
 void main() {
   setUp(() {
     // initState가 SharedPreferences / AiKeyService 를 읽으므로 목 값을 주입한다.
@@ -45,6 +54,20 @@ void main() {
     expect(find.text('효과음'), findsOneWidget);
     expect(find.text('움직임 줄이기'), findsOneWidget);
     expect(find.byType(Switch), findsNWidgets(5));
+  });
+
+  testWidgets('토글 행은 글자를 눌러도 스위치와 같은 설정을 바꾼다', (tester) async {
+    final settings = _RecordingSettings();
+    await pumpWithProviders(tester, const SettingsScreen(), settingsProvider: settings);
+    await tester.pump();
+
+    await tester.ensureVisible(find.text('효과음'));
+    await tester.tap(find.text('효과음'));
+    await tester.ensureVisible(find.text('움직임 줄이기'));
+    await tester.tap(find.text('움직임 줄이기'));
+    await tester.pump();
+
+    expect(settings.calls, ['sound:${!settings.soundEffectsEnabled}', 'motion:${!settings.reduceMotion}']);
   });
 
   testWidgets('SettingsScreen: 개인정보 처리방침·로그아웃 행이 존재한다', (tester) async {

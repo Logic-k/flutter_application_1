@@ -46,6 +46,17 @@ void main() {
     expect(find.textContaining('휴대폰 설정에서 MemoryLink 알림을 허용'), findsOneWidget);
   });
 
+  testWidgets('행 글자를 눌러도 켜기를 시도하고, 거부되면 꺼진 채 안내한다', (tester) async {
+    gateway.grant = false;
+    final toggle = await pumpSettings(tester);
+    await tester.tap(find.text('매일 저녁 일기 알림'));
+    await tester.pump();
+    await tester.pump();
+    expect(gateway.calls, ['permission']);
+    expect(tester.widget<Switch>(toggle).value, isFalse);
+    expect(find.textContaining('휴대폰 설정에서 MemoryLink 알림을 허용'), findsOneWidget);
+  });
+
   testWidgets('권한을 받으면 켜지고 알림을 예약한다', (tester) async {
     final toggle = await pumpSettings(tester);
     await tester.tap(toggle);
