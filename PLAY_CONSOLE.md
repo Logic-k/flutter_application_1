@@ -1,6 +1,6 @@
 # Play Console 「앱 콘텐츠」 답안
 
-> 작성 2026-08-27 · 1·8번 2026-10-04 갱신 · 대상 `com.teammemorylink.memorylink` 1.0.0(1)
+> 작성 2026-08-27 · 1·8·9번 2026-10-04 갱신 · 대상 `com.teammemorylink.memorylink` 1.0.0(1)
 > 모든 답은 **이 저장소 코드를 읽어 확인한 사실**에 근거한다. 추정으로 채우지 않았다.
 > 실제 동작과 신고 내용이 다르면 정책 위반이므로, 코드가 바뀌면 이 문서도 함께 고친다.
 > 빌드·서명 절차는 `RELEASE_CHECKLIST.md`, 실측 수치는
@@ -169,33 +169,44 @@ Firebase Hosting이 `site/`를 서빙한다(`firebase.json`). 앱도 같은 주�
 
 ---
 
-## 9. 건강 앱 선언 ⚠️ — 유일하게 까다로운 항목
+## 9. 건강 앱 선언과 포그라운드 서비스 선언
 
-**예, Health Connect를 사용합니다.**
+> 2026-10-04 감사(P0-09) 권고대로 다시 썼다. Android 매니페스트에서 Health Connect 권한을 지웠다.
 
-> ⚠️ **2026-09-28 감사(P0-09)와 충돌한다.** Android 코드에는 Health Connect 권한 요청이 0건이고
-> `health` 사용은 iOS 백그라운드 경로뿐이다. 이대로 답하면 쓰지 않는 민감 권한을 신고하게 된다.
-> 매니페스트의 `READ_STEPS`·`WRITE_STEPS`를 지울지(감사 권장) 먼저 정하고 이 절을 고친다.
+### Health Connect
 
-**근거**: `health: ^11.1.1`을 `background_service.dart:6`이 실제로 import하며,
-매니페스트가 `android.permission.health.READ_STEPS`·`WRITE_STEPS`를 선언한다
-(`AndroidManifest.xml:13-14`).
+**아니요, Health Connect를 사용하지 않습니다.** 그래서 Health Connect 권한 신청서는 내지 않는다.
 
-Health Connect 권한을 요청하는 앱은 **별도 선언과 Google 검토**를 거친다. 준비할 답:
+**근거**: Android 코드에는 Health Connect 권한 요청이 없고, `health` 플러그인은 iOS 백그라운드(HealthKit)에서만 쓴다
+(`background_service.dart`의 `onIosBackground`). 2026-10-04에 매니페스트의 `android.permission.health.READ_STEPS`·`WRITE_STEPS`를
+지웠고, `health` 플러그인의 Android 매니페스트는 비어 있다. `test/unit/core/android_manifest_guard_test.dart`가 다시 들어오지 않게 막는다.
+
+### 건강 앱 선언 (모든 앱 필수)
+
+Health Connect와 별개로 Play에 올리는 모든 앱이 작성한다. 실제 기능이 있는 것만 고른다.
+
+| 고를 것 | 근거 기능 |
+|---|---|
+| Activity and Fitness | 걸음 수 측정, 주간 활동량 |
+| Stress Management, Relaxation, Mental Acuity | 인지 훈련 게임, 감정 일기 |
+| Sleep Management | 수면 기록 |
+| Nutrition and Weight Management | 식사·체중 기록 |
+
+Medical Device Apps는 고르지 않는다. 앱 설명에 "진단·선별 검사가 아니며 의료기기가 아닙니다"를 넣는다.
+
+### 포그라운드 서비스 선언 (`foregroundServiceType="health"`)
 
 | 질문 | 답 |
 |---|---|
-| 요청하는 데이터 유형 | **걸음 수(Steps)** — 읽기·쓰기 |
-| 사용 목적 | 사용자 본인의 일일·주간 활동량을 앱 안에서 보여주고, 보호자가 동의 하에 확인할 수 있게 한다 |
-| 데이터를 광고에 사용하는가 | **아니요** |
-| 제3자에게 판매하는가 | **아니요** |
+| 기능 | 사용자가 생활습관 화면에서 걸음 측정을 켠 동안 걸음 수를 계속 센다 |
+| 지연·중단 영향 | 일부 걸음 기록이 빠질 수 있다. 응급·안전 기능을 보장하지 않는다 |
+| 시작 조건 | 사용자가 켤 때만. 재부팅 뒤 자동 시작은 꺼져 있다(`autoStartOnBoot: false`) |
+| 상시 알림 문구 | "MemoryLink 걸음 측정 중 / 걸음 수를 세고 있습니다." |
+| 시연 영상 | 새로 설치 → 걸음 측정 켜기 → 신체 활동·알림 권한 허용 → 상시 알림 → 걸음 수 갱신 → 끄면 알림이 사라짐 |
 
 **의료 목적이라고 답하지 말 것.** 이 앱은 코드·PDF 리포트·공모전 서류 전부에서
 "진단·선별 검사가 아니며 의료기기가 아닙니다"로 통일돼 있다. 여기서 의료 주장을 하면
 그 경계가 무너지고 훨씬 무거운 심사 대상이 된다. **활동량 기록·관리**로 답한다.
-
-> 이 선언은 검토에 시간이 걸릴 수 있다. 내부 테스트 단계에서 미리 제출해 두면
-> 프로덕션 전환이 막히지 않는다.
 
 ---
 

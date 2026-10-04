@@ -5,14 +5,13 @@ import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:health/health.dart';
 import 'package:pedometer/pedometer.dart';
-import 'package:sensors_plus/sensors_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'guardian_heartbeat.dart';
 
-/// 상시 보행 추적 및 보행 바이오마커 수집 백그라운드 서비스
-/// 
-/// [agency-mobile-app-builder]: 안드로이드 포그라운드 서비스를 통해 
-/// 앱이 종료되어도 걸음 수와 보행 파형(가속도)을 측정합니다.
+/// 걸음 측정 백그라운드 서비스.
+///
+/// 사용자가 생활습관 화면에서 걸음 측정을 켠 동안 안드로이드 포그라운드 서비스로
+/// 걸음 수를 세고, 보호자 공유 중이면 하트비트를 보낸다. 응급·안전 기능을 보장하지 않는다.
 @pragma('vm:entry-point')
 class PedometerBackgroundService {
   static const String notificationChannelId = 'pedometer_service_channel';
@@ -25,8 +24,8 @@ class PedometerBackgroundService {
     // 알림 채널 설정 (Android)
     const AndroidNotificationChannel channel = AndroidNotificationChannel(
       notificationChannelId,
-      'MemoryLink 보행 분석',
-      description: '실시간 보행 바이오마커 및 걸음 수 측정을 위해 실행 중입니다.',
+      'MemoryLink 걸음 측정',
+      description: '걸음 측정을 켜 둔 동안 걸음 수를 셉니다.',
       importance: Importance.low,
     );
 
@@ -45,8 +44,9 @@ class PedometerBackgroundService {
         autoStartOnBoot: false,
         isForegroundMode: true,
         notificationChannelId: notificationChannelId,
-        initialNotificationTitle: 'MemoryLink 분석 활성',
-        initialNotificationContent: '안전한 보행을 모니터링하고 있습니다...',
+        // '안전 모니터링'처럼 구조를 약속하는 말 대신 하는 일만 적는다(LAUNCH_AUDIT P0-03).
+        initialNotificationTitle: 'MemoryLink 걸음 측정 중',
+        initialNotificationContent: '걸음 수를 세고 있습니다.',
         foregroundServiceNotificationId: notificationId,
       ),
       iosConfiguration: IosConfiguration(
@@ -103,7 +103,6 @@ class PedometerBackgroundService {
         FlutterLocalNotificationsPlugin();
 
     int lastSentSteps = 0;
-    List<double> accBuffer = [];
 
     // Pedometer.stepCountStream은 "기기 부팅 이후 누적 걸음 수"를 준다.
     // 날짜별 기준값(baseline)과의 차분으로 '오늘 걸음'을 계산한다.
@@ -199,24 +198,11 @@ class PedometerBackgroundService {
       debugPrint('보행 센서 시작 실패: $e');
     }
 
-    // 2. 가속도계 스트림 구독 (보행 바이오마커 분석용)
-    userAccelerometerEventStream().listen((UserAccelerometerEvent event) {
-      double magnitude = (event.x * event.x + event.y * event.y + event.z * event.z);
-      
-      if (magnitude > 0.5) {
-        accBuffer.add(magnitude);
-        
-        if (accBuffer.length >= 50) {
-          service.invoke('update_gait_data', {
-            "avg_magnitude": accBuffer.reduce((a, b) => a + b) / accBuffer.length,
-            "timestamp": DateTime.now().toIso8601String(),
-          });
-          accBuffer.clear();
-        }
-      }
-    });
+    // 예전에는 여기서 가속도계도 상시 구독해 'update_gait_data'를 보냈지만 받는 곳이 없었다.
+    // 배터리만 쓰고 고속 센서 권한까지 필요해서 지웠다(LAUNCH_AUDIT P0-09).
+    // 보행 측정은 생활습관 화면에서 사용자가 시작할 때만 화면 쪽에서 센서를 켠다.
 
-    // 3. 보호자 하트비트: 공유 중이면 화면이 꺼져 있어도 1시간마다 오늘 걸음 수를 올린다.
+    // 2. 보호자 하트비트: 공유 중이면 화면이 꺼져 있어도 1시간마다 오늘 걸음 수를 올린다.
     GuardianHeartbeat.start(() => currentTodaySteps);
 
     service.on('stopService').listen((event) {

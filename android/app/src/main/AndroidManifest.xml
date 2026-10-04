@@ -9,9 +9,9 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_HEALTH" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-    <uses-permission android:name="android.permission.HIGH_SAMPLING_RATE_SENSORS" />
-    <uses-permission android:name="android.permission.health.READ_STEPS" />
-    <uses-permission android:name="android.permission.health.WRITE_STEPS" />
+    <!-- Health Connect 걸음 권한(READ/WRITE_STEPS)은 두지 않는다. Android 코드는 Health Connect를
+         요청하지 않고, health 플러그인은 iOS 백그라운드에서만 쓴다(LAUNCH_AUDIT P0-09).
+         HIGH_SAMPLING_RATE_SENSORS도 두지 않는다. 보행 측정은 100Hz로 200Hz 제한 아래다. -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
@@ -72,6 +72,14 @@
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
+        </intent>
+        <!-- Android 11+ 패키지 공개 범위: speech_to_text·flutter_tts가 음성 인식·읽기 엔진을
+             찾으려면 필요하다(LAUNCH_AUDIT P0-12). -->
+        <intent>
+            <action android:name="android.speech.RecognitionService" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.TTS_SERVICE" />
         </intent>
     </queries>
 </manifest>
