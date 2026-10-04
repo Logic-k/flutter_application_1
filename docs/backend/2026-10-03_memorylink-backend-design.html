@@ -189,7 +189,7 @@
 <div class="wrap">
 
   <header>
-    <div class="eyebrow">2026-10-03 설계 · 2026-10-04 구현·운영 배포·매일 정리 작업·처리방침 v2.0 반영 · 기준 devin/release-hardening</div>
+    <div class="eyebrow">2026-10-03 설계 · 2026-10-04 구현·운영 배포·매일 정리 작업 가동·처리방침 v2.0·main 보호 반영 · 기준 devin/release-hardening</div>
     <h1>MemoryLink 백엔드 설계</h1>
     <p class="lede">앱이 실제로 연결된 서버는 Firebase 하나이고, 앱이 부르는 서버 코드는 없습니다. 그래서 Firestore 보안 규칙이 사실상 백엔드의 전부입니다. 10/3 점검 때는 고친 규칙이 운영에 없었고, 10/4에 v2 규칙과 보호자 웹을 배포했습니다. 9월에 만든 AWS EC2는 앱과 연결되지 않았고, 쓰지 않기로 했습니다. 무료 요금제에는 TTL 자동 삭제가 없어서, 보관 기간이 지난 데이터는 GitHub Actions 예약 작업이 매일 지웁니다.</p>
     <nav class="toc" aria-label="목차">
@@ -215,7 +215,7 @@
       <div class="fact"><span class="k">앱이 부르는 서버 코드</span><span class="v">없음</span><span class="s">Functions 없음 · EC2 미연결</span></div>
       <div class="fact"><span class="k">운영 보안 규칙</span><span class="v">v2 배포됨</span><span class="s">2026-10-04</span></div>
       <div class="fact"><span class="k">서버 자동 테스트</span><span class="v">47개 통과</span><span class="s">규칙 32 · 정리 15 · 앱 테스트 554개</span></div>
-      <div class="fact"><span class="k">만료 데이터 정리</span><span class="v">매일 03:20</span><span class="s">GitHub Actions · PR #2 합치면 시작</span></div>
+      <div class="fact"><span class="k">만료 데이터 정리</span><span class="v">매일 03:20</span><span class="s">GitHub Actions · 10/4부터 main에서 가동</span></div>
       <div class="fact"><span class="k">AWS EC2</span><span class="v">사용 안 함</span><span class="s">종료는 콘솔 작업으로 남음</span></div>
       <div class="fact"><span class="k">Supabase</span><span class="v">SQL 삭제됨</span><span class="s">test_SQL 프로젝트 삭제는 콘솔 작업</span></div>
     </div>
@@ -229,7 +229,7 @@
       <table>
         <thead><tr><th>항목</th><th>상태</th><th>확인한 방법</th><th>관련 문제</th></tr></thead>
         <tbody>
-          <tr><td>매일 정리 작업(<code>firebase-ops/retention.mjs</code>, 매일 03:20 KST): 보호자 링크는 만료 1일 뒤, 예전 공개 문서는 바로, 문의는 접수 365일, 예전 난이도는 갱신 90일, 익명 계정은 365일 미사용이고 남은 데이터가 없을 때. 필드 마스크로 소유자·시각만 읽고, 로그에는 개수만 남기고, 판정 뒤 바뀐 문서는 건너뛰고, 500건이 넘으면 중단</td><td><span class="pill ok">구현</span> <span class="pill sev-mid">PR #2 합치면 시작</span></td><td>에뮬레이터 테스트 15개(Firestore·Auth). 원격 CI에서 규칙과 합쳐 47개 통과. 예약 실행은 main에 있어야 돌아서 정리 작업만 담은 PR을 열었습니다</td><td class="ph">3·8</td></tr>
+          <tr><td>매일 정리 작업(<code>firebase-ops/retention.mjs</code>, 매일 03:20 KST): 보호자 링크는 만료 1일 뒤, 예전 공개 문서는 바로, 문의는 접수 365일, 예전 난이도는 갱신 90일, 익명 계정은 365일 미사용이고 남은 데이터가 없을 때. 필드 마스크로 소유자·시각만 읽고, 로그에는 개수만 남기고, 판정 뒤 바뀐 문서는 건너뛰고, 500건이 넘으면 중단</td><td><span class="pill ok">구현</span> <span class="pill ok">가동 중</span></td><td>에뮬레이터 테스트 15개(Firestore·Auth). 원격 CI에서 규칙과 합쳐 47개 통과. 예약 실행은 main에 있어야 돌아서 정리 작업만 담은 PR #2를 main에 합쳤고, main에서 돌린 미리보기가 성공했습니다</td><td class="ph">3·8</td></tr>
           <tr><td>키 없는 GitHub 연결: 서비스 계정 <code>firestore-retention</code>(키 0개), 맞춤 역할(문서 읽기·삭제, 익명 계정 조회·삭제만), Workload Identity 조건(저장소 id·main·이 워크플로 파일·예약 또는 수동 실행)</td><td><span class="pill ok">설정됨</span></td><td>서비스 계정 토큰으로 운영 미리보기와 적용을 실행. 문서 만들기는 403. 검증용 임시 권한은 회수했고 정책에 남지 않은 것을 확인</td><td class="ph">8·11</td></tr>
           <tr><td>운영 첫 정리: 예전 보호자 공개 문서 22개. 이름·전화번호가 남아 있었고, 11개는 소유자 정보가 없어 앱으로는 지울 수 없었음</td><td><span class="pill ok">삭제됨</span></td><td>다시 센 결과 보호자 문서 0개. 문의·공지·FAQ·난이도 문서와 익명 계정 수는 그대로</td><td class="ph">3·8</td></tr>
           <tr><td>개인정보 처리방침 v2.0: 항목별 저장 위치, 1시간 갱신과 30일 닫힘, 항목별 보관 기간과 매일 정리, 처리 위탁·국외 이전(Google·GitHub), 구제 방법. 삭제 안내 페이지도 갱신</td><td><span class="pill ok">배포됨</span></td><td>공개 페이지가 저장소 파일과 바이트 단위로 같음. 두 사본과 보관 기간을 대조하는 테스트 추가</td><td class="ph">8</td></tr>
@@ -242,12 +242,12 @@
       </table>
     </div>
     <p>커밋 <code>f9612bc</code>부터 <code>a35f75e</code>까지 다섯 개를 푸시했습니다. 커밋된 파일만 담은 작업 폴더에서 분석(기존 info 4건), 앱 테스트 437개, 규칙과 정리 47개가 통과했습니다. 미커밋 작업까지 포함하면 앱 테스트는 554개 통과(기존 skip 2)입니다.</p>
-    <h3>사용자가 정하거나 할 일</h3>
+    <h3>후속 처리 (10/4 아침)</h3>
     <ol class="steps">
-      <li class="gate"><b>PR #2 합치기</b><span>main에 정리 작업 세 파일만 올리는 PR입니다. 합치면 그날 밤부터 매일 돕니다. PR에 보이는 Flutter CI·Maestro 실패는 7월부터 이어진 main의 기존 상태입니다.</span></li>
-      <li class="gate"><b>소개 사이트 처리방침 배포</b><span>터미널에서 <code>npx wrangler pages deploy landing --project-name memorylink --branch main</code>을 실행하고, 운영(Production)으로 올라갔는지 확인합니다.</span></li>
-      <li><b>main 보호와 토큰 정리</b><span>main에 push할 수 있으면 정리 작업을 바꿔 Firestore를 읽을 수 있습니다. main 브랜치 보호를 켜고, 로컬 설정 파일에 평문으로 남은 GitHub 토큰을 폐기합니다.</span></li>
-      <li><b>이메일 삭제 요청 대체 담당자 지정</b><span>운영 절차서(<code>docs/release/DATA_DELETION_RUNBOOK.md</code>) 3번에 이름을 적습니다.</span></li>
+      <li><b>PR #2 합침</b><span>main에 merge commit <code>a9c4662</code>로 합쳤습니다. main에서 수동 미리보기를 돌려 GitHub OIDC부터 서비스 계정까지 키 없는 인증이 통하는 것을 확인했습니다. 지울 대상은 0건이었고, 이후 매일 03:20 KST에 돕니다.</span></li>
+      <li><b>main 보호 켬</b><span>PR 필수, 승인 0, 관리자 포함, 강제 push와 삭제 금지입니다. 혼자 개발하는 저장소라 승인 수는 0으로 두어 자기 PR을 합칠 수 있게 했습니다. 로컬 설정 파일에 남은 GitHub 토큰 두 개는 이미 무효(HTTP 401)여서 폐기할 것이 없었습니다.</span></li>
+      <li><b>이메일 삭제 요청 담당 지정</b><span>메일함을 관리하는 저장소 소유자 본인입니다. 운영 절차서 3번에 적었습니다.</span></li>
+      <li class="gate"><b>남음: 소개 사이트 처리방침 배포</b><span>Cloudflare 로그인이 만료됐고 갱신 토큰도 거부돼서 사용자 브라우저 로그인이 필요합니다. 저장소 폴더에서 연 터미널에서 <code>npx wrangler login</code> 뒤 <code>npx wrangler pages deploy landing --project-name memorylink --branch main</code>을 실행하고, 운영(Production)으로 올라갔는지 확인합니다.</span></li>
       <li><b>법적 검토 거리</b><span>걸음 수·인지 점수를 건강 관련 정보로 보면, 보호자 공유를 시작할 때 별도 동의 화면이 필요할 수 있습니다. 지금은 사용자가 직접 동기화를 눌러 시작하고, 화면에 보낼 항목을 보여 줍니다.</span></li>
     </ol>
     <h3>1차: 보호자 링크 v2와 규칙 v2</h3>
