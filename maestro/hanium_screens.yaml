@@ -95,10 +95,10 @@ appId: com.teammemorylink.memorylink
     timeout: 2000
 - takeScreenshot: 07_reports
 
-# ── 09 임상 리포트 ─────────────────────────────────────────────
+# ── 09 활동 기록 리포트 ─────────────────────────────────────────────
 - scrollUntilVisible:
     element:
-      text: "임상 리포트 생성하기"
+      text: "활동 기록 리포트 생성하기"
     direction: DOWN
     timeout: 30000
 - waitForAnimationToEnd:
@@ -139,15 +139,15 @@ appId: com.teammemorylink.memorylink
 - takeScreenshot: 12_guardian_link
 - pressKey: back
 
-# ── 13 음성 진단 (상세 진입) ────────────────────────────────────
+# ── 13 말하기 기록 (상세 진입) ────────────────────────────────────
 - extendedWaitUntil:
     visible: "내 정보"
     timeout: 8000
 - scrollUntilVisible:
     element:
-      text: "음성 진단\n인지 건강 초기 진단 재실행"
+      text: ".*말하기 기록.*"
     direction: DOWN
-- tapOn: "음성 진단\n인지 건강 초기 진단 재실행"
+- tapOn: ".*말하기 기록.*"
 - waitForAnimationToEnd:
     timeout: 3000
 - takeScreenshot: 13_voice_assessment

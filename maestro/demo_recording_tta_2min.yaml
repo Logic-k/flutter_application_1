@@ -107,7 +107,7 @@ appId: com.teammemorylink.memorylink
 
 - scrollUntilVisible:
     element:
-      text: ".*임상 리포트 생성하기.*"
+      text: ".*활동 기록 리포트 생성하기.*"
     direction: DOWN
     centerElement: true
     timeout: 25000

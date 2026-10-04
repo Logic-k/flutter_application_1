@@ -1,6 +1,6 @@
 appId: com.teammemorylink.memorylink
 ---
-# 한이음 캡처 이어서: 13 음성 진단(차단 안내) · 14 고객센터 · 15 치매안심센터
+# 한이음 캡처 이어서: 13 말하기 기록(차단 안내) · 14 고객센터 · 15 치매안심센터
 # 전제: 이미 로그인된 상태 (hanium_screens.yaml 실행 직후)
 - launchApp
 - extendedWaitUntil:
@@ -14,13 +14,13 @@ appId: com.teammemorylink.memorylink
 - waitForAnimationToEnd:
     timeout: 1500
 
-# ── 13 음성 진단 (정확도 개선 중지 안내 화면) ───────────────────
+# ── 13 말하기 기록 (정확도 개선 중지 안내 화면) ───────────────────
 - scrollUntilVisible:
     element:
-      text: ".*음성 진단.*"
+      text: ".*말하기 기록.*"
     direction: DOWN
     timeout: 20000
-- tapOn: ".*음성 진단.*"
+- tapOn: ".*말하기 기록.*"
 - waitForAnimationToEnd:
     timeout: 3000
 - takeScreenshot: 13_voice_assessment
