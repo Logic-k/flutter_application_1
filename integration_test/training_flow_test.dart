@@ -56,20 +56,22 @@ void main() {
       await tester.tap(answer);
       await tester.pump();
     }
-    await tester.pumpAndSettle();
+    // 마지막 답 뒤에 기록을 DB에 저장한 다음 결과 시트를 연다. 저장을 기다리는 동안은 그릴 프레임이 없어
+    // pumpAndSettle이 시트보다 먼저 끝날 수 있다(느린 CI 에뮬레이터에서 실제로 실패했다).
+    final resultContinue = find.byKey(const Key('training-result-continue'));
+    await pumpUntil(tester, () => tappable(resultContinue), description: '결과 시트가 열린');
 
-    expect(find.byKey(const Key('training-result-continue')), findsOneWidget);
+    expect(resultContinue, findsOneWidget);
     expect(find.textContaining('XP'), findsWidgets);
-    await tester.tap(find.byKey(const Key('training-result-continue')));
-    await tester.pumpAndSettle();
+    await tester.tap(resultContinue);
+
+    final multiplicationOpen = find.descendant(
+      of: multiplicationNode,
+      matching: find.text('도전 가능'),
+    );
+    await pumpUntil(tester, () => multiplicationOpen.evaluate().isNotEmpty, description: '구구단 과정이 열린');
 
     expect(find.text('두뇌 트레이닝 센터'), findsOneWidget);
-    expect(
-      find.descendant(
-        of: multiplicationNode,
-        matching: find.text('도전 가능'),
-      ),
-      findsOneWidget,
-    );
+    expect(multiplicationOpen, findsOneWidget);
   });
 }
