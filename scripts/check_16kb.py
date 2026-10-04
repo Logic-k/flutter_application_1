@@ -44,7 +44,7 @@ def load_alignments(data: bytes):
 def main(path: str) -> int:
     failures = 0
     checked = 0
-    with zipfile.ZipFile(path) as archive:
+    with zipfile.ZipFile(path) as archive, open(path, 'rb') as raw:
         for info in archive.infolist():
             if not info.filename.endswith('.so'):
                 continue
@@ -55,8 +55,11 @@ def main(path: str) -> int:
             # APK에 압축 없이 담긴 .so는 zip 안의 위치도 16KB 정렬이어야 한다(AAB는 Play가 다시 묶는다).
             note = ''
             if path.endswith('.apk') and info.compress_type == zipfile.ZIP_STORED:
-                header_len = 30 + len(info.filename.encode()) + len(info.extra)
-                data_offset = info.header_offset + header_len
+                # 데이터 시작은 로컬 헤더의 이름·extra 길이로 구한다. zipalign은 로컬 헤더 extra를
+                # 채워 정렬하므로 중앙 디렉터리의 info.extra 길이와 다르다.
+                raw.seek(info.header_offset)
+                name_len, extra_len = struct.unpack_from('<HH', raw.read(30), 26)
+                data_offset = info.header_offset + 30 + name_len + extra_len
                 if data_offset % PAGE_16K:
                     ok = False
                     note = f' (zip 위치 {data_offset}가 16KB 정렬 아님)'
