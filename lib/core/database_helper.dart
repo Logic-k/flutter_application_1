@@ -58,7 +58,7 @@ class DatabaseHelper {
     final bool isTest = pathOverride != null;
     return await openDatabase(
       path,
-      version: 9,
+      version: 10,
       onConfigure: (db) => db.execute('PRAGMA foreign_keys = ON'),
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
@@ -172,16 +172,19 @@ class DatabaseHelper {
     // admin·데모 계정은 개발/데모 빌드에서만 시드한다 (릴리스 빌드 제외)
     if (!kReleaseMode) {
       // admin 계정 (자동화 테스트용)
-      await db.insert('users', _withHashedPassword({
-        'username': 'admin',
-        'name': '관리자',
-        'password': 'admin',
-        'goal': 'prevention',
-        'age': 65,
-        'weight': 70.0,
-        'has_completed_onboarding': 1,
-        'pedometer_enabled': 1,
-      }));
+      await db.insert(
+        'users',
+        _withHashedPassword({
+          'username': 'admin',
+          'name': '관리자',
+          'password': 'admin',
+          'goal': 'prevention',
+          'age': 65,
+          'weight': 70.0,
+          'has_completed_onboarding': 1,
+          'pedometer_enabled': 1,
+        }),
+      );
 
       // 데모 계정 시드
       await _seedDemoAccounts(db);
@@ -197,19 +200,22 @@ class DatabaseHelper {
     final now = DateTime.now();
 
     // ── 계정 1: 김민준 (건강한 사람 — 치매 예방 우수) ──────────────────
-    final int minjunId = await db.insert('users', _withHashedPassword({
-      'username': 'kim_minjun',
-      'name': '김민준',
-      'password': 'demo1234',
-      'goal': 'prevention',
-      'age': 68,
-      'weight': 63.0,
-      'blood_type': 'A',
-      'medications': '없음',
-      'emergency_contact': '010-1234-5678',
-      'has_completed_onboarding': 1,
-      'pedometer_enabled': 1,
-    }));
+    final int minjunId = await db.insert(
+      'users',
+      _withHashedPassword({
+        'username': 'kim_minjun',
+        'name': '김민준',
+        'password': 'demo1234',
+        'goal': 'prevention',
+        'age': 68,
+        'weight': 63.0,
+        'blood_type': 'A',
+        'medications': '없음',
+        'emergency_contact': '010-1234-5678',
+        'has_completed_onboarding': 1,
+        'pedometer_enabled': 1,
+      }),
+    );
 
     // 30일치 훈련 점수 (index 0 = 29일 전, index 29 = 오늘)
     // memory: 0-100 스케일 그대로 삽입
@@ -259,14 +265,33 @@ class DatabaseHelper {
       9000, 8800, 8600, 9400, 8900, 7800, 7100, // week 2
       9200, 8700, 9000, 9500, 9100, 7900, 6900, // week 3
       9300, 8900, 9100, 9800, 9400, 7700, 7300, // week 4
-      8800, 9100,                                // +2일
+      8800, 9100, // +2일
     ];
     await _insertDailySteps(db, minjunId, minjunSteps, now);
 
     // 20일치 일기 (30일 중 10일 건너뜀 — 자연스러운 공백 포함)
     // 일기 있는 날 인덱스: 0,1,2,4,5,7,8,9,11,12,14,15,16,18,19,21,22,24,25,27
     const minjunDiaryDays = [
-      0, 1, 2, 4, 5, 7, 8, 9, 11, 12, 14, 15, 16, 18, 19, 21, 22, 24, 25, 27
+      0,
+      1,
+      2,
+      4,
+      5,
+      7,
+      8,
+      9,
+      11,
+      12,
+      14,
+      15,
+      16,
+      18,
+      19,
+      21,
+      22,
+      24,
+      25,
+      27,
     ];
     const minjunDiaries = [
       '오늘 아침 일찍 일어나 공원에서 30분 걸었다. 바람이 시원하고 기분이 좋았다. 훈련 게임도 한 판 했는데 그림 스도쿠가 생각보다 재미있다.',
@@ -307,8 +332,10 @@ class DatabaseHelper {
     // 25일치 활성 사용자 기록 (30일 중 5일 빠짐)
     for (int i = 0; i < 30; i++) {
       if (i == 3 || i == 6 || i == 10 || i == 20 || i == 23) continue;
-      final dateStr =
-          now.subtract(Duration(days: 29 - i)).toIso8601String().split('T')[0];
+      final dateStr = now
+          .subtract(Duration(days: 29 - i))
+          .toIso8601String()
+          .split('T')[0];
       await db.insert('daily_active_users', {
         'user_id': minjunId,
         'date': dateStr,
@@ -316,19 +343,22 @@ class DatabaseHelper {
     }
 
     // ── 계정 2: 박순자 (위험한 사람 — 치매 위험 경고) ─────────────────
-    final int sonjaId = await db.insert('users', _withHashedPassword({
-      'username': 'park_sonja',
-      'name': '박순자',
-      'password': 'demo1234',
-      'goal': 'concern',
-      'age': 76,
-      'weight': 56.0,
-      'blood_type': 'B',
-      'medications': '혈압약, 수면제',
-      'emergency_contact': '010-9876-5432',
-      'has_completed_onboarding': 1,
-      'pedometer_enabled': 1,
-    }));
+    final int sonjaId = await db.insert(
+      'users',
+      _withHashedPassword({
+        'username': 'park_sonja',
+        'name': '박순자',
+        'password': 'demo1234',
+        'goal': 'concern',
+        'age': 76,
+        'weight': 56.0,
+        'blood_type': 'B',
+        'medications': '혈압약, 수면제',
+        'emergency_contact': '010-9876-5432',
+        'has_completed_onboarding': 1,
+        'pedometer_enabled': 1,
+      }),
+    );
 
     // 30일치 훈련 점수 — 전반적으로 낮음
     // memory: 0-100 스케일 (20~35점)
@@ -369,16 +399,46 @@ class DatabaseHelper {
 
     // 30일치 걷기 — 매우 적음 (600~1500보)
     const sonjaSteps = [
-       950,  600, 1100,  800, 1500,  900, 1200,
-       700, 1100,  850, 1300,  950, 1400,  650,
-      1000,  750, 1200,  900, 1350,  800, 1100,
-       600,  950,  700, 1250,  850, 1400,  750,
-      1050,  900,
+      950,
+      600,
+      1100,
+      800,
+      1500,
+      900,
+      1200,
+      700,
+      1100,
+      850,
+      1300,
+      950,
+      1400,
+      650,
+      1000,
+      750,
+      1200,
+      900,
+      1350,
+      800,
+      1100,
+      600,
+      950,
+      700,
+      1250,
+      850,
+      1400,
+      750,
+      1050,
+      900,
     ];
     await _insertDailySteps(db, sonjaId, sonjaSteps, now);
   }
 
-  static const _scoreCategories = ['memory', 'calculation', 'logic', 'attention'];
+  static const _scoreCategories = [
+    'memory',
+    'calculation',
+    'logic',
+    'attention',
+  ];
 
   // 하루 1회씩 [memory, calculation, logic, attention] 점수를 삽입
   // (index 0 = 가장 오래된 날, 마지막 index = 오늘)
@@ -412,7 +472,11 @@ class DatabaseHelper {
   }
 
   Future<void> _insertDailySteps(
-      Database db, int userId, List<int> stepsPerDay, DateTime now) async {
+    Database db,
+    int userId,
+    List<int> stepsPerDay,
+    DateTime now,
+  ) async {
     final batch = db.batch();
     for (int i = 0; i < stepsPerDay.length; i++) {
       final dateStr = now
@@ -464,6 +528,14 @@ class DatabaseHelper {
         xp_earned INTEGER NOT NULL CHECK(xp_earned >= 0),
         completed_at TEXT NOT NULL,
         local_date TEXT NOT NULL,
+        completion_status TEXT NOT NULL DEFAULT 'completed'
+          CHECK(completion_status IN ('completed', 'stopped', 'technical_issue')),
+        assistance_level TEXT NULL
+          CHECK(assistance_level IS NULL OR assistance_level IN ('independent', 'verbal_prompt', 'hands_on_help')),
+        session_context TEXT NULL
+          CHECK(session_context IS NULL OR session_context IN ('self_practice', 'home_practice', 'center_practice')),
+        content_version TEXT NULL,
+        response_code TEXT NULL,
         FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
       )
     ''',
@@ -573,8 +645,10 @@ class DatabaseHelper {
     if (oldVersion < 2) {
       await db.execute('ALTER TABLE users ADD COLUMN age INTEGER');
       await db.execute('ALTER TABLE users ADD COLUMN weight REAL');
-      await db.execute('ALTER TABLE users ADD COLUMN pedometer_enabled INTEGER DEFAULT 0');
-      
+      await db.execute(
+        'ALTER TABLE users ADD COLUMN pedometer_enabled INTEGER DEFAULT 0',
+      );
+
       await db.execute('''
         CREATE TABLE daily_steps (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -663,6 +737,35 @@ class DatabaseHelper {
         legacyTrainingActivityIds,
         source: 'v9_migration',
       );
+    }
+    if (oldVersion < 10) {
+      final columns = await db.rawQuery('PRAGMA table_info(training_attempts)');
+      final names = columns.map((row) => row['name']).toSet();
+      if (!names.contains('completion_status')) {
+        await db.execute(
+          "ALTER TABLE training_attempts ADD COLUMN completion_status TEXT NOT NULL DEFAULT 'completed'",
+        );
+      }
+      if (!names.contains('assistance_level')) {
+        await db.execute(
+          'ALTER TABLE training_attempts ADD COLUMN assistance_level TEXT NULL',
+        );
+      }
+      if (!names.contains('session_context')) {
+        await db.execute(
+          'ALTER TABLE training_attempts ADD COLUMN session_context TEXT NULL',
+        );
+      }
+      if (!names.contains('content_version')) {
+        await db.execute(
+          'ALTER TABLE training_attempts ADD COLUMN content_version TEXT NULL',
+        );
+      }
+      if (!names.contains('response_code')) {
+        await db.execute(
+          'ALTER TABLE training_attempts ADD COLUMN response_code TEXT NULL',
+        );
+      }
     }
   }
 
@@ -779,7 +882,9 @@ class DatabaseHelper {
 
   /// 최근 N일 기록을 날짜 오름차순으로 반환 (추세 차트용)
   Future<List<Map<String, dynamic>>> getRecentHealthLogs(
-      int userId, int days) async {
+    int userId,
+    int days,
+  ) async {
     final db = await database;
     final since = DateTime.now()
         .subtract(Duration(days: days - 1))
@@ -816,7 +921,10 @@ class DatabaseHelper {
 
   /// username으로 조회 후 salt+SHA-256 해시를 검증한다.
   /// 구버전(평문) 행은 검증 성공 시 즉시 해시로 업그레이드한다.
-  Future<Map<String, dynamic>?> getUser(String username, String password) async {
+  Future<Map<String, dynamic>?> getUser(
+    String username,
+    String password,
+  ) async {
     Database db = await database;
     final results = await db.query(
       'users',
@@ -864,7 +972,9 @@ class DatabaseHelper {
 
   /// 자동 로그인용: username + 세션 토큰으로 사용자 조회
   Future<Map<String, dynamic>?> getUserBySessionToken(
-      String username, String token) async {
+    String username,
+    String token,
+  ) async {
     if (token.isEmpty) return null;
     Database db = await database;
     final results = await db.query(
@@ -910,7 +1020,12 @@ class DatabaseHelper {
   // ... (기존 insertScore, getLatestScores 유지)
 
   // --- Pedometer Operations ---
-  Future<void> updateDailySteps(int userId, int steps, double calories, double distance) async {
+  Future<void> updateDailySteps(
+    int userId,
+    int steps,
+    double calories,
+    double distance,
+  ) async {
     Database db = await database;
     String date = DateTime.now().toIso8601String().split('T')[0];
 
@@ -923,11 +1038,7 @@ class DatabaseHelper {
     if (existing.isNotEmpty) {
       await db.update(
         'daily_steps',
-        {
-          'steps': steps,
-          'calories': calories,
-          'distance': distance,
-        },
+        {'steps': steps, 'calories': calories, 'distance': distance},
         where: 'id = ?',
         whereArgs: [existing.first['id']],
       );
@@ -965,6 +1076,7 @@ class DatabaseHelper {
     );
     return rows.isNotEmpty ? rows.first : null;
   }
+
   Future<int> insertScore(int userId, String category, double score) async {
     Database db = await database;
     return await db.insert('training_scores', {
@@ -977,25 +1089,31 @@ class DatabaseHelper {
 
   Future<List<Map<String, dynamic>>> getLatestScores(int userId) async {
     Database db = await database;
-    return await db.rawQuery('''
+    return await db.rawQuery(
+      '''
       SELECT category, score
       FROM training_scores
       WHERE user_id = ?
       AND id IN (
         SELECT MAX(id) FROM training_scores WHERE user_id = ? GROUP BY category
       )
-    ''', [userId, userId]);
+    ''',
+      [userId, userId],
+    );
   }
 
   /// 오늘 훈련을 수행한 인지 영역(카테고리) 수. 홈 화면 "훈련 현황"용.
   Future<int> getTodayTrainingCount(int userId) async {
     final db = await database;
     final today = DateTime.now().toIso8601String().split('T')[0];
-    final res = await db.rawQuery('''
+    final res = await db.rawQuery(
+      '''
       SELECT COUNT(DISTINCT category) as cnt
       FROM training_scores
       WHERE user_id = ? AND date(created_at) = ?
-    ''', [userId, today]);
+    ''',
+      [userId, today],
+    );
     return Sqflite.firstIntValue(res) ?? 0;
   }
 
@@ -1060,7 +1178,8 @@ class DatabaseHelper {
     );
     return {
       for (final row in res)
-        row['category'] as String: (row['avg_score'] as num?)?.toDouble() ?? 0.0,
+        row['category'] as String:
+            (row['avg_score'] as num?)?.toDouble() ?? 0.0,
     };
   }
 
@@ -1076,7 +1195,8 @@ class DatabaseHelper {
         .toIso8601String()
         .split('T')[0];
 
-    final res = await db.rawQuery('''
+    final res = await db.rawQuery(
+      '''
       SELECT u.id as user_id, u.username, curr.category,
              curr.avg_score as current_avg, prev.avg_score as prev_avg,
              ROUND((curr.avg_score - prev.avg_score) * 100.0 /
@@ -1096,7 +1216,9 @@ class DatabaseHelper {
       ) prev ON prev.user_id = u.id AND prev.category = curr.category
       WHERE (curr.avg_score - prev.avg_score) * 100.0 / NULLIF(prev.avg_score, 0) < -20
       ORDER BY delta_pct ASC
-    ''', [weekStart, prevWeekStart, weekStart]);
+    ''',
+      [weekStart, prevWeekStart, weekStart],
+    );
 
     return List<Map<String, dynamic>>.from(res);
   }
@@ -1110,13 +1232,16 @@ class DatabaseHelper {
   Future<void> upsertDiary(int userId, String date, String content) async {
     final db = await database;
     final now = DateTime.now().toIso8601String();
-    await db.rawInsert('''
+    await db.rawInsert(
+      '''
       INSERT INTO diary_entries (user_id, date, content, created_at, updated_at)
       VALUES (?, ?, ?, ?, ?)
       ON CONFLICT(user_id, date) DO UPDATE SET
         content = excluded.content,
         updated_at = excluded.updated_at
-    ''', [userId, date, content, now, now]);
+    ''',
+      [userId, date, content, now, now],
+    );
   }
 
   Future<Map<String, dynamic>?> getDiary(int userId, String date) async {
@@ -1130,7 +1255,10 @@ class DatabaseHelper {
     return rows.isNotEmpty ? rows.first : null;
   }
 
-  Future<List<String>> getDiaryDatesForMonth(int userId, String yearMonth) async {
+  Future<List<String>> getDiaryDatesForMonth(
+    int userId,
+    String yearMonth,
+  ) async {
     final db = await database;
     final rows = await db.rawQuery(
       "SELECT date FROM diary_entries WHERE user_id = ? AND date LIKE ? ORDER BY date ASC",
@@ -1165,16 +1293,19 @@ class DatabaseHelper {
 
   /// 날짜별로 묶인 세션 히스토리 반환 (임상 리포트 추이 차트용)
   /// 반환 형식: [{dateString: {category: avgScore}}, ...]  (오름차순, 최대 8세션)
-  Future<List<Map<String, Map<String, double>>>> getScoreHistoryGroupedBySession(
-      int userId) async {
+  Future<List<Map<String, Map<String, double>>>>
+  getScoreHistoryGroupedBySession(int userId) async {
     final db = await database;
-    final rows = await db.rawQuery('''
+    final rows = await db.rawQuery(
+      '''
       SELECT date(created_at) AS session_date, category, AVG(score) AS avg_score
       FROM training_scores
       WHERE user_id = ?
       GROUP BY session_date, category
       ORDER BY session_date ASC
-    ''', [userId]);
+    ''',
+      [userId],
+    );
 
     // group by session_date
     final Map<String, Map<String, double>> grouped = {};

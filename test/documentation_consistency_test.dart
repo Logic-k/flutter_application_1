@@ -59,9 +59,11 @@ void main() {
 
   test('문서는 게임화 저장 경계와 Android 검증 기준을 정확히 기록한다', () {
     for (final document in [projectDocs, progress, releaseChecklist]) {
-      expect(document, contains('SQLite v9'));
+      expect(document, contains('SQLite v10'));
       expect(document, contains('게임화 API 연동은 이번 범위에서 보류'));
       expect(document, contains('Firestore 동기화'));
+      expect(document, contains('완료 상태'));
+      expect(document, contains('선택 코드'));
     }
     for (final document in [projectDocs, progress]) {
       expect(document, contains('Flutter 3.41.5'));
@@ -78,10 +80,12 @@ void main() {
       root,
       'lib/features/training/data/sqlite_training_progress_repository.dart',
     );
-    expect(databaseHelper, contains('version: 9'));
+    expect(databaseHelper, contains('version: 10'));
+    expect(databaseHelper, contains('content_version'));
+    expect(databaseHelper, contains('response_code'));
     expect(
       RegExp(r'^  TrainingActivity\(', multiLine: true).allMatches(catalog),
-      hasLength(8),
+      hasLength(9),
     );
     expect(repository, isNot(contains("package:http")));
     expect(repository, isNot(contains('cloud_firestore')));

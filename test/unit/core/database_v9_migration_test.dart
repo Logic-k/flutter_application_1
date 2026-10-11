@@ -16,6 +16,7 @@ const _allActivityIds = <String>[
   'shape_match',
   'sentence_reading',
   'daily_recall',
+  'topic_choice',
 ];
 
 const _initialActivityIds = <String>[
@@ -24,6 +25,7 @@ const _initialActivityIds = <String>[
   'shape_sudoku',
   'shape_match',
   'daily_recall',
+  'topic_choice',
 ];
 
 void main() {
@@ -46,7 +48,7 @@ void main() {
     }
   });
 
-  test('fresh v9 database creates training schema and indexes', () async {
+  test('fresh v10 database creates training schema and indexes', () async {
     // Given
     final path = p.join(tempDirectory.path, 'fresh.db');
     DatabaseHelper.pathOverride = path;
@@ -81,6 +83,19 @@ void main() {
     expect(
       (await db.rawQuery('PRAGMA foreign_keys')).single['foreign_keys'],
       1,
+    );
+    final attemptColumns = await db.rawQuery(
+      'PRAGMA table_info(training_attempts)',
+    );
+    expect(
+      attemptColumns.map((row) => row['name']),
+      containsAll(<String>[
+        'completion_status',
+        'assistance_level',
+        'session_context',
+        'content_version',
+        'response_code',
+      ]),
     );
   });
 
@@ -128,7 +143,7 @@ void main() {
       // Then
       expect(
         (await db.rawQuery('PRAGMA user_version')).single['user_version'],
-        9,
+        10,
       );
       expect(
         (await db.query(
@@ -154,6 +169,117 @@ void main() {
         unlocks.map((row) => row['activity_id']).toSet(),
         _allActivityIds.toSet(),
       );
+    },
+  );
+
+  test(
+    'file-backed v9 upgrade preserves attempts and adds pilot metadata columns',
+    () async {
+      // Given
+      final path = p.join(tempDirectory.path, 'upgrade-v9-v10.db');
+      final oldDb = await databaseFactory.openDatabase(
+        path,
+        options: OpenDatabaseOptions(
+          version: 9,
+          onCreate: (db, version) async {
+            await db.execute('''
+            CREATE TABLE users (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              username TEXT UNIQUE
+            )
+          ''');
+            await db.execute('''
+            CREATE TABLE training_attempts (
+              id TEXT PRIMARY KEY,
+              user_id INTEGER NOT NULL,
+              activity_id TEXT NOT NULL,
+              score REAL NULL CHECK(score BETWEEN 0 AND 100),
+              correct_answers INTEGER NULL,
+              total_questions INTEGER NULL,
+              duration_ms INTEGER NULL CHECK(duration_ms >= 0),
+              xp_earned INTEGER NOT NULL CHECK(xp_earned >= 0),
+              completed_at TEXT NOT NULL,
+              local_date TEXT NOT NULL,
+              FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+            )
+          ''');
+            await db.execute('''
+            CREATE TABLE training_user_progress (
+              user_id INTEGER PRIMARY KEY,
+              total_xp INTEGER NOT NULL DEFAULT 0,
+              current_streak INTEGER NOT NULL DEFAULT 0,
+              longest_streak INTEGER NOT NULL DEFAULT 0,
+              last_training_date TEXT NULL,
+              updated_at TEXT NOT NULL
+            )
+          ''');
+            await db.execute('''
+            CREATE TABLE training_activity_progress (
+              user_id INTEGER NOT NULL,
+              activity_id TEXT NOT NULL,
+              best_score REAL NULL,
+              mastery_stars INTEGER NOT NULL DEFAULT 0,
+              completion_count INTEGER NOT NULL DEFAULT 0,
+              first_completed_at TEXT NULL,
+              last_completed_at TEXT NULL,
+              PRIMARY KEY (user_id, activity_id)
+            )
+          ''');
+            await db.execute('''
+            CREATE TABLE training_unlocks (
+              user_id INTEGER NOT NULL,
+              activity_id TEXT NOT NULL,
+              unlocked_at TEXT NOT NULL,
+              source TEXT NOT NULL,
+              PRIMARY KEY (user_id, activity_id)
+            )
+          ''');
+            await db.execute('''
+            CREATE TABLE training_scores (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              user_id INTEGER,
+              category TEXT,
+              score REAL,
+              created_at TEXT
+            )
+          ''');
+            await db.insert('users', {'id': 7, 'username': 'v9-user'});
+            await db.insert('training_attempts', {
+              'id': 'existing-attempt',
+              'user_id': 7,
+              'activity_id': 'daily_recall',
+              'score': null,
+              'correct_answers': null,
+              'total_questions': null,
+              'duration_ms': 12000,
+              'xp_earned': 40,
+              'completed_at': '2026-07-23T00:00:00.000Z',
+              'local_date': '2026-07-23',
+            });
+          },
+        ),
+      );
+      await oldDb.close();
+      DatabaseHelper.pathOverride = path;
+
+      // When
+      final db = await DatabaseHelper().database;
+
+      // Then
+      expect(
+        (await db.rawQuery('PRAGMA user_version')).single['user_version'],
+        10,
+      );
+      final attempt = (await db.query(
+        'training_attempts',
+        where: 'id = ?',
+        whereArgs: ['existing-attempt'],
+      )).single;
+      expect(attempt['completion_status'], 'completed');
+      expect(attempt['assistance_level'], isNull);
+      expect(attempt['session_context'], isNull);
+      expect(attempt['content_version'], isNull);
+      expect(attempt['response_code'], isNull);
     },
   );
 

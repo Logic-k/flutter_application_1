@@ -38,7 +38,11 @@ class TrainingHubScreen extends StatelessWidget {
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.fromLTRB(
-              20, 8, 20, FloatingPillNav.contentBottomInset),
+            20,
+            8,
+            20,
+            FloatingPillNav.contentBottomInset,
+          ),
           // 레벨 → 오늘 목표 → 코스 순으로 들어온다(08 계획 G-04, 탭을 처음 열 때 1회).
           child: StaggeredColumn(
             playKey: 'training_hub',
@@ -145,7 +149,10 @@ class _AreaHeading extends StatelessWidget {
         Icon(Icons.route_rounded, color: context.scheme.primary),
         const SizedBox(width: 8),
         Expanded(
-          child: Text('$area 과정', style: Theme.of(context).textTheme.titleLarge),
+          child: Text(
+            '$area 과정',
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
         ),
       ],
     ),
@@ -179,7 +186,8 @@ class _LoadError extends StatelessWidget {
   );
 }
 
-final Map<String, List<TrainingActivity>> _activitiesByArea = _groupActivities();
+final Map<String, List<TrainingActivity>> _activitiesByArea =
+    _groupActivities();
 
 Map<String, List<TrainingActivity>> _groupActivities() {
   final grouped = <String, List<TrainingActivity>>{};
@@ -201,5 +209,6 @@ String _descriptionFor(String activityId) => switch (activityId) {
   'shape_match' => '같은 모양을 빠르게 찾아요.',
   'sentence_reading' => '문장을 소리 내어 또박또박 읽어요.',
   'daily_recall' => '오늘의 기억을 편안하게 떠올려요.',
+  'topic_choice' => '좋아하는 주제를 고르고 짧게 이야기해요.',
   _ => '',
 };

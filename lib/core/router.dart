@@ -24,6 +24,7 @@ import '../features/diary/diary_book_screen.dart';
 import '../features/profile/guardian_link_screen.dart';
 import '../features/gait_analysis/walking_dashboard_screen.dart';
 import '../features/training/daily_recall_page.dart';
+import '../features/training/topic_choice_page.dart';
 import '../features/cs/cs_center_screen.dart';
 import '../features/cs/notice_list_screen.dart';
 import '../features/cs/notice_detail_screen.dart';
@@ -77,7 +78,8 @@ GoRouter createAppRouter(
         // 이 경로가 빠지면 안내 버튼이 /consent로 되돌아가 버린다.
         '/dementia_centers',
       };
-      final needsOnboarding = isLoggedIn && !userProvider.hasCompletedOnboarding;
+      final needsOnboarding =
+          isLoggedIn && !userProvider.hasCompletedOnboarding;
 
       // 포털이 꺼진 빌드에서는 /admin* 전체를 홈으로 되돌린다.
       // UI에서 진입점을 숨기는 것만으로는 딥링크·`adb shell am start`를 못 막는다.
@@ -204,6 +206,10 @@ GoRouter createAppRouter(
       GoRoute(
         path: trainingActivityById('daily_recall').route,
         builder: (context, state) => const DailyRecallPage(),
+      ),
+      GoRoute(
+        path: trainingActivityById('topic_choice').route,
+        builder: (context, state) => const TopicChoicePage(),
       ),
       GoRoute(
         path: '/profile',

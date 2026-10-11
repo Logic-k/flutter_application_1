@@ -1,0 +1,140 @@
+{
+  "cycle": 6,
+  "title": "MemoryLink 맞춤 Calm Expressive Lavender 청사진",
+  "confidence": "strong",
+  "completed_questions": ["Q7"],
+  "design_direction": {
+    "name": "Calm Expressive Lavender",
+    "one_line": "조용한 돌봄과 보이는 기록을 유지하면서, 핵심 행동만 크기·색·컨테인먼트·짧은 모션으로 분명하게 만드는 고령 친화적 M3 Expressive 해석",
+    "principles": [
+      "Expressive는 장식량이 아니라 핵심 행동의 발견 속도와 상태 이해를 높이는 데 쓴다.",
+      "라벤더 #6C5CE7은 브랜드 강조색으로 유지하되 큰 면의 반복은 줄이고 한 화면의 dominant accent는 하나만 둔다.",
+      "예측 가능한 리스트·카드·하단 내비게이션 패턴과 텍스트 라벨을 보존한다.",
+      "모션은 meaningful feedback와 spatial continuity 두 목적이 없으면 넣지 않는다.",
+      "접근성은 미적 선호보다 우선하고 full/fadeOnly/none에서 정보 손실이 없어야 한다."
+    ]
+  },
+  "visual_system": {
+    "color": [
+      "기존 primary/semantic/category 토큰은 유지한다.",
+      "라벤더 그라디언트 hero는 화면당 최대 1개로 제한하고, 나머지는 흰 surface + 6~12% category tint를 쓴다.",
+      "category 색은 분류 보조 기호이며 한 화면에 동시 3개 이하, 반드시 아이콘/텍스트 라벨과 함께 쓴다.",
+      "dark mode는 DESIGN.md의 사용자 결정대로 고대비 라이트가 끝난 뒤 별도 사이클로 둔다."
+    ],
+    "typography": [
+      "Pretendard 400/500/600/700/800과 현재 TextTheme를 유지한다.",
+      "핵심 행동·건강 상태·측정값은 16sp 이상, 보조 라벨만 12~13sp를 허용한다.",
+      "데이터 숫자에는 tabular figures를 적용하고 1.0/1.3/1.6/2.0 text scale에서 재배치한다."
+    ],
+    "shape_and_depth": [
+      "현재 9단 radius token은 유지하되 모든 카드에 rCard=26을 반복하지 않는다. 작은 데이터 패널은 rPanel=20, 타일은 rTile=16, hero/sheet만 rCard/rSheet를 사용하도록 variant를 만든다.",
+      "그림자는 기능적 계층에만 사용한다. 일반 카드에는 경계선과 아주 약한 그림자, hero/floating nav에만 브랜드 톤 그림자를 허용한다.",
+      "아이콘은 Material 계열로 통일하고 icon-only action에는 tooltip과 semantics label을 제공한다."
+    ]
+  },
+  "screen_diagnosis": [
+    {
+      "screen": "Home",
+      "keep": "명확한 인사 hero, AI/일기/걸음/훈련으로 이어지는 구조, 큰 터치 영역",
+      "improve": "라벤더 큰 면 중복을 줄이고 오늘의 최우선 행동 하나를 가장 크게, 나머지는 surface 카드로 낮춘다. Provider 구독을 섹션별로 분리한다."
+    },
+    {
+      "screen": "AI chat",
+      "keep": "상단 진행률과 하단 입력의 단순 구조",
+      "improve": "초기 한 문장만 있을 때 큰 공백이 생기므로 2~3개의 큰 추천 답변/회상 주제 칩과 음성 사용 안내를 empty state로 제공한다. 메시지 추가는 150~200ms fade+size만 사용한다."
+    },
+    {
+      "screen": "Memory Garden",
+      "keep": "달력과 큰 입력 영역, 음성 입력",
+      "improve": "정원이라는 이름과 시각 경험이 연결되지 않는다. 저장 성공 때만 1회성 잎/꽃 성장 micro-motion을 주고, 평상시 반복 애니메이션은 금지한다."
+    },
+    {
+      "screen": "Training",
+      "keep": "큰 숫자 선택지, 높은 대비, 현재 GameTemplate의 피드백/파티클/결과 시트",
+      "improve": "카테고리 사이 과한 빈 공간을 줄이고 오늘 할 3개를 우선 노출한다. 시간 제한은 조정/해제 또는 충분한 연장 대안을 제공한다."
+    },
+    {
+      "screen": "Walking/Reports",
+      "keep": "큰 metric, 색+텍스트 상태, 차트 등장 모션",
+      "improve": "긴 세로 카드 스택을 요약→근거→행동 순으로 재구성한다. 차트 데이터 개수와 요일 라벨을 일치시키고 nav가 마지막 내용을 가리지 않는지 현재 코드로 재캡처해 검증한다."
+    },
+    {
+      "screen": "Profile/Settings",
+      "keep": "익숙한 그룹형 리스트와 명확한 값",
+      "improve": "카드가 너무 많아지지 않도록 섹션 containment를 단순화하고 설정 변경 결과를 즉시 텍스트로 확인시킨다."
+    }
+  ],
+  "motion_map": [
+    {"moment": "press", "implementation": "PressableScale", "duration": "100ms", "rule": "모든 실제 탭 요소, full은 0.98 scale, fadeOnly는 opacity, none은 즉시"},
+    {"moment": "screen entry", "implementation": "StaggeredColumn/StaggerScope", "duration": "200ms + 60ms stagger, total <=400ms", "rule": "의미 묶음 최대 4개, 앱 실행당 첫 노출 1회"},
+    {"moment": "state/color", "implementation": "AnimatedContainer/AnimatedSwitcher", "duration": "150ms", "rule": "선택, 로딩→내용, 성공/오류 상태"},
+    {"moment": "metric change", "implementation": "MLCountUp/MLProgressBar/MLRing/MLChart", "duration": "200ms", "rule": "이전 값에서 새 값으로만, null과 0 구분, 데이터 과장 spring 금지"},
+    {"moment": "navigation", "implementation": "platform default + selective Hero", "duration": "default/300ms token", "rule": "예측형 뒤로가기를 보존하고 training card→game identity처럼 명확한 shared element에만 Hero"},
+    {"moment": "achievement", "implementation": "BurstParticles/result confetti", "duration": "600ms to 2.5s", "rule": "사용자 행동 뒤 1회, 반복 없음, reduce motion에서 제거"},
+    {"moment": "chat/diary", "implementation": "AnimatedSize+fade or optional focal Rive", "duration": "150~200ms / one-shot", "rule": "메시지 삽입·저장 완료의 인과만 표현"}
+  ],
+  "dependency_decision": {
+    "flutter_animate": "도입하지 않음. 기존 토큰 가드와 native implicit/explicit 시스템이 이미 동일 목적을 충족한다.",
+    "lottie": "현재 의존성 없음. 반복 장식이나 외부 JSON 자산 증가를 위해 추가하지 않는다. README 배지는 수정 대상이다.",
+    "rive": "전역 도입하지 않음. Memory Garden 저장 성공 또는 온보딩의 하나의 상태 기반 focal animation이 실제 사용자 테스트에서 가치를 보일 때만 정확한 버전을 고정해 검토한다.",
+    "animations_package": "페이지 전환 전체 교체는 하지 않는다. predictive back 보존이 우선이다."
+  },
+  "architecture_blueprint": {
+    "incremental_structure": [
+      "lib/core/design_system/foundations: color, type, spacing, radius, elevation token",
+      "lib/core/design_system/components: card variants, status, metric, empty/error/loading, navigation",
+      "lib/core/motion: 현재 시스템 유지",
+      "lib/features/<feature>/presentation: screen, section widgets, view model",
+      "lib/features/<feature>/data: repositories/services",
+      "lib/features/<feature>/domain: immutable models and policies where complexity exists"
+    ],
+    "rules": [
+      "기능별 폴더와 Provider/go_router를 유지하고 상태관리 전면 교체는 하지 않는다.",
+      "View는 포맷된 UI state와 command만 받고 DB/API/임계 계산을 직접 하지 않는다.",
+      "context.select/Selector로 섹션이 필요한 scalar/record만 구독한다.",
+      "LayoutBuilder 기반 compact/medium/expanded shell을 추가하고 expanded에서는 NavigationRail 또는 제한 폭 2-column을 검토한다.",
+      "모든 커스텀 컴포넌트는 normal/loading/empty/error/disabled와 MotionLevel 3단을 함께 설계한다."
+    ]
+  },
+  "roadmap": {
+    "P0_1_to_2_weeks": [
+      "현재 코드로 14개 대표 화면을 다시 캡처해 오래된 7월 PNG를 교체한다.",
+      "AI chat empty state, reports chart label, 마지막 콘텐츠/nav inset, 320dp·text scale 2.0 overflow를 수정/검증한다.",
+      "색·크기·모션으로 상태를 전달하는 모든 지점에 텍스트/semantics를 확인한다.",
+      "훈련의 시간 제한 조정/해제 정책을 제품 규칙으로 확정한다."
+    ],
+    "P1_2_to_4_weeks": [
+      "MLCard를 hero/standard/data/interactive variant로 분리해 라벤더 면과 26px 카드 반복을 줄인다.",
+      "home을 섹션 widget + Selector로 분해하고 reports를 Repository/ViewModel/UI로 분리한다.",
+      "chat insert, diary save, training identity Hero 등 목적 기반 모션 3개만 추가하고 3단 축소 모션 테스트를 붙인다.",
+      "compact/medium/expanded 및 큰 글자 레이아웃 골든/위젯 테스트를 추가한다."
+    ],
+    "P2_4_to_8_weeks": [
+      "최저 사양 실기기 profile mode에서 cold start, p95 UI/raster frame, rebuild, memory를 기준선화한다.",
+      "측정 결과에 따라 IndexedStack lazy creation, RepaintBoundary, 이미지/차트 최적화를 선택적으로 적용한다.",
+      "고대비 라이트 완료 후 dark semantic text 4색과 대비 테스트를 추가해 dark mode 복귀 여부를 결정한다.",
+      "60~80대 사용자 5~8명 형성평가로 핵심 행동 발견, 오탭, 완료시간, 모션 불편을 확인하고 필요할 때만 focal Rive를 검토한다."
+    ]
+  },
+  "success_metrics": [
+    "320dp 및 text scale 1.0/1.3/1.6/2.0에서 핵심 흐름 overflow 0",
+    "버튼·주요 행동은 56dp 기본 정책, 플로팅 내비는 48dp 예외 정책을 지키고 텍스트 대비 AA 회귀 테스트를 100% 통과",
+    "색만으로 전달되는 건강 상태 0, 중요 상태의 TalkBack/VoiceOver 명칭 100% 확인",
+    "자동 반복 모션 0, 화면 안무 400ms 초과 0(명시된 opening/celebration 예외 제외)",
+    "최저 사양 실기기 profile mode에서 frame budget 초과 원인을 기록하고 P0 흐름의 체감 jank 0",
+    "형성평가에서 홈의 다음 행동과 보고서의 현재 상태를 도움 없이 설명 가능한지 측정"
+  ],
+  "sources": [
+    "https://design.google/library/expressive-material-design-google-research",
+    "https://docs.flutter.dev/ui/animations",
+    "https://docs.flutter.dev/perf/best-practices",
+    "https://docs.flutter.dev/ui/accessibility",
+    "https://www.w3.org/TR/wcag2mobile/",
+    "https://www.w3.org/WAI/cognitive/",
+    "DESIGN.md",
+    "lib/core/theme.dart",
+    "lib/core/ml_widgets.dart",
+    "lib/core/motion/",
+    "lib/main.dart"
+  ]
+}

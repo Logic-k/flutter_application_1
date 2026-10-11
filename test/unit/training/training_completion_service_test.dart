@@ -55,15 +55,19 @@ void main() {
     });
 
     test('최고 점수 경신·오늘 목표 달성은 그 순간에만 축하 신호를 낸다', () async {
-      Future<TrainingCompletionResult> run(String id, String activity, double score, int min) =>
-          service.complete(
-            _scoredAttempt(
-              id: id,
-              activityId: activity,
-              completedAt: now.add(Duration(minutes: min)),
-              score: score,
-            ),
-          );
+      Future<TrainingCompletionResult> run(
+        String id,
+        String activity,
+        double score,
+        int min,
+      ) => service.complete(
+        _scoredAttempt(
+          id: id,
+          activityId: activity,
+          completedAt: now.add(Duration(minutes: min)),
+          score: score,
+        ),
+      );
 
       final first = await run('a1', 'comparison', 70, 0);
       expect(first.isNewBest, isFalse, reason: '첫 완료는 비교할 기록이 없다');
@@ -179,6 +183,59 @@ void main() {
       expect(result.scoreCategory, isNull);
       expect(repository.activityProgress.values.single.masteryStars, 0);
       expect(repository.activityProgress.values.single.bestScore, isNull);
+      expect(repository.legacyScores, isEmpty);
+    });
+
+    test('주제 선택 활동은 점수 없이 도움 수준과 맥락을 보존한다', () async {
+      // Given
+      final input = TrainingAttemptInput(
+        attemptId: 'topic-choice-1',
+        userId: 1,
+        activityId: 'topic_choice',
+        completedAt: now,
+        durationMs: 7000,
+        assistanceLevel: TrainingAssistanceLevel.verbalPrompt,
+        sessionContext: TrainingSessionContext.selfPractice,
+        contentVersion: 'topic_choice_v1',
+        responseCode: 'meal',
+      );
+
+      // When
+      final result = await service.complete(input);
+
+      // Then
+      expect(result.attempt.score, isNull);
+      expect(
+        result.attempt.completionStatus,
+        TrainingCompletionStatus.completed,
+      );
+      expect(
+        result.attempt.assistanceLevel,
+        TrainingAssistanceLevel.verbalPrompt,
+      );
+      expect(
+        result.attempt.sessionContext,
+        TrainingSessionContext.selfPractice,
+      );
+      expect(result.attempt.contentVersion, 'topic_choice_v1');
+      expect(result.attempt.responseCode, 'meal');
+      expect(result.scoreCategory, isNull);
+      expect(repository.legacyScores, isEmpty);
+    });
+
+    test('완료 서비스는 완료되지 않은 상태를 XP 기록으로 저장하지 않는다', () async {
+      final future = service.complete(
+        TrainingAttemptInput(
+          attemptId: 'stopped-1',
+          userId: 1,
+          activityId: 'topic_choice',
+          completedAt: now,
+          completionStatus: TrainingCompletionStatus.stopped,
+        ),
+      );
+
+      await expectLater(future, throwsA(isA<ArgumentError>()));
+      expect(repository.attempts, isEmpty);
       expect(repository.legacyScores, isEmpty);
     });
 

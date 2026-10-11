@@ -55,7 +55,7 @@ void main() {
     _stubProgress(progress);
   });
 
-  testWidgets('XP, 오늘 목표, 8개 과정 노드를 표시한다', (tester) async {
+  testWidgets('XP, 오늘 목표, 9개 과정 노드를 표시한다', (tester) async {
     await tester.pumpWidget(_buildSubject(progress));
     await tester.pump();
 
@@ -67,11 +67,11 @@ void main() {
     }
   });
 
-  testWidgets('신규 사용자는 5개 활동만 열리고 선행 활동은 잠긴다', (tester) async {
+  testWidgets('신규 사용자는 6개 활동만 열리고 선행 활동은 잠긴다', (tester) async {
     await tester.pumpWidget(_buildSubject(progress));
     await tester.pump();
 
-    expect(find.text('도전 가능'), findsNWidgets(5));
+    expect(find.text('도전 가능'), findsNWidgets(6));
     expect(find.text('잠김'), findsNWidgets(3));
   });
 
@@ -85,10 +85,7 @@ void main() {
     await tester.tap(find.byKey(const Key('course-node-multiplication')));
     await tester.pump();
 
-    expect(
-      find.text('먼저 누가 큰가요? 활동을 한 번 완료해 보세요.'),
-      findsOneWidget,
-    );
+    expect(find.text('먼저 누가 큰가요? 활동을 한 번 완료해 보세요.'), findsOneWidget);
   });
 
   testWidgets('완료 활동은 숙련도와 완료 상태를 함께 표시한다', (tester) async {
@@ -124,16 +121,17 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('코스를 불러오는 동안 스피너 대신 스켈레톤을 그린다(08 계획 G-05)', (
-    tester,
-  ) async {
+  testWidgets('코스를 불러오는 동안 스피너 대신 스켈레톤을 그린다(08 계획 G-05)', (tester) async {
     when(() => progress.isLoading).thenReturn(true);
     await tester.pumpWidget(_buildSubject(progress));
     await tester.pump();
 
     expect(find.byType(CircularProgressIndicator), findsNothing);
     expect(find.byType(MLSkeletonCard), findsWidgets);
-    expect(find.byKey(Key('course-node-${trainingCatalog.first.id}')), findsNothing);
+    expect(
+      find.byKey(Key('course-node-${trainingCatalog.first.id}')),
+      findsNothing,
+    );
     await tester.pumpAndSettle();
   });
 }

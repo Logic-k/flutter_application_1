@@ -1,0 +1,735 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MemoryLink 치매안심센터 제휴 근거 보고서</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f5f6f2;
+      --paper: #ffffff;
+      --ink: #20231f;
+      --muted: #62695f;
+      --line: #d9ded3;
+      --brand: #246757;
+      --brand-dark: #17483d;
+      --blue: #e7eef8;
+      --green: #e8f3ed;
+      --amber: #fff4dc;
+      --red: #f9e4df;
+      --code: #f4f5f1;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", "Malgun Gothic", sans-serif;
+      line-height: 1.68;
+    }
+    a { color: #1459a8; text-underline-offset: .18em; }
+    .wrap { max-width: 1140px; margin: 0 auto; padding: 28px 16px 56px; }
+    header, section, details {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+    }
+    header { padding: 30px; margin-bottom: 16px; }
+    section { padding: 24px; margin: 14px 0; }
+    details { padding: 16px 18px; margin: 12px 0; }
+    summary { cursor: pointer; font-weight: 800; color: var(--brand-dark); }
+    h1, h2, h3 { line-height: 1.28; letter-spacing: 0; }
+    h1 { margin: 8px 0 12px; font-size: clamp(27px, 6vw, 43px); }
+    h2 { margin: 0 0 14px; font-size: 24px; }
+    h3 { margin: 20px 0 8px; font-size: 18px; }
+    p { margin: 0 0 12px; }
+    ul, ol { padding-left: 22px; }
+    li { margin: 6px 0; }
+    code {
+      background: var(--code);
+      border: 1px solid #e2e5de;
+      border-radius: 5px;
+      padding: 1px 5px;
+      font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+      font-size: .92em;
+    }
+    .eyebrow {
+      color: var(--brand);
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .lede { max-width: 78ch; color: var(--muted); font-size: 17px; }
+    .meta, .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 10px;
+    }
+    .meta { margin-top: 18px; }
+    .box {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 14px;
+      background: #fff;
+    }
+    .box b { display: block; color: var(--muted); font-size: 13px; }
+    .box strong { display: block; margin-top: 2px; font-size: 17px; }
+    .pill {
+      display: inline-block;
+      margin: 0 6px 7px 0;
+      padding: 3px 10px;
+      border-radius: 999px;
+      background: var(--green);
+      color: var(--brand-dark);
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .pill.blue { background: var(--blue); color: #1d4f82; }
+    .pill.warn { background: var(--amber); color: #714900; }
+    .pill.risk { background: var(--red); color: #8a2d21; }
+    .note {
+      border-left: 4px solid var(--brand);
+      background: var(--green);
+      padding: 12px 14px;
+      border-radius: 8px;
+      margin: 12px 0;
+    }
+    .note.warn { border-left-color: #9a6a10; background: var(--amber); }
+    .note.risk { border-left-color: #b74737; background: var(--red); }
+    .small { color: var(--muted); font-size: 13px; }
+    .toc { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+    .toc a {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 6px 10px;
+      background: #fff;
+      color: var(--brand-dark);
+      font-size: 13px;
+      font-weight: 700;
+      text-decoration: none;
+    }
+    .table-wrap { overflow-x: auto; margin: 12px 0 4px; }
+    table { width: 100%; min-width: 780px; border-collapse: collapse; font-size: 14px; }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 10px 12px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th { background: #eef3ea; color: #3f483b; font-size: 13px; }
+    .narrow { min-width: 640px; }
+    .source-list li { word-break: break-word; }
+    @media (max-width: 640px) {
+      .wrap { padding: 14px 10px 40px; }
+      header, section { padding: 18px; }
+      details { padding: 14px; }
+      table { min-width: 680px; }
+    }
+    @media print {
+      body { background: #fff; }
+      .wrap { max-width: none; padding: 0; }
+      header, section, details, .box { break-inside: avoid; }
+      .toc { display: none; }
+      details:not([open]) > :not(summary) { display: block !important; }
+      summary { list-style: none; cursor: default; }
+      summary::-webkit-details-marker { display: none; }
+      a { color: #000; }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header>
+      <div class="eyebrow">MemoryLink evidence report</div>
+      <h1>치매안심센터 제휴를 위한 근거·권리·파일럿 적용안</h1>
+      <p class="lede">이 문서는 2026-10-05에 받은 연구자료 묶음과 로컬 저장소 점검을 합쳐 만든 검토용 단일 HTML 보고서다. 결론은 간단하다. MemoryLink의 첫 기관 제안은 진단·치료·예방 효과 주장이 아니라, 센터가 이미 운영하는 예방교실의 활동을 가정에서 이어갈 수 있는지 확인하는 사용성·운영가능성 파일럿이어야 한다.</p>
+      <div class="meta">
+        <div class="box"><b>작성일</b><strong>2026-10-05</strong></div>
+        <div class="box"><b>권장 첫 대상</b><strong>정상군 예방교실</strong></div>
+        <div class="box"><b>앱 코드 변경</b><strong>없음</strong></div>
+        <div class="box"><b>Library 업로드</b><strong>검토 전 보류</strong></div>
+      </div>
+      <nav class="toc" aria-label="문서 목차">
+        <a href="#summary">3분 요약</a>
+        <a href="#center">센터 사례</a>
+        <a href="#evidence">문헌 근거</a>
+        <a href="#current">현 기능 간극</a>
+        <a href="#activities">신규 활동</a>
+        <a href="#rights">설문·검사 권리</a>
+        <a href="#pilot">파일럿</a>
+        <a href="#sources">출처</a>
+      </nav>
+    </header>
+
+    <section id="summary">
+      <h2>1. 3분 요약</h2>
+      <div class="grid">
+        <div class="box">
+          <span class="pill">권장 첫 제휴</span>
+          <h3>예방교실 보조 파일럿</h3>
+          <p>기존 치매안심센터 예방교실 참여자를 대상으로, 센터 회기 이후 짧은 가정 활동을 앱으로 이어주는 운영가능성 파일럿이 가장 안전하다.</p>
+        </div>
+        <div class="box">
+          <span class="pill blue">대상 분리</span>
+          <h3>MCI·치매군은 후속</h3>
+          <p>MCI는 기관 임상담당자가 선정하는 후속 경로, 치매군/CST는 진행자와 집단 기반 프로그램을 전제로 한 별도 경로로 둔다.</p>
+        </div>
+        <div class="box">
+          <span class="pill warn">표현 제한</span>
+          <h3>진단·치료 주장 금지</h3>
+          <p>현재 앱은 인지 활동 수행 기록, 생활실천 기록, 보호자·기관 공유 보조 도구로 설명한다. 진단, 치료, 예방 효과를 추정하지 않는다.</p>
+        </div>
+        <div class="box">
+          <span class="pill risk">권리 게이트</span>
+          <h3>표준검사 탑재 보류</h3>
+          <p>CIST, MMSE, MoCA, SMCQ, SGDS-K 등은 문항·채점·규준뿐 아니라 결과 저장·표시도 계약 권리와 기관 승인, 건강정보 처리 동의 확인 뒤에만 검토한다.</p>
+        </div>
+      </div>
+      <div class="note warn">
+        <strong>기관 제안 문장:</strong> “MemoryLink는 치매선별검사나 치료앱이 아니라, 센터 담당자가 정한 활동을 어르신이 집에서도 부담 없이 이어갈 수 있는지 확인하는 활동 배정·기록·도움 요청 보조 도구입니다.”
+      </div>
+      <p>이번 단계에서 바로 기업 접촉용으로 쓸 수 있는 핵심은 “근거 있는 보수적 포지셔닝”이다. 연구 근거는 인지활동과 센터 기반 중재의 가능성을 보여주지만, 현재 앱의 게임 점수가 표준검사 또는 임상효과 지표라는 뜻은 아니다.</p>
+    </section>
+
+    <section id="center">
+      <h2>2. 실제 센터 운영과 맞는 제휴 위치</h2>
+      <p>2026년 치매정책 사업안내는 예방교실, 인지강화교실, 쉼터를 대상군과 운영방식으로 구분한다. 첫 제휴는 정상군 예방교실의 가정 연계 보조로 시작하고, MCI·치매군은 기관의 임상 판단과 별도 프로토콜 뒤에 확장한다.</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>경로</th><th>정책·센터상 대상</th><th>확인된 운영 단서</th><th>MemoryLink 적용</th><th>주의</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>예방교실</td>
+              <td>등록 정상군. 회당 60분 이상, 주 1회 이상, 최소 8회 권장. 표준자료로 중앙치매센터 <cite>두근두근 뇌운동</cite> 계열과 지역 프로그램 활용.</td>
+              <td>사전·사후 SGDS-K, SMCQ가 지침상 연결된다. 지역별로 인지·운동·미술·음악·생활습관 활동을 조합한다.</td>
+              <td><strong>첫 파일럿 권장.</strong> 센터 회기 뒤 가정에서 10분 안팎 활동을 2회/주 수행하고, 도움·중단·기술문제를 기록한다.</td>
+              <td>예방효과 또는 인지점수 개선을 주장하지 않는다. 표준교재 문항·그림을 복제하지 않는다.</td>
+            </tr>
+            <tr>
+              <td>인지강화교실</td>
+              <td>선별검사상 인지저하 또는 MCI 확인 등 고위험군. 운영틀은 예방교실과 유사하나 대상 적합성 판단이 더 중요하다.</td>
+              <td>정책상 SGDS-K, SMCQ가 연결되고, 기관 담당자가 대상과 회기 운영을 정한다.</td>
+              <td>후속 2단계. 기관이 대상자를 선정하고 같은 활동이라도 난이도·도움·중단 기준을 별도로 둔다.</td>
+              <td>앱이 고위험군을 자동 선별하거나 진단명처럼 라벨링하면 안 된다.</td>
+            </tr>
+            <tr>
+              <td>쉼터·치매군</td>
+              <td>등록 치매환자. 기능평가와 수준별 반편성, 주 2회 이상 또는 3시간 이상 대면 운영, 1년 권장.</td>
+              <td>중앙 <cite>반짝활짝 뇌운동</cite>, <cite>톡톡(Talk Talk)</cite> 등 진행자 기반 프로그램이 확인된다. SGDS-K, SMCQ, 선택적 CIST가 연결된다.</td>
+              <td>후속 3단계. 앱은 진행자 화면, 회기 보조, 보호자 알림, 집단 대화 소재 제공으로 제한한다.</td>
+              <td>독립 가정 앱을 CST나 쉼터 프로그램과 동등하다고 부르지 않는다.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <details open>
+        <summary>국내 실제 사례에서 읽히는 적용 포인트</summary>
+        <ul>
+          <li>영도구 사례는 24회기 예방·인지강화, 월 1회 지역 거점, 경로당·가정 방문 등 다양한 운영 모델을 보여준다. 이는 “센터가 이미 지역 접점을 갖고 있고, 앱은 그 사이를 잇는 보조도구가 될 수 있다”는 근거다.</li>
+          <li>연수구 공식 페이지는 정상군·고위험군·쉼터를 분리하고 ICT·태블릿 인지활동을 언급한다. 태블릿 사용은 확인되지만 특정 앱 효과의 근거는 아니다.</li>
+          <li>동래구는 예방교실·인지강화교실을 주 1회 24주, 쉼터를 12주로 안내한다. 기관마다 회기 길이와 대상군이 달라 제휴 제안서도 한 가지 템플릿으로 고정하면 안 된다.</li>
+        </ul>
+      </details>
+      <details open>
+        <summary>정책·매뉴얼 원문 위치와 앱 짧은 회기 구별</summary>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>자료</th><th>HTML 안에 고정한 원문 위치</th><th>MemoryLink 적용 한계</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>2026 치매정책 사업안내</td>
+                <td>예방교실 인쇄 112~113쪽/PDF 168~169쪽, 인지강화교실 인쇄 114~115쪽/PDF 170~171쪽, 쉼터 인쇄 116~118쪽/PDF 172~174쪽, 조기검진 인쇄 68~71쪽/PDF 124~127쪽.</td>
+                <td>회당 60분 이상, 주 1회 이상, 최소 8회 권장 또는 쉼터 3시간 대면 운영은 센터 운영기준이다. 앱의 5~15분 short dose는 개별 활동 과제 단위이며, 공식 교실 60분이나 쉼터 3시간의 대체 프로그램으로 주장하지 않는다.</td>
+              </tr>
+              <tr>
+                <td>중앙 <cite>두근두근 뇌운동</cite></td>
+                <td>PDF 6~7 구성/계획, 14~16 날짜, 20~22 날씨, 28~30 기사기억, 50~52 퍼즐, 82~85 생활일정, 92~95 회상, 114 판권. PDF 7의 총시간은 “3~40분”으로 보여 30~40분으로 임의 보정하지 않았다.</td>
+                <td>신문 읽기, 날짜, 회상, 생활계획의 원리는 참고할 수 있으나 활동지·그림·배치·문항은 복제하지 않는다.</td>
+              </tr>
+              <tr>
+                <td>중앙 <cite>반짝활짝 뇌운동</cite></td>
+                <td>2019 정책 PDF 인쇄 63~65쪽/PDF 119~121쪽에서 8주·주 3회·하루 3시간, 총 24회 구조 확인. 현재 운영은 2026 쉼터 기준을 우선한다.</td>
+                <td>운동, 현실인식, 인지훈련, 회상/음악 등 복합 대면 프로그램이다. 앱 단독 홈 과제를 같은 중재로 부르지 않는다.</td>
+              </tr>
+              <tr>
+                <td>중앙 <cite>톡톡(Talk Talk)</cite></td>
+                <td>2021 개발보고서 인쇄 71~83쪽/PDF 79~91쪽, 특히 인쇄 73~75쪽/PDF 81~83쪽 진행원칙·회기구조. 2022 연차보고서 인쇄 51쪽/PDF 26쪽 시범 요약.</td>
+                <td>생활역할, 가정·지역사회 연결, 도움 인식 원리는 참고하되 시범 결과를 확증 RCT나 앱 효과로 표현하지 않는다.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </details>
+    </section>
+
+    <section id="evidence">
+      <h2>3. 문헌 근거가 말하는 것과 말하지 않는 것</h2>
+      <p>인지활동 근거는 “활동과 지원의 설계 방향”을 준다. 그러나 특정 상용 앱의 진단·치료·예방 효과를 대신 증명하지 않는다. 아래 표의 마지막 열은 MemoryLink 제안서에서 반드시 붙여야 할 제한이다.</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>근거 계열</th><th>대상·용량</th><th>확인된 결과</th><th>앱 적용</th><th>제한</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>WHO 위험감소 지침 2026</td>
+              <td>치매가 없는 성인, 정상인지 또는 MCI 포함. 인지훈련·인지자극을 조건부 권고.</td>
+              <td>인지훈련은 낮은 확실성, 인지자극은 매우 낮은 확실성. 최적 종류·빈도·기간 근거 부족.</td>
+              <td>문화·문해력·디지털 접근성을 고려한 활동 제공의 공중보건적 방향.</td>
+              <td>특정 게임이 치매를 예방한다는 근거가 아니다.</td>
+            </tr>
+            <tr>
+              <td>NICE NG97</td>
+              <td>진단된 치매 관리. 경도·중등도 치매에 집단 CST 권고, 인지재활·작업치료 고려.</td>
+              <td>경도·중등도 알츠하이머병 치료 목적으로 인지훈련을 제공하지 말라는 별도 권고가 있다.</td>
+              <td>진행자·집단·생활목표를 유지하는 서비스 보조로 포지셔닝.</td>
+              <td>모든 두뇌게임을 치매 치료로 권한다는 해석은 틀리다.</td>
+            </tr>
+            <tr>
+              <td>CST 고찰과 표준 CST RCT</td>
+              <td>경도·중등도 치매, 주로 집단 중재. 표준 CST는 7주, 주 2회, 회당 45분, 14회.</td>
+              <td>Cochrane 2023은 중재 직후 인지 SMD 0.40, MMSE 차이 1.99점. Spector 2003은 MMSE, ADAS-Cog, QoL-AD에서 차이를 보고.</td>
+              <td>주제 대화, 선택, 비교, 현재 생활 이야기, 진행자 질문을 앱 콘텐츠 설계에 반영.</td>
+              <td>5분 단독 문제풀이를 CST와 동등하다고 부를 수 없다. 사람·집단·진행자 요소가 핵심이다.</td>
+            </tr>
+            <tr>
+              <td>가족 진행 iCST</td>
+              <td>25주, 최대 75회, 가족이 가정에서 진행.</td>
+              <td>인지와 삶의 질에서 유의한 차이 없음. 관계의 질은 일부 개선. 40%만 주 2회 이상 완료, 22%는 한 번도 하지 않음.</td>
+              <td>가정 과제에서 실제 시작률, 가족 부담, 도움 수준을 반드시 측정한다.</td>
+              <td>집단 CST 근거를 가정 앱에 자동 전이할 수 없다는 중요한 반례다.</td>
+            </tr>
+            <tr>
+              <td>인지재활</td>
+              <td>경도·중등도 치매, 전문가와 개인화 목표를 정하고 8~14회 안팎 진행.</td>
+              <td>Kudlicka 2023은 직접 목표로 정한 일상활동 수행 개선을 보고. GREAT RCT는 목표달성 d=0.97, 0.94를 보고.</td>
+              <td>“점수 올리기”보다 “정한 생활 목표를 어떤 도움으로 수행했는가”를 기록하는 모듈 설계.</td>
+              <td>일반 인지 향상이나 질병 진행 억제로 확장하면 안 된다.</td>
+            </tr>
+            <tr>
+              <td>컴퓨터 인지훈련</td>
+              <td>정상인지 노인, MCI, 치매 연구가 섞여 있으며 용량과 대조군이 다양하다.</td>
+              <td>Lampit 2014는 정상인지 노인 직후 인지 g=0.22. Bahar-Fuchs 2019는 치매 직후 종합인지 SMD 0.42이나 적극대조와 비교하면 불확실.</td>
+              <td>반복 과제와 난이도 조절은 가능하되, 센터 활동과 비교하는 설계가 필요하다.</td>
+              <td>검사상 이득과 일상 전이, 치료 권고, 발병 예방은 서로 다른 질문이다.</td>
+            </tr>
+            <tr>
+              <td>ACTIVE 장기 추적</td>
+              <td>65세 이상 비치매 표본의 기억·추론·처리속도 훈련과 무접촉 대조. 초기 5~6주, 60~75분 최대 10회, 일부 추가훈련.</td>
+              <td>2026 청구자료 연계 분석에서 전체 속도훈련군 HR 0.87, 95% CI 0.72~1.05로 유의하지 않음. 속도훈련+추가훈련 하위군은 HR 0.75, 95% CI 0.59~0.95이나 추가훈련 대 비추가훈련 직접 비교가 아니다.</td>
+              <td>시각탐색·분할주의 과제는 후순위 검증 모듈로만 검토한다. 화면 크기, 시야, 터치 정확도, 시간압박 영향을 별도 기록한다.</td>
+              <td>“모든 두뇌게임이 치매를 25% 예방” 또는 “MemoryLink도 같은 효과”라는 전이는 성립하지 않는다.</td>
+            </tr>
+            <tr>
+              <td>국내 디지털·가정 중재</td>
+              <td>SUPERBRAIN MEET, 강남구 ACTH, 한국 집단·가정 인지중재 등.</td>
+              <td>SUPERBRAIN MEET는 24주 하이브리드 다영역 중재에서 RBANS 차이를 보고하나 치매 전환은 유의하지 않음. ACTH는 12개월 스마트폰+집단+전화 지원 모델에서 일부 인지 결과 차이.</td>
+              <td>센터 배정, 교육, 전화·방문 지원, 홈 이용 확인 모델을 참고한다.</td>
+              <td>복합중재라 앱 단독 효과가 아니다. ACTH 83.8%는 최종 자료가 확보된 중재 참여자 136명의 수행 과제/배정 과제 비율이고, MEET 84.7%는 166개 전체 중재 사건 이행률이지 앱 유지율이 아니다.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <details open>
+        <summary>디지털 중재 근거를 앱 설계로 옮길 때의 추적 원칙</summary>
+        <p>ACTH와 SUPERBRAIN/MEET에서 바로 가져올 수 있는 것은 화면·문항·콘텐츠가 아니라 구조다. 즉 인지적 요구, 안내와 연습, 사람의 지원, 배정과 확인 절차를 원리 수준에서 배운 뒤 MemoryLink 고유 콘텐츠로 다시 작성해야 한다.</p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>자료</th><th>직접 확인한 원리</th><th>MemoryLink 적용 가능</th><th>옮기면 안 되는 해석</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>ACTH</td>
+                <td>센터 의료인력 모집·안내, 신경심리 전문가 감독, 코디네이터의 가정 과제 배정, 월별 대면 모임, 불참 보충 회기, 격주 전화 지원이 포함됐다. 실제 연구 부록은 10개 과제와 4단계 난이도를 설명한다.</td>
+                <td>가정 과제 배정, 담당자 확인, 초기 쉬운 수준, 후반 난이도 상승, 보충 지원, 수행 과제/배정 과제 분모 관리.</td>
+                <td>2018년 상용 브로슈어의 11개 콘텐츠·3단계를 임상시험 검증 내용과 섞어 쓰지 않는다. 83.8%는 전체 배정자 유지율이 아니다.</td>
+              </tr>
+              <tr>
+                <td>SUPERBRAIN 개발 프로토콜</td>
+                <td>정보 제시, 기억 전략, 연습, 확인 질문의 흐름이 있고 범주화·묶기·심상·이야기 연결·간격 인출 같은 전략을 사용한다. 기억 48개, 전두/주의 12개, 시공간 4개, 계산 4개 활동 구성이 공개됐다.</td>
+                <td>활동 전 전략 안내, 짧은 연습, 확인 질문, 태블릿이 어려운 이용자를 위한 종이·진행자 대체 경로.</td>
+                <td>2020년 개발 프로토콜과 2025년 MEET 실제 화면·문항·난이도가 동일했다는 버전 동등성은 확인되지 않았다.</td>
+              </tr>
+              <tr>
+                <td>MEET 결과 논문과 부록</td>
+                <td>첫 8주는 매주 전문가 진행 인지활동 50분, 가정활동 30~40분, 화상 숙제 지도가 병행됐다. 이후 16주는 기관 방문, 가정·화상 활동, 운동전문가·영양사·연구간호사·코디네이터 지원이 이어졌다.</td>
+                <td>배정 인원, 시작 인원, 활동 완료 인원, 후속평가 인원, 연락 횟수·시간, 기술지원시간, 동반자 도움을 분리한다.</td>
+                <td>84.7% 전체 이행률은 166개 중재 사건 기준이며 앱 유지율, 인지 정확도, 임상효과 크기가 아니다. 접속 기록은 충실도 검증과 다르다.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </details>
+    </section>
+
+    <section id="current">
+      <h2>4. 현재 앱 기능의 근거와 간극</h2>
+      <p>로컬 저장소 점검 기준으로 현재 구현은 기본 게임 7종, 점수 없는 일상회상, 자체 예/아니오 selfcheck, 짧은 0~100 인지 과제, 보호자 요약 흐름을 포함한다. 이는 제품 기능의 존재를 뜻할 뿐 임상 타당화를 뜻하지 않는다.</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>현 기능</th><th>로컬 근거 경로</th><th>현재 설명 가능한 역할</th><th>기관 적용 전 간극</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>숫자 비교</td><td><code>lib/features/training/training_catalog.dart</code> comparison</td><td>값 비교와 간단한 계산 연습.</td><td>계산 능력 또는 인지 개선 지표가 아니다. 문해력·교육 수준·불안 영향을 기록해야 한다.</td></tr>
+            <tr><td>곱셈</td><td><code>training_catalog.dart</code> multiplication</td><td>산술 과제 연습.</td><td>교육 경험 차이가 커서 기관 파일럿 첫 활동으로는 부담이 클 수 있다.</td></tr>
+            <tr><td>순서</td><td><code>training_catalog.dart</code> sequence</td><td>패턴 추론 활동.</td><td>표준 실행기능 검사로 설명하지 않는다.</td></tr>
+            <tr><td>분류</td><td><code>training_catalog.dart</code> categorization</td><td>의미 범주·규칙 분류 활동.</td><td>문화·세대 친숙도와 콘텐츠 권리를 확인해야 한다.</td></tr>
+            <tr><td>도형 스도쿠</td><td><code>training_catalog.dart</code> shape_sudoku</td><td>시각 규칙 찾기와 배치 활동.</td><td>현재 분류가 memory로 되어 있으나 실제는 지연회상·작업기억 과제가 아니다. 재분류 또는 근거 보완 필요.</td></tr>
+            <tr><td>도형 맞추기</td><td><code>training_catalog.dart</code> shape_match</td><td>시각 탐색·주의 활동.</td><td>반응시간·시야·터치 조건 통제가 없으면 처리속도나 주의력 지표로 쓰기 어렵다.</td></tr>
+            <tr><td>문장 읽기/STT</td><td><code>training_catalog.dart</code> sentence_reading</td><td>문장 읽기와 음성 입력 유사도 활동.</td><td>발음·방언·기기·소음 영향이 크다. 첫 파일럿 기본활동에서 제외하고 권리·음성처리·대체입력 검토 뒤 선택한다.</td></tr>
+            <tr><td>일상회상</td><td><code>daily_recall_page.dart</code></td><td>회상 프롬프트와 활동 완료 기록.</td><td>점수와 정답이 없으므로 임상 기억평가가 아니다. 대화·참여 경험으로 설계해야 한다.</td></tr>
+            <tr><td>selfcheck</td><td><code>assessment_screen.dart</code>, <code>user_provider.dart</code></td><td>자체 제작 예/아니오 체크.</td><td>SMCQ, KDSQ, CIST 대체품으로 소개 금지. DB·보호자 보고에 안정적으로 연결되어 있지 않다.</td></tr>
+            <tr><td>임상 리포트/활동지수</td><td><code>clinical_report_data.dart</code>, <code>clinical_report_generator.dart</code></td><td>앱 내부 활동 요약과 비진단 안내.</td><td>계산·논리·주의 0~10 가정 후 100점화하는 정규화가 최신 0~100 기록과 충돌할 수 있다. 혼합 평균은 기관 의사결정 지표가 아니다.</td></tr>
+            <tr><td>보호자 동기화</td><td><code>guardian_sync_service.dart</code></td><td>걸음·일부 점수·이상징후 요약.</td><td>selfcheck와 전체 평가가 포함되지 않고, 링크 권한·만료·철회·열람감사가 기관 파일럿 수준으로 검증되어야 한다.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="note risk">
+        <strong>중요 간극:</strong> 현재 앱은 시도(attempt) 단위 기록은 있으나 기관 파일럿에 필요한 배정(assignment), 회기(session), 도움 수준, 중단 이유, 기술 실패, 센터/가정 맥락, 진행자 검토 이력을 충분히 구분하지 않는다.
+      </div>
+    </section>
+
+    <section id="activities">
+      <h2>5. 추천 신규 활동 적용안</h2>
+      <p>신규 활동은 논문 프로그램을 복제하지 않고, 공개적으로 설명 가능한 원리와 자체 제작 콘텐츠로 설계한다. 목표는 “효과 입증”이 아니라 센터 담당자가 안전하게 배정하고 기록할 수 있는 활동 후보를 만드는 것이다.</p>
+      <details open>
+        <summary>직접원리 → 앱설계 → 미검증변형 추적표</summary>
+        <p>이 표는 최종 HTML에서 가장 중요한 설계 추적 장치다. 각 행은 공개 자료에서 확인한 원리를 MemoryLink의 독창적 활동으로 바꾸는 과정과, 아직 검증되지 않은 모바일 변형을 한 줄에 묶는다.</p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>공개 자료에서 확인한 직접원리</th><th>독창적으로 작성할 MemoryLink 활동</th><th>그대로 가져오지 않을 자료</th><th>별도 검증할 미검증 모바일 변형</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>ACTH의 연합 기억, SUPERBRAIN의 전략 후 확인.</td>
+                <td>가상의 센터 준비물 3개를 묶고 이야기로 연결한 뒤 다시 떠올리기.</td>
+                <td>기존 얼굴, 인물 정보, 삽화, 세트, 정답은행.</td>
+                <td>작은 화면, 글/음성 제시, 지연시간, 힌트와 재인의 효과.</td>
+              </tr>
+              <tr>
+                <td>의미적 분류와 언어 생성.</td>
+                <td>친숙한 물건을 쓰임에 따라 묶고 선택 이유를 말하거나 고르기.</td>
+                <td>초성 조합, 주제 카탈로그, 사전 채점 규칙.</td>
+                <td>문해력, 방언, 입력 방식, 정답 인정 기준.</td>
+              </tr>
+              <tr>
+                <td>여러 조건을 고려하는 수리·규칙 과제.</td>
+                <td>가상 소풍 준비에서 개수·가격·필수품 조건을 한 가지씩 추가.</td>
+                <td>동전 화면, 무게 퍼즐 템플릿, 기존 난이도 수열.</td>
+                <td>교육·수리 경험·운동속도와 수행의 분리.</td>
+              </tr>
+              <tr>
+                <td>기억 정보에 의미를 붙이는 교육 과정.</td>
+                <td>직접 쓴 짧은 지역생활 이야기로 요약·이해·다시 떠올리기.</td>
+                <td>교재 이야기, 퀴즈, 역사·건강 콘텐츠 본문과 이미지.</td>
+                <td>읽기/듣기 선택, 과제 길이, 실제 이해와 STT 인식 성능의 분리.</td>
+              </tr>
+              <tr>
+                <td>담당자의 숙제 검토와 개인 수준 조절.</td>
+                <td>센터 담당자가 다음 활동과 도움 수준을 정하는 주간 검토 화면 또는 기록표.</td>
+                <td>기존 관리자 화면, 랭킹, 내부 알고리즘, 프로그램 명칭.</td>
+                <td>담당자 판단 일치도, 검토 소요시간, 이탈 대응 가능성.</td>
+              </tr>
+              <tr>
+                <td>집단 회기와 가정 연습의 연결.</td>
+                <td>같은 주제를 센터에서 함께 이야기하고 집에서는 다른 예로 짧게 연습.</td>
+                <td>시험 프로그램 전체를 이름만 바꾼 구성.</td>
+                <td>짧아진 용량, 지원 횟수 축소, 소규모 화면에서의 접근성.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="small">이 표에 든 새 활동은 설계 후보일 뿐 임상적으로 검증된 도구가 아니다. 출시 전 권리 검토와 접근성·사용성 검증을 별도로 거친다.</p>
+      </details>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>활동</th><th>근거 계열</th><th>진행 흐름</th><th>측정</th><th>주의</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>장보기·집안정리 카드</td>
+              <td>인지훈련, 일상 의미 분류, 센터 생활활동형 과제</td>
+              <td>오늘 필요한 물건 고르기, 비슷한 물건 묶기, 상황에 맞는 순서 정하기.</td>
+              <td>완료 여부, 도움 수준, 선택 수, 중단 이유, 난이도.</td>
+              <td>가격·브랜드·이미지 저작권을 자체 제작하고, 일상기능 검사처럼 표현하지 않는다.</td>
+            </tr>
+            <tr>
+              <td>오늘 일정 준비하기</td>
+              <td>인지재활에서 영감 받은 목표 단계화</td>
+              <td>센터 활동일 또는 병원·산책 준비를 3~5단계 카드로 정리하고, 필요한 도움을 선택한다.</td>
+              <td>정한 목표, 수행 단계, 독립/말 설명/직접 도움, 실제 생활 연결 여부.</td>
+              <td>전문가가 목표를 정한 경우에만 인지재활 계열로 설명한다. 자동 처방 금지.</td>
+            </tr>
+            <tr>
+              <td>짧은 소식 읽고 말하기</td>
+              <td>두근두근 뇌운동의 신문 읽기 원리, CST의 주제 대화</td>
+              <td>짧은 자체 제작 소식문을 읽고, 가장 기억나는 내용·느낌·오늘과의 연결을 말하거나 고른다.</td>
+              <td>읽기 완료, 선택·발화 여부, 즐거움, 도움 수준.</td>
+              <td>신문 원문과 표준교재 문항을 복제하지 않는다. STT 자동점수는 초기 제외.</td>
+            </tr>
+            <tr>
+              <td>함께 고르는 사진·그림</td>
+              <td>CST, 회상, 사회적 참여</td>
+              <td>날씨·음식·교통·취미 등 일반 사진에서 선호를 고르고 이유를 이야기한다.</td>
+              <td>참여 기회와 반응, 자발 발언, 필요한 촉진, 불편 여부.</td>
+              <td>정답 경쟁이 아니라 대화 지원이다. 개인 가족사진은 첫 파일럿 기본값에서 제외한다.</td>
+            </tr>
+            <tr>
+              <td>생활 목표 단계 카드</td>
+              <td>인지재활</td>
+              <td>센터 담당자와 정한 하나의 생활 목표를 단계, 단서, 도움 요청으로 나눈다.</td>
+              <td>목표달성 자기평가, 보호자/담당자 관찰, 도움 수준 변화.</td>
+              <td>후속 단계. 전문가 목표 설정과 안전 검토 없이는 출시 우선순위를 낮춘다.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <details open>
+        <summary>활동 로그에 반드시 추가할 필드</summary>
+        <ul>
+          <li>활동 버전, 콘텐츠 세트 버전, 안내문 버전, 난이도 범위.</li>
+          <li>센터/가정, 단독/보호자/직원 도움, 입력 주체, 기기 종류, 접근성 설정.</li>
+          <li>예정 회기, 실제 회기, 시도 횟수, 완료·중단·미실시·기술실패 상태.</li>
+          <li>중단 이유, 불편감, 문의 필요, 담당자 검토 결과.</li>
+          <li>점수와 별개로 도움 수준과 참여 경험을 저장한다. 보호자가 대신 조작한 결과는 참여자 수행능력으로 해석하지 않는다.</li>
+        </ul>
+      </details>
+    </section>
+
+    <section id="rights">
+      <h2>6. 설문·검사·표준도구 권리 판단</h2>
+      <p>이번 보완 검토의 핵심은 다음이다. 표준검사의 “점수만 입력/연결”도 자동 면허 면제 경로로 쓰면 안 된다. 결과 보고서, 규준, 점수 표시, EMR/EHR 통합, 상용 SaaS 제공은 권리자 정책과 기관 계약에 따라 별도 통제를 받을 수 있다.</p>
+      <div class="note risk">
+        <strong>MVP 경계:</strong> 미허가 단계의 MVP는 자체 제작 비진단 활동, 편의·도움·중단·만족 기록, 담당자 검토함이다. 기관이 적법하게 시행한 표준검사 결과를 저장·표시하는 기능은 “문항·채점 알고리즘을 새로 구현하는 것보다 범위가 작은 조건부 연동 제안”일 뿐이며, 계약 권리·건강정보 처리 동의·기관 승인 확인 전에는 진행하지 않는다. “센터 소유 척도”가 아니라 “기관 주도·관리 평가”라고 표현한다.
+      </div>
+      <details open>
+        <summary>평가결과 연결과 도구 구현을 분리하는 5단계</summary>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>처리 대상</th><th>의미</th><th>사전 조건</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>평가 실시 사실·일자·기관·담당자</td>
+                <td>최소 업무연계 메타데이터.</td>
+                <td>그 사실도 건강 관련 정보일 수 있다. 처리 목적, 수탁 관계, 접근·공유 권한을 확인한다. 도구 명칭 표시도 계약·표시조건을 본다.</td>
+              </tr>
+              <tr>
+                <td>기관이 적법하게 생성한 개별 총점의 수기 입력·전달</td>
+                <td>기존 결과의 기록·전달이며 검사 시행과는 구별된다.</td>
+                <td><strong>조건부 후보.</strong> 기관의 현재 라이선스가 외부 상용 플랫폼 처리·저장·수신자 표시·재배포를 허용하는지 문서 확인한다. 총점 전용 일반 면책은 확인되지 않았다.</td>
+              </tr>
+              <tr>
+                <td>기존 기관 해석·분류표시의 전달</td>
+                <td>누가 언제 판단한 것인지가 있는 과거 기록.</td>
+                <td>“기관이 당시 기록한 해석”으로 출처를 고정한다. 현재 앱 판단처럼 재표시하지 않는다.</td>
+              </tr>
+              <tr>
+                <td>보고서 PDF/사진·서식·문항별 반응·규준표 저장·재표시</td>
+                <td>출판물 또는 보호된 검사자료의 복제 가능성이 커진다.</td>
+                <td>총점 기록 허락과 별개다. 보고서, 자극, 문항, 규준표, 수신자 자격, 재배포 범위를 확인한다. 기본 설계에서는 제외한다.</td>
+              </tr>
+              <tr>
+                <td>자동채점·나이/교육 보정·백분위·새 위험등급·진단·추세 해석</td>
+                <td>도구 알고리즘·규준 또는 새로운 임상 출력 구현.</td>
+                <td>별도 권리와 임상·규제 검토가 필요하다. 총점 입력 허락만으로 구현하지 않는다. 단순 전후 차이·집단 집계·연구/홍보 재이용도 목적과 계약 범위를 별도 확인한다.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="small">총점만 가져오면 이용권 문제가 없다는 일반 허락은 확인하지 못했다. 반대로 모든 숫자 기록이 반드시 금지된다고 확정한 것도 아니다. 기존 계약, 결과의 내용, 상용 서비스 역할, 이용자/수신자, 지역 법률에 따라 판단한다.</p>
+      </details>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>도구</th><th>센터 연결</th><th>현재 판단</th><th>MemoryLink 문구</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>CIST</td><td>2026 지침상 선별 기본 도구. 교육 이수한 센터·보건기관 인력이 시행.</td><td>전자 탑재·자동채점·상용 앱 재배포 보류. 외부 CIST 결과 연계 가능 문구는 앱 허락이 아니다.</td><td>“기관 주도 평가 결과를 기관 승인 조건에서 기록할 수 있는 구조를 검토한다.”</td></tr>
+            <tr><td>MMSE / K-MMSE-2</td><td>전문가 시행 인지검사.</td><td>PAR·인싸이트 권리 통제. 복제, 부분사용, 온라인, 규준·보고서, EMR 탑재가 각각 허락 대상일 수 있다.</td><td>“검사 문항·채점·규준·점수보고는 권리자 계약 전 구현하지 않는다.”</td></tr>
+            <tr><td>MoCA-K / K-MoCA</td><td>MCI 선별에 널리 쓰이나 권리·인증 정책이 별도 존재.</td><td>상업적 전자복제·제3자 웹 게시·전자버전 개발은 서면 허락 필요. 2025년 말 인증정책 변화가 전자복제 권리를 넓히는 것은 아니다.</td><td>“MoCA는 기관 전문평가로 남기고, 앱 내 표시는 계약·전문가 해석 게이트 후 검토한다.”</td></tr>
+            <tr><td>SMCQ</td><td>예방·인지강화·쉼터 사전·사후 평가와 연결.</td><td>우선 협의 후보이나 저작권·전자복제·상업사용 권리자 확인 필요.</td><td>“기관이 쓰는 판본과 권리 범위를 확인한 뒤 결과 요약 연동부터 검토한다.”</td></tr>
+            <tr><td>SGDS-K</td><td>예방·인지강화·쉼터 평가와 연결.</td><td>영어 GDS public domain이 한국어판 전자권리를 자동 허락하지 않는다. 우울·위기 대응 책임 필요.</td><td>“기관 기존 시행 방식과 판본을 유지하고, 앱은 비진단 활동 경험 기록을 우선한다.”</td></tr>
+            <tr><td>KDSQ-C / AD8</td><td>인지변화 정보제공자 보고 계열.</td><td>응답자 구분과 권리 확인 필요. AD8은 무료 허용 범위가 EMR/EHR, 제품 홍보, 임상시험을 제외한다.</td><td>“보호자 입력을 임상 선별점수로 바꾸지 않고, 권리자 허락 전 탑재하지 않는다.”</td></tr>
+            <tr><td>S-ZBI / KQOL-AD / ADL·IADL</td><td>보호자 부담, 삶의 질, 생활기능 목표가 명확할 때 선택.</td><td>첫 예방교실 MVP 필수세트가 아니다. Mapi 등 라이선스와 정확한 한국어 판본 확인 필요.</td><td>“목적이 보호자 지원 또는 생활기능으로 확장될 때 별도 모듈로 검토한다.”</td></tr>
+            <tr><td>SUS</td><td>직원·보호자 사용성 측정에 상대적으로 용이.</td><td>한국 치매 참여자 전용 임상척도가 아니다. 번역·인지적 부담 확인 필요.</td><td>“직원/보호자 사용성 보조 지표로만 쓴다. 참여자는 관찰·쉬운 질문을 우선한다.”</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="pilot">
+      <h2>7. 기관 파일럿 제안안</h2>
+      <h3>목적</h3>
+      <p>첫 질문은 “센터에서 익힌 활동을 집에서 이어갈 수 있고, 담당자가 배정·진행 확인·어려움 대응을 감당할 수 있는가?”다. “치매를 예방하는가”는 작은 단기 파일럿으로 답할 수 없다.</p>
+      <div class="note warn">
+        <strong>baseline 주의:</strong> 기관이 과거에 시행한 SGDS-K·SMCQ 등 운영평가 점수는 자동으로 MemoryLink 파일럿 baseline이 아니다. 앱 시작일과 평가일의 간격, 평가 목적, 재사용 동의, 도구 권리, 기관 승인, 응답자와 시행모드가 맞아야 탐색 변수로 연결할 수 있다.
+      </div>
+      <div class="grid">
+        <div class="box"><b>기간</b><strong>참여자 운영 8주</strong><p>승인·계약·모집 기간은 별도. 운영 기간만 8주로 본다.</p></div>
+        <div class="box"><b>규모</b><strong>한 기관, 한 대상군, 12~20명 검토</strong><p>기기와 보조인력 여건에 따라 6~10명씩 나누어 시작할 수 있다.</p></div>
+        <div class="box"><b>활동</b><strong>권리·접근성 확인된 2~3종</strong><p>STT, 미검증 selfcheck, 0~100 인지판정, 보호자 요약 공유는 기본 범위에서 제외한다.</p></div>
+        <div class="box"><b>주요 결과</b><strong>운영가능성·수용성·도움·안전</strong><p>임상효과가 아니라 모집, 완료, 기술 문제, 직원 부담, 불편을 본다.</p></div>
+      </div>
+      <h3>8주 흐름</h3>
+      <ol>
+        <li><strong>1주:</strong> 설명, 동의, 접근성 확인, 가상 연습, 가정 환경·도움 가능성 확인, 기관 승인 평가.</li>
+        <li><strong>2주:</strong> 센터에서 2회 supervised practice. 로그인, 배정 확인, 쉬기·중단·문의 경로를 연습한다.</li>
+        <li><strong>3~4주:</strong> 가정 실습 주 2회, 각 15~20분 이하. 매주 기술 문제와 부담을 점검한다.</li>
+        <li><strong>5~7주:</strong> 같은 구조를 유지하되, 중단·재개·도움 수준을 누락 없이 기록한다. 승인 없는 알고리즘 변경은 하지 않는다.</li>
+        <li><strong>8주:</strong> 종료 면담, 사용성·불편·계속 이용 의향, 승인된 탐색 평가, 자료 대조, 기기 반환과 공유권한 종료.</li>
+      </ol>
+      <p>계획 활동은 센터 연습 2회와 가정 실습 10회를 분리한다. 참여율의 기본 분모는 가정 실습 10회이며, 센터 실습과 총 12회는 별도 보고한다.</p>
+      <p>여기서 15~20분은 1회 가정 파일럿 세션의 운영 상한이고, 세션 안에는 5~15분짜리 개별 앱 활동 과제 1~2개와 쉬기·중단·도움 기록이 포함될 수 있다. 이 파일럿 세션은 센터 대면 회기를 보완해 운영 가능성을 보는 구조이지 센터 프로그램을 대체하는 구조가 아니다.</p>
+      <p>디지털 중재 연구의 이행률을 제품 지표로 옮길 때는 분모를 다시 정의한다. MEET의 84.7%는 위험요인 관리, 인지, 운동, 영양, 동기교육, 자기점검을 합친 166개 전체 중재 사건 기준이며 앱 유지율이 아니다. MemoryLink는 배정 인원, 시작 인원, 활동 완료 인원, 후속평가 인원을 분리해 보고한다.</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>평가영역</th><th>예시 지표</th><th>보고 원칙</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>모집</td><td>초대, 적격, 동의, 시작, 거절 이유</td><td>선택편향을 숨기지 않는다.</td></tr>
+            <tr><td>유지</td><td>등록 대비 완료, 탈락·중단 이유</td><td>안전상 중단을 실패나 낮은 능력으로 낙인찍지 않는다.</td></tr>
+            <tr><td>참여</td><td>가정 완료 회기/계획 가정 10회, 실제 활동시간 중앙값</td><td>분자·분모와 누락·기술실패를 함께 제시한다.</td></tr>
+            <tr><td>전달 가능성</td><td>정상 제공 회기, 크래시, 로그인 실패, 기기 미사용</td><td>기술 실패를 참여자 책임으로 분류하지 않는다.</td></tr>
+            <tr><td>도움</td><td>독립, 보호자 말 설명, 직원 설명, 직접 조작 보조, 지원시간</td><td>가정 실습 부담이 가족에게 이전되는지 본다.</td></tr>
+            <tr><td>수용성</td><td>쉬운 종료 질문, 계속 이용 의향, 싫었던 점, 담당자 면담</td><td>자체 문항을 검증된 임상척도라고 부르지 않는다.</td></tr>
+            <tr><td>안전</td><td>불편, 중단, 상태 악화 의심, 개인정보 사고·근접사고</td><td>관련성 판단은 기관 담당자가 한다.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <details open>
+        <summary>첫 미팅 질문 12개</summary>
+        <ol>
+          <li>지금 가장 어려운 일은 참여 유지, 난이도 조절, 기록, 보호자 연계 중 무엇인가?</li>
+          <li>첫 대상군은 예방교실·인지강화교실·쉼터 중 어디인가? 등록·선별·진단은 누가 이미 수행하는가?</li>
+          <li>기존 활동 중 어느 15~20분에 넣을 수 있는가? 앱이 대체하거나 추가하는 업무는 무엇인가?</li>
+          <li>1명의 진행자가 안전하게 보조할 수 있는 인원과 사용 가능한 태블릿·Wi-Fi는?</li>
+          <li>읽기·청력·시력·손 사용·디지털 경험의 범위와 필요한 접근성은?</li>
+          <li>사업 책임자, 임상 책임자, 실제 운영자, 개인정보·보안, 계약·구매 담당은 각각 누구인가?</li>
+          <li>기관은 이를 연구, 서비스 평가, 단순 시연 중 무엇으로 검토하는가? IRB·데이터 심의 경로는?</li>
+          <li>기존 평가를 활용할 수 있는가? 도구 사용권·교육·반복검사 조건은 충족하는가?</li>
+          <li>어떤 데이터가 반드시 필요하고, 어떤 데이터는 외부에 나가면 안 되는가?</li>
+          <li>대상자가 힘들어하거나 상태가 변하면 누구에게 어떻게 연결하는가?</li>
+          <li>어떤 운영 결과가 나오면 중단·수정·확대를 결정하는가? 실제 구매 시 가장 큰 조건은?</li>
+          <li>결과 공개, 기관명 언급, 담당자 의견 인용을 어느 절차로 승인받는가?</li>
+        </ol>
+      </details>
+      <details open>
+        <summary>규제·연구윤리 게이트</summary>
+        <ul>
+          <li>식약처 웰니스 판단은 사용목적, 위해도, 표시·광고·판매 설명을 함께 본다. 치매 인지장애 환자를 평가·분석하고 상태별 피드백과 인지 개선/치료 콘텐츠를 제공한다고 설명하면 의료기기 해당 가능성이 커진다.</li>
+          <li>기관 파일럿은 연구, 서비스 평가, 단순 시연 중 무엇인지 먼저 정한다. 사람 대상 연구에 해당하면 IRB 또는 공용위원회 경로를 검토한다.</li>
+          <li>동의는 연구 참여, 개인정보·민감정보 처리, 제3자 제공·위탁, 사진·홍보 이용을 구분한다. 포괄 동의 한 번으로 재판매·AI 학습·홍보 사용을 허용받았다고 보지 않는다.</li>
+          <li>실명 연결표와 임상 평가 원본은 기관 보관을 우선 검토한다. 개발사는 연구번호와 최소 운영 로그만 받는 구조가 가장 안전하다.</li>
+        </ul>
+      </details>
+    </section>
+
+    <section id="sources">
+      <h2>8. 출처와 확인 수준</h2>
+      <p>아래 목록은 보고서 본문에서 사용한 주요 근거다. 링크는 조사 시점의 공개 확인 경로이며, 권리 계약·기관 내부 SOP·현행 최신 서식 전체를 대신하지 않는다.</p>
+      <details open>
+        <summary>수신한 로컬 연구자료 묶음</summary>
+        <ul class="source-list">
+          <li><code>memorylink_evidence_sources_20261005.zip</code> v1, 90,268 bytes, SHA256 <code>4f707451e423aa2ffa67c684cb9596d312011244b5f7a44ecdb801900d07b2e6</code>.</li>
+          <li><code>assessment_result_import_endpoint_supplement_ko.md</code>: 기관 평가결과 연결, 총점 입력 권리, 과거 기관점수 baseline 제한.</li>
+          <li><code>center_programs_source_matrix.md</code>: 센터 정책·국내외 프로그램 사례·권리 질문.</li>
+          <li><code>cognitive_intervention_evidence_2026-10-05.md</code>: WHO, NICE, CST, 인지훈련, 인지재활, 국내 디지털 중재 근거.</li>
+          <li><code>current_activity_mapping_and_protocols.md</code>: 현재 앱 활동 재해석과 신규 활동 프로토콜.</li>
+          <li><code>memorylink_center_pilot_2026-10-05.md</code>: 8주 기관 파일럿, 데이터 모델, 미팅 질문, 규제·윤리 게이트.</li>
+          <li><code>questionnaire_rights_validation_ko.md</code>: 검사·설문 권리와 한국어 타당화 근거.</li>
+          <li><code>second_round_digital_protocol_traceability.md</code>: ACTH·SUPERBRAIN·MEET의 직접 원리, 버전 차이, 이행률 분모, 원리→앱설계 추적표.</li>
+        </ul>
+      </details>
+      <details open>
+        <summary>정책·센터·권리 주요 출처</summary>
+        <ul class="source-list">
+          <li>보건복지부, 2026년 치매정책 사업안내. 치매선별검사 CIST 원칙, 예방·인지강화·쉼터 평가도구와 운영기준 확인. <a href="https://www.cjwf.or.kr/home/sub.php?listCnt=10&amp;menukey=204&amp;mod=view&amp;no=653315&amp;page=8&amp;scode=00000004">공개 게시물</a>.</li>
+          <li>보건복지부, 2025년 치매정책 사업안내 별지서식. CIST, SGDS-K, SMCQ, KDSQ-C, S-ZBI 서식 위치를 판본 확인용으로 사용. <a href="https://www.mohw.go.kr/board.es?act=view&amp;bid=0019&amp;list_no=1485015&amp;mid=a10411010300&amp;tag=">공식 게시물</a>.</li>
+          <li>중앙치매센터 <cite>두근두근 뇌운동</cite>, <cite>반짝활짝 뇌운동</cite>, <cite>톡톡(Talk Talk)</cite> 관련 공개 자료. 교재 복제 권리는 별도 확인 필요.</li>
+          <li>중앙 <cite>두근두근 뇌운동</cite> 교재: PDF 6~7, 14~16, 20~22, 28~30, 50~52, 82~85, 92~95, 114쪽을 기준으로 활동 원리와 판권을 확인. 중앙 <cite>반짝활짝 뇌운동</cite>: 2019 정책 PDF 인쇄 63~65쪽/PDF 119~121쪽. 중앙 <cite>톡톡</cite>: 2021 개발보고서 인쇄 71~83쪽/PDF 79~91쪽과 2022 연차보고서 인쇄 51쪽/PDF 26쪽.</li>
+          <li>연수구·동래구·영도구 치매안심센터 공개 프로그램 안내. 기관 사례는 운영 참고이며 효과 연구가 아니다. <a href="https://www.yeonsu.go.kr/clinic/health/dementia/program.asp">연수구</a>, <a href="https://www.dongnae.go.kr/index.dongnae?menuCd=DOM_000000803022003000">동래구</a>.</li>
+          <li>식약처 디지털 의료제품·웰니스 판단 관련 공개 자료. 치매 인지장애 평가·분석·상태별 개선 콘텐츠 표현은 의료기기 해당 가능성 검토 대상.</li>
+          <li>PAR, 인싸이트, MoCA Cognition, Washington University AD8, Mapi Research Trust, Yesavage GDS 공식/준공식 권리자료. <a href="https://www.parinc.com/about/connect-with-us/licensing-team">PAR licensing</a>, <a href="https://inpsyt.co.kr/main/board/0000/0002/view/1/12808">K-MMSE-2 안내</a>, <a href="https://www.mocacognition.com/permission">MoCA permissions</a>, <a href="https://otm.wustl.edu/ad8-terms-agreement/">AD8 terms</a>, <a href="https://eprovide.mapi-trust.org/zbi-zarit-burden-interview/">Mapi ZBI</a>, <a href="https://web.stanford.edu/~yesavage/GDS">GDS</a>.</li>
+          <li>APA, test data와 test materials 구분에 관한 FAQ. 결과·총점과 검사자료를 구분하는 참고 설명이며 한국 상용 SaaS 허락은 아니다. <a href="https://www.apa.org/science/programs/testing/data-disclosure-faqs">APA FAQ</a>.</li>
+          <li>PAR AI Report Writer 안내. 특정 PAR 서비스 안에서 결과보고서·점수요약 입력과 문항·매뉴얼 제외를 구분한 예시로만 사용했다. <a href="https://www.parinc.com/docs/default-source/product-resources/ai_report_writer_quick_start_guide-%281%29.pdf?sfvrsn=e9558076_5">Quick Start Guide</a>.</li>
+        </ul>
+      </details>
+      <details open>
+        <summary>임상·중재 근거 주요 출처</summary>
+        <ul class="source-list">
+          <li>WHO, <cite>Risk reduction of cognitive decline and dementia, second edition</cite>, 2026. <a href="https://www.who.int/publications/i/item/9789240123557">WHO publication</a>, <a href="https://www.ncbi.nlm.nih.gov/books/NBK623908/">NCBI Bookshelf 본문</a>.</li>
+          <li>NICE NG97, <cite>Dementia: assessment, management and support for people living with dementia and their carers</cite>. <a href="https://www.nice.org.uk/guidance/ng97/resources/dementia-assessment-management-and-support-for-people-living-with-dementia-and-their-carers-pdf-1837760199109">PDF</a>.</li>
+          <li>Woods 등 2023, Cognitive stimulation for people with dementia, Cochrane Review. <a href="https://www.cochrane.org/evidence/CD005562_can-cognitive-stimulation-benefit-people-dementia">Cochrane 요약</a>, <a href="https://doi.org/10.1002/14651858.CD005562.pub3">DOI</a>.</li>
+          <li>Spector 등 2003, evidence-based CST RCT, British Journal of Psychiatry. <a href="https://doi.org/10.1192/bjp.183.3.248">DOI</a>.</li>
+          <li>Orrell 등 2014 maintenance CST RCT, British Journal of Psychiatry. <a href="https://doi.org/10.1192/bjp.bp.113.137414">DOI</a>.</li>
+          <li>Orrell 등 2017 iCST RCT, PLOS Medicine. <a href="https://journals.plos.org/plosmedicine/article?id=10.1371/journal.pmed.1002269">원문</a>, <a href="https://doi.org/10.1371/journal.pmed.1002269">DOI</a>.</li>
+          <li>Kudlicka 등 2023, cognitive rehabilitation for mild to moderate dementia, Cochrane Review. <a href="https://www.cochrane.org/evidence/CD013388_what-are-benefits-and-risks-cognitive-rehabilitation-people-mild-moderate-dementia">Cochrane 요약</a>.</li>
+          <li>Clare 등 2019 GREAT cognitive rehabilitation trial. <a href="https://pubmed.ncbi.nlm.nih.gov/30724405/">PubMed</a>, <a href="https://doi.org/10.1002/gps.5076">DOI</a>.</li>
+          <li>Bahar-Fuchs 등 2019, cognitive training for mild to moderate dementia, Cochrane Review. <a href="https://www.cochrane.org/evidence/CD013069_cognitive-training-people-mild-moderate-dementia">Cochrane 요약</a>.</li>
+          <li>Gates 등 2019, computerized cognitive training for preventing dementia in MCI, Cochrane Review. <a href="https://www.cochrane.org/evidence/CD012279_computerised-cognitive-training-preventing-dementia-people-mild-cognitive-impairment">Cochrane 요약</a>.</li>
+          <li>Lampit 등 2014, computerized cognitive training meta-analysis in cognitively healthy older adults. <a href="https://journals.plos.org/plosmedicine/article?id=10.1371/journal.pmed.1001756">원문</a>.</li>
+          <li>Coe 등 2026 ACTIVE 20년 추적 분석. 전체 속도훈련군, 추가훈련 하위군, 25% 예방효과 전이 제한을 구분했다. <a href="https://doi.org/10.1002/trc2.70197">DOI</a>.</li>
+          <li>Ngandu 등 2015 FINGER, Baker 등 2025 US POINTER, Moon 등 2025 SUPERBRAIN MEET. <a href="https://pubmed.ncbi.nlm.nih.gov/25771249/">FINGER PubMed</a>, <a href="https://doi.org/10.1001/jama.2025.12923">US POINTER DOI</a>, <a href="https://doi.org/10.1002/alz.14517">SUPERBRAIN DOI</a>.</li>
+          <li>Jeong 등 2016 한국 집단·가정 인지중재, Jang 등 2021 강남구 ACTH 스마트폰 RCT, Baik 등 한국 가정 태블릿 예비시험. <a href="https://doi.org/10.1159/000442261">Jeong DOI</a>, <a href="https://doi.org/10.1002/trc2.12209">ACTH DOI</a>.</li>
+          <li>ACTH 실제 Supporting material DOCX, Supplementary Method와 Table S1. 연구용 10개 과제·4단계 난이도 확인용이며 각 과제 독립효과나 상용 버전 동등성 근거가 아니다. <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC8719348/">논문·부록 진입점</a>.</li>
+          <li>MIDAS IT Inbrain Trainer 2018 브로슈어. 11개 콘텐츠·3단계 중심 상용 자료로, ACTH 연구 부록의 10개 과제·4단계와 섞어 쓰지 않는다. <a href="https://www.midasit.com/img/part/inbrainTrainer_2018.pdf">공식 PDF</a>.</li>
+          <li>Park 등 2020 SUPERBRAIN 개발 프로토콜, Table 2~3. 기억 전략·연습·확인 흐름과 활동 구성을 확인했다. <a href="https://doi.org/10.3988/jcn.2020.16.2.292">DOI</a>, <a href="https://www.thejcn.com/Synapse/Data/PDFData/0145JCN/jcn-16-292.pdf">PDF</a>.</li>
+          <li>Cho 등 2024 SUPERBRAIN MEET 프로토콜. 시행자 교육, 출석 확인, 코디네이터 앱 관리자 확인, 데이터 모니터링 계획을 확인했다. <a href="https://doi.org/10.12779/dnd.2024.23.1.30">DOI</a>, <a href="https://dnd.or.kr/pdf/10.12779/dnd.2024.23.1.30">PDF</a>.</li>
+          <li>Moon 등 2025 MEET Supporting Information, Table S1. 전문가 진행 인지활동, 가정활동, 화상 숙제 지도, 다학제 지원 구조 확인용이다. <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC11848216/">논문·부록 진입점</a>.</li>
+          <li>슈퍼브레인H Google Play 등록. 개발자 식별 참고로만 사용했고 효능·안전성·권리 전체 검증자료가 아니다. <a href="https://play.google.com/store/apps/details?hl=en&amp;id=com.rowan.superbrain_h2_client">등록 페이지</a>.</li>
+        </ul>
+      </details>
+      <details open>
+        <summary>검사·설문 타당화 주요 출처</summary>
+        <ul class="source-list">
+          <li>Kwon 등 2026 CIST 검증 연구. 표본이 매우 크지만 검증편향과 시행 맥락 때문에 앱 자가검사 정확도로 옮기지 않는다. <a href="https://doi.org/10.3988/jcn.2025.0383">DOI</a>, <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC12802069/">원문</a>.</li>
+          <li>Youn 등 2009 SMCQ, Yang 등 2002 KDSQ, Kim 등 2020 KDSQ-C 단축형. <a href="https://doi.org/10.1159/000205512">SMCQ DOI</a>, <a href="https://www.jkna.org/upload/pdf/200202006.pdf">KDSQ PDF</a>, <a href="https://doi.org/10.3988/jcn.2020.16.1.145">KDSQ-C DOI</a>.</li>
+          <li>Kang 등 1997 K-MMSE, Lee 등 2008 MoCA-K, Kang 등 2009 K-MoCA. <a href="https://jkna.org/journal/view.php?number=4088">K-MMSE 초록</a>, <a href="https://doi.org/10.1177/0891988708316855">MoCA-K DOI</a>, <a href="https://doi.org/10.15842/kjcp.2009.28.2.013">K-MoCA DOI</a>.</li>
+          <li>Ryu 등 2009 K-AD8, Kang/Chin K-IADL 계열, Won K-ADL/K-IADL 계열. <a href="https://doi.org/10.1097/WAD.0b013e31819e6881">K-AD8 DOI</a>, <a href="https://doi.org/10.12779/dnd.2018.17.1.11">K-IADL DOI</a>.</li>
+          <li>Bae/Cho 2004 SGDS-K, S-ZBI/ZBI 관련 Mapi와 한국 활용 문헌, Shin 2006 KQOL-AD. <a href="https://doi.org/10.1016/j.jpsychores.2004.01.004">SGDS-K DOI</a>, <a href="https://doi.org/10.17079/jkgn.2022.24.2.142">S-ZBI 활용 DOI</a>, <a href="https://pubmed.ncbi.nlm.nih.gov/16764499/">KQOL-AD PubMed</a>.</li>
+          <li>Brooke SUS 회고, ISPOR 전자 PROM migration 권고, CONSORT pilot and feasibility extension. <a href="https://www.ispor.org/heor-resources/good-practices/article/updated-recommendations-on-evidence-needed-to-support-measurement-comparability-among-modes-of-data-collection-for-patient-reported-outcome-measures">ISPOR 권고</a>, <a href="https://doi.org/10.1136/bmj.i5239">CONSORT pilot DOI</a>.</li>
+        </ul>
+      </details>
+      <div class="note">
+        <strong>남은 확인:</strong> 기관별 내부 SOP, 각 도구의 현행 상업 전자 라이선스, 실제 협력기관의 보안·구매·IRB 경로, MemoryLink의 실제 배포·계정·권한 구현 검증은 별도 작업이다.
+      </div>
+    </section>
+  </main>
+  <script>
+    (() => {
+      let printOpenedDetails = [];
+      const openDetailsForPrint = () => {
+        printOpenedDetails = Array.from(document.querySelectorAll('details:not([open])'));
+        for (const details of printOpenedDetails) details.setAttribute('open', '');
+      };
+      const restoreDetailsAfterPrint = () => {
+        for (const details of printOpenedDetails) details.removeAttribute('open');
+        printOpenedDetails = [];
+      };
+      window.addEventListener('beforeprint', openDetailsForPrint);
+      window.addEventListener('afterprint', restoreDetailsAfterPrint);
+      const printMedia = window.matchMedia && window.matchMedia('print');
+      if (printMedia) {
+        const onChange = (event) => event.matches ? openDetailsForPrint() : restoreDetailsAfterPrint();
+        if (printMedia.addEventListener) printMedia.addEventListener('change', onChange);
+        else if (printMedia.addListener) printMedia.addListener(onChange);
+      }
+    })();
+  </script>
+</body>
+</html>
+

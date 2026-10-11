@@ -1,0 +1,15 @@
+Library create results, 2026-10-05
+
+2026-10-05_topic-choice-result.md
+- file_id: file_00000000db7c82098f4fdd270d97c3b8
+- library_file_id: libfile_b141863d88308191aa9f935c5d822dd6
+- current_version_number: 0
+- mime_type: text/markdown
+- size_bytes: 2225
+
+2026-10-05_topic-choice-preview.html
+- file_id: file_000000007b5c82099332b4ee35613675
+- library_file_id: libfile_de93ff60c88881919114aafa8314ac65
+- current_version_number: 0
+- mime_type: text/html
+- size_bytes: 8527

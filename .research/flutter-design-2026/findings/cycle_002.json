@@ -1,0 +1,25 @@
+{
+  "cycle": 2,
+  "sub_question": "2. 2026 Flutter 디자인 트렌드/모범 (트랙 A) — Material 3 Expressive, 글래스/뉴모피즘 여부, 컬러·타이포·간격 시스템의 현재 모범",
+  "note_restored": "이 파일은 병렬 워커(트랙 B)와의 cycle_002.json 파일명 충돌로 일시 덮어써졌다가, 트랙 B 워커가 FINDINGS.md 의 트랙 A 항목에서 복원함. 원본 detail_findings 세부(track_a_urls 원본 등)는 FINDINGS.md Cycle 002 항목 및 트랙 A 워커의 후속 사이클을 정본으로 참조.",
+  "summary": "Material 3 Expressive 는 M3 의 공식 진화판(정본 m3.material.io)이며 표현 5요소 = color·shape·size·motion·containment. 이 요소들은 '화려함'이 아니라 핵심 액션 강조·유사 요소 그룹화로 가독·사용성을 높이는 장치로 정의됨(design.google 리서치 1차). 아이트래킹 실험에서 M3 Expressive 가 핵심 요소 인지를 최대 4배 빠르게 하고 45세+ 사용자의 age effect 를 극적으로 소거 — 고령 타깃 채택의 1차 정당화 근거. Flutter 는 3.16부터 M3 기본 활성(useMaterial3=true), M2 deprecation 예정.",
+  "sources_checked": [
+    "https://design.google/library/expressive-material-design-google-research",
+    "https://docs.flutter.dev/ui/design/material",
+    "https://m3.material.io",
+    "https://m3.material.io/blog/building-with-m3-expressive"
+  ],
+  "sources_empty": [],
+  "new_findings_count": 5,
+  "evidence_strength": "strong",
+  "key_insight": "MemoryLink 는 M3 Expressive 의 큰 타깃/색 강조/스프링 모션 축은 취하되, 강도는 calm 쪽(라벤더 단일 액센트, MOTION 5-6 상한)으로 눌러야 한다. 이는 충돌이 아니라 공식 문서가 명시 권장하는 '의도적 강도 조절'(calmer 버전 선호 소수 존재). 아이트래킹 age-effect erasure 근거가 60~80대·MCI 타깃에 M3 Expressive 채택을 1차로 정당화.",
+  "detail_findings": {
+    "expressive_5_elements": "color·shape·size·motion·containment — 핵심 액션 강조 + 유사 요소 그룹화로 가독·사용성 향상 장치(장식 아님).",
+    "age_effect_erasure": "아이트래킹 랩(10앱, M3 vs M3E 무작위): 핵심 요소 인지 최대 4배 빠름. 45세+ 가 젊은 사용자와 동등한 fixation time — age effect 극적 소거. 큰 버튼·고대비 컨테인먼트가 movement/visual ability 다양한 사용자에 더 쉬움.",
+    "official_cautions": "① 기능 우선(장식이 명료성 해치면 실패) ② 확립된 UI 패턴 존중(리스트·carousel) ③ calmer 버전 선호 강한 소수 존재→사용자 니즈에서 출발, 강도 의도적 조절(calm-design 라벤더와 화해 근거).",
+    "preference_numbers": "전 연령 net-positive, 18-24세 최대 87% 선호. 46개 연구·18,000명+. '리서치 주장'으로 표기(임상·성능 수치 아님).",
+    "flutter_side": "docs.flutter.dev/ui/design/material(2026-07-31 갱신, Flutter 3.47). 3.16부터 M3 기본(useMaterial3=true), M2 deprecation 예정. dynamic color·design tokens·large-screen·enhanced accessibility 제공."
+  },
+  "track_a_urls": "디자인 ui/design/material·ui/design/text/typography / 모션 ui/animations(+implicit-animations,hero-animations,staggered-animations), cookbook/animation/page-route-animation, cookbook/animation/physics-simulation / 성능 perf·perf/impeller·perf/best-practices·perf/rendering-performance·ui/design/graphics/fragment-shaders / adaptive ui/adaptive-responsive(+large-screens) / 아키텍처 app-architecture/guide·app-architecture/recommendations / 접근성 ui/accessibility(+ui-design-and-styling)",
+  "verification": {"passed": null, "detail": "brief 에 Definition of Done 절 없음."}
+}

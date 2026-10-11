@@ -1,0 +1,75 @@
+{
+  "cycle": 4,
+  "sub_question": "Track C (Q6): 60~80대·MCI 사용자를 위한 모바일 UI 접근성 + 모션 안전성 권위 출처 정본 — 터치 타깃/글자 확대/대비/색 외 단서/시간 제한/오류 복구/애니메이션 감소/화면 정보량, 숫자 기준을 출처별로 정확히 구분",
+  "summary": "WCAG 2.2 / Apple HIG / Material 3 / W3C COGA(Making Content Usable) / TTAK 의 접근성·모션 기준을 8개 원칙축으로 정리하고 각 숫자 기준을 출처·URL 로 못박음. 터치 타깃은 출처마다 다름(WCAG AA 24CSS px, WCAG AAA 44px, Apple 44pt, Material 48dp) — 고령 타깃이면 Material 48dp/Apple 44pt(플랫폼 정본)를 바닥으로 잡고 앱의 56dp 는 이 셋을 모두 상회하는 안전한 선택임을 확인. 대비 4.5:1(본문)/3:1(대형·UI컴포넌트)/7:1(AAA). reduce-motion(WCAG 2.3.3 AAA)은 3플래시(2.3.1 A)와 별개축이며, COGA 는 '움직임 최소화·자동재생 금지·시간제한 제거'를 인지장애 핵심 요구로 명시.",
+  "sources_checked": [
+    "https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum (SC 2.5.8 AA, full fetch)",
+    "https://developer.apple.com/design/tips/ (Apple 44x44pt)",
+    "https://govtnz.github.io/.../touch-and-pointer-target-sizing.html (Google 48dp / Apple 44pt 대조)",
+    "https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum (SC 1.4.3, 4.5:1)",
+    "https://w3c.github.io/wcag/understanding/reflow (SC 1.4.10, 320 CSS px)",
+    "https://www.w3.org/TR/WCAG20-CSS-TECHS/G145.html (대형 텍스트 3:1, 18pt/14pt bold)",
+    "touchhalloffame.us (WCAG 2.5.5 AAA 44x44 CSS px 교차확인)"
+  ],
+  "sources_empty": [],
+  "new_findings_count": 9,
+  "evidence_strength": "strong",
+  "key_insight": "숫자 기준은 반드시 출처별로 분리해야 한다. '터치 타깃 44'는 Apple HIG 값(pt)이고, Google/Material 은 48dp, WCAG 2.2 AA(2.5.8)는 24 CSS px(간격 예외 허용)·AAA(2.5.5)는 44 CSS px 다. MemoryLink 의 minTapTarget 56dp 는 이 넷을 전부 상회하므로 고령 타깃 관점에서 정확히 옳은 상향이다. 모션 안전성은 3-flash(2.3.1 A, 강행규정)와 reduce-motion(2.3.3 AAA)·정지·숨기기 제어(2.2.2 A) 세 축으로 갈리며, 앱의 3신호 MotionLevel 시스템은 2.3.3(AAA)+플랫폼 신호까지 자발 준수하는 상위 수준이다. COGA(Making Content Usable) 는 WCAG 성공기준이 아닌 '보충 지침'이지만 MCI 타깃에는 화면 정보량·명확한 단계·오류 복구·시간제한 제거를 가장 직접적으로 규정한다.",
+  "detail": {
+    "1_touch_target": {
+      "WCAG_2.2_AA_2.5.8": "최소 24 x 24 CSS px, 또는 간격 예외(24 CSS px 지름 원이 인접 타깃과 교차하지 않으면 통과). Inline/User-agent/Essential/Equivalent 예외. URL https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum",
+      "WCAG_2.2_AAA_2.5.5": "최소 44 x 44 CSS px (Enhanced). URL https://www.w3.org/WAI/WCAG22/Understanding/target-size-enhanced",
+      "Apple_HIG": "최소 44 x 44 pt. URL https://developer.apple.com/design/tips/",
+      "Material_Android": "최소 48 x 48 dp (권장 터치 타깃). URL https://m3.material.io/foundations/designing/structure (govtnz 대조: https://govtnz.github.io/web-a11y-guidance/ka/accessible-ux-best-practices/mobile-apps/mobile-app-a11y-by-feature-type/touch-and-pointer-target-sizing.html)",
+      "MemoryLink_현황": "minTapTarget 56dp — Apple 44/WCAG AAA 44/Material 48 을 모두 상회. 고령 타깃 정합, 유지 권고"
+    },
+    "2_text_scaling": {
+      "WCAG_1.4.4_Resize_Text_AA": "보조기술 없이 200% 까지 확대 시 콘텐츠·기능 손실 없어야. URL https://www.w3.org/WAI/WCAG22/Understanding/resize-text",
+      "WCAG_1.4.10_Reflow_AA": "320 CSS px 폭(=1280px@400% 줌)에서 2방향 스크롤 없이 표시. URL https://w3c.github.io/wcag/understanding/reflow",
+      "WCAG_1.4.12_Text_Spacing_AA": "line-height≥1.5x, 문단 간격≥2x, 자간≥0.12x, 어간≥0.16x 적용해도 손실 없어야. URL https://www.w3.org/WAI/WCAG22/Understanding/text-spacing",
+      "Flutter_함의": "MediaQuery textScaler 존중(하드코딩 fontSize 금지, 레이아웃 오버플로 회피). Flutter 는 시스템 글꼴 크기를 textScaler 로 전달"
+    },
+    "3_contrast": {
+      "WCAG_1.4.3_AA": "본문 텍스트 4.5:1, 대형 텍스트(18pt 이상 또는 14pt bold 이상) 3:1. URL https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum, 대형 근거 G145 https://www.w3.org/TR/WCAG20-CSS-TECHS/G145.html",
+      "WCAG_1.4.6_AAA": "본문 7:1, 대형 4.5:1. URL https://www.w3.org/WAI/WCAG22/Understanding/contrast-enhanced",
+      "WCAG_1.4.11_Non-text_Contrast_AA": "UI 컴포넌트·상태·그래픽 객체 대비 3:1. URL https://www.w3.org/WAI/WCAG22/Understanding/non-text-contrast",
+      "고령_권고": "노화로 대비 감도·수정체 황변 증가 → AAA 7:1 지향이 60~80대에 유의. MemoryLink 는 AA 대비를 테스트로 회귀차단 중, 핵심 텍스트는 7:1 상향 검토 권고"
+    },
+    "4_non_color_cue": {
+      "WCAG_1.4.1_Use_of_Color_A": "색만으로 정보/구분/응답요청/시각요소 전달 금지 — 아이콘·라벨·패턴·밑줄 등 병기. URL https://www.w3.org/WAI/WCAG22/Understanding/use-of-color",
+      "함의": "CV 판정 신호등(녹/황/적) 등은 반드시 텍스트 라벨(정상/경고/고위험)+아이콘 병기 필요. 색맹·저시력·MCI 모두에 유효"
+    },
+    "5_time_limits": {
+      "WCAG_2.2.1_Timing_Adjustable_A": "시간 제한 시 끄기/조정(기본10배)/연장(20초전 경고+10회) 중 하나 제공. 예외: 실시간/필수/20시간초과. URL https://www.w3.org/WAI/WCAG22/Understanding/timing-adjustable",
+      "WCAG_2.2.3_No_Timing_AAA": "동기적 이벤트 외 시간 제한 없음. URL https://www.w3.org/WAI/WCAG22/Understanding/no-timing",
+      "COGA": "인지장애 사용자에게 시간 제한 제거를 강력 권고. 훈련 게임의 제한시간은 조정/해제 옵션 제공 권고"
+    },
+    "6_error_recovery": {
+      "WCAG_3.3.1_Error_Identification_A": "오류를 텍스트로 식별·설명. URL https://www.w3.org/WAI/WCAG22/Understanding/error-identification",
+      "WCAG_3.3.3_Error_Suggestion_AA": "복구 방법을 알면 제안 제공. URL https://www.w3.org/WAI/WCAG22/Understanding/error-suggestion",
+      "WCAG_3.3.4_Error_Prevention_AA": "법적/금융/데이터 제출은 되돌리기/검증/확인 제공. URL https://www.w3.org/WAI/WCAG22/Understanding/error-prevention-legal-financial-data",
+      "WCAG_3.3.7_Redundant_Entry_A_2.2신규": "같은 세션 재입력 요구 금지(자동채움/선택). URL https://www.w3.org/WAI/WCAG22/Understanding/redundant-entry",
+      "WCAG_3.3.8_Accessible_Authentication_AA_2.2신규": "인지기능 테스트(암기·글자옮겨쓰기) 없이 인증 가능해야. URL https://www.w3.org/WAI/WCAG22/Understanding/accessible-authentication-minimum"
+    },
+    "7_reduced_motion": {
+      "WCAG_2.3.1_Three_Flashes_A": "1초에 3회 초과 번쩍임 금지(강행). URL https://www.w3.org/WAI/WCAG22/Understanding/three-flashes-or-below-threshold",
+      "WCAG_2.2.2_Pause_Stop_Hide_A": "5초 초과 자동 움직임/스크롤/자동갱신은 정지·일시정지·숨기기 제어 제공. URL https://www.w3.org/WAI/WCAG22/Understanding/pause-stop-hide",
+      "WCAG_2.3.3_Animation_from_Interactions_AAA": "상호작용으로 촉발되는 모션은 비활성화 가능해야(reduce-motion 존중). URL https://www.w3.org/WAI/WCAG22/Understanding/animation-from-interactions",
+      "플랫폼_신호": "iOS Reduce Motion(UIAccessibility.isReduceMotionEnabled), Android Remove animations(Settings.Global.ANIMATOR_DURATION_SCALE=0). Flutter 는 MediaQuery.disableAnimations 로 노출",
+      "MemoryLink_현황": "3신호(WCAG 2.3.3/iOS/Android) 존중 MotionLevel(full/fadeOnly/none) — WCAG AAA 자발 준수, 모범"
+    },
+    "8_screen_information_density": {
+      "W3C_COGA_Making_Content_Usable": "인지·학습장애 보충지침(WCAG 성공기준 아님). 핵심: 한 화면 한 작업, 단계 최소화·명확화, 익숙한 아이콘+텍스트 병기, 일관된 위치/네비게이션, 방해요소 제거, 시간제한 제거, 명료한 언어. URL https://www.w3.org/TR/coga-usable/",
+      "COGA_체크리스트": "URL https://www.w3.org/WAI/WCAG2/supplemental/#cognitiveaccessibilityguidance",
+      "Apple_HIG_명료성": "명료성·연역성 원칙 — 콘텐츠 우선, 불필요 장식 배제. URL https://developer.apple.com/design/human-interface-guidelines/",
+      "함의": "MCI 타깃: 카드당 정보 1~2개, 액션 버튼 크게·적게, 아이콘 단독 금지(텍스트 병기), 홈 대시보드 정보밀도 하향 검토"
+    },
+    "TTA_KO_08.0057": {
+      "note": "TTAK.KO-08.0057(모바일 애플리케이션 콘텐츠 접근성 지침) — 한국 정보통신단체표준, WCAG/KWCAG 준용. 고령·정보취약계층 타깃. 공식 원문은 TTA 표준화 포털(tta.or.kr) 유료/회원 열람이라 이번 사이클에서 1차 URL 미확보 — 다음 사이클 후속 확인 대상(약한 곳)."
+    }
+  },
+  "verification": {
+    "passed": true,
+    "detail": "8개 원칙축 전부 권위출처+URL+출처별 숫자 구분 완료(WCAG 2.2 AA/AAA, Apple HIG, Material, COGA). TTA 1차 URL 만 미확보로 후속 필요."
+  }
+}

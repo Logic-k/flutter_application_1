@@ -1,0 +1,74 @@
+{
+  "cycle": 5,
+  "title": "Flutter 아키텍처·성능 정본과 MemoryLink 대조",
+  "confidence": "strong",
+  "completed_questions": ["Q5", "Q6-code-verification"],
+  "official_findings": [
+    {
+      "topic": "architecture",
+      "finding": "Flutter 3.47 공식 권고는 UI와 data layer 분리, repository pattern, View와 ViewModel 분리, unidirectional data flow, dependency injection을 강하게 권고한다. ChangeNotifier/Provider는 상태관리 선택지로 조건부 권고되고 go_router는 대부분의 앱에 권고된다.",
+      "source": "https://docs.flutter.dev/app-architecture/recommendations"
+    },
+    {
+      "topic": "widget_cost",
+      "finding": "큰 build 메서드를 변화 단위별 작은 위젯으로 분리하고, const 위젯을 사용하며, setState를 실제로 바뀌는 하위 트리에 국소화하라고 권고한다.",
+      "source": "https://docs.flutter.dev/perf/best-practices"
+    },
+    {
+      "topic": "frame_budget",
+      "finding": "60Hz에서 약 16ms 안에 프레임을 만들고 표시해야 하며 120Hz에서는 더 짧은 예산이 필요하다. 성능 판단은 느린 실제 기기의 profile mode와 DevTools timeline/overlay에서 해야 한다.",
+      "source": "https://docs.flutter.dev/perf/ui-performance"
+    },
+    {
+      "topic": "rendering",
+      "finding": "Opacity, clipping, saveLayer, 큰 그림자와 불필요한 AnimatedBuilder 하위 재빌드는 측정 후 줄인다. AnimatedBuilder의 비의존 하위 트리는 child로 분리하고, 정적 복합 그래픽은 필요한 경우에만 RepaintBoundary를 검토한다.",
+      "source": "https://docs.flutter.dev/perf/best-practices"
+    },
+    {
+      "topic": "impeller",
+      "finding": "Flutter 3.27부터 Impeller는 iOS와 Android API 29+ 기본 렌더러이며 셰이더를 빌드 시점에 준비해 예측 가능한 성능을 목표로 한다. 이것이 앱 코드의 과도한 효과 비용을 자동으로 해결한다는 뜻은 아니다.",
+      "source": "https://docs.flutter.dev/perf/impeller"
+    },
+    {
+      "topic": "adaptive",
+      "finding": "기기 종류나 방향이 아니라 실제 가용 폭을 LayoutBuilder/MediaQuery.sizeOf로 판단하고, 큰 위젯을 분해하며, 터치 UI를 먼저 완성한 뒤 키보드·마우스를 추가하라고 권고한다.",
+      "source": "https://docs.flutter.dev/ui/adaptive-responsive/best-practices"
+    }
+  ],
+  "project_alignment": {
+    "already_good": [
+      "feature 중심 디렉터리와 Provider/go_router 사용은 공식 권고와 대체로 정합한다.",
+      "training 기능은 domain/application/data/presentation 성격의 분리가 이미 진행되어 있다.",
+      "main.dart는 무거운 초기화를 첫 프레임 이후로 미루고 Firebase·센서·알림 실패를 앱 기동과 분리한다.",
+      "AppMotion 4단, MotionSettings 3단, StaggeredColumn 단일 컨트롤러, MLChart/MLCountUp/정적 skeleton은 모션 유지보수와 접근성 면에서 성숙하다.",
+      "main_nav_screen.dart는 IndexedStack 안의 숨은 탭에 TickerMode를 꺼 보이지 않는 애니메이션 비용을 줄인다.",
+      "디자인·모션·접근성 관련 회귀 테스트 9개가 토큰, 대비, 타깃, overflow와 축소 모션을 방어한다."
+    ],
+    "gaps": [
+      "home_screen.dart는 약 520줄이며 상단에서 UserProvider, PedometerManager, TrainingProgressProvider를 watch하고 하위에서도 DiaryProvider를 watch해 관련 변경 시 큰 화면 트리가 재빌드될 수 있다.",
+      "reports_screen.dart는 DB 접근, 로딩 상태, 추이 계산, 임계값 판정, 차트 가공과 UI가 한 State에 섞여 있다. Repository/ViewModel로 분리할 가치가 높다.",
+      "main_nav_screen.dart의 IndexedStack은 5개 탭을 최초에 모두 만든다. 지연 생성은 콜드 스타트와 탭 전환 보존의 트레이드오프이므로 추측으로 바꾸지 말고 저사양 실기기에서 측정한다.",
+      "root PNG는 2026-07 화면이고 코드·DESIGN.md는 2026-08~09 개선을 담으므로 캡처만으로 현재 품질을 판정하면 안 된다.",
+      "pubspec에는 lottie, rive, flutter_animate가 없다. README의 Lottie 배지는 현재 구현과 불일치한다."
+    ]
+  },
+  "recommendations": [
+    "Provider 자체를 교체하지 않는다. 화면을 작은 Consumer/Selector 단위로 나누고, 필요한 값만 select한 뒤 실제 profile 결과로 효과를 확인한다.",
+    "reports부터 ReportRepository + ReportsViewModel + 작은 카드 위젯으로 분리하고 임계값 0.45/0.75를 도메인 정책으로 이동한다.",
+    "home은 기능 섹션별 private widget/file로 분리해 각 섹션이 자기 provider slice만 구독하게 한다.",
+    "긴 목록은 builder 계열을 우선하되 현재 목록이 짧다면 super_sliver_list 같은 패키지를 성급히 추가하지 않는다.",
+    "애니메이션 성능 합격은 에뮬레이터가 아니라 타깃 최저 사양 Android의 profile mode에서 UI/raster frame과 rebuild를 측정해 결정한다."
+  ],
+  "sources": [
+    "https://docs.flutter.dev/app-architecture/recommendations",
+    "https://docs.flutter.dev/perf/best-practices",
+    "https://docs.flutter.dev/perf/ui-performance",
+    "https://docs.flutter.dev/perf/impeller",
+    "https://docs.flutter.dev/ui/adaptive-responsive/best-practices",
+    "lib/main.dart",
+    "lib/features/home/home_screen.dart",
+    "lib/features/reports/reports_screen.dart",
+    "lib/features/navigation/main_nav_screen.dart",
+    "lib/core/motion/"
+  ]
+}

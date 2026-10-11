@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('training catalog', () {
-    test('contains the exact eight stable activities in course order', () {
+    test('contains the exact nine stable activities in course order', () {
       expect(
         trainingCatalog.map((activity) => activity.id),
         orderedEquals(<String>[
@@ -15,15 +15,16 @@ void main() {
           'shape_match',
           'sentence_reading',
           'daily_recall',
+          'topic_choice',
         ]),
       );
       expect(
         trainingCatalog.map((activity) => activity.id).toSet(),
-        hasLength(8),
+        hasLength(9),
       );
       expect(
         trainingCatalog.map((activity) => activity.route).toSet(),
-        hasLength(8),
+        hasLength(9),
       );
     });
 
@@ -113,6 +114,15 @@ void main() {
             null,
             true,
           ],
+          <Object?>[
+            'topic_choice',
+            '스마트 케어',
+            '/training/topic_choice',
+            null,
+            null,
+            null,
+            true,
+          ],
         ]),
       );
 
@@ -120,6 +130,7 @@ void main() {
       expect(categorization.adaptiveCategory, 'logic');
       expect(categorization.scoreCategory, 'logic');
       expect(trainingActivityById('daily_recall').isParticipationOnly, isTrue);
+      expect(trainingActivityById('topic_choice').isParticipationOnly, isTrue);
     });
 
     test('exposes the locked initial and legacy unlock sets', () {
@@ -131,6 +142,7 @@ void main() {
           'shape_sudoku',
           'shape_match',
           'daily_recall',
+          'topic_choice',
         }),
       );
       expect(
@@ -144,7 +156,7 @@ void main() {
         trainingCatalog
             .where((activity) => activity.isAlwaysUnlocked)
             .map((activity) => activity.id),
-        orderedEquals(<String>['daily_recall']),
+        orderedEquals(<String>['daily_recall', 'topic_choice']),
       );
     });
 

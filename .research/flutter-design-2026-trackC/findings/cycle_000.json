@@ -1,0 +1,45 @@
+{
+  "cycle": 0,
+  "sub_question": "C1 — 공식 문서 정본 목록 + 문서 상태 분류; C3 일부(문서 상태 확정)",
+  "summary": "2026-09 트랙 C 정본 소스 맵을 확정하고 각 문서를 규범(normative)/가이드(guide)/연구주장(research-claim)으로 분류. 가장 자주 오분류되는 두 소스를 1차 확정: M3 Expressive = Google 공식 진화판(official), W3C COGA 'Making Content Usable' = Working Group Note(guide, 비규범). 규범 기준선은 WCAG 2.2 원문임을 못박음.",
+  "sources_checked": [
+    "https://m3.material.io (Material 3 Expressive 정본 진입, HTTP 200)",
+    "https://goo.gle/4dCUvlj = m3.material.io/blog Start building with Material 3 Expressive (2025-05-13, official)",
+    "https://design.google/library/expressive-material-design-google-research (Google UX Research, research-claim)",
+    "https://www.w3.org/TR/coga-usable/ (Making Content Usable, Working Group Note 2021-04-29, guide)",
+    "https://www.w3.org/news/2021/working-group-note-making-content-usable-... (WG Note 지위 확인)"
+  ],
+  "sources_empty": [],
+  "new_findings_count": 6,
+  "evidence_strength": "strong",
+  "doc_status_map": {
+    "normative": [
+      "WCAG 2.2 (w3.org/TR/WCAG22) — 웹/모바일 접근성 규범 기준선. 2.3.3 Animation from Interactions(AAA), 2.5.5/2.5.8 Target Size, 1.4.3/1.4.11 대비, 2.2.x 시간조절",
+      "Apple HIG (developer.apple.com/design/human-interface-guidelines) — App Store 심사와 결합된 플랫폼 규범"
+    ],
+    "guide": [
+      "docs.flutter.dev 전체(디자인/모션/perf/adaptive/accessibility) — Flutter 팀 공식 가이드",
+      "m3.material.io + M3 Expressive — Google 공식 디자인 시스템 가이드(official이나 규범 표준은 아님)",
+      "developer.android.com Material3/Compose 가이드",
+      "W3C COGA 'Making Content Usable'(TR/coga-usable) — Working Group Note(비규범 가이드)",
+      "W3C 'WCAG2ICT'/'Mobile Accessibility' 계열 Note류"
+    ],
+    "research_claim": [
+      "design.google Expressive Material Design Google Research — '최대 4배 빠른 요소 인지', '45세+ age-effect 감소', '18-24세 최대 87% 선호' 등은 Google UX 연구 보고치이지 규범·임상 근거 아님"
+    ]
+  },
+  "canon_url_map": {
+    "flutter_design": ["ui/design/material", "ui/design/text/typography", "ui/design/graphics/fragment-shaders"],
+    "flutter_motion": ["ui/animations", "ui/animations/implicit-animations", "ui/animations/hero-animations", "ui/animations/staggered-animations", "cookbook/animation/page-route-animation", "cookbook/animation/physics-simulation"],
+    "flutter_perf": ["perf", "perf/impeller", "perf/best-practices", "perf/ui-performance", "perf/rendering-performance"],
+    "flutter_adaptive": ["ui/adaptive-responsive", "ui/adaptive-responsive/best-practices", "ui/adaptive-responsive/large-screens"],
+    "flutter_arch": ["app-architecture/guide", "app-architecture/recommendations"],
+    "flutter_a11y": ["ui/accessibility", "ui/accessibility/ui-design-and-styling"],
+    "m3e": ["m3.material.io", "m3.material.io/blog/building-with-m3-expressive", "goo.gle/4dCUvlj"],
+    "android": ["developer.android.com/develop/ui/compose/designsystems/material3", "developer.android.com/develop/ui/compose/accessibility"],
+    "apple_hig": ["developer.apple.com/design/human-interface-guidelines/motion", "developer.apple.com/design/human-interface-guidelines/accessibility"],
+    "w3c": ["w3.org/TR/WCAG22", "w3.org/TR/coga-usable", "w3.org/WAI/cognitive"]
+  },
+  "key_insight": "재검증의 핵심은 '어떤 문서인가'가 아니라 '그 문서가 규범인가 가이드인가 연구주장인가'를 명시하는 것. flutter-design-2026 결론(Calm Expressive Lavender, 점진 개선)은 유효하나, M3 Expressive의 4배/87% 수치를 '연구주장'으로, COGA를 '비규범 가이드'로, WCAG 2.2를 유일 '규범 기준선'으로 재라벨링해야 실행 계획의 근거 강도가 정직해진다. 44경로 비회귀 계약은 규범(WCAG 2.2)만을 통과 기준으로, 가이드/연구주장은 방향 근거로 사용한다.",
+  "verification": {"passed": false, "detail": "C1 정본 맵 확정. C2~C8 미완. 비회귀 계약 초안 미작성."}
+}

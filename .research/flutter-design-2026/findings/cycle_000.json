@@ -1,0 +1,23 @@
+{
+  "cycle": 0,
+  "sub_question": "1. 클로드 디자인(calm-design 스킬) 원칙 정본은 무엇인가?",
+  "summary": "calm-design 스킬은 'AI가 만든 티(AI slop)'를 차단하는 차분한 프리미엄 디자인 시스템이다. 4-다이얼(VARIANCE 7 / MOTION 6 / DENSITY 4 / LANGUAGE ko)로 톤을 정하고, 안티-슬롭 5원칙(핵심: 보라·파란 AI 그래디언트 'LILA BAN' 금지, 채도<80%, Pretendard 강제)과 GPU 친화 모션(transform·opacity만, spring physics 기본, reduce-motion 의무)을 규정한다.",
+  "sources_checked": [
+    "C:\\Users\\kimmi\\.kiro\\crew\\skills\\imported\\claude_code\\calm-design\\SKILL.md",
+    "C:\\Users\\kimmi\\.kiro\\crew\\skills\\imported\\claude_code\\calm-design\\references\\motion-system.md"
+  ],
+  "sources_empty": [],
+  "new_findings_count": 6,
+  "evidence_strength": "strong",
+  "key_insight": "MemoryLink 의 라벤더 #6C5CE7 단일 액센트는 calm-design 관점에서 정확히 옳다 — 문제는 색이 아니라 '단일 액센트를 지키느냐'다. calm-design 이 금지하는 건 라벤더 자체가 아니라 '보라+파란 그래디언트를 남발하는 AI 티'다. 현재 MOTION_INTENSITY 는 사실상 3-4(fade+stagger)이며, 사용자가 원하는 '모션 많이'는 5-6(spring bounce, counter-up, scroll fade-up)으로 올리는 것에 해당한다. 단, 고령 타깃이라 9-10 영화적 모션은 금지 대상.",
+  "detail_findings": {
+    "claude_design_identity": "'Claude Design' = calm-design 스킬. DESIGN.md 를 1차 산출물로 내고 셀프-크리틱 루프(Pre-Flight 21항목)로 자동 검증하는 풀스택 디자인 에이전트. 한국어 1순위.",
+    "four_dials": "DESIGN_VARIANCE(1-10, 기본7=비대칭 허용), MOTION_INTENSITY(1-10, 기본6=균형), VISUAL_DENSITY(1-10, 기본4), LANGUAGE(ko 기본). '더 다이내믹'=MOTION+2, '더 차분'=MOTION-2.",
+    "anti_slop_5": "① Inter→Pretendard(ko) ② Pure #000→Off-Black #0A0A0A ③ 보라·파란 AI 그래디언트 금지(LILA BAN), 채도<80% ④ 3-column equal cards→Bento/비대칭 ⑤ h-screen→min-h-[100dvh](웹).",
+    "motion_5_laws": "① GPU 속성만(transform/opacity, top/left/width/height 금지) ② spring physics 기본, linear easing 금지 ③ MOTION=1이어도 hover transition 유지 ④ reduce-motion 의무 ⑤ 모바일은 모션 강도↓.",
+    "spring_standards": "Calm Premium(stiffness100/damping20, cubic-bezier(0.16,1,0.3,1)) 기본. Bouncy(300/15) CTA. Heavy Slow(50/30) 큰 요소. Quick Snappy(400/25) 토글. Anti-bounce(200/40) 레이아웃 변경.",
+    "motion_intensity_scale": "1-2 hover만 / 3-4 fade+짧은 transform / 5-6(기본) stagger cascade+spring bounce+scroll fade-up / 7-8 magnetic+counter up / 9-10 영화적 scroll storytelling.",
+    "korean_signatures": "Toss=바텀시트 슬라이드+floating label+spring / 당근=카드 horizontal scroll+fade / 카카오=말풍선 scale+opacity / 라인=spring bounce."
+  },
+  "note_for_flutter": "이 스킬의 모션 예제는 전부 React(Framer Motion)/CSS다. Flutter 로의 번역(cubic-bezier→Curves, framer-motion spring→SpringSimulation/flutter_animate)이 다음 사이클들의 핵심 작업이다."
+}

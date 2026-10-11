@@ -51,6 +51,7 @@ import 'package:flutter_application_1/features/training/games/shape_match_game.d
 import 'package:flutter_application_1/features/training/games/shape_sudoku_game.dart';
 import 'package:flutter_application_1/features/training/training_history_screen.dart';
 import 'package:flutter_application_1/features/training/training_hub_page.dart';
+import 'package:flutter_application_1/features/training/topic_choice_page.dart';
 import 'package:flutter_application_1/features/voice_assessment/voice_assessment_blocked_screen.dart';
 
 // DS-001 라우터 계약 (핸드오프 §4.1·§4.2·§10 G1).
@@ -79,7 +80,7 @@ class _FakeAdmin extends AdminProvider {
   bool get isAdminLoggedIn => session;
 }
 
-/// router.dart 등록 순서 그대로의 44개 경로: (패턴, 실제 이동 위치, 화면).
+/// router.dart 등록 순서 그대로의 45개 경로: (패턴, 실제 이동 위치, 화면).
 const _routes = <(String, String, Type)>[
   ('/', '/', MainNavScreen),
   ('/login', '/login', LoginScreen),
@@ -107,6 +108,7 @@ const _routes = <(String, String, Type)>[
   ('/ai_chat', '/ai_chat', AiChatScreen),
   ('/walking_dashboard', '/walking_dashboard', WalkingDashboardScreen),
   ('/training/recall', '/training/recall', DailyRecallPage),
+  ('/training/topic_choice', '/training/topic_choice', TopicChoicePage),
   ('/profile', '/profile', ProfileScreen),
   ('/ondevice-ai', '/ondevice-ai', ModelDownloadScreen),
   ('/settings', '/settings', SettingsScreen),
@@ -120,11 +122,19 @@ const _routes = <(String, String, Type)>[
   ('/cs/inquiry_detail/:id', '/cs/inquiry_detail/q-3', InquiryDetailScreen),
   ('/admin_login', '/admin_login', AdminLoginScreen),
   ('/admin/dashboard', '/admin/dashboard', AdminDashboardScreen),
-  ('/admin/user_detail/:userId', '/admin/user_detail/42', AdminUserDetailScreen),
+  (
+    '/admin/user_detail/:userId',
+    '/admin/user_detail/42',
+    AdminUserDetailScreen,
+  ),
   ('/admin/cs_management', '/admin/cs_management', AdminCsManagementScreen),
   ('/admin/notice_edit', '/admin/notice_edit', AdminNoticeEditScreen),
   ('/admin/faq_edit', '/admin/faq_edit', AdminFaqEditScreen),
-  ('/admin/inquiry_detail/:id', '/admin/inquiry_detail/a-9', AdminInquiryDetailScreen),
+  (
+    '/admin/inquiry_detail/:id',
+    '/admin/inquiry_detail/a-9',
+    AdminInquiryDetailScreen,
+  ),
 ];
 
 const _authRoutes = {'/login', '/register'};
@@ -132,15 +142,20 @@ const _authRoutes = {'/login', '/register'};
 /// 미온보딩 사용자가 머물 수 있는 경로. `/dementia_centers`가 빠지면 고위험 결과의
 /// 센터 안내가 /consent로 역류한다(핸드오프 §3-4).
 const _onboardingRoutes = {
-  '/consent', '/onboarding', '/assessment', '/cognitive_tasks',
-  '/assessment_result', '/dementia_centers',
+  '/consent',
+  '/onboarding',
+  '/assessment',
+  '/cognitive_tasks',
+  '/assessment_result',
+  '/dementia_centers',
 };
 
 bool _isAdmin((String, String, Type) r) => r.$1.startsWith('/admin');
 
-/// 일반 앱 경로 중 인증 화면을 뺀 35개.
-final _guarded =
-    _routes.where((r) => !_isAdmin(r) && !_authRoutes.contains(r.$1)).toList();
+/// 일반 앱 경로 중 인증 화면을 뺀 36개.
+final _guarded = _routes
+    .where((r) => !_isAdmin(r) && !_authRoutes.contains(r.$1))
+    .toList();
 final _admin = _routes.where(_isAdmin).toList();
 
 GoRouter _router({
@@ -183,11 +198,18 @@ Future<RouteMatchList> _parse(
 }
 
 /// redirect까지 적용한 최종 위치.
-Future<String> _land(GoRouter router, BuildContext context, String location) async =>
-    (await _parse(router, context, location)).uri.path;
+Future<String> _land(
+  GoRouter router,
+  BuildContext context,
+  String location,
+) async => (await _parse(router, context, location)).uri.path;
 
 /// 위치를 해석해 그 route의 builder가 만드는 화면 위젯(렌더링하지 않음).
-Future<Widget> _page(GoRouter router, BuildContext context, String location) async {
+Future<Widget> _page(
+  GoRouter router,
+  BuildContext context,
+  String location,
+) async {
   final matches = await _parse(router, context, location);
   final route = matches.last.route;
   return route.builder!(
@@ -198,21 +220,25 @@ Future<Widget> _page(GoRouter router, BuildContext context, String location) asy
 
 void main() {
   group('등록 경로 (§4.1)', () {
-    testWidgets('router.dart 순서 그대로 44개 패턴을 중복 없이 등록한다', (tester) async {
+    testWidgets('router.dart 순서 그대로 45개 패턴을 중복 없이 등록한다', (tester) async {
       final router = _router();
-      final paths =
-          router.configuration.routes.map((r) => (r as GoRoute).path).toList();
+      final paths = router.configuration.routes
+          .map((r) => (r as GoRoute).path)
+          .toList();
 
       expect(paths, _routes.map((r) => r.$1).toList());
-      expect(paths.toSet(), hasLength(44));
+      expect(paths.toSet(), hasLength(45));
     });
 
-    testWidgets('44개 위치가 모두 자기 route로 해석되고 기대한 화면을 만든다', (tester) async {
+    testWidgets('45개 위치가 모두 자기 route로 해석되고 기대한 화면을 만든다', (tester) async {
       final context = await _context(tester);
       // 로그인·온보딩 완료·관리자 세션·포털 켜짐이면 인증 화면 2개 외에는 redirect가 없다.
       // 인증 화면은 로그인 상태에서 /로 가므로(②) 미로그인 라우터로 해석한다.
       final open = _router(
-        loggedIn: true, onboarded: true, adminSession: true, portal: true,
+        loggedIn: true,
+        onboarded: true,
+        adminSession: true,
+        portal: true,
       );
       final loggedOut = _router(portal: true);
 
@@ -229,17 +255,24 @@ void main() {
     testWidgets('경로 파라미터를 화면 인자로 그대로 넘긴다', (tester) async {
       final context = await _context(tester);
       final router = _router(
-        loggedIn: true, onboarded: true, adminSession: true, portal: true,
+        loggedIn: true,
+        onboarded: true,
+        adminSession: true,
+        portal: true,
       );
 
       final notice =
-          await _page(router, context, '/cs/notice_detail/n-7') as NoticeDetailScreen;
+          await _page(router, context, '/cs/notice_detail/n-7')
+              as NoticeDetailScreen;
       final inquiry =
-          await _page(router, context, '/cs/inquiry_detail/q-3') as InquiryDetailScreen;
+          await _page(router, context, '/cs/inquiry_detail/q-3')
+              as InquiryDetailScreen;
       final user =
-          await _page(router, context, '/admin/user_detail/42') as AdminUserDetailScreen;
-      final adminInquiry = await _page(router, context, '/admin/inquiry_detail/a-9')
-          as AdminInquiryDetailScreen;
+          await _page(router, context, '/admin/user_detail/42')
+              as AdminUserDetailScreen;
+      final adminInquiry =
+          await _page(router, context, '/admin/inquiry_detail/a-9')
+              as AdminInquiryDetailScreen;
 
       expect(notice.noticeId, 'n-7');
       expect(inquiry.inquiryId, 'q-3');
@@ -249,13 +282,17 @@ void main() {
   });
 
   group('redirect 불변조건 (§4.2)', () {
-    testWidgets('① 미로그인이면 인증·관리자 외 35개 경로가 모두 /login', (tester) async {
+    testWidgets('① 미로그인이면 인증·관리자 외 36개 경로가 모두 /login', (tester) async {
       final context = await _context(tester);
       final router = _router(portal: true);
 
-      expect(_guarded, hasLength(35));
+      expect(_guarded, hasLength(36));
       for (final (_, location, _) in _guarded) {
-        expect(await _land(router, context, location), '/login', reason: location);
+        expect(
+          await _land(router, context, location),
+          '/login',
+          reason: location,
+        );
       }
       expect(await _land(router, context, '/login'), '/login');
       expect(await _land(router, context, '/register'), '/register');
@@ -267,7 +304,11 @@ void main() {
       final done = _router(loggedIn: true, onboarded: true, portal: true);
 
       for (final location in _authRoutes) {
-        expect(await _land(fresh, context, location), '/consent', reason: location);
+        expect(
+          await _land(fresh, context, location),
+          '/consent',
+          reason: location,
+        );
         expect(await _land(done, context, location), '/', reason: location);
       }
     });
@@ -287,18 +328,25 @@ void main() {
         if (allowed) stayed++;
       }
       expect(stayed, 6);
-      expect(await _land(router, context, '/dementia_centers'), '/dementia_centers');
+      expect(
+        await _land(router, context, '/dementia_centers'),
+        '/dementia_centers',
+      );
     });
 
-    testWidgets('④ 포털이 꺼진 빌드는 관리자 세션이 남아 있어도 /admin* 7개를 모두 막는다',
-        (tester) async {
+    testWidgets('④ 포털이 꺼진 빌드는 관리자 세션이 남아 있어도 /admin* 7개를 모두 막는다', (
+      tester,
+    ) async {
       final context = await _context(tester);
 
       expect(_admin, hasLength(7));
       for (final session in [false, true]) {
         final out = _router(adminSession: session, portal: false);
         final done = _router(
-          loggedIn: true, onboarded: true, adminSession: session, portal: false,
+          loggedIn: true,
+          onboarded: true,
+          adminSession: session,
+          portal: false,
         );
         for (final (_, location, _) in _admin) {
           final why = '$location (admin session: $session)';
@@ -312,56 +360,87 @@ void main() {
     // go_router 17의 top-level redirect는 내비게이션당 한 번만 돈다. 포털 꺼진 가드가
     // 돌려준 '/'는 다시 평가되지 않아, 미온보딩 사용자가 온보딩 가드(③)를 우회해
     // '/'(MainNav)에 도착한다. 현재 결과는 '/'. 수정은 라우터 로직 변경이라 디자인 PR 밖이다.
-    testWidgets('③×④ 미온보딩 사용자가 포털 꺼진 빌드에서 /admin*로 들어와도 /consent로 가야 한다',
-        (tester) async {
+    testWidgets('③×④ 미온보딩 사용자가 포털 꺼진 빌드에서 /admin*로 들어와도 /consent로 가야 한다', (
+      tester,
+    ) async {
       final context = await _context(tester);
       final fresh = _router(loggedIn: true, portal: false);
       for (final (_, location, _) in _admin) {
-        expect(await _land(fresh, context, location), '/consent', reason: location);
+        expect(
+          await _land(fresh, context, location),
+          '/consent',
+          reason: location,
+        );
       }
     }, skip: true);
 
-    testWidgets('⑤ 포털이 켜진 빌드에서 관리자 세션이 없으면 /admin/* 6개는 /admin_login',
-        (tester) async {
+    testWidgets('⑤ 포털이 켜진 빌드에서 관리자 세션이 없으면 /admin/* 6개는 /admin_login', (
+      tester,
+    ) async {
       final context = await _context(tester);
 
       // 관리자 가드는 앱 로그인과 무관하다 — 미로그인·로그인 모두 같은 결과.
       for (final loggedIn in [false, true]) {
-        final noSession = _router(loggedIn: loggedIn, onboarded: true, portal: true);
+        final noSession = _router(
+          loggedIn: loggedIn,
+          onboarded: true,
+          portal: true,
+        );
         final withSession = _router(
-          loggedIn: loggedIn, onboarded: true, adminSession: true, portal: true,
+          loggedIn: loggedIn,
+          onboarded: true,
+          adminSession: true,
+          portal: true,
         );
         for (final (_, location, _) in _admin) {
           final why = '$location (app login: $loggedIn)';
           // /admin_login 자신은 가드 대상이 아니라 그대로 머문다.
-          expect(await _land(noSession, context, location), '/admin_login', reason: why);
-          expect(await _land(withSession, context, location), location, reason: why);
+          expect(
+            await _land(noSession, context, location),
+            '/admin_login',
+            reason: why,
+          );
+          expect(
+            await _land(withSession, context, location),
+            location,
+            reason: why,
+          );
         }
       }
     });
   });
 
   group('기본 호출 (production 경로)', () {
-    testWidgets('seam 없이 만든 라우터는 AppConfig.isAdminPortalEnabled와 똑같이 판정한다',
-        (tester) async {
+    testWidgets('seam 없이 만든 라우터는 AppConfig.isAdminPortalEnabled와 똑같이 판정한다', (
+      tester,
+    ) async {
       final context = await _context(tester);
       // 테스트 빌드는 kReleaseMode=false라 포털이 켜져 있다.
       expect(AppConfig.isAdminPortalEnabled, isTrue);
 
-      for (final (loggedIn, onboarded) in [(false, false), (true, false), (true, true)]) {
+      for (final (loggedIn, onboarded) in [
+        (false, false),
+        (true, false),
+        (true, true),
+      ]) {
         for (final session in [false, true]) {
           final byDefault = _router(
-            loggedIn: loggedIn, onboarded: onboarded, adminSession: session,
+            loggedIn: loggedIn,
+            onboarded: onboarded,
+            adminSession: session,
           );
           final explicit = _router(
-            loggedIn: loggedIn, onboarded: onboarded, adminSession: session,
+            loggedIn: loggedIn,
+            onboarded: onboarded,
+            adminSession: session,
             portal: AppConfig.isAdminPortalEnabled,
           );
           for (final (_, location, _) in _routes) {
             expect(
               await _land(byDefault, context, location),
               await _land(explicit, context, location),
-              reason: '$location (login $loggedIn, onboarded $onboarded, admin $session)',
+              reason:
+                  '$location (login $loggedIn, onboarded $onboarded, admin $session)',
             );
           }
         }
@@ -372,7 +451,10 @@ void main() {
     // 열림)를 위 동치 테스트로는 잡을 수 없다. 기본값이 AppConfig를 읽는지 소스로 지킨다.
     test('seam 기본값은 AppConfig.isAdminPortalEnabled다(릴리스 가드 보존)', () {
       final source = File('lib/core/router.dart').readAsStringSync();
-      expect(source, contains('adminPortalEnabled ?? AppConfig.isAdminPortalEnabled'));
+      expect(
+        source,
+        contains('adminPortalEnabled ?? AppConfig.isAdminPortalEnabled'),
+      );
     });
 
     testWidgets('초기 위치는 /login', (tester) async {
@@ -405,8 +487,7 @@ void main() {
     String current(GoRouter router) =>
         router.routerDelegate.currentConfiguration.uri.path;
 
-    testWidgets('미로그인 딥링크는 로그인 화면에 머물고 관리자 경로는 관리자 로그인으로 간다',
-        (tester) async {
+    testWidgets('미로그인 딥링크는 로그인 화면에 머물고 관리자 경로는 관리자 로그인으로 간다', (tester) async {
       final router = await pumpApp(tester);
       expect(current(router), '/login');
       expect(find.byType(LoginScreen), findsOneWidget);

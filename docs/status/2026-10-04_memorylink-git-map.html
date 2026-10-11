@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- 원본 아티팩트(로그인 필요): https://claude.ai/artifact/V2Vd6TVgCxRUtxJtWqQajU -->
+<!-- 이 파일은 로그인 없이 보는 로컬 사본. 갱신할 때는 아티팩트와 함께 덮어쓴다. -->
+<style>html{color-scheme:light}body{margin:0;font:14px system-ui,sans-serif;background:#f7f7f8}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>MemoryLink 현재 위치</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --ground: #F5F6FA;
+    --surface: #FFFFFF;
+    --ink: #1C2030;
+    --muted: #5B6178;
+    --line: #D9DCE8;
+    --accent: #6C5CE7;
+    --accent-soft: #EDEAFC;
+    --remote: #2E6DB4;
+    --remote-soft: #E4EEF9;
+    --pending: #C97A12;
+    --pending-soft: #FBF0DF;
+    --done: #2A8A5C;
+    --done-soft: #E2F3EA;
+    --todo: #C8463E;
+    --todo-soft: #FBE6E4;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --ground: #15171F;
+      --surface: #1E2130;
+      --ink: #ECEEF6;
+      --muted: #A0A6BC;
+      --line: #343849;
+      --accent: #8F82F2;
+      --accent-soft: #2A2750;
+      --remote: #6FA3E6;
+      --remote-soft: #1F2E44;
+      --pending: #E6A04A;
+      --pending-soft: #3B2E17;
+      --done: #5BC28C;
+      --done-soft: #183427;
+      --todo: #EF7B74;
+      --todo-soft: #3F1F1D;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --ground: #15171F;
+    --surface: #1E2130;
+    --ink: #ECEEF6;
+    --muted: #A0A6BC;
+    --line: #343849;
+    --accent: #8F82F2;
+    --accent-soft: #2A2750;
+    --remote: #6FA3E6;
+    --remote-soft: #1F2E44;
+    --pending: #E6A04A;
+    --pending-soft: #3B2E17;
+    --done: #5BC28C;
+    --done-soft: #183427;
+    --todo: #EF7B74;
+    --todo-soft: #3F1F1D;
+  }
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: "Noto Sans KR", Pretendard, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    font-size: 15px;
+    line-height: 1.65;
+    padding-inline: 16px;
+    padding-block: 32px 64px;
+  }
+  .wrap { max-width: 980px; margin: 0 auto; display: flex; flex-direction: column; gap: 40px; }
+  h1 { font-size: 28px; font-weight: 700; line-height: 1.3; margin: 0 0 6px; text-wrap: balance; }
+  h2 { font-size: 20px; font-weight: 700; margin: 0 0 4px; text-wrap: balance; }
+  h2 .num { color: var(--accent); margin-right: 8px; font-variant-numeric: tabular-nums; }
+  p { margin: 0; max-width: 68ch; }
+  .lede { color: var(--muted); }
+  code, .mono { font-family: "IBM Plex Mono", "Cascadia Mono", Consolas, monospace; font-size: 0.92em; }
+  .eyebrow { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 500; }
+  section { display: flex; flex-direction: column; gap: 14px; }
+
+  .strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; }
+  .fact { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; display: flex; flex-direction: column; gap: 2px; }
+  .fact .k { font-size: 12px; color: var(--muted); }
+  .fact .v { font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .fact .v small { font-size: 12px; font-weight: 400; color: var(--muted); }
+
+  figure { margin: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+  .scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .scroll svg { display: block; height: auto; }
+  .git-svg { min-width: 1000px; width: 100%; }
+  .chart-svg { min-width: 560px; width: 100%; }
+  figcaption { font-size: 13px; color: var(--muted); max-width: 72ch; }
+
+  table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; font-size: 14px; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-size: 12px; color: var(--muted); font-weight: 500; letter-spacing: 0.04em; }
+  tr:last-child td { border-bottom: 0; }
+  td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .table-scroll { overflow-x: auto; }
+  .table-scroll table { min-width: 640px; }
+
+  .pill { display: inline-block; font-size: 12px; font-weight: 500; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+  .pill.done { background: var(--done-soft); color: var(--done); }
+  .pill.todo { background: var(--todo-soft); color: var(--todo); }
+  .pill.stale { background: var(--pending-soft); color: var(--pending); }
+  .pill.layer { background: var(--pending-soft); color: var(--pending); }
+  .swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: 0; }
+
+  ol.steps { margin: 0; padding-left: 0; list-style: none; counter-reset: s; display: flex; flex-direction: column; gap: 10px; }
+  ol.steps li { counter-increment: s; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px 12px 52px; position: relative; }
+  ol.steps li::before { content: counter(s); position: absolute; left: 14px; top: 12px; width: 26px; height: 26px; border-radius: 50%; background: var(--accent); color: #fff; font-weight: 700; font-size: 14px; display: grid; place-items: center; }
+  ol.steps li b { display: block; margin-bottom: 2px; }
+  ol.steps li span { color: var(--muted); font-size: 14px; }
+  .note { font-size: 13px; color: var(--muted); border-left: 3px solid var(--line); padding-left: 12px; }
+  @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto; } }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">2026-10-05 04:40 기준 · E:\Test_Android\flutter_application_1</div>
+    <h1>MemoryLink 현재 위치</h1>
+    <p class="lede">지금 서 있는 브랜치, 그 위에 쌓인 커밋 안 된 변경, 검증이 어디까지 됐는지, 다음 한 걸음. 이 네 가지만 보면 가닥이 잡힙니다.</p>
+  </header>
+
+  <section>
+    <div class="strip">
+      <div class="fact"><span class="k">현재 브랜치</span><span class="v mono">devin/release-hardening</span></div>
+      <div class="fact"><span class="k">마지막 커밋 (HEAD)</span><span class="v"><span class="mono">bac0726</span> <small>10/5 · main과 같음</small></span></div>
+      <div class="fact"><span class="k">main에 합친 커밋</span><span class="v">89건 <small>PR #3 · 10/5</small></span></div>
+      <div class="fact"><span class="k">GitHub에 안 올라간 커밋</span><span class="v">0건 <small>브랜치 = main</small></span></div>
+      <div class="fact"><span class="k">main 보호</span><span class="v">켜짐 <small>PR 필수 · 강제 push 금지</small></span></div>
+      <div class="fact"><span class="k">커밋 안 된 변경</span><span class="v">없음 <small>미추적 3종만</small></span></div>
+      <div class="fact"><span class="k">자동 테스트</span><span class="v">582 통과 <small>skip 2 · analyze 0</small></span></div>
+      <div class="fact"><span class="k">E2E (에뮬레이터)</span><span class="v">23/23 <small>Maestro · 통합 4/4</small></span></div>
+      <div class="fact"><span class="k">GitHub PR Gate</span><span class="v">6단계 통과 <small>PR #3 · 10/5</small></span></div>
+      <div class="fact"><span class="k">열린 PR</span><span class="v">#1 <small>iOS 포팅 2커밋</small></span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">1</span>지금 어디에 서 있나</h2>
+    <p>왼쪽이 과거, 오른쪽이 지금입니다. 보라색 선이 작업 브랜치이고, 10/5에 PR #3으로 main에 합쳐졌습니다. 이제 작업 브랜치·main·GitHub가 모두 같은 커밋에 서 있습니다.</p>
+    <figure>
+      <div class="scroll">
+        <svg class="git-svg" viewBox="0 0 1040 340" role="img" aria-label="devin/release-hardening 브랜치는 7/14 main에서 갈라져 89커밋을 쌓았고 10/5 PR #3으로 main에 합쳐졌다. 매일 정리 작업은 PR #2로 먼저 합쳐졌다. 커밋 안 된 변경은 없다">
+          <defs>
+            <marker id="arr-pr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+              <path d="M0 0 L10 5 L0 10 z" fill="var(--done)"/>
+            </marker>
+            <marker id="arr-merge" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+              <path d="M0 0 L10 5 L0 10 z" fill="var(--accent)"/>
+            </marker>
+          </defs>
+
+          <text x="14" y="64" font-size="11" fill="var(--muted)">main</text>
+          <text x="14" y="114" font-size="11" fill="var(--done)" font-weight="700">ops/</text>
+          <text x="14" y="128" font-size="11" fill="var(--done)" font-weight="700">firestore-retention</text>
+          <text x="14" y="142" font-size="10" fill="var(--muted)">합친 뒤 삭제됨</text>
+          <text x="14" y="196" font-size="11" fill="var(--accent)" font-weight="700">devin/</text>
+          <text x="14" y="210" font-size="11" fill="var(--accent)" font-weight="700">release-hardening</text>
+          <text x="14" y="224" font-size="10" fill="var(--muted)">10/5 main에 합침</text>
+
+          <line x1="140" y1="60" x2="812" y2="60" stroke="var(--remote)" stroke-width="3"/>
+          <circle cx="140" cy="60" r="7" fill="var(--surface)" stroke="currentColor" stroke-width="2.5"/>
+          <text x="130" y="88" font-size="11" text-anchor="end" fill="var(--muted)" font-family="IBM Plex Mono, monospace">e1978b1 · 7/14</text>
+          <circle cx="240" cy="60" r="7" fill="var(--surface)" stroke="var(--remote)" stroke-width="2.5"/>
+          <text x="240" y="84" font-size="11" text-anchor="middle" fill="var(--muted)" font-family="IBM Plex Mono, monospace">2b175f0 · 7/26</text>
+          <text x="240" y="99" font-size="11" text-anchor="middle" fill="var(--remote)">iOS 설정</text>
+          <text x="370" y="42" font-size="12" font-weight="700" text-anchor="middle" fill="var(--done)">main 보호 켜짐 · PR 필수</text>
+          <circle cx="520" cy="60" r="7" fill="var(--surface)" stroke="var(--remote)" stroke-width="2.5"/>
+          <text x="560" y="42" font-size="11" text-anchor="middle" fill="var(--muted)">PR #2 합침 · a9c4662 · 10/4</text>
+
+          <path d="M140 67 C140 104 150 118 180 118" fill="none" stroke="var(--done)" stroke-width="3"/>
+          <line x1="180" y1="118" x2="400" y2="118" stroke="var(--done)" stroke-width="3"/>
+          <circle cx="400" cy="118" r="7" fill="var(--surface)" stroke="var(--done)" stroke-width="2.5"/>
+          <text x="390" y="106" font-size="11" text-anchor="end" fill="var(--done)" font-family="IBM Plex Mono, monospace">ad380d1</text>
+          <text x="400" y="140" font-size="11" text-anchor="middle" fill="var(--muted)">매일 정리 작업 2건</text>
+          <line x1="408" y1="113" x2="512" y2="67" stroke="var(--done)" stroke-width="2.5" marker-end="url(#arr-pr)"/>
+          <text x="478" y="112" font-size="12" font-weight="700" text-anchor="middle" fill="var(--done)">PR #2</text>
+
+          <line x1="140" y1="67" x2="140" y2="183" stroke="var(--accent)" stroke-width="3"/>
+          <line x1="140" y1="190" x2="820" y2="190" stroke="var(--accent)" stroke-width="4"/>
+          <rect x="156" y="176" width="186" height="28" rx="14" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
+          <text x="249" y="194" font-size="12" font-weight="700" text-anchor="middle" fill="var(--accent)">7/24 ~ 9/6 · 30건</text>
+          <text x="249" y="226" font-size="11" text-anchor="middle" fill="var(--muted)">훈련 진행 · QA 복구 · 접근성</text>
+          <text x="249" y="241" font-size="11" text-anchor="middle" fill="var(--muted)">랜딩 · Pretendard · DESIGN.md</text>
+          <rect x="352" y="176" width="128" height="28" rx="14" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
+          <text x="416" y="194" font-size="12" font-weight="700" text-anchor="middle" fill="var(--accent)">9/19 ~ 9/27 · 10건</text>
+          <text x="416" y="226" font-size="11" text-anchor="middle" fill="var(--muted)">이상감지 · 모션 · 오프닝</text>
+          <rect x="490" y="176" width="116" height="28" rx="14" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
+          <text x="548" y="194" font-size="12" font-weight="700" text-anchor="middle" fill="var(--accent)">10/4 · 33건</text>
+          <text x="548" y="226" font-size="11" text-anchor="middle" fill="var(--muted)">보호자 v2 · 매일 정리</text>
+          <text x="548" y="241" font-size="11" text-anchor="middle" fill="var(--muted)">출시 차단 P0 · PR Gate</text>
+          <rect x="616" y="176" width="122" height="28" rx="14" fill="var(--accent)" stroke="var(--accent)" stroke-width="1.5"/>
+          <text x="677" y="194" font-size="12" font-weight="700" text-anchor="middle" fill="#fff">10/5 · 16건</text>
+          <text x="677" y="226" font-size="11" text-anchor="middle" fill="var(--muted)">남은 3겹 커밋</text>
+          <text x="677" y="241" font-size="11" text-anchor="middle" fill="var(--muted)">탭 이름 · 권한 거부 E2E</text>
+
+          <line x1="820" y1="183" x2="820" y2="74" stroke="var(--accent)" stroke-width="3" marker-end="url(#arr-merge)"/>
+          <text x="832" y="126" font-size="12" font-weight="700" fill="var(--accent)">PR #3 · 합침 10/5</text>
+          <text x="832" y="141" font-size="11" fill="var(--muted)">PR Gate 6단계 통과</text>
+
+          <circle cx="820" cy="60" r="15" fill="none" stroke="var(--remote)" stroke-width="2.5"/>
+          <circle cx="820" cy="60" r="8" fill="var(--accent)" stroke="var(--surface)" stroke-width="3"/>
+          <text x="820" y="20" font-size="12" font-weight="700" text-anchor="middle" fill="var(--accent)">HEAD · 지금 여기</text>
+          <text x="820" y="35" font-size="11" text-anchor="middle" fill="var(--muted)" font-family="IBM Plex Mono, monospace">bac0726 = main = GitHub</text>
+
+          <rect x="842" y="200" width="134" height="92" rx="10" fill="none" stroke="var(--done)" stroke-width="1.5" stroke-dasharray="7 5"/>
+          <text x="909" y="222" font-size="12" font-weight="700" text-anchor="middle" fill="var(--done)">작업 트리</text>
+          <text x="909" y="242" font-size="12" text-anchor="middle" fill="currentColor">커밋 안 된 변경 없음</text>
+          <text x="909" y="264" font-size="10" text-anchor="middle" fill="var(--muted)">조사 자료·감사 원문·</text>
+          <text x="909" y="278" font-size="10" text-anchor="middle" fill="var(--muted)">사본은 일부러 제외</text>
+
+          <line x1="20" y1="320" x2="56" y2="320" stroke="var(--accent)" stroke-width="4"/>
+          <text x="64" y="324" font-size="11" fill="var(--muted)">작업 브랜치 커밋</text>
+          <circle cx="182" cy="320" r="7" fill="var(--surface)" stroke="var(--remote)" stroke-width="3"/>
+          <text x="196" y="324" font-size="11" fill="var(--muted)">GitHub(원격) 위치</text>
+          <line x1="352" y1="320" x2="388" y2="320" stroke="var(--done)" stroke-width="3"/>
+          <text x="396" y="324" font-size="11" fill="var(--muted)">main에 합친 PR 브랜치</text>
+          <rect x="560" y="312" width="36" height="16" rx="4" fill="none" stroke="var(--done)" stroke-width="1.5" stroke-dasharray="4 3"/>
+          <text x="604" y="324" font-size="11" fill="var(--muted)">작업 트리 상태</text>
+        </svg>
+      </div>
+      <figcaption>7/14 main에서 갈라진 뒤 쌓은 89커밋을 10/5 PR #3으로 main에 합쳤습니다. 그 전에 main에만 있던 iOS 설정 커밋과 PR #2를 브랜치로 가져와 충돌 없이 맞췄습니다. 이제 작업 브랜치·main·GitHub가 같은 커밋(<code>bac0726</code>)입니다. main은 보호되어 PR로만 바뀝니다. iOS 포팅 PR #1은 이 브랜치에 없는 2커밋만 남아 열려 있습니다.</figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <h2><span class="num">2</span>커밋 안 된 3겹은 어떻게 들어갔나</h2>
+    <p>10/4까지 작업 트리에 섞여 있던 세 겹을 10/5에 겹 단위로 나눠 커밋했습니다. 디자인 겹은 G0~G3 패킷마다 한 커밋씩입니다.</p>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>겹</th><th>언제</th><th>무엇을</th><th>파일</th><th>커밋</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="pill layer">3</span></td>
+            <td class="num">10/1 13:41</td>
+            <td>설정 화면 하단 한이음 성과등록 사사문구</td>
+            <td class="mono">settings_screen · settings_screen_test</td>
+            <td><span class="pill done">커밋됨</span> <span class="mono">0bb7d60</span></td>
+          </tr>
+          <tr>
+            <td><span class="pill layer">2</span></td>
+            <td class="num">10/1 10:45</td>
+            <td>AI 대화 발화 지표. 실제 발화 시간이 없으면 '측정 불가'로 두고 저장하지 않음</td>
+            <td class="mono">chat_speech_metrics(새) 외 3 + 테스트 4 + docs/qa 3</td>
+            <td><span class="pill done">커밋됨</span> <span class="mono">fe18740</span></td>
+          </tr>
+          <tr>
+            <td><span class="pill layer">1</span></td>
+            <td class="num">9/28 ~ 9/30</td>
+            <td>디자인 G0~G3: 핸드오프 문서, 기준선, 계약 테스트·router seam, 토큰, 공용 컴포넌트(화면 미연결)</td>
+            <td class="mono">docs/design 6+기준선 · design_system 10 · 테스트 5 · CLAUDE.md·DESIGN.md</td>
+            <td><span class="pill done">커밋됨</span> <span class="mono">4f938f9 · c7cbc57 · 8b7770f · 85df64b · 19e33c1</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note"><code>.kiro/</code>·<code>.research/</code>(개인 조사 자료), <code>docs/LAUNCH_AUDIT_2026-09-28.md</code>(공개 저장소라 보안 감사 원문은 올리지 않음), <code>docs/status/</code>(이 그림의 로컬 사본)는 일부러 커밋하지 않았습니다. 디자인 G0 기준선의 스크린샷·로그 59개는 저장소의 <code>.gitignore</code>(<code>screenshots/</code>·<code>*.log</code>)에 걸려 로컬에만 있습니다.</p>
+  </section>
+
+  <section>
+    <h2><span class="num">3</span>검증은 어디까지 됐나</h2>
+    <p>자동 테스트는 582개이고 이제 커밋 기준과 작업 트리가 같습니다. Maestro 게이팅 23개와 통합 테스트 4개를 로컬과 GitHub에서 모두 통과했습니다. 남은 것은 자동화로 확인할 수 없는 실기기 동작과 콘솔 작업입니다.</p>
+    <figure>
+      <div class="scroll">
+        <svg class="chart-svg" viewBox="0 0 760 236" role="img" aria-label="통과한 자동 테스트 수가 8/26 307개에서 10/5 582개로 늘었다">
+          <line x1="60" y1="190" x2="740" y2="190" stroke="var(--line)" stroke-width="1"/>
+          <line x1="60" y1="140" x2="740" y2="140" stroke="var(--line)" stroke-width="1"/>
+          <line x1="60" y1="90" x2="740" y2="90" stroke="var(--line)" stroke-width="1"/>
+          <line x1="60" y1="40" x2="740" y2="40" stroke="var(--line)" stroke-width="1"/>
+          <text x="52" y="194" font-size="11" text-anchor="end" fill="var(--muted)">300</text>
+          <text x="52" y="144" font-size="11" text-anchor="end" fill="var(--muted)">400</text>
+          <text x="52" y="94" font-size="11" text-anchor="end" fill="var(--muted)">500</text>
+          <text x="52" y="44" font-size="11" text-anchor="end" fill="var(--muted)">600</text>
+          <polyline points="76,186.5 142,167.5 208,143 274,113 340,85 406,84.5 472,76 538,65 604,63 670,50 736,49" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linejoin="round"/>
+          <circle cx="76" cy="186.5" r="5" fill="var(--surface)" stroke="var(--accent)" stroke-width="2.5"/>
+          <circle cx="142" cy="167.5" r="5" fill="var(--surface)" stroke="var(--accent)" stroke-width="2.5"/>
+          <circle cx="208" cy="143" r="5" fill="var(--surface)" stroke="var(--accent)" stroke-width="2.5"/>
+          <circle cx="274" cy="113" r="5" fill="var(--surface)" stroke="var(--accent)" stroke-width="2.5"/>
+          <circle cx="340" cy="85" r="5" fill="var(--surface)" stroke="var(--accent)" stroke-width="2.5"/>
+          <circle cx="406" cy="84.5" r="5" fill="var(--surface)" stroke="var(--accent)" stroke-width="2.5"/>
+          <circle cx="472" cy="76" r="5" fill="var(--surface)" stroke="var(--accent)" stroke-width="2.5"/>
+          <circle cx="538" cy="65" r="5" fill="var(--surface)" stroke="var(--accent)" stroke-width="2.5"/>
+          <circle cx="604" cy="63" r="5" fill="var(--surface)" stroke="var(--accent)" stroke-width="2.5"/>
+          <circle cx="670" cy="50" r="5" fill="var(--surface)" stroke="var(--accent)" stroke-width="2.5"/>
+          <circle cx="736" cy="49" r="7" fill="var(--accent)" stroke="var(--surface)" stroke-width="2.5"/>
+          <text x="76" y="173.5" font-size="12" font-weight="700" text-anchor="middle" fill="currentColor">307</text>
+          <text x="142" y="154.5" font-size="12" font-weight="700" text-anchor="middle" fill="currentColor">345</text>
+          <text x="208" y="130" font-size="12" font-weight="700" text-anchor="middle" fill="currentColor">394</text>
+          <text x="274" y="100" font-size="12" font-weight="700" text-anchor="middle" fill="currentColor">454</text>
+          <text x="340" y="72" font-size="12" font-weight="700" text-anchor="middle" fill="currentColor">510</text>
+          <text x="406" y="103.5" font-size="12" font-weight="700" text-anchor="middle" fill="currentColor">511</text>
+          <text x="472" y="63" font-size="12" font-weight="700" text-anchor="middle" fill="currentColor">528</text>
+          <text x="538" y="52" font-size="12" font-weight="700" text-anchor="middle" fill="currentColor">550</text>
+          <text x="604" y="50" font-size="12" font-weight="700" text-anchor="middle" fill="currentColor">554</text>
+          <text x="670" y="69" font-size="12" font-weight="700" text-anchor="middle" fill="currentColor">580</text>
+          <text x="736" y="35" font-size="13" font-weight="700" text-anchor="middle" fill="var(--accent)">582</text>
+          <text x="76" y="212" font-size="11" text-anchor="middle" fill="var(--muted)">8/26</text>
+          <text x="142" y="212" font-size="11" text-anchor="middle" fill="var(--muted)">9/24</text>
+          <text x="208" y="212" font-size="11" text-anchor="middle" fill="var(--muted)">9/27</text>
+          <text x="274" y="212" font-size="11" text-anchor="middle" fill="var(--muted)">9/30</text>
+          <text x="340" y="212" font-size="11" text-anchor="middle" fill="var(--muted)">10/1</text>
+          <text x="406" y="212" font-size="11" text-anchor="middle" fill="var(--muted)">10/3</text>
+          <text x="472" y="212" font-size="11" text-anchor="middle" fill="var(--muted)">10/3</text>
+          <text x="538" y="212" font-size="11" text-anchor="middle" fill="var(--muted)">10/4</text>
+          <text x="604" y="212" font-size="11" text-anchor="middle" fill="var(--muted)">10/4</text>
+          <text x="670" y="212" font-size="11" text-anchor="middle" fill="var(--muted)">10/4</text>
+          <text x="736" y="212" font-size="11" text-anchor="middle" fill="var(--muted)">10/5</text>
+          <text x="76" y="228" font-size="10" text-anchor="middle" fill="var(--muted)">재측정</text>
+          <text x="142" y="228" font-size="10" text-anchor="middle" fill="var(--muted)">모션 F</text>
+          <text x="208" y="228" font-size="10" text-anchor="middle" fill="var(--muted)">오프닝</text>
+          <text x="274" y="228" font-size="10" text-anchor="middle" fill="var(--muted)">디자인 G3</text>
+          <text x="340" y="228" font-size="10" text-anchor="middle" fill="var(--muted)">AI 지표</text>
+          <text x="406" y="228" font-size="10" text-anchor="middle" fill="var(--muted)">기준선</text>
+          <text x="472" y="228" font-size="10" text-anchor="middle" fill="var(--muted)">보안 수정</text>
+          <text x="538" y="228" font-size="10" text-anchor="middle" fill="var(--muted)">백엔드 v2</text>
+          <text x="604" y="228" font-size="10" text-anchor="middle" fill="var(--muted)">무료 운영</text>
+          <text x="670" y="228" font-size="10" text-anchor="middle" fill="var(--muted)">출시 차단</text>
+          <text x="736" y="228" font-size="10" text-anchor="middle" fill="var(--muted)">3겹 커밋</text>
+        </svg>
+      </div>
+      <figcaption>각 점은 그 날 실제 실행 로그의 통과 수입니다. 9/30부터 있는 skip 2건은 통과로 세지 않았습니다. 10/4까지는 커밋 안 된 작업까지 포함한 수이고, 10/5부터는 미커밋 작업이 없어 커밋 기준과 같습니다.</figcaption>
+    </figure>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>상태</th><th>항목</th><th>근거·날짜</th></tr></thead>
+        <tbody>
+          <tr><td><span class="pill done">완료</span></td><td>main에 합침: 브랜치 89커밋을 PR #3으로(충돌 없음). 그 전에 main의 iOS 설정과 PR #2를 브랜치로 가져옴</td><td class="num">10/5 04:36 · bac0726</td></tr>
+          <tr><td><span class="pill done">완료</span></td><td>PR #3 PR Gate 6단계 통과: 통합 4/4(API 33), Maestro 23/23(API 36), release 검증(AAB 60.6MB·.so 9개 16KB·권한 12개), 16KB 페이지 기기 23/23</td><td class="num">10/5 04:35 · run 37222308915</td></tr>
+          <tr><td><span class="pill done">완료</span></td><td>남은 3겹 커밋: 한이음 사사문구, AI 발화 지표, 디자인 G0~G3(패킷별 5커밋)</td><td class="num">10/5 · 0bb7d60 ~ 19e33c1</td></tr>
+          <tr><td><span class="pill done">완료</span></td><td>하단 탭을 좌표 대신 탭 이름으로 누름(게이팅 10개), 설정 토글 행 전체 탭, 알림 권한 거부 E2E(게이팅 23)</td><td class="num">10/5 · 사용자 지시</td></tr>
+          <tr><td><span class="pill done">완료</span></td><td>출시 차단 코드 반영(P0-01·02·03·04·07·09·10·11·12·14·15)과 비의료 문구</td><td class="num">10/4 · ADR-001</td></tr>
+          <tr><td><span class="pill done">완료</span></td><td>단위·위젯 테스트 582 통과, skip 2 / 정적 분석 info 0</td><td class="num">10/5 · 커밋 기준과 작업 트리가 같음</td></tr>
+          <tr><td><span class="pill done">완료</span></td><td>Maestro 게이팅 23/23 · 통합 테스트 4/4</td><td class="num">10/5 · QA_Device API 36</td></tr>
+          <tr><td><span class="pill done">완료</span></td><td>업로드용 AAB 깨끗한 빌드 확인: 57.9MB, .so 9개(테스트용 sqlite3 없음)</td><td class="num">10/5 · RELEASE_CHECKLIST에 flutter clean 추가</td></tr>
+          <tr><td><span class="pill done">완료</span></td><td>규칙 v2·보호자 웹·처리방침 v2.0·소개 사이트 배포, 매일 정리 가동, main 보호</td><td class="num">10/4</td></tr>
+          <tr><td><span class="pill todo">남음</span></td><td>실기기: 하트비트 배터리·재부팅, 일기 알림·계정 삭제(인터넷 연결 상태), 실기 QA A1~A9</td><td class="num">물리 기기 필요</td></tr>
+          <tr><td><span class="pill todo">남음</span></td><td>Play Console: 개발자 신원·패키지 확인, 기능 그래픽·새 스크린샷</td><td class="num">감사 P0-00 · P0-16</td></tr>
+          <tr><td><span class="pill todo">남음</span></td><td>CircleCI 앱이 설정 파일 없이 연결돼 PR마다 실패로 표시됨(필수 아님)</td><td class="num">GitHub 설정에서 연결 해제 또는 설정 추가</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">4</span>다음 한 걸음, 순서대로</h2>
+    <p>코드와 CI로 할 수 있는 일은 끝났습니다. 아래는 실제 기기와 콘솔, 출시 날에 할 일입니다.</p>
+    <ol class="steps">
+      <li><b>실기기 확인</b><span>하트비트(앱 닫힘·배터리 최적화·재부팅), 일기 알림 켜기·거부·재부팅 뒤 유지, 활동량 알림의 문자 확인 창, 인터넷이 연결된 상태의 계정 삭제. 에뮬레이터 빌드는 서버에 붙지 않아 삭제 성공 경로를 볼 수 없습니다.</span></li>
+      <li><b>Play Console (P0-00 · P0-16)</b><span>개발자 신원·패키지 등록 확인, 기능 그래픽(1024×500)과 새 스크린샷.</span></li>
+      <li><b>출시 날</b><span>flutter clean 뒤 업로드용 AAB를 만들고 .so 9개·권한 12개를 확인합니다. 처리방침 6번과 삭제 안내 페이지에 앱 안 계정 삭제를 더해 Hosting·소개 사이트에 배포합니다.</span></li>
+      <li><b>정리 거리 (선택)</b><span>iOS 포팅 PR #1(2커밋) 검토, 쓰지 않는 CircleCI 앱 연결 해제, 원하면 G0 기준선 스크린샷을 강제로 커밋.</span></li>
+    </ol>
+  </section>
+
+</div>
+</body>
+</html>

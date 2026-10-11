@@ -73,6 +73,15 @@ const List<TrainingActivity> trainingCatalog = <TrainingActivity>[
     prerequisiteId: null,
     isAlwaysUnlocked: true,
   ),
+  TrainingActivity(
+    id: 'topic_choice',
+    displayArea: '스마트 케어',
+    route: '/training/topic_choice',
+    adaptiveCategory: null,
+    scoreCategory: null,
+    prerequisiteId: null,
+    isAlwaysUnlocked: true,
+  ),
 ];
 
 const Set<String> initialTrainingActivityIds = <String>{
@@ -81,6 +90,7 @@ const Set<String> initialTrainingActivityIds = <String>{
   'shape_sudoku',
   'shape_match',
   'daily_recall',
+  'topic_choice',
 };
 
 const Set<String> legacyTrainingActivityIds = <String>{
@@ -92,6 +102,7 @@ const Set<String> legacyTrainingActivityIds = <String>{
   'shape_match',
   'sentence_reading',
   'daily_recall',
+  'topic_choice',
 };
 
 final Map<String, TrainingActivity> _trainingActivitiesById =

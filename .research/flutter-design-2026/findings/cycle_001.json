@@ -1,0 +1,26 @@
+{
+  "cycle": 1,
+  "sub_question": "3. Flutter 모션을 '풍부하되 세련되게' 하는 법 — implicit vs explicit vs 패키지의 용처·성능·유지보수 트레이드오프",
+  "summary": "Flutter 공식 결정트리는 '가능하면 implicit(AnimatedX)부터, 세밀 제어가 필요할 때만 explicit(AnimationController), 물리감이 필요하면 SpringSimulation'을 권한다. MemoryLink 는 이미 이 원칙대로 구현돼 있다 — AnimatedScale/AnimatedOpacity(implicit) + SpringDescription.withDampingRatio(stiffness 380, ratio 0.8, = M3 Expressive spatial default) + 커스텀 MLSpringOutCurve, 패키지 0개. calm-design 이 요구한 'spring physics 기본, GPU 속성(transform/opacity)만, linear 금지'가 코드 레벨에서 이미 지켜진다.",
+  "sources_checked": [
+    "https://docs.flutter.dev/ui/animations",
+    "E:\\Test_Android\\flutter_application_1\\lib\\core\\motion\\app_motion.dart",
+    "E:\\Test_Android\\flutter_application_1\\lib\\core\\motion\\pressable_scale.dart",
+    "E:\\Test_Android\\flutter_application_1\\lib\\core\\motion\\ (디렉터리 목록)"
+  ],
+  "sources_empty": [],
+  "new_findings_count": 5,
+  "evidence_strength": "strong",
+  "key_insight": "cycle_000 이 '다음 사이클들의 핵심'이라 지목한 React→Flutter 모션 번역은 이미 대부분 완료돼 있다. calm-design 의 cubic-bezier(0.16,1,0.3,1) 'Calm Premium' 은 Flutter 의 Curves.easeOutExpo 에 가장 가깝고(=현재 MLSpringOutCurve 계열), framer-motion spring(stiffness100/damping20) 은 SpringDescription.withDampingRatio 로 직역된다 — 앱은 M3 Expressive 수치(380/0.8)를 이미 채택. 즉 '모션을 풍부하게'는 새 패키지가 아니라 (a) StaggeredColumn 을 리스트/그리드로 확대 적용, (b) 진입 시 counter-up·scroll fade-up 같은 MOTION 5-6 패턴을 기존 토큰 안에서 추가하는 문제다. flutter_animate 는 '선언형 체이닝 편의' 뿐 성능 이점은 없고, 앱의 4단 Duration 토큰 가드(motion_token_guard_test)와 충돌하므로 도입 실익 낮음.",
+  "detail_findings": {
+    "flutter_decision_tree": "공식(docs.flutter.dev/ui/animations): ① pre-packaged implicit(AnimatedContainer/Opacity/Scale/Align 등)이 맞으면 그것 → ② 커스텀 implicit 는 TweenAnimationBuilder → ③ built-in explicit(FadeTransition/SlideTransition 등) → ④ 스크래치 explicit 는 AnimatedBuilder/AnimatedWidget + AnimationController. 물리 기반은 AnimationController.animateWith(SpringSimulation).",
+    "implicit_vs_explicit": "implicit = 프레임워크가 begin→end 를 알아서 보간(상태 하나로 트리거, 코드 최소, 대부분의 UI 마이크로인터랙션에 충분). explicit = 개발자가 AnimationController 로 재생/역재생/정지/체인/스태거를 직접 제어(진입 안무, 동시 다중 속성, 제스처 추종에 필요). 성능은 둘 다 동일 파이프라인 — 선택 기준은 '제어 필요성'이지 성능이 아니다.",
+    "tween_vs_physics": "Tween = 정해진 duration+curve 로 A→B(예측 가능, 대부분의 전환). Physics(SpringSimulation) = 속도·질량·감쇠로 자연스러운 감속/바운스(놓았을 때 손맛, 플링, 오버슈트). calm-design 의 'spring 기본'은 이 physics 경로 또는 spring 을 근사한 Curve(easeOutExpo/elastic) 둘 중 하나로 구현.",
+    "project_already_native": "app_motion.dart: AppMotion.spring = SpringDescription.withDampingRatio(mass1, stiffness380, ratio0.8) — 주석에 'M3 Expressive spatial default 수치만 차용, 패키지 안 씀' 명시. springOut = MLSpringOutCurve(). pressable_scale.dart 는 AnimatedScale(0.98)+AnimatedOpacity 로 눌림 피드백, MotionLevel(full/fadeOnly/none) 3단 분기. 디렉터리에 staggered_column/fade_slide_in/burst_particles/game_feedback 등 자체 위젯 다수.",
+    "package_tradeoffs": "flutter_animate: .fadeIn().slideY() 선언형 체이닝으로 코드는 짧아지나 내부는 동일한 AnimationController — 성능 이점 없음, 번들 소폭 증가, 앱의 4단 Duration 토큰 가드와 상충. rive: 벡터 상태머신 기반 인터랙티브 애니(마이크로 아이콘/캐릭터에 강력, 런타임 ~수백KB). lottie: After Effects JSON 재생(디자이너 산출물 그대로, CPU 파싱 비용·GPU 비친화 구간 주의). Hero/shared-axis(animations 패키지): 라우트 전환 표준 — 이건 도입 검토 가치 있음(현재 route 300ms 커스텀). 결론: 고령 타깃+기존 토큰 시스템에는 순수 native 유지가 정합, 라우트 전환만 animations 패키지의 SharedAxisTransition 를 선택적으로 검토."
+  },
+  "verification": {
+    "passed": null,
+    "detail": "brief 에 Definition of Done 절이 없어 자동완료 대상 아님. max_cycles=8, 007 에서 executive summary 예정."
+  }
+}

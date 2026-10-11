@@ -1,0 +1,29 @@
+{
+  "cycle": 3,
+  "sub_question": "Track B / Q4: 잘 만든 Flutter 앱 벤치마크 — 신뢰 출처로 Flutter 제작 확인된 쇼케이스와 그들이 쓴 기법",
+  "summary": "flutter.dev/showcase 또는 gskinner/Flutter팀 공식으로 Flutter 제작이 검증된 6개(Wonderous, Reflectly, Superlist, Google Pay, Flutter Gallery/flutter_animate, flutter_vignettes/Flokk)를 선정·비교. 최근접 3개: Wonderous('화려한 모션+접근성 동시'의 공식 레퍼런스, MemoryLink 딜레마와 동일), Reflectly(감정일기 도메인 최근접, 따뜻함 취하되 그래디언트 남발 배제), Google Pay(결제 수준 접근성·명료성 이식).",
+  "sources_checked": [
+    "https://github.com/gskinnerTeam/flutter-wonderous-app",
+    "https://flutter.dev/blog/wonderous-explore-the-world-with-flutter",
+    "https://flutter.dev/showcase/reflectly",
+    "https://flutter.dev/showcase/superlist",
+    "https://www.superlist.com/open-source",
+    "https://flutter.dev/showcase/google-pay",
+    "https://github.com/flutter/gallery",
+    "https://github.com/gskinner/flutter_animate",
+    "https://github.com/gskinnerTeam/flutter_vignettes"
+  ],
+  "sources_empty": [],
+  "new_findings_count": 6,
+  "evidence_strength": "strong",
+  "key_insight": "Wonderous 의 명시 목표 'novel animations — all while keeping accessibility top of mind' 가 MemoryLink 딜레마와 동일하며, MemoryLink 의 MotionLevel 3신호 시스템은 그 접근성 배려를 코드로 제도화한 버전. Reflectly 는 감정일기 최근접 벤치마크, Google Pay 는 접근성·명료성 이식 모델.",
+  "benchmarks": [
+    {"app": "Wonderous", "learn": "커스텀 전환·parallax·이미지 컬러추출 테마, 화려한 모션+접근성 동시의 공식 레퍼런스", "avoid": "고밀도 이펙트·작은 텍스트·영화적 스크롤(MOTION 9-10, 고령 부적합)"},
+    {"app": "Reflectly", "learn": "감정일기 도메인 동일, 따뜻한 온보딩·부드러운 spring", "avoid": "짙은 보라·파란 그래디언트(LILA BAN), 게임화 스트릭 압박"},
+    {"app": "Superlist", "learn": "정교한 마이크로인터랙션, super_sliver_list 대용량 리스트 성능", "avoid": "생산성앱식 정보밀도·복잡 제스처"},
+    {"app": "Google Pay", "learn": "대규모 검증된 접근성·정보위계·리빌드 최소화", "avoid": "핀테크식 촘촘한 밀도"},
+    {"app": "Flutter Gallery / flutter_animate", "learn": "위젯·전환 패턴 정본 카탈로그", "avoid": "Gallery 2024-06 아카이브(최신 M3 미반영), flutter_animate 도입 실익 낮음"},
+    {"app": "flutter_vignettes / Flokk", "learn": "개별 마이크로인터랙션 아이디어 카탈로그", "avoid": "실험용 이펙트는 프로덕션·고령 부적합"}
+  ],
+  "_recovery_note": "이 파일은 Track C 워커가 동시 실행 중 cycle_003.json 을 덮어써 유실된 Track B 원본을 FINDINGS.md 표로부터 재구성한 것이다. Track C 내용은 cycle_004.json 으로 이동됨."
+}

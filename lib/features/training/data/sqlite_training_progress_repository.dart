@@ -112,6 +112,11 @@ class _SqliteTrainingProgressTransaction
       'xp_earned': attempt.xpEarned,
       'completed_at': attempt.completedAt,
       'local_date': attempt.localDate,
+      'completion_status': attempt.completionStatus,
+      'assistance_level': attempt.assistanceLevel,
+      'session_context': attempt.sessionContext,
+      'content_version': attempt.contentVersion,
+      'response_code': attempt.responseCode,
     });
     return true;
   }
@@ -228,6 +233,11 @@ TrainingAttemptRecord _attemptFromRow(Map<String, Object?> row) =>
       xpEarned: row['xp_earned'] as int,
       completedAt: row['completed_at'] as String,
       localDate: row['local_date'] as String,
+      completionStatus: row['completion_status'] as String? ?? 'completed',
+      assistanceLevel: row['assistance_level'] as String?,
+      sessionContext: row['session_context'] as String?,
+      contentVersion: row['content_version'] as String?,
+      responseCode: row['response_code'] as String?,
     );
 
 TrainingUserProgressRecord _userProgressFromRow(Map<String, Object?> row) =>

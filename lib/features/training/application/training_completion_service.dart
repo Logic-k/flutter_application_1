@@ -64,6 +64,11 @@ class TrainingCompletionService {
         xpEarned: xpEarned,
         completedAt: effectiveCompletedAt.toIso8601String(),
         localDate: localDate,
+        completionStatus: input.completionStatus,
+        assistanceLevel: input.assistanceLevel,
+        sessionContext: input.sessionContext,
+        contentVersion: input.contentVersion,
+        responseCode: input.responseCode,
       );
 
       // "오늘 목표를 막 채웠는가"는 이번 기록을 넣기 전 값과 비교해야 알 수 있다.
@@ -258,6 +263,34 @@ void _validateInput(TrainingAttemptInput input) {
   }
   if (input.durationMs case final duration? when duration < 0) {
     throw RangeError.range(duration, 0, null, 'durationMs');
+  }
+  if (!TrainingCompletionStatus.values.contains(input.completionStatus)) {
+    throw ArgumentError.value(
+      input.completionStatus,
+      'completionStatus',
+      'Unsupported completion status',
+    );
+  }
+  if (input.completionStatus != TrainingCompletionStatus.completed) {
+    throw ArgumentError(
+      'TrainingCompletionService only records completed attempts',
+    );
+  }
+  if (input.assistanceLevel case final assistance?
+      when !TrainingAssistanceLevel.values.contains(assistance)) {
+    throw ArgumentError.value(
+      assistance,
+      'assistanceLevel',
+      'Unsupported assistance level',
+    );
+  }
+  if (input.sessionContext case final context?
+      when !TrainingSessionContext.values.contains(context)) {
+    throw ArgumentError.value(
+      context,
+      'sessionContext',
+      'Unsupported session context',
+    );
   }
   final correct = input.correctAnswers;
   final total = input.totalQuestions;

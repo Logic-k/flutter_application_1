@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>함께 고르는 한 주제 - 구현 미리보기</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #18212f;
+      --muted: #5d6b7f;
+      --line: #d9e1ea;
+      --paper: #f7fafc;
+      --panel: #ffffff;
+      --green: #2f8f64;
+      --blue: #316bba;
+      --amber: #c77b1a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background: var(--paper);
+      line-height: 1.55;
+    }
+    main {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 28px 18px 48px;
+    }
+    h1, h2, h3, p { margin-top: 0; }
+    h1 {
+      font-size: clamp(28px, 4vw, 44px);
+      letter-spacing: 0;
+      margin-bottom: 10px;
+    }
+    .lead {
+      color: var(--muted);
+      font-size: 18px;
+      max-width: 740px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(300px, 420px);
+      gap: 28px;
+      align-items: start;
+      margin-top: 26px;
+    }
+    .section {
+      background: transparent;
+      border-top: 1px solid var(--line);
+      padding-top: 18px;
+      margin-top: 18px;
+    }
+    .bullets {
+      padding-left: 20px;
+      color: var(--muted);
+    }
+    .phone {
+      width: min(100%, 390px);
+      margin: 0 auto;
+      border: 1px solid #b8c3d1;
+      border-radius: 28px;
+      background: #fefefe;
+      box-shadow: 0 18px 36px rgba(28, 42, 68, 0.18);
+      overflow: hidden;
+    }
+    .status {
+      display: flex;
+      justify-content: space-between;
+      padding: 14px 18px 8px;
+      color: #2a3445;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .screen {
+      padding: 16px;
+      background: linear-gradient(#fbfcfe, #f2f6fa);
+      min-height: 650px;
+    }
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+    .back {
+      width: 36px;
+      height: 36px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      color: var(--blue);
+      background: white;
+    }
+    .title {
+      font-size: 20px;
+      font-weight: 800;
+      line-height: 1.25;
+    }
+    .subtitle {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 4px;
+    }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+      margin-bottom: 12px;
+    }
+    .step {
+      font-size: 15px;
+      font-weight: 800;
+      margin-bottom: 10px;
+    }
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+    .choice {
+      min-height: 76px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px 8px;
+      background: #fff;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .choice.selected {
+      border-color: var(--green);
+      background: #edf8f2;
+      color: #1d6f4b;
+    }
+    .icon {
+      font-size: 24px;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .prompt {
+      color: #263344;
+      font-size: 15px;
+      margin-bottom: 8px;
+    }
+    .note {
+      color: var(--muted);
+      font-size: 12px;
+      border-left: 3px solid var(--amber);
+      padding-left: 10px;
+      margin: 0;
+    }
+    .chips {
+      display: grid;
+      gap: 8px;
+    }
+    .chip {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: white;
+      padding: 10px 12px;
+      font-size: 14px;
+      font-weight: 700;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .chip.active {
+      border-color: var(--blue);
+      background: #eef5ff;
+      color: #20589e;
+    }
+    .button {
+      width: 100%;
+      border: 0;
+      border-radius: 8px;
+      background: var(--green);
+      color: white;
+      padding: 14px;
+      font-weight: 800;
+      font-size: 16px;
+    }
+    code {
+      background: #edf1f5;
+      border: 1px solid #d8e1ea;
+      border-radius: 5px;
+      padding: 1px 5px;
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+      font-size: 0.92em;
+    }
+    .evidence {
+      display: grid;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .fact {
+      border-left: 4px solid var(--blue);
+      background: #f9fbfe;
+      padding: 10px 12px;
+    }
+    .fact strong { display: block; }
+    @media (max-width: 820px) {
+      .grid { grid-template-columns: 1fr; }
+      main { padding-top: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>함께 고르는 한 주제</h1>
+    <p class="lead">새로 추가된 훈련 활동의 실제 사용자 흐름과 저장 데이터를 한 화면에서 확인하기 위한 self-contained HTML 미리보기입니다.</p>
+
+    <div class="grid">
+      <section>
+        <div class="section">
+          <h2>적용 범위</h2>
+          <p>이 활동은 진단 도구나 점수형 게임이 아니라 참여형 인지 활동입니다. 보호자나 사용자가 부담 없이 주제를 고르고 짧게 떠올려 보는 흐름만 제공합니다.</p>
+        </div>
+        <div class="section">
+          <h2>저장되는 값</h2>
+          <ul class="bullets">
+            <li><code>activity_id</code>: <code>topic_choice</code></li>
+            <li><code>completion_status</code>: <code>completed</code></li>
+            <li><code>assistance_level</code>: 독립 수행, 말로 도움, 손으로 도움 중 하나</li>
+            <li><code>session_context</code>: <code>self_practice</code></li>
+            <li><code>content_version</code>: <code>topic_choice_v1</code></li>
+            <li><code>response_code</code>: <code>meal</code>, <code>season</code>, <code>hobby</code> 중 하나</li>
+          </ul>
+        </div>
+        <div class="section">
+          <h2>저장하지 않는 값</h2>
+          <div class="evidence">
+            <div class="fact"><strong>자유 대화 텍스트</strong>입력란이 없고 대화 내용은 저장하지 않습니다.</div>
+            <div class="fact"><strong>인지 점수</strong><code>score</code>, <code>correct_count</code>, <code>total_count</code>는 null입니다.</div>
+            <div class="fact"><strong>효과 추정</strong>진단, 예방, 개선 효과를 앱 문구나 저장값으로 주장하지 않습니다.</div>
+          </div>
+        </div>
+      </section>
+
+      <aside class="phone" aria-label="모바일 화면 목업">
+        <div class="status"><span>11:47</span><span>MemoryLink</span></div>
+        <div class="screen">
+          <div class="topbar">
+            <div class="back">‹</div>
+            <div>
+              <div class="title">함께 고르는 한 주제</div>
+              <div class="subtitle">스마트 케어 · 참여 기록</div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="step">1. 오늘 이야기하고 싶은 주제</div>
+            <div class="cards">
+              <div class="choice selected"><span class="icon">🍚</span>음식</div>
+              <div class="choice"><span class="icon">🌿</span>계절</div>
+              <div class="choice"><span class="icon">🎨</span>취미</div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="step">2. 짧게 떠올려 보기</div>
+            <p class="prompt">좋아하는 음식을 떠올리고, 누구와 함께 먹고 싶은지 말하거나 마음속으로 골라보세요.</p>
+            <p class="note">대화 내용은 앱에 저장하지 않고, 선택한 주제와 도움 정도만 기록합니다.</p>
+          </div>
+
+          <div class="panel">
+            <div class="step">3. 도움 정도</div>
+            <div class="chips">
+              <div class="chip active"><span>혼자 해냈어요</span><span>✓</span></div>
+              <div class="chip"><span>말로 도움을 받았어요</span><span></span></div>
+              <div class="chip"><span>손으로 도움을 받았어요</span><span></span></div>
+            </div>
+          </div>
+
+          <button class="button" type="button">활동 기록하기</button>
+        </div>
+      </aside>
+    </div>
+  </main>
+</body>
+</html>

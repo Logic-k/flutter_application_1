@@ -1,0 +1,9 @@
+{
+  "status": "running",
+  "campaign": "flutter-design-2026-trackC",
+  "track": "C — official-docs re-verification",
+  "max_cycles": 8,
+  "completed_cycles": 1,
+  "created": "2026-09-28T21:28:00+09:00",
+  "note": "트랙 C: 2026-09 현재 Flutter/M3 Expressive/Android/Apple HIG/W3C 공식 문서를 1차로 삼아 flutter-design-2026 결과를 재검증. 44개 GoRouter 경로+비라우트 UI 비회귀 계약 + 전 화면 디자인/모션 실행 계획. 코드 변경 없음."
+}

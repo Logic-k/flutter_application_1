@@ -10,6 +10,11 @@ class TrainingAttemptRecord {
     required this.xpEarned,
     required this.completedAt,
     required this.localDate,
+    this.completionStatus = 'completed',
+    this.assistanceLevel,
+    this.sessionContext,
+    this.contentVersion,
+    this.responseCode,
   });
 
   final String id;
@@ -22,6 +27,11 @@ class TrainingAttemptRecord {
   final int xpEarned;
   final String completedAt;
   final String localDate;
+  final String completionStatus;
+  final String? assistanceLevel;
+  final String? sessionContext;
+  final String? contentVersion;
+  final String? responseCode;
 
   TrainingAttemptRecord copyWith({int? userId}) => TrainingAttemptRecord(
     id: id,
@@ -34,6 +44,11 @@ class TrainingAttemptRecord {
     xpEarned: xpEarned,
     completedAt: completedAt,
     localDate: localDate,
+    completionStatus: completionStatus,
+    assistanceLevel: assistanceLevel,
+    sessionContext: sessionContext,
+    contentVersion: contentVersion,
+    responseCode: responseCode,
   );
 }
 

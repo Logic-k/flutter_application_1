@@ -1,0 +1,263 @@
+{
+  "checkedAtUtc": "2026-10-05T09:53:02.208Z",
+  "viewportResults": [
+    {
+      "width": 390,
+      "screenshot": "E:\\Test_Android\\flutter_application_1\\docs\\research\\2026-10-05_dementia-center-evidence\\render_check\\viewport_390.png",
+      "metrics": {
+        "bodyOverflow": 0,
+        "details": 12,
+        "externalResourceRequests": [],
+        "hasDoseLanguage": true,
+        "hasKorean": true,
+        "hasPrintScript": true,
+        "lang": "ko",
+        "openDetails": 12,
+        "sections": 8,
+        "tableWraps": [
+          {
+            "clientWidth": 317,
+            "index": 0,
+            "overflows": true,
+            "scrollWidth": 680
+          },
+          {
+            "clientWidth": 287,
+            "index": 1,
+            "overflows": true,
+            "scrollWidth": 680
+          },
+          {
+            "clientWidth": 317,
+            "index": 2,
+            "overflows": true,
+            "scrollWidth": 680
+          },
+          {
+            "clientWidth": 287,
+            "index": 3,
+            "overflows": true,
+            "scrollWidth": 680
+          },
+          {
+            "clientWidth": 317,
+            "index": 4,
+            "overflows": true,
+            "scrollWidth": 680
+          },
+          {
+            "clientWidth": 287,
+            "index": 5,
+            "overflows": true,
+            "scrollWidth": 680
+          },
+          {
+            "clientWidth": 317,
+            "index": 6,
+            "overflows": true,
+            "scrollWidth": 680
+          },
+          {
+            "clientWidth": 287,
+            "index": 7,
+            "overflows": true,
+            "scrollWidth": 680
+          },
+          {
+            "clientWidth": 317,
+            "index": 8,
+            "overflows": true,
+            "scrollWidth": 680
+          },
+          {
+            "clientWidth": 317,
+            "index": 9,
+            "overflows": true,
+            "scrollWidth": 680
+          }
+        ],
+        "title": "MemoryLink 치매안심센터 제휴 근거 보고서",
+        "uncontained": [],
+        "viewport": 375
+      }
+    },
+    {
+      "width": 768,
+      "screenshot": "E:\\Test_Android\\flutter_application_1\\docs\\research\\2026-10-05_dementia-center-evidence\\render_check\\viewport_768.png",
+      "metrics": {
+        "bodyOverflow": 0,
+        "details": 12,
+        "externalResourceRequests": [],
+        "hasDoseLanguage": true,
+        "hasKorean": true,
+        "hasPrintScript": true,
+        "lang": "ko",
+        "openDetails": 12,
+        "sections": 8,
+        "tableWraps": [
+          {
+            "clientWidth": 671,
+            "index": 0,
+            "overflows": true,
+            "scrollWidth": 780
+          },
+          {
+            "clientWidth": 633,
+            "index": 1,
+            "overflows": true,
+            "scrollWidth": 780
+          },
+          {
+            "clientWidth": 671,
+            "index": 2,
+            "overflows": true,
+            "scrollWidth": 780
+          },
+          {
+            "clientWidth": 633,
+            "index": 3,
+            "overflows": true,
+            "scrollWidth": 780
+          },
+          {
+            "clientWidth": 671,
+            "index": 4,
+            "overflows": true,
+            "scrollWidth": 780
+          },
+          {
+            "clientWidth": 633,
+            "index": 5,
+            "overflows": true,
+            "scrollWidth": 780
+          },
+          {
+            "clientWidth": 671,
+            "index": 6,
+            "overflows": true,
+            "scrollWidth": 780
+          },
+          {
+            "clientWidth": 633,
+            "index": 7,
+            "overflows": true,
+            "scrollWidth": 780
+          },
+          {
+            "clientWidth": 671,
+            "index": 8,
+            "overflows": true,
+            "scrollWidth": 780
+          },
+          {
+            "clientWidth": 671,
+            "index": 9,
+            "overflows": true,
+            "scrollWidth": 780
+          }
+        ],
+        "title": "MemoryLink 치매안심센터 제휴 근거 보고서",
+        "uncontained": [],
+        "viewport": 753
+      }
+    },
+    {
+      "width": 1280,
+      "screenshot": "E:\\Test_Android\\flutter_application_1\\docs\\research\\2026-10-05_dementia-center-evidence\\render_check\\viewport_1280.png",
+      "metrics": {
+        "bodyOverflow": 0,
+        "details": 12,
+        "externalResourceRequests": [],
+        "hasDoseLanguage": true,
+        "hasKorean": true,
+        "hasPrintScript": true,
+        "lang": "ko",
+        "openDetails": 12,
+        "sections": 8,
+        "tableWraps": [
+          {
+            "clientWidth": 1058,
+            "index": 0,
+            "overflows": false,
+            "scrollWidth": 1058
+          },
+          {
+            "clientWidth": 1020,
+            "index": 1,
+            "overflows": false,
+            "scrollWidth": 1020
+          },
+          {
+            "clientWidth": 1058,
+            "index": 2,
+            "overflows": false,
+            "scrollWidth": 1058
+          },
+          {
+            "clientWidth": 1020,
+            "index": 3,
+            "overflows": false,
+            "scrollWidth": 1020
+          },
+          {
+            "clientWidth": 1058,
+            "index": 4,
+            "overflows": false,
+            "scrollWidth": 1058
+          },
+          {
+            "clientWidth": 1020,
+            "index": 5,
+            "overflows": false,
+            "scrollWidth": 1020
+          },
+          {
+            "clientWidth": 1058,
+            "index": 6,
+            "overflows": false,
+            "scrollWidth": 1058
+          },
+          {
+            "clientWidth": 1020,
+            "index": 7,
+            "overflows": false,
+            "scrollWidth": 1020
+          },
+          {
+            "clientWidth": 1058,
+            "index": 8,
+            "overflows": false,
+            "scrollWidth": 1058
+          },
+          {
+            "clientWidth": 1058,
+            "index": 9,
+            "overflows": false,
+            "scrollWidth": 1058
+          }
+        ],
+        "title": "MemoryLink 치매안심센터 제휴 근거 보고서",
+        "uncontained": [],
+        "viewport": 1265
+      }
+    }
+  ],
+  "printJsCheck": {
+    "method": "static script inspection plus headless print PDF text extraction",
+    "externalScriptTags": 0,
+    "hasBeforeprintListener": true,
+    "hasAfterprintListener": true,
+    "opensFoldedDetails": true,
+    "restoresFoldedDetails": true,
+    "pdfChecks": {
+      "pdfExists": true,
+      "pdfBytes": 609874,
+      "textBytes": 44232,
+      "hasQuestionSection": true,
+      "hasRemainingCheck": true,
+      "hasDoseLanguage": true,
+      "hasPrintScript": true
+    }
+  },
+  "consoleLogs": []
+}

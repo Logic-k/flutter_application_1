@@ -1,0 +1,652 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MemoryLink 기능-근거-검증 매트릭스</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #17211f;
+      --muted: #586461;
+      --line: #d9e1dd;
+      --paper: #fbfcfa;
+      --band: #eef5f1;
+      --accent: #145c55;
+      --accent-2: #8b4d20;
+      --ok: #1d6b3f;
+      --hold: #9b4f13;
+      --wait: #5b5f65;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      background: var(--paper);
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.6;
+    }
+
+    body {
+      margin: 0;
+    }
+
+    a {
+      color: var(--accent);
+      overflow-wrap: anywhere;
+      text-decoration-thickness: 1px;
+      text-underline-offset: 3px;
+    }
+
+    .wrap {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 22px 16px 56px;
+    }
+
+    header {
+      border-bottom: 1px solid var(--line);
+      padding: 20px 0 18px;
+    }
+
+    h1 {
+      font-size: clamp(1.9rem, 5vw, 3.8rem);
+      line-height: 1.08;
+      margin: 0 0 12px;
+      letter-spacing: 0;
+    }
+
+    h2 {
+      font-size: 1.45rem;
+      margin: 38px 0 14px;
+      letter-spacing: 0;
+    }
+
+    h3 {
+      font-size: 1.08rem;
+      margin: 0 0 10px;
+      letter-spacing: 0;
+    }
+
+    p {
+      margin: 0 0 12px;
+    }
+
+    .lead {
+      color: var(--muted);
+      font-size: 1.05rem;
+      max-width: 900px;
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 16px 0 0;
+    }
+
+    .pill {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 6px 10px;
+      background: #fff;
+      color: var(--muted);
+      font-size: .9rem;
+    }
+
+    .notice {
+      margin: 18px 0 0;
+      padding: 14px 16px;
+      border: 1px solid #e0c59c;
+      background: #fff7ec;
+      border-radius: 8px;
+    }
+
+    .quick-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 18px 0 0;
+    }
+
+    .quick-nav a {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #fff;
+      color: var(--accent);
+      padding: 7px 10px;
+      font-size: .9rem;
+      text-decoration: none;
+    }
+
+    .priority {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin: 18px 0;
+    }
+
+    .priority-card,
+    .card,
+    .source-card {
+      border: 1px solid var(--line);
+      background: #fff;
+      border-radius: 8px;
+      padding: 16px;
+      overflow-wrap: anywhere;
+    }
+
+    .priority-card {
+      border-left: 5px solid var(--accent);
+    }
+
+    .label {
+      display: inline-block;
+      margin: 0 0 8px;
+      color: var(--accent);
+      font-weight: 700;
+      font-size: .88rem;
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      border-radius: 999px;
+      padding: 4px 9px;
+      font-size: .84rem;
+      font-weight: 700;
+      border: 1px solid var(--line);
+      background: #f8faf9;
+    }
+
+    .status.done {
+      color: var(--ok);
+    }
+
+    .status.hold {
+      color: var(--hold);
+    }
+
+    .status.wait {
+      color: var(--wait);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+
+    .matrix {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+
+    .field {
+      border-top: 1px solid var(--line);
+      padding-top: 10px;
+      margin-top: 10px;
+    }
+
+    .field b {
+      display: block;
+      color: var(--accent-2);
+      margin-bottom: 2px;
+      font-size: .92rem;
+    }
+
+    .steps {
+      counter-reset: step;
+      display: grid;
+      gap: 10px;
+      padding: 0;
+      margin: 14px 0;
+      list-style: none;
+    }
+
+    .steps li {
+      counter-increment: step;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      padding: 12px 12px 12px 46px;
+      position: relative;
+      min-height: 48px;
+    }
+
+    .steps li::before {
+      content: counter(step);
+      position: absolute;
+      left: 12px;
+      top: 12px;
+      width: 24px;
+      height: 24px;
+      border-radius: 999px;
+      background: var(--accent);
+      color: #fff;
+      display: grid;
+      place-items: center;
+      font-size: .82rem;
+      font-weight: 700;
+    }
+
+    .route {
+      border-left: 5px solid var(--accent-2);
+    }
+
+    .footnote {
+      color: var(--muted);
+      font-size: .92rem;
+    }
+
+    code {
+      background: #eef2ef;
+      padding: 2px 5px;
+      border-radius: 5px;
+      overflow-wrap: anywhere;
+    }
+
+    ul {
+      padding-left: 1.2rem;
+    }
+
+    li {
+      margin-bottom: 6px;
+    }
+
+    @media (min-width: 760px) {
+      .wrap {
+        padding: 30px 28px 70px;
+      }
+
+      .priority {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (min-width: 1100px) {
+      .matrix {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .wide {
+        grid-column: 1 / -1;
+      }
+    }
+
+    @media print {
+      body {
+        background: #fff;
+      }
+
+      .wrap {
+        max-width: none;
+        padding: 0;
+      }
+
+      .card,
+      .priority-card,
+      .source-card,
+      .steps li {
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header>
+      <h1>MemoryLink 기능-근거-검증 매트릭스</h1>
+      <p class="lead">일반 고령자, MCI 진단자, 치매 당사자, 보호자를 한 제품 안에서 지원하기 위한 적용안과 검증 계획입니다. 이 문서는 진단·치료·예방 효과를 확정하지 않으며, 표준 설문과 인지활동을 명확히 분리합니다.</p>
+      <div class="meta">
+        <span class="pill">작성일 2026-10-05</span>
+        <span class="pill">내부 검토용</span>
+        <span class="pill">모바일 우선 HTML</span>
+        <span class="pill">오프라인 자산 의존 없음</span>
+      </div>
+      <div class="notice">
+        진단 정보는 선택 입력입니다. 모름/미입력도 허용하며, 접근성·도움 수준은 진단명과 독립적으로 기록합니다. 앱 점수는 정상, MCI, 치매를 판정하지 않습니다.
+      </div>
+      <nav class="quick-nav" aria-label="보고서 바로가기">
+        <a href="#summary">요약</a>
+        <a href="#principles">원칙</a>
+        <a href="#implementation">구현 근거</a>
+        <a href="#activities">활동</a>
+        <a href="#questionnaires">설문</a>
+        <a href="#routes">경로</a>
+        <a href="#checklist">검증</a>
+        <a href="#pitch">기업 문장</a>
+      </nav>
+    </header>
+
+    <section aria-labelledby="summary">
+      <h2 id="summary">첫 화면 우선순위</h2>
+      <div class="priority">
+        <article class="priority-card">
+          <span class="label">우선순위 1</span>
+          <h3>공통 안전·기록 레이어</h3>
+          <p>진단 미입력 허용, 도움 수준, 중단/불편/기술 문제 기록, 콘텐츠 버전 저장을 공통 기반으로 둡니다.</p>
+          <span class="status hold">일부 구현, 일부 제안</span>
+        </article>
+        <article class="priority-card">
+          <span class="label">우선순위 2</span>
+          <h3>대표 활동</h3>
+          <p>함께 고르기, 일상 회상, 도형 맞추기, 문장 읽기, 일정 준비를 비진단 활동 후보로 정리합니다.</p>
+          <span class="status hold">일부 구현, 일부 제안</span>
+        </article>
+        <article class="priority-card">
+          <span class="label">우선순위 3</span>
+          <h3>표준 설문 후보</h3>
+          <p>SMCQ, KDSQ-C, K-AD8, K-IADL/K-ADL, SGDS-K, ZBI, KQOL-AD는 권리 확인 전 후보로만 둡니다.</p>
+          <span class="status wait">문항 구현 보류</span>
+        </article>
+        <article class="priority-card">
+          <span class="label">우선순위 4</span>
+          <h3>효과 검증 분리</h3>
+          <p>사용성·실행 가능성 검증과 효과 연구를 분리합니다. 표본 수, 통과율, 효과 크기는 합의 필요입니다.</p>
+          <span class="status done">검증 순서 확정</span>
+        </article>
+      </div>
+    </section>
+
+    <section aria-labelledby="principles">
+      <h2 id="principles">적용 원칙</h2>
+      <div class="grid">
+        <article class="card">
+          <h3>역할은 겹칠 수 있음</h3>
+          <p>한 사람이 일반 고령자이면서 MCI 진단자일 수 있고, 치매 당사자의 보호자일 수도 있습니다. 제품은 역할을 고정하지 않고 경로별 목적과 응답자를 구분합니다.</p>
+        </article>
+        <article class="card">
+          <h3>응답자를 섞지 않음</h3>
+          <p>자기보고, 보호자 관찰, 전문가 평가, 보호자 본인의 부담은 다른 데이터입니다. 합산 점수나 단일 위험 라벨로 묶지 않습니다.</p>
+        </article>
+        <article class="card">
+          <h3>완료와 순응도 구분</h3>
+          <p>활동 완료 횟수는 사용 기록입니다. 분모가 있는 참여율, 순응도, 충실도는 별도 프로토콜과 배정 기준이 있을 때만 계산합니다.</p>
+        </article>
+        <article class="card">
+          <h3>전문가 데모는 가능</h3>
+          <p>중단 UI가 아직 없다는 이유만으로 전문가 내부 데모까지 금지하지 않습니다. 다만 실제 참여자 사용은 동의·중단·불편 기록과 기관 절차 전까지 보류합니다.</p>
+        </article>
+      </div>
+
+      <ol class="steps" aria-label="검증 순서">
+        <li>근거, 목적, 버전 확정</li>
+        <li>자산, 권리, 전문가 내용 검토</li>
+        <li>합성 데이터 기반 소프트웨어·권한·중단·저장 흐름 점검과 화면 목업 검토</li>
+        <li>기관 절차에 따른 감독 하 사용성·실행 가능성 검증</li>
+        <li>효과 검증은 별도 연구로 설계</li>
+      </ol>
+    </section>
+
+    <section aria-labelledby="implementation">
+      <h2 id="implementation">현재 앱 구현 근거</h2>
+      <div class="source-card">
+        <ul>
+          <li>활동 카탈로그: <code>lib/features/training/domain/training_catalog.dart</code></li>
+          <li>함께 고르기: <code>lib/features/training/topic_choice_page.dart</code></li>
+          <li>일상 회상: <code>lib/features/training/daily_recall_page.dart</code></li>
+          <li>도형 맞추기: <code>lib/features/training/games/shape_match_game.dart</code></li>
+          <li>문장 읽기: <code>lib/features/training/games/sentence_reading_game.dart</code></li>
+          <li>자체 10문항 점검: <code>lib/features/assessment/assessment_screen.dart</code></li>
+          <li>음성 평가 차단 화면: <code>lib/features/voice_assessment/voice_assessment_blocked_screen.dart</code></li>
+          <li>훈련 기록 DB: <code>lib/core/database_helper.dart</code>, <code>lib/features/training/data/training_progress_repository.dart</code></li>
+          <li>관련 테스트: <code>test/widget/training/topic_choice_page_test.dart</code>, <code>test/unit/training/training_completion_service_test.dart</code>, <code>test/unit/core/database_v9_migration_test.dart</code></li>
+        </ul>
+      </div>
+    </section>
+
+    <section aria-labelledby="activities">
+      <h2 id="activities">인지 활동·기능 매트릭스</h2>
+      <div class="matrix">
+        <article class="card">
+          <h3>A1. 함께 고르기</h3>
+          <span class="status done">구현됨</span>
+          <div class="field"><b>대상/목적/응답자</b>일반 고령자, MCI 진단자, 치매 당사자와 보호자 공동 사용. 선호 주제 선택과 가벼운 대화 시작. 응답자는 사용자 또는 보호자 보조 입력자.</div>
+          <div class="field"><b>근거 URL/대상</b>CST 공식 자료: <a href="https://www.ucl.ac.uk/international-cognitive-stimulation-therapy/">UCL International CST</a>. iCST 원문은 치매 당사자와 보호자 dyad를 대상으로 한 가정 기반 caregiver-led iCST 무작위대조시험입니다: <a href="https://doi.org/10.1371/journal.pmed.1002269">DOI 10.1371/journal.pmed.1002269</a>.</div>
+          <div class="field"><b>원리와 차이</b>원문은 정해진 세션 구조, 촉진자, 회기 충실도를 포함합니다. 현재 기능은 표준 CST가 아니라 짧은 주제 선택 활동입니다.</div>
+          <div class="field"><b>현재 상태</b><code>topic_choice_v1</code>, 주제, 도움 수준, 자기 연습 여부, 콘텐츠 버전, 응답 코드 저장. 대화 내용은 저장하지 않음.</div>
+          <div class="field"><b>미검증</b>센터 진행자 사용성, 보호자 보조 입력 이해도, 중단/불편 사유 UI, 주제 문화 적합성.</div>
+          <div class="field"><b>권리/전문가 담당</b>제품 책임자, 임상/작업치료/치매센터 전문가. CST 명칭·구조 차용 시 별도 권리 확인.</div>
+          <div class="field"><b>검증 방법/통과 조건</b>합성 사용자로 선택-완료-미선택 흐름을 실행하고 저장 필드를 확인. 통과율은 합의 필요.</div>
+          <div class="field"><b>보존 증거</b>화면 캡처, DB 레코드, 콘텐츠 버전, 테스트 로그, 전문가 코멘트.</div>
+          <div class="field"><b>내부 검토/보류</b>내부 데모 가능. 실제 참여자 사용은 동의·중단·불편 기록과 전문가 검토 전까지 보류.</div>
+        </article>
+
+        <article class="card">
+          <h3>A2. 일상 회상</h3>
+          <span class="status done">구현됨</span>
+          <div class="field"><b>대상/목적/응답자</b>일반 고령자, MCI 진단자, 치매 당사자. 일상 회상과 자기 기록. 응답자는 본인, 필요 시 보호자 보조.</div>
+          <div class="field"><b>근거 URL/대상</b>CST/iCST 자료: <a href="https://www.ucl.ac.uk/international-cognitive-stimulation-therapy/">UCL International CST</a>. 초기 치매 목표 기반 인지재활 GREAT 연구: <a href="https://pubmed.ncbi.nlm.nih.gov/30217629/">PubMed 30217629</a>.</div>
+          <div class="field"><b>원리와 차이</b>연구 원문은 훈련된 치료자, 목표 설정, 반복 세션, 결과 측정이 있습니다. 현재 기능은 자유 텍스트 일상 회상이며 표준 회상치료나 GREAT 프로토콜이 아닙니다.</div>
+          <div class="field"><b>현재 상태</b>5개 일상 질문의 텍스트 입력이 있고 완료 기록에는 점수 없이 활동 완료가 저장됩니다.</div>
+          <div class="field"><b>미검증</b>개인정보 최소화, 민감정보 입력 경고, 보호자 대리 입력 표시, 저장 범위와 삭제 흐름.</div>
+          <div class="field"><b>권리/전문가 담당</b>개인정보/보안 담당, 임상 전문가, 제품 책임자.</div>
+          <div class="field"><b>검증 방법/통과 조건</b>합성 문장 입력으로 저장 범위와 완료 기록을 확인하고 민감정보 안내 문구를 검토. 통과율은 합의 필요.</div>
+          <div class="field"><b>보존 증거</b>테스트 계정 스크린샷, 저장 여부 체크리스트, 개인정보 영향 검토 메모.</div>
+          <div class="field"><b>내부 검토/보류</b>내부 기능 검토 가능. 실제 참여자 사용은 개인정보·동의·삭제 정책 전까지 보류.</div>
+        </article>
+
+        <article class="card">
+          <h3>A3. 도형 맞추기</h3>
+          <span class="status done">구현됨</span>
+          <div class="field"><b>대상/목적/응답자</b>일반 고령자, MCI 진단자, 치매 당사자 중 게임형 활동을 원하는 사용자. 시각적 주의와 과제 수행 경험 제공.</div>
+          <div class="field"><b>근거 URL/대상</b>SUPERBRAIN 다중영역 중재 연구: <a href="https://pubmed.ncbi.nlm.nih.gov/32972306/">PubMed 32972306</a>, <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC7056906/">PMC7056906</a>.</div>
+          <div class="field"><b>원리와 차이</b>SUPERBRAIN은 운동, 인지훈련, 영양, 혈관위험 관리 등 복합 중재입니다. 현재 도형 맞추기는 단일 게임이며 복합 중재 효과를 주장할 수 없습니다.</div>
+          <div class="field"><b>현재 상태</b><code>shape_match</code> 활동과 점수형 완료 기록이 있습니다.</div>
+          <div class="field"><b>미검증</b>난이도 적정성, 오류 피드백의 좌절감, 화면 접근성, 점수 해석 문구.</div>
+          <div class="field"><b>권리/전문가 담당</b>UX 담당, 접근성 담당, 임상 전문가.</div>
+          <div class="field"><b>검증 방법/통과 조건</b>390/768/1280 화면에서 오버플로와 터치 가능 영역 확인, 합성 플레이 기록 저장 확인. 통과율은 합의 필요.</div>
+          <div class="field"><b>보존 증거</b>화면 캡처, 테스트 로그, 점수 저장 레코드, 접근성 체크리스트.</div>
+          <div class="field"><b>내부 검토/보류</b>내부 데모 가능. 점수를 인지 상태 지표로 표현하는 문구는 보류.</div>
+        </article>
+
+        <article class="card">
+          <h3>A4. 문장 읽기</h3>
+          <span class="status done">구현됨</span>
+          <div class="field"><b>대상/목적/응답자</b>일반 고령자, MCI 진단자, 치매 당사자 중 읽기·말하기 활동을 원하는 사용자. 문장 읽기 활동 경험과 발화 연습 후보 검토.</div>
+          <div class="field"><b>근거 URL/대상</b>디지털 인지활동과 원격 활동의 실행 가능성 근거는 ACTH 계열 연구, CST/iCST 자료와 함께 검토합니다. iCST 공식 자료: <a href="https://www.ucl.ac.uk/international-cognitive-stimulation-therapy/">UCL International CST</a>.</div>
+          <div class="field"><b>원리와 차이</b>발화·언어 평가는 표준 절차와 검증된 채점이 필요합니다. 현재 문장 읽기는 앱 활동이며 진단 음성평가가 아닙니다.</div>
+          <div class="field"><b>현재 상태</b>구현된 게임이 있고, 별도 음성 평가는 정확도 검증 전 차단 화면으로 막혀 있습니다.</div>
+          <div class="field"><b>미검증</b>음성 권한 안내, 녹음/비녹음 구분, 발음 점수 의미, 소음·기기 차이.</div>
+          <div class="field"><b>권리/전문가 담당</b>음성/보안 담당, 임상 전문가, 제품 책임자.</div>
+          <div class="field"><b>검증 방법/통과 조건</b>합성/더미 흐름으로 권한 거부, 중단, 완료, 저장 필드 확인. 통과율은 합의 필요.</div>
+          <div class="field"><b>보존 증거</b>권한 화면 캡처, 음성 미저장/저장 정책, 테스트 로그.</div>
+          <div class="field"><b>내부 검토/보류</b>내부 화면 검토 가능. 실제 음성 기반 평가나 진단 문구는 검증 전 보류.</div>
+        </article>
+
+        <article class="card">
+          <h3>A5. 일정 준비와 생활 계획</h3>
+          <span class="status wait">제안됨, 미구현</span>
+          <div class="field"><b>대상/목적/응답자</b>일반 고령자, MCI 진단자, 초기 치매 당사자, 보호자. 병원/센터 방문 전 질문 정리, 생활 목표, 일정 변화 준비.</div>
+          <div class="field"><b>근거 URL/대상</b>GREAT 초기 치매 목표 기반 인지재활: <a href="https://pubmed.ncbi.nlm.nih.gov/30217629/">PubMed 30217629</a>. 중재 설명 체크리스트 TIDieR: <a href="https://www.equator-network.org/reporting-guidelines/tidier/">EQUATOR TIDieR</a>.</div>
+          <div class="field"><b>원리와 차이</b>GREAT는 치료자와 개인 목표 설정, 훈련, 결과 평가를 포함합니다. 앱 설계안은 목표·방문 준비 기록 도구로만 다룹니다.</div>
+          <div class="field"><b>현재 상태</b>제안됨, 미구현.</div>
+          <div class="field"><b>미검증</b>목표 문구 안전성, 보호자와 본인 입력 구분, 의료 조언으로 오해될 가능성.</div>
+          <div class="field"><b>권리/전문가 담당</b>임상 전문가, 제품 책임자, 법무/컴플라이언스.</div>
+          <div class="field"><b>검증 방법/통과 조건</b>화면 목업 검토 후 합성 데이터로 생성-수정-삭제-내보내기 흐름 확인. 통과율은 합의 필요.</div>
+          <div class="field"><b>보존 증거</b>목업, 검토 회의록, 버전 문서, 테스트 로그.</div>
+          <div class="field"><b>내부 검토/보류</b>내부 목업 검토 가능. 실제 참여자 사용은 기관 절차 전까지 보류.</div>
+        </article>
+
+        <article class="card">
+          <h3>A6. 공통 안전·기록 기능</h3>
+          <span class="status hold">일부 구현</span>
+          <div class="field"><b>대상/목적/응답자</b>모든 경로. 안전한 사용, 감사 가능성, 연구·운영 해석의 분리.</div>
+          <div class="field"><b>근거 URL/대상</b>MRC/NIHR 복합중재 프레임워크: <a href="https://doi.org/10.1136/bmj.n2061">DOI 10.1136/bmj.n2061</a>. TIDieR: <a href="https://www.equator-network.org/reporting-guidelines/tidier/">EQUATOR TIDieR</a>.</div>
+          <div class="field"><b>원리와 차이</b>원문은 연구 보고 기준입니다. 앱에서는 콘텐츠 버전, 세션 맥락, 도움 수준, 중단 사유, 기술 문제를 운영 메타데이터로 기록합니다.</div>
+          <div class="field"><b>현재 상태</b><code>training_attempts</code>에 콘텐츠 버전, 세션 맥락, 도움 수준, 응답 코드 등이 추가되어 있으나 모든 화면의 명시적 중단/불편 UI는 아직 아닙니다.</div>
+          <div class="field"><b>미검증</b>전 활동 공통 적용, 도움 수준과 진단 정보 독립성, 보호자 대리 입력 표시, 삭제·내보내기.</div>
+          <div class="field"><b>권리/전문가 담당</b>제품 책임자, 데이터/보안 담당, 임상 전문가.</div>
+          <div class="field"><b>검증 방법/통과 조건</b>합성 데이터로 완료, 중단, 기술 문제, 보호자 도움 기록이 서로 구분되는지 확인. 통과율은 합의 필요.</div>
+          <div class="field"><b>보존 증거</b>DB 스키마, 마이그레이션 테스트, 화면 캡처, 내부 검토 체크리스트.</div>
+          <div class="field"><b>내부 검토/보류</b>내부 검토 가능. 실제 참여자 사용은 동의·중단·삭제 정책 확정 전까지 보류.</div>
+        </article>
+      </div>
+    </section>
+
+    <section aria-labelledby="questionnaires">
+      <h2 id="questionnaires">표준 설문 후보 매트릭스</h2>
+      <p class="footnote">현재 앱의 10문항 자체 점검은 아래 표준 설문으로 이름을 바꾸거나 점수를 해석해서는 안 됩니다. 아래 도구는 후보이며, 문항·채점·해석을 앱에 넣기 전 권리와 한국어판 사용 조건을 확인해야 합니다.</p>
+      <div class="matrix">
+        <article class="card">
+          <h3>Q1. SMCQ</h3>
+          <span class="status wait">후보, 미구현</span>
+          <div class="field"><b>대상/목적/응답자</b>지역사회 일반 고령자 또는 기억 걱정이 있는 사용자. 주관적 기억 호소 확인. 응답자는 본인.</div>
+          <div class="field"><b>근거 URL/대상</b>Youn et al. 2009, Korean community-dwelling older adults. <a href="https://doi.org/10.1159/000205512">DOI 10.1159/000205512</a>.</div>
+          <div class="field"><b>원리와 차이</b>원문은 14개 자기보고 문항과 연구 검증을 포함합니다. 앱은 원문 문항·채점표를 허가 없이 복제하지 않으며 기존 10문항을 SMCQ로 해석하지 않습니다.</div>
+          <div class="field"><b>현재 상태</b>제안됨, 미구현.</div>
+          <div class="field"><b>미검증</b>저작권, 한국어판 원문 사용 허가, 채점·해석 권한, 점수 노출 문구.</div>
+          <div class="field"><b>권리/전문가 담당</b>법무/권리 담당, 임상 전문가.</div>
+          <div class="field"><b>검증 방법/통과 조건</b>원문 사용허가 문서 확보, 전문가가 목적·대상·응답자 문구를 승인. 통과율은 합의 필요.</div>
+          <div class="field"><b>보존 증거</b>라이선스/허가 기록, 전문가 검토표, 버전 문서.</div>
+          <div class="field"><b>내부 검토/보류</b>후보 설명 검토 가능. 실제 문항 탑재는 권리 확인 전 보류.</div>
+        </article>
+
+        <article class="card">
+          <h3>Q2. KDSQ-C</h3>
+          <span class="status wait">후보, 미구현</span>
+          <div class="field"><b>대상/목적/응답자</b>치매 의심 또는 진료·상담 전 기능 변화 확인이 필요한 사용자. 보호자/정보제공자 관찰 기반 선별 후보.</div>
+          <div class="field"><b>근거 URL/대상</b>Korean Dementia Screening Questionnaire-Cognition 관련 연구: <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC6974816/">PMC6974816</a>.</div>
+          <div class="field"><b>원리와 차이</b>원문은 정보제공자가 관찰한 변화를 묻습니다. 앱 설계에서는 본인 자기보고나 보호자 부담과 섞지 않습니다.</div>
+          <div class="field"><b>현재 상태</b>제안됨, 미구현.</div>
+          <div class="field"><b>미검증</b>문항 사용권, 최신 한국형 권고, 채점 기준, 정보제공자 신원 표시.</div>
+          <div class="field"><b>권리/전문가 담당</b>임상 전문가, 법무/권리 담당.</div>
+          <div class="field"><b>검증 방법/통과 조건</b>공식 문항 출처와 사용 조건 확인 후 보호자 응답 플로우를 합성 데이터로 검증. 통과율은 합의 필요.</div>
+          <div class="field"><b>보존 증거</b>출처 원문, 허가 기록, 응답자 구분 테스트 로그.</div>
+          <div class="field"><b>내부 검토/보류</b>후보 설명 검토 가능. 실제 문항 탑재는 보류.</div>
+        </article>
+
+        <article class="card">
+          <h3>Q3. K-AD8</h3>
+          <span class="status wait">후보, 미구현</span>
+          <div class="field"><b>대상/목적/응답자</b>보호자 또는 정보제공자가 인지·기능 변화 여부를 관찰해 답하는 선별 후보.</div>
+          <div class="field"><b>근거 URL/대상</b>Korean AD8 validation: <a href="https://pubmed.ncbi.nlm.nih.gov/19561437/">PubMed 19561437</a>. Washington University AD8 terms: <a href="https://otm.wustl.edu/ad8-terms-agreement/">AD8 Terms Agreement</a>.</div>
+          <div class="field"><b>원리와 차이</b>AD8은 정보제공자 기반 변화 확인 도구입니다. 앱에서는 보호자 관찰 점수와 사용자 본인 점수를 합산하지 않습니다.</div>
+          <div class="field"><b>현재 상태</b>제안됨, 미구현.</div>
+          <div class="field"><b>미검증</b>Washington University 사용 조건, 한국어판 사용 가능성, 상업/연구 사용 구분.</div>
+          <div class="field"><b>권리/전문가 담당</b>법무/권리 담당, 임상 전문가.</div>
+          <div class="field"><b>검증 방법/통과 조건</b>사용 조건 승인 후 보호자 전용 응답 흐름과 결과 문구를 전문가가 승인. 통과율은 합의 필요.</div>
+          <div class="field"><b>보존 증거</b>AD8 terms 기록, 승인 이메일/문서, 화면 검토표.</div>
+          <div class="field"><b>내부 검토/보류</b>후보 설명 가능. 문항 구현은 권리 확인 전 보류.</div>
+        </article>
+
+        <article class="card">
+          <h3>Q4. K-IADL/K-ADL</h3>
+          <span class="status wait">후보, 미구현</span>
+          <div class="field"><b>대상/목적/응답자</b>MCI 또는 치매 진단자, 보호자 관찰이 필요한 사용자. 일상생활 기능 변화 확인 후보.</div>
+          <div class="field"><b>근거 URL/대상</b>Dementia and Neurocognitive Disorders review PDF: <a href="https://dnd.or.kr/pdf/10.12779/dnd.2018.17.1.11">DND PDF</a>. 기능평가 자료: <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC6427997/">PMC6427997</a>.</div>
+          <div class="field"><b>원리와 차이</b>ADL/IADL은 기능 수행 평가입니다. 앱에서는 게임 점수나 활동 완료를 ADL 점수로 대체하지 않습니다.</div>
+          <div class="field"><b>현재 상태</b>제안됨, 미구현.</div>
+          <div class="field"><b>미검증</b>도구별 권리, 문항 범위, 전문가 해석, 보호자 입력 신뢰도.</div>
+          <div class="field"><b>권리/전문가 담당</b>임상 전문가, 법무/권리 담당.</div>
+          <div class="field"><b>검증 방법/통과 조건</b>도구 선정 회의 후 합성 보호자 응답으로 저장·수정·삭제 흐름 확인. 통과율은 합의 필요.</div>
+          <div class="field"><b>보존 증거</b>선정 회의록, 허가 기록, 테스트 로그.</div>
+          <div class="field"><b>내부 검토/보류</b>후보 비교 가능. 실제 문항 탑재는 보류.</div>
+        </article>
+
+        <article class="card">
+          <h3>Q5. SGDS-K</h3>
+          <span class="status wait">후보, 미구현</span>
+          <div class="field"><b>대상/목적/응답자</b>우울 증상 확인이 필요한 고령자. 기분 상태 선별 후보. 응답자는 본인.</div>
+          <div class="field"><b>근거 URL/대상</b>Korean version validation: <a href="https://pubmed.ncbi.nlm.nih.gov/15507257/">PubMed 15507257</a>. GDS 원자료 정보: <a href="https://web.stanford.edu/~yesavage/GDS">Stanford GDS</a>.</div>
+          <div class="field"><b>원리와 차이</b>SGDS-K는 우울 증상 선별 도구입니다. 인지 점수나 치매 진단과 합산하지 않습니다.</div>
+          <div class="field"><b>현재 상태</b>제안됨, 미구현.</div>
+          <div class="field"><b>미검증</b>한국어판 문항 사용 허가, 위기 대응 문구, 고위험 응답 처리 절차.</div>
+          <div class="field"><b>권리/전문가 담당</b>임상 전문가, 안전/위기 대응 담당, 법무/권리 담당.</div>
+          <div class="field"><b>검증 방법/통과 조건</b>위기 대응 시나리오와 기관 안내 절차를 먼저 확정하고 합성 데이터로 분기 확인. 통과율은 합의 필요.</div>
+          <div class="field"><b>보존 증거</b>위기 대응 프로토콜, 허가 기록, 분기 테스트 로그.</div>
+          <div class="field"><b>내부 검토/보류</b>후보 설명 가능. 실제 참여자 응답은 안전 절차 전까지 보류.</div>
+        </article>
+
+        <article class="card">
+          <h3>Q6. ZBI 또는 S-ZBI</h3>
+          <span class="status wait">후보, 미구현</span>
+          <div class="field"><b>대상/목적/응답자</b>보호자. 보호자 본인의 부담 확인 후보.</div>
+          <div class="field"><b>근거 URL/대상</b>Zarit Burden Interview 사용 조건: <a href="https://eprovide.mapi-trust.org/zbi-zarit-burden-interview/">Mapi ZBI</a>.</div>
+          <div class="field"><b>원리와 차이</b>ZBI는 보호자 부담 도구입니다. 치매 당사자 기능 평가나 보호자 관찰형 인지 선별과 섞지 않습니다.</div>
+          <div class="field"><b>현재 상태</b>제안됨, 미구현.</div>
+          <div class="field"><b>미검증</b>Mapi 사용 조건, 한국어판 접근, 상업/연구 사용 허가, 보호자 지원 안내.</div>
+          <div class="field"><b>권리/전문가 담당</b>법무/권리 담당, 보호자 지원 전문가.</div>
+          <div class="field"><b>검증 방법/통과 조건</b>사용권 확인 후 보호자 계정/응답자 구분과 결과 문구 검토. 통과율은 합의 필요.</div>
+          <div class="field"><b>보존 증거</b>라이선스 기록, 보호자 플로우 테스트, 전문가 검토표.</div>
+          <div class="field"><b>내부 검토/보류</b>후보 설명 가능. 문항 구현은 보류.</div>
+        </article>
+
+        <article class="card wide">
+          <h3>Q7. KQOL-AD</h3>
+          <span class="status wait">후보, 미구현</span>
+          <div class="field"><b>대상/목적/응답자</b>치매 당사자와 보호자. 삶의 질 확인 후보.</div>
+          <div class="field"><b>근거 URL/대상</b>Korean QOL-AD validation: <a href="https://pubmed.ncbi.nlm.nih.gov/16764499/">PubMed 16764499</a>. QOL-AD terms: <a href="https://eprovide.mapi-trust.org/instruments/quality-of-life-in-alzheimer-s-disease">Mapi QOL-AD</a>.</div>
+          <div class="field"><b>원리와 차이</b>삶의 질은 효과·진단 점수가 아니라 별도 결과 영역입니다. 앱 활동 완료와 직접 등치하지 않습니다.</div>
+          <div class="field"><b>현재 상태</b>제안됨, 미구현.</div>
+          <div class="field"><b>미검증</b>사용권, 사용자/보호자 응답 구분, 결과 표시 문구.</div>
+          <div class="field"><b>권리/전문가 담당</b>법무/권리 담당, 임상 전문가.</div>
+          <div class="field"><b>검증 방법/통과 조건</b>권리 확인 후 응답자별 저장 분리와 결과 문구 검토. 통과율은 합의 필요.</div>
+          <div class="field"><b>보존 증거</b>사용권 기록, 화면 검토표, 테스트 로그.</div>
+          <div class="field"><b>내부 검토/보류</b>후보 설명 가능. 실제 문항 탑재는 보류.</div>
+        </article>
+      </div>
+    </section>
+
+    <section aria-labelledby="routes">
+      <h2 id="routes">네 경로별 제품 적용안</h2>
+      <div class="grid">
+        <article class="card route">
+          <h3>일반 고령자</h3>
+          <p><b>허용 목적:</b> 일상 활동, 자기 점검, 활동 선호 파악.</p>
+          <p><b>우선 기능:</b> 함께 고르기, 일상 회상, 도형 맞추기, SMCQ 후보.</p>
+          <p><b>보류:</b> 앱 점수로 정상/위험 판정.</p>
+        </article>
+        <article class="card route">
+          <h3>MCI 진단자</h3>
+          <p><b>허용 목적:</b> 일상 관리, 인지활동, 진료 준비.</p>
+          <p><b>우선 기능:</b> 일정 준비, 일상 회상, 보호자 관찰 후보, 접근성 조정.</p>
+          <p><b>보류:</b> 효과 주장, 치료 대체 문구.</p>
+        </article>
+        <article class="card route">
+          <h3>치매 당사자</h3>
+          <p><b>허용 목적:</b> 안전한 활동 경험, 보호자/전문가 동반 기록.</p>
+          <p><b>우선 기능:</b> 함께 고르기, 회상, 쉬운 읽기, 도움 수준 기록.</p>
+          <p><b>보류:</b> 독립 사용 전제, 표준 CST라고 명명.</p>
+        </article>
+        <article class="card route">
+          <h3>보호자</h3>
+          <p><b>허용 목적:</b> 관찰 기록, 부담 확인, 상담 준비.</p>
+          <p><b>우선 기능:</b> KDSQ-C/K-AD8 후보, ZBI 후보, 준비 메모.</p>
+          <p><b>보류:</b> 보호자 부담과 당사자 인지 점수 합산.</p>
+        </article>
+      </div>
+    </section>
+
+    <section aria-labelledby="checklist">
+      <h2 id="checklist">검증 체크리스트</h2>
+      <div class="grid">
+        <article class="card"><h3>근거/목적/버전</h3><p>각 활동과 설문의 출처 URL, 대상, 응답자, 앱 내 목적을 문서화합니다.</p></article>
+        <article class="card"><h3>권리/자산</h3><p>표준 설문 문항, 채점, 번역, 로고, 음성/이미지 자산의 사용 조건을 확인합니다.</p></article>
+        <article class="card"><h3>전문가 검토</h3><p>임상 전문가가 진단/치료/효과 문구가 없는지 확인합니다.</p></article>
+        <article class="card"><h3>소프트웨어</h3><p>합성 데이터로 권한 거부, 완료, 중단, 기술 문제, 삭제, 내보내기, 콘텐츠 버전 저장을 확인합니다.</p></article>
+        <article class="card"><h3>사용성/실행 가능성</h3><p>기관 절차에 따라 감독 하에서 수행합니다. 표본 수와 통과 기준은 합의 필요입니다.</p></article>
+        <article class="card"><h3>효과 검증</h3><p>참여자 대상 효과는 별도 연구계획서, 윤리·기관 절차, 통계 계획 이후 진행합니다.</p></article>
+      </div>
+    </section>
+
+    <section aria-labelledby="pitch">
+      <h2 id="pitch">기업 접촉용 한 문장</h2>
+      <div class="notice">
+        MemoryLink는 치매 진단 앱이 아니라, 일반 고령자·MCI 진단자·치매 당사자·보호자가 한 제품 안에서 역할과 도움 수준을 분리해 기록하고, 표준 설문 후보와 인지활동 후보를 권리·전문가·기관 검증 순서에 맞춰 단계적으로 적용하는 생활 지원/검증 준비 플랫폼으로 제안합니다.
+      </div>
+    </section>
+  </main>
+</body>
+</html>

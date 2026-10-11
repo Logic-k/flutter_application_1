@@ -14,7 +14,9 @@ String createTrainingAttemptId() {
   final bytes = List<int>.generate(16, (_) => _secureRandom.nextInt(256));
   bytes[6] = (bytes[6] & 0x0f) | 0x40;
   bytes[8] = (bytes[8] & 0x3f) | 0x80;
-  final hex = bytes.map((value) => value.toRadixString(16).padLeft(2, '0')).join();
+  final hex = bytes
+      .map((value) => value.toRadixString(16).padLeft(2, '0'))
+      .join();
   return '${hex.substring(0, 8)}-${hex.substring(8, 12)}-'
       '${hex.substring(12, 16)}-${hex.substring(16, 20)}-'
       '${hex.substring(20)}';
@@ -66,6 +68,7 @@ String trainingActivityName(String activityId) => switch (activityId) {
   'shape_match' => '같은 모양 찾기',
   'sentence_reading' => '문장 읽기 훈련',
   'daily_recall' => '일상 회상 훈련',
+  'topic_choice' => '함께 고르는 한 주제',
   _ => throw ArgumentError.value(activityId, 'activityId', 'Unknown activity'),
 };
 
@@ -79,6 +82,7 @@ IconData trainingActivityIcon(String activityId) => switch (activityId) {
   'shape_match' => Icons.auto_awesome_motion_rounded,
   'sentence_reading' => Icons.record_voice_over_rounded,
   'daily_recall' => Icons.favorite_rounded,
+  'topic_choice' => Icons.forum_rounded,
   _ => Icons.psychology_rounded,
 };
 
@@ -97,7 +101,10 @@ String? _highlightFor(TrainingCompletionResult result) {
 
 String _encouragementFor(TrainingCompletionResult result) {
   if (result.attempt.score == null) {
-    return '오늘의 기억을 차분히 떠올렸어요.';
+    return switch (result.attempt.activityId) {
+      'topic_choice' => '선택과 대화 활동을 차분히 마쳤어요.',
+      _ => '오늘의 기억을 차분히 떠올렸어요.',
+    };
   }
   if (result.masteryStars >= 3) {
     return '집중해서 끝까지 해냈어요.';
